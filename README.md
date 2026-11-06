@@ -19,7 +19,7 @@ Pick a unit and the planner tells you exactly which STL files to print and how m
    - plates clear of the printer's no-print corner
 
    On other printers, save STL folders instead: a zip with one folder per plate.
-4. **Assemble:** a checklist that follows the manuals, plus a hardware shopping list.
+4. **Assemble:** a checklist that follows the manuals, plus a hardware shopping list that shows each bolt's head shape and links to matching products on Amazon US (affiliate links).
 
 Your files are read on your own computer and never uploaded. Your towers and progress are saved in your browser.
 

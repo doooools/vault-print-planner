@@ -195,6 +195,9 @@ dialog#viewer { position: fixed; }
 .hw td.hd { width: 76px; padding-left: 0; padding-right: 0; }
 .hw svg.bolt { display: block; width: 72px; height: 30px; fill: var(--muted); }
 .hw .heads { margin-top: -2px; }
+.hw a.buy { font-size: 12px; font-weight: 700; color: var(--accent); white-space: nowrap; margin-left: 4px; }
+.hw .shopnote { color: var(--muted); }
+.hw .aff { padding-top: 10px; font-size: 12.5px; }
 .panel > h3.ph { margin: 0; padding: 14px 18px 4px; font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
 .panel > p.pp { margin: 0; padding: 0 18px 10px; color: var(--muted); font-size: 13.5px; }
 .script { padding: 0 18px 16px; display: grid; gap: 10px; }
@@ -1175,11 +1178,33 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     hex: '<path d="M5 3.5h10v13H5z"/><path d="M5 10h10" style="stroke:var(--sheet);stroke-width:1.2"/>',
   };
   const headIcon = item => { const k = headOf(item); return k ? `<svg class="bolt" viewBox="0 0 48 20" role="img" aria-label="${k === 'button' ? 'button head' : k === 'hex' ? 'hex head' : 'countersunk head'}">${HEADS[k]}<path d="M15 7h30v6H15z"/><path d="M17 7v6M20 7v6M23 7v6M26 7v6M29 7v6M32 7v6M35 7v6M38 7v6M41 7v6" style="stroke:var(--sheet);stroke-width:1"/></svg>` : ''; };
+  // Where to buy each item: Amazon US products checked against the manual's sizes and head shapes (affiliate links)
+  const SHOP = [
+    [/^M4 \u00d7 10 mm button-head/, 'https://link.amazon/B0f0yeI3N'],
+    [/^M4 \u00d7 14 mm button-head/, 'https://link.amazon/B0ebAEGvG'],
+    [/^M4 \u00d7 20 mm button-head/, 'https://link.amazon/B03Z2D1kc'],
+    [/^M4 \u00d7 25 mm button-head/, 'https://link.amazon/B0bFlfwUM'],
+    [/^M4 \u00d7 40 mm button-head/, 'https://link.amazon/B0d1qOVS1'],
+    [/^M4 \u00d7 60 mm button-head/, 'https://link.amazon/B02CYVAeL'],
+    [/^M6 \u00d7 90 mm button-head/, 'https://link.amazon/B05KMzDb5'],
+    [/^M6 \u00d7 30 mm countersunk/, 'https://link.amazon/B0ff8Abdp'],
+    [/^M6 \u00d7 50 mm countersunk/, 'https://link.amazon/B05NJX8px'],
+    [/heat insert/, 'https://link.amazon/B0dQcIBB9'],
+    [/^6205ZZ/, 'https://link.amazon/B09EGp7OF'],
+    [/shaft collar/, 'https://link.amazon/B04vzyXCv'],
+    [/^M16 /, 'https://link.amazon/B09SHyp8X', '1 m rod, cut to length'],
+    [/^M6 \u00d7 35 mm hex/, null, 'not found on Amazon; try a hardware store'],
+    [/60\u2013100 mm/, null, 'length depends on your build; buy what fits'],
+  ];
+  const shopOf = item => { const s = SHOP.find(([re]) => re.test(item)); return s ? { link: s[1], note: s[2] } : {}; };
+  const buyLink = item => { const { link, note } = shopOf(item);
+    return (link ? ` <a class="buy" href="${link}" target="_blank" rel="sponsored noopener">Amazon</a>` : '') + (note ? ` <small class="shopnote">${esc(note)}</small>` : ''); };
   function hwTable(hw, title, sub) {
     if (!hw.length) return '';
     return `<div class="panel hw"><h3 class="ph">${title || 'Hardware to buy'}</h3><p class="pp">${sub || 'Not printed.'}</p>
       ${hw.some(h => headOf(h.item)) ? '<p class="pp heads">Check the head shape: button heads are domed and sit on top of the part; countersunk heads have a flat top and sit flush in a cone-shaped hole.</p>' : ''}
-      <table><tbody>${hw.map(h => `<tr><td class="q">${h.total}\u00d7</td><td class="hd">${headIcon(h.item)}</td><td>${esc(h.item)}${h.spareN ? ` <small style="color:var(--muted)">incl. ${h.spareN} spare</small>` : ''}</td><td class="why">${esc(h.why)}</td></tr>`).join('')}</tbody></table></div>`;
+      <table><tbody>${hw.map(h => `<tr><td class="q">${h.total}\u00d7</td><td class="hd">${headIcon(h.item)}</td><td>${esc(h.item)}${h.spareN ? ` <small style="color:var(--muted)">incl. ${h.spareN} spare</small>` : ''}${buyLink(h.item)}</td><td class="why">${esc(h.why)}</td></tr>`).join('')}</tbody></table>
+      ${hw.some(h => shopOf(h.item).link) ? '<p class="pp aff">Amazon links are affiliate links: as an Amazon Associate I earn from qualifying purchases, at no extra cost to you.</p>' : ''}</div>`;
   }
 
   // ---------- copy helpers ----------
