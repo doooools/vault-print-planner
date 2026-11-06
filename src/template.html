@@ -1,0 +1,2074 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vault Print Planner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a workshop sheet. Left rail = the unit you're configuring, right = the print checklist it produces.
+   Palette borrows the Vault renders: light-grey PLA body, charcoal parts, orange spring accent. */
+:root {
+  --ground: #e6e7e4;
+  --sheet: #f5f5f2;
+  --sheet-2: #ecedea;
+  --ink: #222526;
+  --muted: #646a6b;
+  --line: #cfd1cd;
+  --accent: #d9622b;
+  --accent-ink: #ffffff;
+  --accent-soft: #f6dccd;
+  --ok: #2c7a4f;
+  --ok-soft: #d6eadc;
+  --warn: #9a6512;
+  --warn-soft: #f3e3c4;
+  --bad: #b23a26;
+  --bad-soft: #f4d6cf;
+  --bed: #fbfbf9;
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ground: #151718; --sheet: #1e2122; --sheet-2: #262a2b; --ink: #e7e8e5; --muted: #9ca2a2; --line: #353a3b;
+  --accent: #f07a3e; --accent-ink: #1a1a1a; --accent-soft: #4a2c1d; --ok: #6cc893; --ok-soft: #1f3a2a;
+  --warn: #e3b25c; --warn-soft: #3d3020; --bad: #f08a76; --bad-soft: #43241f; --bed: #191c1d; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --ground: #151718; --sheet: #1e2122; --sheet-2: #262a2b; --ink: #e7e8e5; --muted: #9ca2a2; --line: #353a3b;
+  --accent: #f07a3e; --accent-ink: #1a1a1a; --accent-soft: #4a2c1d; --ok: #6cc893; --ok-soft: #1f3a2a;
+  --warn: #e3b25c; --warn-soft: #3d3020; --bad: #f08a76; --bad-soft: #43241f; --bed: #191c1d; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--ground); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px; }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 18px; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--f-mono); font-size: 12.5px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Header */
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 14px 24px; padding-bottom: 4px; }
+.brand h1 { margin: 0; font-family: var(--f-display); font-stretch: 125%; font-weight: 800; font-size: clamp(26px, 4vw, 38px); letter-spacing: -0.01em; line-height: 1; text-wrap: balance; }
+.brand p { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
+.brand .credit { font-size: 12.5px; }
+.kofi { align-self: start; display: block; line-height: 0; flex: none; }
+.brand { flex: 1 1 0; min-width: min(100%, 300px); }
+.kofi img { height: 36px; width: auto; border: 0; }
+.maker { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-weight: 600; font-size: 14px; }
+.ytbtn { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 5px 12px 5px 9px; font-size: 13px; font-weight: 700; text-decoration: none; }
+.ytbtn:hover { border-color: var(--muted); }
+.vidlink { color: var(--muted); font-size: 13px; font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
+.brand .credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.printer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 12px; }
+.printer > label:not(.switch) { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.printer select { background: transparent; border: 0; font-weight: 600; padding: 2px 0; }
+.printer .vol { color: var(--muted); }
+.printer input[type=number] { width: 7ch; min-width: 0; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-variant-numeric: tabular-nums; text-align: right; -moz-appearance: textfield; appearance: textfield; }
+.printer input[type=number]::-webkit-inner-spin-button, .printer input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+#customVol { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+#customVol[hidden] { display: none; }
+
+/* Main grid */
+.main { display: grid; grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r); }
+.config { padding: 16px; display: grid; gap: 18px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); overflow: auto; }
+@media (max-width: 860px) { .config { position: static; max-height: none; } }
+.field { display: grid; gap: 8px; }
+.field > .lbl { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.field > .lbl .hint { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; background: var(--sheet-2); padding: 4px; border-radius: 9px; }
+.seg button { border: 0; background: transparent; border-radius: 6px; padding: 8px 6px; font-weight: 600; line-height: 1.15; }
+.seg button small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; margin-top: 2px; }
+.seg button[aria-pressed=true] { background: var(--ink); color: var(--sheet); }
+.seg button[aria-pressed=true] small { color: inherit; opacity: .75; }
+.seg button:disabled { opacity: .35; cursor: not-allowed; }
+.seg button { position: relative; }
+.dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--bad); }
+.seg button .dot { position: absolute; top: 5px; right: 5px; }
+.seg button.nofit:not([aria-pressed=true]) { color: var(--muted); }
+.fitkey { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; }
+.opt input[type=checkbox] { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
+.opt span small { display: block; color: var(--muted); font-size: 12.5px; }
+select.full { width: 100%; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.steppers { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.stepper { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: var(--sheet-2); border-radius: 8px; padding: 6px 6px 6px 10px; font-size: 13px; }
+.stepper div { display: flex; align-items: center; gap: 4px; }
+.stepper button { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--line); background: var(--sheet); line-height: 1; }
+.stepper output { min-width: 18px; text-align: center; font-weight: 700; }
+details.more { border-top: 1px solid var(--line); padding-top: 14px; }
+details.more summary { cursor: pointer; font-weight: 700; list-style: none; display: flex; justify-content: space-between; }
+details.more summary::after { content: "+"; color: var(--muted); }
+details.more[open] summary::after { content: "\2212"; }
+details.more > div { display: grid; gap: 14px; margin-top: 14px; }
+.sub { padding-left: 26px; display: grid; gap: 10px; }
+
+/* Results */
+.results { display: grid; gap: 14px; min-width: 0; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs button { border: 1px solid var(--line); background: var(--sheet); border-radius: 999px; padding: 6px 14px; font-weight: 600; }
+.tabs button[aria-selected=true] { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+.unit-head { padding: 18px 18px 16px; display: grid; gap: 14px; }
+.unit-title { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 18px; }
+.unit-title h2 { margin: 0; font-family: var(--f-display); font-stretch: 118%; font-weight: 800; font-size: clamp(24px, 3.4vw, 34px); line-height: 1; }
+.unit-title .dims { color: var(--muted); }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+@media (max-width: 560px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stat { background: var(--sheet); padding: 10px 12px; }
+.stat b { display: block; font-size: 22px; font-stretch: 110%; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); }
+.stat.bad b { color: var(--bad); } .stat.ok b { color: var(--ok); } .stat.warn b { color: var(--warn); }
+.alert { border-radius: 8px; padding: 10px 12px; font-size: 14px; display: grid; gap: 4px; }
+.alert.bad { background: var(--bad-soft); } .alert.warn { background: var(--warn-soft); } .alert.ok { background: var(--ok-soft); }
+.alert strong { font-weight: 700; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn { border: 1px solid var(--line); background: var(--sheet); border-radius: 8px; padding: 8px 12px; font-weight: 600; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn:hover { border-color: var(--ink); }
+.qtybox { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.qtybox input { width: 56px; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; color: var(--ink); }
+
+.group { padding: 4px 0 6px; }
+.group h3 { margin: 0; padding: 12px 18px 6px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+.parts { overflow-x: auto; }
+.row { display: grid; grid-template-columns: 22px 64px 40px minmax(0, 1fr) auto 38px; gap: 12px; align-items: center; padding: 8px 18px; border-top: 1px solid var(--line); }
+.thumb { display: block; border: 0; padding: 0; border-radius: 8px; background-color: var(--sheet-2); background-repeat: no-repeat; cursor: zoom-in; }
+.thumb.sm { width: 64px; height: 64px; }
+.thumb.md { width: 100%; aspect-ratio: 1; max-width: 100%; }
+.thumb.lg { width: min(300px, 100%); aspect-ratio: 1; max-width: 100%; cursor: default; }
+.thumb.none { cursor: default; }
+.thumb:hover:not(.none):not(.lg) { outline: 1px solid var(--muted); }
+.hero { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.hero figure { margin: 0; display: grid; gap: 4px; }
+.hero figcaption { font-size: 12px; color: var(--muted); text-align: center; }
+@media (max-width: 560px) { .hero { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+dialog#viewer { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px; width: min(680px, calc(100vw - 32px)); max-height: calc(100vh - 32px); }
+dialog#viewer::backdrop { background: rgba(10, 12, 12, .45); }
+.vbody { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 600px) { .vbody { grid-template-columns: minmax(0, 1fr); } }
+.vinfo { display: grid; gap: 8px; min-width: 0; }
+.vinfo h3 { margin: 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; padding-right: 28px; }
+.vbed { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--muted); }
+.bedsvg.big { width: 72px; height: 72px; }
+.vclose { position: absolute; top: 10px; right: 12px; border: 0; background: transparent; font-size: 24px; line-height: 1; color: var(--muted); }
+dialog#viewer { position: fixed; }
+.row.done { opacity: .45; }
+.row.done .pname { text-decoration: line-through; }
+.row input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--ok); }
+.qty { font-weight: 800; font-stretch: 112%; font-size: 17px; text-align: right; font-variant-numeric: tabular-nums; }
+.qty small { font-weight: 500; color: var(--muted); font-size: 12px; }
+.pname { font-weight: 600; }
+.pfile { color: var(--muted); overflow-wrap: anywhere; }
+.pnote { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.tags { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.tag { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: var(--sheet-2); color: var(--muted); white-space: nowrap; }
+.tag.sup { background: var(--accent-soft); color: var(--ink); }
+.tag.wall { background: var(--sheet-2); color: var(--ink); border: 1px solid var(--line); }
+.tag.fit-ok { background: var(--ok-soft); color: var(--ok); }
+.tag.fit-warn { background: var(--warn-soft); color: var(--warn); }
+.tag.fit-bad { background: var(--bad-soft); color: var(--bad); }
+.dimtxt { font-size: 11.5px; color: var(--muted); text-align: right; margin-top: 3px; white-space: nowrap; }
+.bedsvg { width: 38px; height: 38px; display: block; }
+@media (max-width: 560px) {
+  .row { grid-template-columns: 22px 56px 34px minmax(0, 1fr) 34px; gap: 10px; padding: 10px 14px; }
+  .thumb.sm { width: 56px; height: 56px; }
+  .row .right { grid-column: 4 / 6; }
+  .tags, .dimtxt { justify-content: flex-start; text-align: left; }
+  .row .bedcell { grid-row: 1; grid-column: 5; }
+}
+.hw { padding: 6px 0 10px; }
+.hw table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.hw td { padding: 8px 18px; border-top: 1px solid var(--line); }
+.hw td.q { width: 70px; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.hw td.why { color: var(--muted); }
+.panel > h3.ph { margin: 0; padding: 14px 18px 4px; font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
+.panel > p.pp { margin: 0; padding: 0 18px 10px; color: var(--muted); font-size: 13.5px; }
+.script { padding: 0 18px 16px; display: grid; gap: 10px; }
+.script label { font-size: 12px; color: var(--muted); display: grid; gap: 4px; }
+.script input { background: var(--sheet-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-family: var(--f-mono); font-size: 12.5px; width: 100%; }
+pre.code { margin: 0; background: var(--sheet-2); border-radius: 8px; padding: 12px; overflow-x: auto; font-family: var(--f-mono); font-size: 12px; line-height: 1.55; max-height: 240px; }
+.blist { display: grid; }
+.bitem { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 10px 18px; border-top: 1px solid var(--line); align-items: center; }
+.bitem b { font-stretch: 112%; }
+.bitem small { color: var(--muted); display: block; }
+.bitem .ctl { display: flex; gap: 6px; align-items: center; }
+.empty { padding: 18px; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 0 18px 14px; font-size: 12.5px; color: var(--muted); align-items: center; }
+.toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); transform: translateX(-50%); background: var(--ink); color: var(--sheet); padding: 8px 14px; border-radius: 8px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.show { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+footer.site { display: grid; grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); gap: 18px; border-top: 1px solid var(--line); margin-top: 18px; padding: 22px 0 8px; color: var(--muted); font-size: 12.5px; }
+footer.site p { margin: 0; max-width: 80ch; }
+footer.site a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+footer.site .ytbtn { text-decoration: none; color: var(--ink); }
+.fmaker { display: grid; gap: 10px; align-content: start; }
+.fmaker .maker { color: var(--ink); }
+@media (max-width: 860px) { footer.site { grid-template-columns: minmax(0, 1fr); } }
+/* ---- v3: tabs as top-level navigation, towers, plates, guide ---- */
+.nav { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.nav .tabs button { padding: 8px 16px; font-size: 15px; }
+.nav .tabs button .count { font-weight: 500; opacity: .7; }
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600; user-select: none; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch .track { width: 36px; height: 20px; border-radius: 999px; background: var(--line); position: relative; transition: background .15s; flex: none; }
+.switch .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--sheet); box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .15s; }
+.switch input:checked + .track { background: var(--ok); }
+.switch input:checked + .track::after { transform: translateX(16px); }
+.switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+.switch small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .switch .track, .switch .track::after { transition: none; } }
+.view { display: grid; gap: 14px; min-width: 0; }
+.main.single { grid-template-columns: minmax(0, 1fr); }
+.badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; white-space: nowrap; }
+.badge.inf { background: var(--warn-soft); color: var(--warn); cursor: help; }
+.editing { background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+
+/* Starting points */
+.presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; padding: 0 18px 18px; }
+.preset { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--sheet); border-radius: 10px; padding: 10px; }
+.preset.nopic { grid-template-columns: minmax(0, 1fr); }
+.preset:hover { border-color: var(--ink); }
+.preset b { display: block; font-stretch: 110%; }
+.preset span { display: block; font-size: 12.5px; color: var(--muted); }
+.preset .thumb.sm { cursor: pointer; }
+.preset.nofit { opacity: .55; }
+.preset .warnline { color: var(--bad); }
+
+/* Towers */
+.towers { display: grid; gap: 14px; }
+.tower { padding: 16px 18px; display: grid; gap: 14px; }
+.tower-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
+.tower-head input.tname { font-family: var(--f-display); font-stretch: 115%; font-weight: 800; font-size: 22px; border: 0; background: transparent; padding: 2px 0; min-width: 0; width: 14ch; border-bottom: 1px dashed var(--line); }
+.tower-body { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 760px) { .tower-body { grid-template-columns: minmax(0, 1fr); } }
+.stackviz { display: grid; gap: 3px; justify-items: center; padding: 10px; background: var(--sheet-2); border-radius: 10px; }
+.stackviz .lvl { display: flex; gap: 3px; justify-content: center; width: 100%; }
+.stackviz .blk { border-radius: 4px; background: var(--bed); border: 1px solid var(--line); display: grid; place-items: center; font-size: 10.5px; font-weight: 700; color: var(--muted); overflow: hidden; min-height: 14px; }
+.stackviz .blk.case { background: color-mix(in srgb, var(--bed) 70%, var(--accent-soft)); }
+.stackviz .blk.bad { border-color: var(--bad); color: var(--bad); }
+.stackviz .roofbar { height: 6px; border-radius: 3px 3px 0 0; background: var(--muted); opacity: .55; }
+.stackviz .basebar { height: 10px; border-radius: 0 0 4px 4px; background: var(--ink); opacity: .7; }
+.stackviz .caption { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+.levels { display: grid; gap: 6px; }
+.level { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.level .n { font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; text-align: center; }
+.level .units { display: grid; gap: 4px; min-width: 0; }
+.level .unit { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+.level .unit b { font-stretch: 110%; }
+.level .unit small { color: var(--muted); }
+.level .ctl { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.iconbtn { border: 1px solid var(--line); background: var(--sheet); border-radius: 6px; min-width: 30px; height: 30px; padding: 0 8px; font-size: 13px; font-weight: 600; }
+.iconbtn:hover { border-color: var(--ink); }
+.iconbtn:disabled { opacity: .35; cursor: default; }
+.checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px 16px; }
+.issues { display: grid; gap: 6px; }
+.issue { font-size: 13.5px; border-radius: 8px; padding: 8px 10px; }
+.issue.bad { background: var(--bad-soft); } .issue.warn { background: var(--warn-soft); } .issue.info { background: var(--sheet-2); } .issue.ok { background: var(--ok-soft); }
+.addbox { display: grid; gap: 10px; padding: 14px 18px 16px; }
+.addrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.addrow select { background: var(--sheet-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; max-width: 100%; }
+
+/* Print: progress + plates */
+.progress { padding: 16px 18px; display: grid; gap: 10px; }
+.bar { height: 10px; border-radius: 999px; background: var(--sheet-2); overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--ok); border-radius: 999px; }
+.progress-nums { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13.5px; color: var(--muted); }
+.progress-nums b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.printopts { display: flex; flex-wrap: wrap; gap: 12px 22px; padding: 0 18px 14px; }
+.plates { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.plate { padding: 14px; display: grid; gap: 10px; align-content: start; }
+.plate-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.plate-head b { font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
+.plate-head span { font-size: 12.5px; color: var(--muted); text-align: right; }
+.platesvg { width: 100%; height: auto; max-width: 100%; display: block; }
+.chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
+.sw-body { background: #d4d6d3; } .sw-inner { background: #3a3d3f; } .sw-accent { background: #e8742f; } .sw-tpu { background: #222; } .sw-big { background: #d4d6d3; } .sw-small { background: #3a3d3f; } .sw-all { background: linear-gradient(90deg, #d4d6d3 50%, #3a3d3f 50%); }
+.pitems { display: grid; gap: 6px; }
+.pitem { display: grid; grid-template-columns: 44px 30px minmax(0, 1fr); gap: 8px; align-items: center; font-size: 13.5px; }
+.pitem .thumb { width: 44px; height: 44px; }
+.pitem .q { font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+.pitem .lbl { min-width: 0; }
+.pitem .lbl small { display: block; color: var(--muted); font-size: 11.5px; }
+.donelist { padding: 0 18px 14px; display: grid; gap: 4px; }
+.doneitem { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; font-size: 13.5px; padding: 4px 0; border-top: 1px solid var(--line); }
+details.fold { padding: 0; }
+details.fold > summary { cursor: pointer; padding: 14px 18px; font-family: var(--f-display); font-stretch: 112%; font-weight: 700; font-size: 17px; list-style: none; display: flex; justify-content: space-between; gap: 8px; }
+details.fold > summary::after { content: "+"; color: var(--muted); font-family: var(--f-body); }
+details.fold[open] > summary::after { content: "\2212"; }
+details.fold > summary small { font-family: var(--f-body); font-weight: 400; font-size: 13px; color: var(--muted); margin-left: auto; padding-right: 10px; }
+
+/* Extra parts */
+.xsearch { padding: 0 18px 10px; }
+.xsearch input { width: 100%; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 15px; }
+.xresults, .xlist { display: grid; gap: 8px; padding: 0 18px 14px; }
+.xitem { grid-template-columns: 56px minmax(0, 1fr) auto; }
+.xitem .thumb { width: 56px; height: 56px; }
+/* Built without part pictures: collapse the picture columns */
+.thumb.nopic { width: 0 !important; height: 0 !important; }
+html.nopics .row { grid-template-columns: 0 0 40px minmax(0, 1fr) auto 38px !important; column-gap: 6px; }
+html.nopics .pitem { grid-template-columns: 0 30px minmax(0, 1fr); }
+html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
+.xitem .lbl b { font-stretch: 105%; }
+.xitem .tag, .xitem .badge { margin-left: 4px; }
+.xhead { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding-top: 4px; border-top: 1px solid var(--line); padding-block: 10px 2px; }
+.gprog { margin: 10px 18px 0; display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+.gprog[hidden] { display: none; }
+.linkbtn { border: 0; background: none; color: var(--accent); font-size: 12px; font-weight: 600; padding: 4px 0 0; text-decoration: underline; text-underline-offset: 2px; display: block; margin-left: auto; }
+.seg.scope { max-width: 520px; }
+
+.openrow { display: grid; gap: 10px; padding: 4px 18px 16px; }
+.btn.big { padding: 12px 18px; font-size: 16px; justify-self: start; }
+details.termfold { border-top: 1px solid var(--line); }
+details.termfold > summary { cursor: pointer; padding: 12px 18px; font-weight: 600; color: var(--muted); }
+details.termfold[open] > summary { color: var(--ink); }
+
+/* Assemble */
+.guide { padding: 4px 0 8px; }
+.guide > h3 { margin: 0; padding: 14px 18px 2px; font-family: var(--f-display); font-stretch: 112%; font-size: 18px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.guide > p { margin: 0; padding: 2px 18px 8px; color: var(--muted); font-size: 13.5px; }
+.step { display: grid; grid-template-columns: 22px 30px minmax(0, 1fr); gap: 10px; padding: 10px 18px; border-top: 1px solid var(--line); align-items: start; }
+.step input { width: 17px; height: 17px; accent-color: var(--ok); margin-top: 2px; }
+.step .sn { font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
+.step.done { opacity: .5; }
+.step .stext { display: grid; gap: 6px; min-width: 0; }
+.step .src { font-size: 11.5px; color: var(--muted); }
+.step .uses { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.step .uses .thumb { width: 40px; height: 40px; }
+.step .hwchip { font-size: 12px; background: var(--sheet-2); border-radius: 6px; padding: 3px 7px; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Vault Print Planner</h1>
+      <p>Because “Hidden Key Part 2 (Turn on Supports)” shouldn’t be a riddle.</p>
+      <p class="credit">Unofficial and fan-made for <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault by USSA</a>. Not affiliated with USSA.</p>
+    </div>
+    <a class="kofi" href="https://ko-fi.com/E8R32A64D1" target="_blank" rel="noopener"><img height="36" src="https://storage.ko-fi.com/cdn/kofi6.png?v=6" alt="Buy Me a Coffee at ko-fi.com"></a>
+  </header>
+
+  <nav class="nav">
+    <div class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="tab-unit" data-tab="unit">1 · Design a unit</button>
+      <button role="tab" id="tab-build" data-tab="build">2 · Build <span class="count" id="countBuild"></span></button>
+      <button role="tab" id="tab-print" data-tab="print">3 · Print <span class="count" id="countPrint"></span></button>
+      <button role="tab" id="tab-assemble" data-tab="assemble">4 · Assemble</button>
+    </div>
+    <div class="printer" id="printerBox">
+      <label for="printer">Printer</label>
+      <select id="printer"></select>
+      <span class="vol mono num" id="printerVol"></span>
+      <span id="customVol" hidden>
+        <input type="number" id="pvx" min="100" max="1000" aria-label="Bed X (mm)"> ×
+        <input type="number" id="pvy" min="100" max="1000" aria-label="Bed Y (mm)"> ×
+        <input type="number" id="pvz" min="100" max="1000" aria-label="Height Z (mm)"> mm
+      </span>
+      <label class="switch" for="onlyFits"><input type="checkbox" id="onlyFits"><span class="track"></span><span>Only show what fits</span></label>
+    </div>
+  </nav>
+
+  <div class="main" id="main">
+    <aside class="panel config" id="config" aria-label="Unit configuration">
+      <div id="editingBox"></div>
+      <div class="field">
+        <div class="lbl">Unit type</div>
+        <div class="seg" id="type"></div>
+      </div>
+      <div class="field">
+        <div class="lbl">Width <span class="hint" id="widthHint"></span></div>
+        <div class="seg" id="width"></div>
+      </div>
+      <div class="field">
+        <div class="lbl">Depth <span class="hint">grid units of 42 mm</span></div>
+        <div class="seg" id="depth"></div>
+      </div>
+      <div class="field">
+        <div class="lbl">Height <span class="hint">1F · 2F · 4F</span></div>
+        <div class="seg" id="height"></div>
+        <div class="fitkey" id="fitKey"><i class="dot"></i> A part of that size is too big for your printer</div>
+      </div>
+      <div id="opts" style="display:grid;gap:16px"></div>
+      <details class="more" id="moreBox">
+        <summary>Mounting</summary>
+        <div id="mountOpts"></div>
+      </details>
+    </aside>
+
+    <section class="results">
+      <div class="view" id="view-unit"></div>
+      <div class="view" id="view-build" hidden></div>
+      <div class="view" id="view-print" hidden></div>
+      <div class="view" id="view-assemble" hidden></div>
+    </section>
+  </div>
+
+  <footer class="site">
+    <div class="fmaker">
+      <div class="maker"><span>Made by Romy</span>
+        <a class="ytbtn" href="https://www.youtube.com/@romyromes?sub_confirmation=1" target="_blank" rel="noopener"><svg viewBox="0 0 24 17" width="20" height="14" aria-hidden="true"><rect width="24" height="17" rx="4" fill="#ff0033"/><path d="M9.6 4.6v7.8l6.4-3.9z" fill="#fff"/></svg>Watch on YouTube</a>
+        <a class="vidlink" href="https://youtu.be/89nARFpuMbw" target="_blank" rel="noopener">See how it was built</a></div>
+      <p>An unofficial fan project. Vault, its designs and its files belong to <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">USSA</a>; you need your own copy of the files to print anything.</p>
+    </div>
+    <p class="fnotes" id="footnote"></p>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog id="viewer" aria-label="Part preview"><button type="button" class="vclose" id="viewerClose" aria-label="Close preview">&times;</button><div id="viewerBody" class="vbody"></div></dialog>
+
+<script type="text/plain" id="py3mf">
+# Builds ONE Bambu Studio project (.3mf) with every plate from the planner, parts laid out as planned.
+# usage: python3 make3mf.py <vault folder> <output .3mf> <plates.json>
+# Step 1 writes the plates and layout. Step 2 has Bambu Studio's own command line re-save it with the printer's
+# profiles, which turns it into a real project; without that, the Bambu Studio app imports everything onto one plate.
+# Note: no 'Application: BambuStudio' header on purpose. With it, Bambu Studio expects full printer settings inside
+# the file and crashes without them. Without it, Bambu still reads the plates from Metadata/model_settings.config.
+# plates.json: {"bed": [256, 256], "bambu": [printer, process, PLA filament, TPU filament] profile names or null,
+#   "plates": [{"name": "...", "pieces": [{"path", "name", "spin", "x", "y", "w", "h", "supports", "walls", "infill", "brim", "diag", "corner", "tpu"}]}]}
+# diag: turn the part onto the back-left to front-right diagonal and centre it in its box.
+# corner: [x, y] footprint corner (0 = low side) the part's top should sit over; used to stand USSA's manual supports
+# with their full-height edge against the part beside them.
+import json, math, os, shutil, struct, subprocess, sys, tempfile, zipfile
+
+src, final_out, plan_path = sys.argv[1], sys.argv[2], sys.argv[3]
+out = os.path.join(os.path.dirname(final_out), '.layout-' + os.path.basename(final_out))
+plan = json.load(open(plan_path))
+BED_W, BED_D = plan['bed']
+CT = ('<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+      '<Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/>'
+      '<Default Extension="config" ContentType="text/xml"/></Types>')
+RELS = ('<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+        '<Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>')
+
+
+def esc(s):
+    return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
+
+
+def load(path, spin):
+    """Read a binary STL, weld shared vertices, undo the export spin, and move it to start at 0,0,0."""
+    data = open(os.path.join(src, path), 'rb').read()
+    n = struct.unpack_from('<I', data, 80)[0]
+    index, raw, tris = {}, [], []
+    for i in range(n):
+        o = 96 + i * 50
+        t = []
+        for k in (0, 12, 24):
+            b = data[o + k:o + k + 12]
+            j = index.get(b)
+            if j is None:
+                j = index[b] = len(raw)
+                raw.append(b)
+            t.append(j)
+        if t[0] != t[1] and t[1] != t[2] and t[0] != t[2]:
+            tris.append(t)
+    c, s = math.cos(math.radians(-spin)), math.sin(math.radians(-spin))
+    pts = []
+    for b in raw:
+        x, y, z = struct.unpack('<fff', b)
+        pts.append((x * c - y * s, x * s + y * c, z))
+    mn = [min(p[i] for p in pts) for i in range(3)]
+    mx = [max(p[i] for p in pts) for i in range(3)]
+    pts = [(p[0] - mn[0], p[1] - mn[1], p[2] - mn[2]) for p in pts]
+    return pts, tris, mx[0] - mn[0], mx[1] - mn[1]
+
+
+def quarter_turn(pts, w, h):
+    """Turn a loaded mesh a quarter turn counter-clockwise about its vertical axis, keeping it at 0,0."""
+    return [(h - p[1], p[0], p[2]) for p in pts], h, w
+
+
+def top_corner(pts, w, h):
+    zt = max(p[2] for p in pts)
+    top = [p for p in pts if p[2] > zt - 1]
+    return [0 if sum(p[0] for p in top) / len(top) < w / 2 else 1, 0 if sum(p[1] for p in top) / len(top) < h / 2 else 1]
+
+
+def placed(p):
+    pts, tris, wx, wy = load(p['path'], p['spin'])
+    if p.get('diag'):
+        pts, tris, wx, wy = load(p['path'], p['spin'] + (45 if wx >= wy else -45))
+    if p.get('corner'):
+        for _ in range(4):
+            if top_corner(pts, wx, wy) == list(p['corner']):
+                break
+            pts, wx, wy = quarter_turn(pts, wx, wy)
+    return pts, tris, wx, wy
+
+
+# Bambu Studio lays plates out in a grid, roughly square, with a fifth of a plate between them.
+count = len(plan['plates'])
+root = math.sqrt(count)
+cols = int(round(root)) + (1 if root > round(root) else 0)
+stride_x, stride_y = BED_W * 1.2, BED_D * 1.2
+
+mesh_ids, sizes, items, settings = {}, {}, [], []
+next_id = 1
+with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
+    z.writestr('[Content_Types].xml', CT)
+    z.writestr('_rels/.rels', RELS)
+    with z.open('3D/3dmodel.model', 'w', force_zip64=True) as f:
+        f.write(b'<?xml version="1.0" encoding="UTF-8"?><model unit="millimeter" xml:lang="en-US" '
+                b'xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:BambuStudio="http://schemas.bambulab.com/package/2021">'
+                b'<metadata name="Title">Vault print plan</metadata><resources>')
+        plates_xml = []
+        for pi, plate in enumerate(plan['plates']):
+            print('Plate %d of %d: %s' % (pi + 1, count, plate['name']), flush=True)
+            ox, oy = (pi % cols) * stride_x, -(pi // cols) * stride_y
+            instances = []
+            for p in plate['pieces']:
+                key = (p['path'], p['spin'], bool(p.get('diag')), tuple(p.get('corner') or ()))
+                if key not in mesh_ids:
+                    # Each STL is written once as a mesh; every printed copy points at it
+                    pts, tris, wx, wy = placed(p)
+                    mesh_ids[key], sizes[key] = next_id, (wx, wy)
+                    f.write(('<object id="%d" type="model"><mesh><vertices>' % next_id).encode())
+                    for a in range(0, len(pts), 50000):
+                        f.write(''.join('<vertex x="%.4f" y="%.4f" z="%.4f"/>' % v for v in pts[a:a + 50000]).encode())
+                    f.write(b'</vertices><triangles>')
+                    for a in range(0, len(tris), 50000):
+                        f.write(''.join('<triangle v1="%d" v2="%d" v3="%d"/>' % tuple(t) for t in tris[a:a + 50000]).encode())
+                    f.write(b'</triangles></mesh></object>')
+                    next_id += 1
+                    del pts, tris
+                wx, wy = sizes[key]
+                x, y = ox + p['x'], oy + p['y']
+                # Lay the part the way the plan placed it: as-is, or turned 90 degrees on the plate
+                if p.get('diag') or p.get('corner'):  # already turned; centre it in its box
+                    tr = '1 0 0 0 1 0 0 0 1 %.3f %.3f 0' % (x + (p['w'] - wx) / 2, y + (p['h'] - wy) / 2)
+                elif abs(wx - p['w']) + abs(wy - p['h']) <= abs(wy - p['w']) + abs(wx - p['h']):
+                    tr = '1 0 0 0 1 0 0 0 1 %.3f %.3f 0' % (x, y)
+                else:
+                    tr = '0 1 0 -1 0 0 0 0 1 %.3f %.3f 0' % (x + wy, y)
+                oid = next_id
+                next_id += 1
+                f.write(('<object id="%d" name="%s" type="model"><components><component objectid="%d"/></components></object>'
+                         % (oid, esc(p['name']), mesh_ids[key])).encode())
+                items.append('<item objectid="%d" transform="%s" printable="1"/>' % (oid, tr))
+                # Per-part print settings that override the printer profile for this object only:
+                # supports for parts whose files say "Turn On Supports", extra walls/infill for parts that bear load
+                sup = '<metadata key="enable_support" value="1"/>' if p.get('supports') else ''
+                if p.get('walls'):
+                    sup += '<metadata key="wall_loops" value="%d"/>' % p['walls']
+                if p.get('infill'):
+                    sup += '<metadata key="sparse_infill_density" value="%d%%"/>' % p['infill']
+                if p.get('brim'):  # tall, thin parts: a brim so they don't wobble loose
+                    sup += '<metadata key="brim_type" value="outer_only"/><metadata key="brim_width" value="%g"/>' % (5 if p['brim'] is True else p['brim'])
+                settings.append('<object id="%d"><metadata key="name" value="%s"/><metadata key="extruder" value="%d"/>%s'
+                                '<part id="%d" subtype="normal_part"><metadata key="name" value="%s"/></part></object>'
+                                % (oid, esc(p['name']), 2 if p.get('tpu') and len(plan.get('bambu') or []) > 3 else 1, sup, mesh_ids[key], esc(p['name'])))
+                instances.append('<model_instance><metadata key="object_id" value="%d"/><metadata key="instance_id" value="0"/>'
+                                 '<metadata key="identify_id" value="%d"/></model_instance>' % (oid, oid))
+            plates_xml.append('<plate><metadata key="plater_id" value="%d"/><metadata key="plater_name" value="%s"/>'
+                              '<metadata key="locked" value="false"/>%s</plate>' % (pi + 1, esc(plate['name']), ''.join(instances)))
+            mesh_ids.clear()  # meshes are not shared across plates; keeps memory down on big builds
+            sizes.clear()
+        f.write(('</resources><build>' + ''.join(items) + '</build></model>').encode())
+    z.writestr('Metadata/model_settings.config', '<?xml version="1.0" encoding="UTF-8"?><config>' + ''.join(settings) + ''.join(plates_xml) + '<assemble></assemble></config>')
+
+APP = '/Applications/BambuStudio.app'
+EXE, PROFILES = APP + '/Contents/MacOS/BambuStudio', APP + '/Contents/Resources/profiles/BBL'
+
+
+def profile(kind, name):
+    """Bambu's profile files build on parent files; merge the chain into one complete profile."""
+    chain = []
+    while name:
+        with open(os.path.join(PROFILES, kind, name + '.json')) as fh:
+            d = json.load(fh)
+        chain.append(d)
+        name = d.get('inherits')
+    merged = {}
+    for d in reversed(chain):
+        merged.update(d)
+    merged.pop('inherits', None)
+    return merged
+
+
+def save_as_project(names):
+    if not names or not os.path.exists(EXE):
+        return 'Bambu Studio not found in Applications' if names else 'no Bambu profile for this printer'
+    work = tempfile.mkdtemp()
+    try:
+        files = []
+        for i, name in enumerate(names):  # printer, process, then one or more filaments
+            kind = ('machine', 'process')[i] if i < 2 else 'filament'
+            path = os.path.join(work, '%d-%s.json' % (i, kind))
+            with open(path, 'w') as fh:
+                json.dump(profile(kind, name), fh)
+            files.append(path)
+        print('Saving as a Bambu Studio project for', names[0], '(this can take a few minutes)...', flush=True)
+        r = subprocess.run([EXE, '--load-settings', files[0] + ';' + files[1], '--load-filaments', ';'.join(files[2:]), '--arrange', '0',
+                            '--outputdir', work, '--export-3mf', 'project.3mf', out], capture_output=True, timeout=3600)
+        made = os.path.join(work, 'project.3mf')
+        if not os.path.exists(made):
+            return 'Bambu Studio could not save it (exit code %d)' % r.returncode
+        shutil.move(made, final_out)
+        return None
+    except Exception as e:
+        return str(e)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+problem = save_as_project(plan.get('bambu'))
+if problem:
+    shutil.move(out, final_out)
+    print('NOTE:', problem + '. The file will open in Bambu Studio with everything on one plate; '
+          'use Arrange there, or pick a Bambu printer in the planner.')
+else:
+    os.remove(out)
+print('Done: %d plates in %s' % (count, final_out))
+</script>
+
+<script>
+/*CATALOG*/
+</script>
+<script>
+/*RULES*/
+</script>
+<script>
+(function () {
+  const R = window.VaultRules;
+  // Row: path, true footprint a, b (smallest rectangle around the part seen from above), height z, volume mm³, export angle, sprite sheet, cell, Bambu says it needs supports
+  const FILES = window.VAULT_FILES.map(r => ({ path: r[0], dims: [r[1], r[2], r[3]], vol: r[4], angle: r[5], sheet: r[6], cell: r[7], needsSupport: !!r[8] }));
+  const resolve = R.makeResolver(FILES);
+  const SRC_DEFAULT = '261021_VAULT_USSA_S';
+  // Filament estimate. Thin-walled parts print close to solid (0.78 g/cm³ of part volume, the median of USSA's published
+  // weights across 99 parts). Chunky parts (base, feet, roofs) are mostly infill, so scale down by how solid the part is.
+  const gramsOf = f => { const s = Math.min(1, f.vol / (f.dims[0] * f.dims[1] * f.dims[2] || 1)); return f.vol / 1000 * 1.24 * Math.max(0.2, Math.min(0.68, 0.68 - 0.55 * s)); };
+  const SPOOL_G = 1000;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  const fileName = p => p.split('/').pop();
+  const folder = p => p.split('/').slice(0, -1).join(' / ');
+  const plural = (n, one, many) => n + ' ' + (n === 1 ? one : (many || one + 's'));
+
+  const PRINTERS = [
+    // v = bed X, Y and max height as Bambu Studio allows them; excl = no-print zone in the front-left corner (purge chute);
+    // bambu = profile names Bambu Studio uses to save a real project for this printer: printer, process, PLA, TPU (for the tyres)
+    { id: 'p1s', name: 'Bambu Lab P1S', v: [256, 256, 250], excl: [18, 28], bambu: ['Bambu Lab P1S 0.4 nozzle', '0.20mm Standard @BBL X1C', 'Bambu PLA Basic @BBL P1S 0.4 nozzle', 'Bambu TPU 95A @BBL X1C'] },
+    { id: 'x1c', name: 'Bambu Lab X1C', v: [256, 256, 250], excl: [18, 28], bambu: ['Bambu Lab X1 Carbon 0.4 nozzle', '0.20mm Standard @BBL X1C', 'Bambu PLA Basic @BBL X1C', 'Bambu TPU 95A @BBL X1C'] },
+    { id: 'p1p', name: 'Bambu Lab P1P', v: [256, 256, 250], excl: [18, 28], bambu: ['Bambu Lab P1P 0.4 nozzle', '0.20mm Standard @BBL P1P', 'Bambu PLA Basic @BBL X1C', 'Bambu TPU 95A HF @BBL P1P'] },
+    { id: 'a1', name: 'Bambu Lab A1', v: [256, 256, 256], bambu: ['Bambu Lab A1 0.4 nozzle', '0.20mm Standard @BBL A1', 'Bambu PLA Basic @BBL A1', 'Bambu TPU 95A @BBL A1'] },
+    { id: 'a1mini', name: 'Bambu Lab A1 mini', v: [180, 180, 180], bambu: ['Bambu Lab A1 mini 0.4 nozzle', '0.20mm Standard @BBL A1M', 'Bambu PLA Basic @BBL A1M', 'Bambu TPU 95A @BBL A1M'] },
+    { id: 'h2s', name: 'Bambu Lab H2S', v: [340, 320, 340], bambu: ['Bambu Lab H2S 0.4 nozzle', '0.20mm Standard @BBL H2S', 'Bambu PLA Basic @BBL H2S', 'Bambu TPU 95A @BBL H2S'] },
+    { id: 'h2d', name: 'Bambu Lab H2D (single nozzle)', v: [325, 320, 325], bambu: ['Bambu Lab H2D 0.4 nozzle', '0.20mm Standard @BBL H2D', 'Bambu PLA Basic @BBL H2D', 'Bambu TPU 95A @BBL H2D'] },
+    { id: 'mk4', name: 'Prusa MK4', v: [250, 210, 220] },
+    { id: 'custom', name: 'Custom size\u2026', v: [256, 256, 256] },
+  ];
+
+  // ---------- storage (per-viewer conveniences only) ----------
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('vpp.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('vpp.' + k, JSON.stringify(v)); } catch (e) {} },
+  };
+
+  const DEFAULT = { type: 'drawer', w: 'S', d: 3, h: 1, lock: 'std', gearedRails: true, interior: 'empty', baseplateHandles: '0',
+    gridAcross: 1, gridAlong: 0, gridHeight: '20', gridEdge: 'straight', gridPin: 'tight', roof: 'grid', topHandle: false,
+    caseInterior: 'flat', caseBaseplate: false, dividers: { plain: 0, depth: 0, width: 0, seal: 0 }, manualSupports: false,
+    wallMount: false, pegboard: 'none', backbone: 'none' };
+  const STACK_DEFAULT = { base: false, wheels: false, feet: true, casters: false, stationaryHandle: false, pullHandle: false };
+  const clean = cfg => { const k = Object.assign({}, DEFAULT, JSON.parse(JSON.stringify(cfg))); k.dividers = Object.assign({}, DEFAULT.dividers, k.dividers); return k; };
+
+  let c = clean(store.get('config', {}));
+  let printer = store.get('printer', { id: 'p1s', v: [256, 256, 250] });
+  { const pp = PRINTERS.find(p => p.id === printer.id); if (!pp) printer = { id: 'p1s', v: PRINTERS[0].v }; else if (pp.id !== 'custom') printer = { id: pp.id, v: pp.v }; }
+  const preset = () => PRINTERS.find(p => p.id === printer.id) || {};
+  let onlyFits = store.get('onlyFits', false);
+  let spares = store.get('spares', true);
+  // How plates are split by filament: 'renders' = USSA's three colours, 'size' = big parts in one colour and small
+  // parts in another, 'one' = a single colour. Older saves only had the on/off byColor switch.
+  let plateColors = store.get('plateColors', store.get('byColor', true) ? 'renders' : 'one');
+  let mixSupports = store.get('mixSupports', false); // parts that need supports share plates with the rest
+  let gatherMode = store.get('gatherMode', 'project'); // 'project' = one Bambu Studio .3mf with every plate, 'folders' = STLs per plate
+  let srcRoot = store.get('src', SRC_DEFAULT);
+  let destRoot = store.get('dest', '$HOME/Desktop/Vault prints');
+  let printed = store.get('printed', {});   // path -> pieces already printed
+  let stepsDone = store.get('steps', {});
+  let editing = null;                       // { t, l, u } when a tower unit is loaded into the editor
+  let view = store.get('view', 'unit');
+  let towers = store.get('towers', null);
+  let seq = store.get('seq', 1);
+  if (!towers) { // migrate the old flat build list: each unit becomes its own tower
+    towers = (store.get('build', []) || []).map(b => ({ id: seq++, name: 'Tower ' + (seq - 1), levels: [[clean(b.cfg)]], stack: { ...STACK_DEFAULT } }));
+  }
+  const save = () => { store.set('towers', towers); store.set('seq', seq); };
+  let extras = store.get('extras', []);               // [{ path, qty }]: single parts printed on their own, outside any tower
+  let printScope = store.get('printScope', 'all');    // 'all' = towers + extras, 'extras' = only the extra parts
+  let xq = '';                                        // current part search
+  const saveExtras = () => store.set('extras', extras);
+  // Progress key: extras are tracked apart from the same file used in a tower
+  const pkey = l => l.key || l.file.path;
+
+  // ---------- printer fit ----------
+  const eps = 1e-6;
+  function rectInRect(a, b, X, Y) {
+    if ((a <= X + eps && b <= Y + eps) || (b <= X + eps && a <= Y + eps)) return 'straight';
+    for (let deg = 1; deg < 90; deg += 0.5) {
+      const t = deg * Math.PI / 180, cs = Math.cos(t), sn = Math.sin(t);
+      if (a * cs + b * sn <= X + eps && a * sn + b * cs <= Y + eps) return 'diagonal';
+    }
+    return null;
+  }
+  function fitOf(dims, V) {
+    const [x, y, z] = dims, [X, Y, Z] = V;
+    if (z <= Z + eps) {
+      const p = rectInRect(x, y, X, Y);
+      if (p === 'straight') { const xy = Math.max(Math.min(X - x, Y - y), Math.min(X - y, Y - x)); return { s: 'ok', tight: Math.min(xy, Z - z) < 2 }; }
+      if (p === 'diagonal') return { s: 'diag' };
+    }
+    for (const [a, b, h] of [[x, z, y], [y, z, x]]) if (h <= Z + eps && rectInRect(a, b, X, Y)) return { s: 'reorient' };
+    return { s: 'no' };
+  }
+  const FIT_TEXT = { ok: 'Fits', diag: 'Fits diagonally', reorient: 'Only fits tipped over', no: "Doesn't fit" };
+  const FIT_CLASS = { ok: 'fit-ok', diag: 'fit-warn', reorient: 'fit-bad', no: 'fit-bad' };
+  const printerName = () => printer.id === 'custom' ? 'your printer' : PRINTERS.find(p => p.id === printer.id).name;
+
+  function bedSvg(dims, V, s, big) {
+    const S = 34, pad = 2, k = (S - pad * 2) / Math.max(V[0], V[1], dims[0], dims[1]);
+    const bw = V[0] * k, bh = V[1] * k, pw = dims[0] * k, ph = dims[1] * k;
+    const col = s === 'ok' ? 'var(--ok)' : s === 'no' ? 'var(--bad)' : 'var(--warn)';
+    return `<svg class="bedsvg${big ? ' big' : ''}" viewBox="0 0 ${S} ${S}" aria-hidden="true">
+      <rect x="${(S - bw) / 2}" y="${(S - bh) / 2}" width="${bw}" height="${bh}" rx="1.5" fill="var(--bed)" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 1.5"/>
+      <line x1="${(S - bw) / 2}" y1="${(S + bh) / 2}" x2="${(S + bw) / 2}" y2="${(S + bh) / 2}" stroke="var(--ink)" stroke-width="2"/>
+      <rect x="${(S - pw) / 2}" y="${(S - ph) / 2}" width="${pw}" height="${ph}" rx="1" fill="${col}" fill-opacity=".28" stroke="${col}" stroke-width="1.2"/></svg>`;
+  }
+  const dimStr = d => d.map(n => Math.round(n)).join(' \u00d7 ') + ' mm';
+
+  // ---------- computing part lists ----------
+  // Fit-check each line and choose whole vs split versions (whole when it fits this printer)
+  function finish(r) {
+    const V = printer.v, notes = [];
+    let lines = r.lines.map(l => ({ ...l, fit: fitOf(l.file.dims, V), total: l.qty }));
+    for (const wl of lines.filter(l => l.alt === 'split')) {
+      const wholeOk = wl.fit.s === 'ok' || wl.fit.s === 'diag';
+      lines = lines.filter(l => l.group !== wl.group || !l.alt || (wholeOk ? l.alt === 'split' : l.alt === 'whole'));
+      if (!wholeOk) notes.push(`The one-piece ${wl.group.toLowerCase()} is ${dimStr(wl.file.dims)} and won't fit, so the split version is listed.`);
+    }
+    return { lines, hardware: r.hardware.map(h => ({ ...h, total: h.qty })), notes };
+  }
+  const computeUnit = cfg => finish(R.buildUnit(cfg, resolve));
+
+  function unitCode(cfg) {
+    const wname = cfg.w === 'L2' ? 'L' : cfg.w === 'XL2' ? 'XL' : cfg.w;
+    return `${wname}${cfg.d}${cfg.w.endsWith('2') ? '\u00b2' : ''} \u00b7 ${cfg.h}F ${cfg.type === 'drawer' ? 'drawer' : 'case'}`;
+  }
+  const unitExt = cfg => R.exterior(cfg.type, cfg.w, cfg.d, cfg.h);
+
+  // Merge lines from many sources into one list keyed by file
+  function merge(parts) {
+    const lines = new Map(), hw = new Map(), notes = [];
+    for (const p of parts) {
+      p.lines.forEach(l => { const k = pkey(l); const m = lines.get(k); if (m) { m.total += l.total; if (l.inferred && !m.inferred) m.inferred = l.inferred; } else lines.set(k, { ...l }); });
+      p.hardware.forEach(h => { const m = hw.get(h.item); if (m) { m.total += h.total; if (!m.why.includes(h.why)) m.why += ', ' + h.why.toLowerCase(); } else hw.set(h.item, { ...h }); });
+      (p.notes || []).forEach(n => notes.includes(n) || notes.push(n));
+    }
+    return { lines: [...lines.values()], hardware: [...hw.values()], notes };
+  }
+
+  // Spares: +10% (at least one) on small loseable parts and on bolts and inserts
+  function withSpares(res) {
+    if (!spares) return res;
+    return {
+      ...res,
+      lines: res.lines.map(l => l.spare ? { ...l, spareN: Math.max(1, Math.ceil(l.total * 0.1)), total: l.total + Math.max(1, Math.ceil(l.total * 0.1)) } : l),
+      hardware: res.hardware.map(h => /bolt|insert/i.test(h.item) ? { ...h, spareN: Math.max(1, Math.ceil(h.total * 0.1)), total: h.total + Math.max(1, Math.ceil(h.total * 0.1)) } : h),
+    };
+  }
+
+  // ---------- towers ----------
+  // A tower is levels from the bottom up. Each level is one unit, or two side by side (S+S = L wide, S+M = XL wide).
+  const levelWidth = lv => lv.reduce((a, u) => a + R.WIDTH_MM[u.w], 0);
+  const levelHeight = lv => Math.max(...lv.map(u => unitExt(u)[2]));
+  function analyzeTower(t) {
+    const issues = [], parts = [], L = t.levels;
+    if (!L.length) return { issues: [{ k: 'info', m: 'This tower is empty. Design a unit and add it here.' }], parts, height: 0 };
+    L.forEach((lv, i) => {
+      const top = i === L.length - 1;
+      const pair = lv.length > 1;
+      lv.forEach(u => {
+        const k = clean(u);
+        if (!top || pair || k.type !== 'drawer') k.roof = 'none';
+        parts.push(computeUnit(k));
+      });
+      if (pair) {
+        const d0 = lv[0].d;
+        if (lv.some(u => u.d !== d0)) issues.push({ k: 'bad', m: `Level ${i + 1}: the two units are different depths. Side-by-side units need the same depth.` });
+        if (lv.some(u => unitExt(u)[2] !== unitExt(lv[0])[2])) issues.push({ k: 'bad', m: `Level ${i + 1}: the two units are different heights, so the next level won't sit flat.` });
+        if (!R.familyForWidth(levelWidth(lv))) issues.push({ k: 'bad', m: `Level ${i + 1}: ${lv.map(u => u.w).join(' + ')} side by side isn't a Vault width. Pairs that work: S + S (as wide as L) and S + M (as wide as XL).` });
+        if (top && lv.every(u => u.type === 'drawer')) {
+          const fam = R.familyForWidth(levelWidth(lv)), kind = lv[0].roof;
+          if (fam && kind !== 'none') parts.push(finish(R.buildRoof(fam, d0, kind, lv[0].topHandle, resolve)));
+        }
+      }
+      if (i > 0) {
+        const below = L[i - 1];
+        if (Math.abs(levelWidth(lv) - levelWidth(below)) > 2 || lv[0].d !== below[0].d)
+          issues.push({ k: 'bad', m: `Level ${i + 1} (${Math.round(levelWidth(lv))} mm wide, x${lv[0].d} deep) doesn't match level ${i} (${Math.round(levelWidth(below))} mm wide, x${below[0].d} deep). Stacked units need the same width and depth.` });
+      }
+    });
+    const topLv = L[L.length - 1];
+    if (topLv.every(u => u.type === 'drawer') && topLv[0].roof === 'none') issues.push({ k: 'warn', m: 'The top drawer has no roof. Pick a roof for it in the editor, unless something else sits on top.' });
+    const fam = R.familyForWidth(levelWidth(L[0])), s = t.stack || STACK_DEFAULT;
+    const usesStack = s.base || s.stationaryHandle || s.pullHandle;
+    if (usesStack) {
+      if (!fam) issues.push({ k: 'bad', m: 'The bottom level isn\u2019t a standard Vault width, so no base or handle fits it.' });
+      else parts.push(finish(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)));
+      if (L[0].some(u => u.h !== 2)) issues.push({ k: 'info', m: 'USSA recommends a 2F unit directly on the base when you use a base, wheels or handles.' });
+      if (L.length > 1 && topLv.some(u => u.h !== 2)) issues.push({ k: 'info', m: 'USSA also recommends a 2F unit at the top, just under the roof.' });
+    }
+    const hasBackbone = L.some(lv => lv.some(u => u.backbone && u.backbone !== 'none'));
+    if (s.pullHandle && !hasBackbone) issues.push({ k: 'warn', m: 'The pull-out handle bolts onto backbones. Give the units backbones in the editor (Mounting section).' });
+    const height = L.reduce((a, lv) => a + levelHeight(lv), 0);
+    return { issues, parts, height, fam };
+  }
+
+  // ---------- extra parts: any single STL, printed on its own ----------
+  const FILE_BY_PATH = new Map(FILES.map(f => [f.path, f]));
+  // What each file is, taken from the rules (label, colour, walls, supports). Built once, on first use.
+  let META = null;
+  function partMeta(path) {
+    if (!META) {
+      META = new Map();
+      const note = r => r.lines.forEach(l => { if (!META.has(l.file.path)) META.set(l.file.path, l); });
+      const variants = [
+        { lock: 'std', interior: 'gridfinity', roof: 'grid', topHandle: true, wallMount: true, pegboard: 'ikea', backbone: 'family', caseBaseplate: true, dividers: { plain: 1, depth: 1, width: 1, seal: 1 }, caseInterior: 'flat', manualSupports: true },
+        { lock: 'hidden', interior: 'grid', gridAcross: 1, gridAlong: 1, gridHeight: 'full', gridEdge: 'rounded', gridPin: 'loose', roof: 'table', pegboard: 'ussa', backbone: 'universal', caseInterior: 'dividers', baseplateHandles: '1' },
+        { interior: 'grid', gridAcross: 1, gridAlong: 1, roof: 'bowl', baseplateHandles: '2', caseInterior: 'sealed' },
+        { roof: 'undertable', interior: 'gridfinity' }, { roof: 'heavy' }, { roof: 'heavycut' }];
+      for (const type of ['drawer', 'case']) for (const w of Object.keys(R.HEIGHTS[type])) for (const d of R.DEPTHS) for (const h of R.HEIGHTS[type][w]) for (const v of variants) {
+        const k = clean({ type, w, d, h, ...v });
+        if (!R.ROOFS.find(r => r.id === k.roof).widths.includes(w)) k.roof = 'grid';
+        note(R.buildUnit(k, resolve));
+      }
+      for (const w of ['S', 'M', 'L', 'XL']) for (const d of R.DEPTHS)
+        for (const s of [{ base: true, wheels: true, feet: true, stationaryHandle: true, pullHandle: true }, { base: true, feet: true }]) note(R.buildStack({ w, d, ...s }, resolve));
+    }
+    return META.get(path) || null;
+  }
+  // A readable name from the file name ("S3 Grid Roof", "Latch"). Where several files share a name ("S1F", "x3", "Cover"),
+  // say what the part is ("Drawer front S1F", "Manual support x3"), or which folder it's in when the rules don't know it.
+  let NAMES = null;
+  function niceName(path) {
+    if (!NAMES) {
+      const base = q => q.split('/').pop().replace(/\.stl$/i, '').replace(/\s*\(turn on supports\)/i, '').replace(/\s+/g, ' ').trim();
+      const folderName = q => { const s = q.split('/'); return s[s.length - 2].replace(/^\d+\.\s+/, ''); };
+      const count = names => { const c = new Map(); names.forEach(n => c.set(n.toLowerCase(), (c.get(n.toLowerCase()) || 0) + 1)); return c; };
+      let names = FILES.map(f => base(f.path));
+      let c = count(names);
+      names = names.map((n, i) => {
+        if (c.get(n.toLowerCase()) < 2) return n;
+        const m = partMeta(FILES[i].path);
+        const what = m ? m.label.replace(/\s*\(.*?\)/g, '').replace(/,.*$/, '').trim() : folderName(FILES[i].path);
+        return what + ' ' + n;
+      });
+      c = count(names);
+      names = names.map((n, i) => c.get(n.toLowerCase()) < 2 ? n : folderName(FILES[i].path) + ' \u00b7 ' + n);
+      names = names.map((n, i) => {
+        const path = FILES[i].path, m = partMeta(path);
+        // Bare names like "x3" or "Cover": say what the part is
+        if (m && (n.length <= 3 || /^(cover|disk|jig|bushing)$/i.test(n))) {
+          const what = m.label.replace(/\s*\(.*?\)/g, '').trim();
+          n = what.toLowerCase().includes(n.toLowerCase()) ? what : what + ' ' + n;
+        }
+        // Case (sustainer) parts are named like drawer parts in the files; mark them
+        if (/^02\. SUSTAINERS\/0[1-4]/.test(path)) n += /roof/i.test(n) ? ' (case lid)' : ' (case)';
+        return n;
+      });
+      NAMES = new Map(FILES.map((f, i) => [f.path, names[i]]));
+    }
+    return NAMES.get(path) || path.split('/').pop();
+  }
+  function extraLine(path, qty) {
+    const f = FILE_BY_PATH.get(path); if (!f) return null;
+    const m = partMeta(path) || {};
+    return { group: 'Extra parts', label: niceName(path), file: f, qty, total: qty, key: 'extra:' + path,
+      color: m.color || (/tpu/i.test(path) ? 'tpu' : 'body'), walls: m.walls, infill: m.infill, flex: m.flex,
+      supports: m.supports || /turn on supports/i.test(path) || f.needsSupport, tpu: m.tpu || /tpu/i.test(path), aid: m.aid,
+      note: m.label ? m.label.replace(/ \((left|right|S side|M side)\)$/, '') : '', fit: fitOf(f.dims, printer.v) };
+  }
+  const extraLines = () => extras.map(e => extraLine(e.path, e.qty)).filter(Boolean);
+  function addExtra(path, n = 1) {
+    const e = extras.find(x => x.path === path);
+    if (e) e.qty += n; else extras.push({ path, qty: n });
+    saveExtras(); renderTabs();
+    const q = extras.find(x => x.path === path).qty;
+    toast(`${niceName(path)}: ${q} in extra parts. Print it from step 3.`);
+  }
+
+  function computeBuild() {
+    const xl = extraLines();
+    const onlyExtras = printScope === 'extras' && xl.length > 0;
+    const preview = !onlyExtras && !towers.length && !xl.length;
+    const list = onlyExtras ? [] : towers.length ? towers : preview ? [{ id: 0, name: 'This unit', levels: [[clean(c)]], stack: { ...STACK_DEFAULT }, preview: true }] : [];
+    const all = [], issues = [];
+    list.forEach(t => { const a = analyzeTower(t); all.push(...a.parts); a.issues.filter(i => i.k === 'bad').forEach(i => issues.push(t.name + ': ' + i.m)); });
+    if (xl.length) all.push({ lines: xl, hardware: [] });
+    return { ...withSpares(merge(all)), towerIssues: issues, preview, list, extras: xl.length, onlyExtras };
+  }
+
+  // ---------- part previews ----------
+  const SHEET_COLS = 8, SHEET_ROWS = {}, HAS_PREVIEWS = FILES.some(f => f.sheet);
+  if (!HAS_PREVIEWS) document.documentElement.classList.add('nopics');
+  FILES.forEach(f => { if (f.sheet) SHEET_ROWS[f.sheet] = Math.max(SHEET_ROWS[f.sheet] || 1, Math.floor(f.cell / SHEET_COLS) + 1); });
+  const viewMap = new Map();
+  function spriteStyle(f) {
+    const rows = SHEET_ROWS[f.sheet], col = f.cell % SHEET_COLS, row = Math.floor(f.cell / SHEET_COLS);
+    return `background-image:url(previews/parts-${String(f.sheet).padStart(2, '0')}.png);background-size:${SHEET_COLS * 100}% ${rows * 100}%;` +
+      `background-position:${col / (SHEET_COLS - 1) * 100}% ${rows > 1 ? row / (rows - 1) * 100 : 0}%`;
+  }
+  function thumb(l, size) {
+    viewMap.set(l.file.path, l);
+    if (!HAS_PREVIEWS) return `<span class="thumb ${size} nopic" aria-hidden="true"></span>`; // a build without the part pictures: keeps the grid cell, shows nothing
+    if (!l.file.sheet) return `<span class="thumb ${size} none"></span>`;
+    return `<button type="button" class="thumb ${size}" data-view="${esc(l.file.path)}" style="${spriteStyle(l.file)}" aria-label="Preview ${esc(l.label)}"></button>`;
+  }
+  function openViewer(path) {
+    const l = viewMap.get(path); if (!l) return;
+    $('viewerBody').innerHTML = `
+      <div class="thumb lg" style="${spriteStyle(l.file)}" role="img" aria-label="${esc(l.label)}"></div>
+      <div class="vinfo">
+        <h3>${esc(l.label)}</h3>
+        ${l.total ? `<div class="qty" style="text-align:left">${l.total}<small>\u00d7 to print</small></div>` : ''}
+        <div class="pfile mono">${esc(l.file.path)}</div>
+        <div class="tags" style="justify-content:flex-start">${tagsFor(l).join('')}</div>
+        <div class="mono num">${dimStr(l.file.dims)}</div>
+        ${l.note ? `<div class="pnote">${esc(l.note)}</div>` : ''}
+        ${l.inferred ? `<div class="pnote"><span class="badge inf">Inferred</span> ${esc(l.inferred)}</div>` : ''}
+        <div class="vbed">${bedSvg(l.file.dims, printer.v, (l.fit || fitOf(l.file.dims, printer.v)).s, true)}<span>Footprint on your ${printer.v[0]} \u00d7 ${printer.v[1]} mm plate. The thick edge is the front.</span></div>
+        <p class="pnote">Shown standing the way the file is exported, which is how it goes on the plate.</p>
+        <div class="actions"><button class="btn primary" data-addextra="${esc(l.file.path)}">Print this part on its own</button></div>
+      </div>`;
+    const d = $('viewer'); if (d.showModal) d.showModal(); else d.setAttribute('open', '');
+  }
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-view]'); if (t) openViewer(t.dataset.view);
+    const a = e.target.closest('[data-addextra]'); if (a) { addExtra(a.dataset.addextra, 1); if (view === 'build') renderBuild(); }
+  });
+  $('viewerClose').onclick = () => $('viewer').close ? $('viewer').close() : $('viewer').removeAttribute('open');
+  $('viewer').addEventListener('click', e => { if (e.target === $('viewer')) $('viewerClose').click(); });
+
+  function tagsFor(l) {
+    const tags = [], fit = l.fit || fitOf(l.file.dims, printer.v);
+    tags.push(`<span class="tag ${FIT_CLASS[fit.s]}">${FIT_TEXT[fit.s]}${fit.tight ? ', tight' : ''}</span>`);
+    if (l.supports) tags.push(`<span class="tag sup" title="${l.supportsWhy === 'bambu' || (!/turn on supports/i.test(l.file.path) && l.file.needsSupport) ? 'Bambu Studio flags overhangs on this part when printed without supports, so the project turns them on' : 'USSA says to print this part with supports'}">Supports on</span>`);
+    if (l.walls) tags.push(`<span class="tag wall" title="${l.infill ? 'Carries load: extra walls and infill' : 'Takes bolts or wear: one extra wall'}">${l.walls} walls${l.infill ? ' \u00b7 ' + l.infill + '% infill' : ''}</span>`);
+    if (brimOf(l.file)) tags.push('<span class="tag wall" title="Tall and thin: a 5 mm brim keeps it from wobbling loose late in the print">Brim</span>');
+    if (l.flex) tags.push('<span class="tag wall" title="This part has to bend. More walls make it stiff and it can crack.">Keep 2 walls</span>');
+    if (l.tpu) tags.push('<span class="tag sup">TPU</span>');
+    if (l.aid) tags.push('<span class="tag">Print aid</span>');
+    if (l.inferred) tags.push(`<span class="badge inf" title="${esc(l.inferred)}">Inferred</span>`);
+    if (l.file.angle > 2 && l.file.angle < 88) tags.push(`<span class="tag" title="The file is exported turned ${Math.round(l.file.angle)}\u00b0 on the plate. Sizes here are the part itself.">Exported at ${Math.round(l.file.angle)}\u00b0</span>`);
+    return tags;
+  }
+
+  function partRows(lines) {
+    const groups = [];
+    lines.forEach(l => { let g = groups.find(g => g.name === l.group); if (!g) groups.push(g = { name: l.group, items: [] }); g.items.push(l); });
+    return groups.map(g => `<div class="group"><h3><span>${esc(g.name)}</span><span class="num">${plural(g.items.reduce((a, l) => a + l.total, 0), 'print')}</span></h3>
+      ${g.items.map(l => `<div class="row" style="grid-template-columns: 0 64px 40px minmax(0,1fr) auto 38px">
+          <span></span>${thumb(l, 'sm')}
+          <div class="qty">${l.total}<small>\u00d7</small></div>
+          <div style="min-width:0"><div class="pname">${esc(l.label)}${l.spareN ? ` <small style="color:var(--muted);font-weight:400">incl. ${l.spareN} spare</small>` : ''}</div>
+            <div class="pfile mono" title="${esc(l.file.path)}">${esc(fileName(l.file.path))} <span style="opacity:.7">\u2014 ${esc(folder(l.file.path))}</span></div>
+            ${l.note ? `<div class="pnote">${esc(l.note)}</div>` : ''}
+            ${l.inferred ? `<div class="pnote">Inferred: ${esc(l.inferred)}</div>` : ''}</div>
+          <div class="right"><div class="tags">${tagsFor(l).join('')}</div><div class="dimtxt mono num">${dimStr(l.file.dims)}</div>${l.key ? '' : `<button class="linkbtn" data-addextra="${esc(l.file.path)}">Print on its own</button>`}</div>
+          <div class="bedcell">${bedSvg(l.file.dims, printer.v, l.fit.s)}</div>
+        </div>`).join('')}</div>`).join('');
+  }
+
+  function summary(lines) {
+    const prints = lines.reduce((a, l) => a + l.total, 0);
+    const g = lines.reduce((a, l) => a + gramsOf(l.file) * l.total, 0);
+    const bad = lines.filter(l => l.fit.s === 'no' || l.fit.s === 'reorient'), warn = lines.filter(l => l.fit.s === 'diag');
+    return { prints, files: lines.length, g, bad, warn };
+  }
+  const gramsStr = g => g >= 1000 ? (g / 1000).toFixed(2) + ' kg' : Math.round(g / 10) * 10 + ' g';
+  function fitStat(s) {
+    if (s.bad.length) return `<div class="stat bad"><b>${s.bad.length} \u2717</b><span>too big for your bed</span></div>`;
+    if (s.warn.length) return `<div class="stat warn"><b>${s.warn.length} !</b><span>fit, but need care</span></div>`;
+    return `<div class="stat ok"><b>All \u2713</b><span>fit your bed as exported</span></div>`;
+  }
+  function fitAlert(s) {
+    const pn = printerName();
+    if (s.bad.length) return `<div class="alert bad"><strong>${plural(s.bad.length, 'file')} ${s.bad.length > 1 ? 'don\u2019t' : 'doesn\u2019t'} fit the ${esc(pn)}.</strong>
+      <span>${s.bad.map(l => `${esc(l.label)} (${dimStr(l.file.dims)})`).join('; ')}. Pick a smaller width or depth, a different roof, or a printer with a bigger bed.</span></div>`;
+    if (s.warn.length) return `<div class="alert warn"><strong>Everything fits, but ${plural(s.warn.length, 'file')} ${s.warn.length > 1 ? 'need' : 'needs'} care.</strong>
+      <span>${s.warn.map(l => `${esc(l.label)}: ${FIT_TEXT[l.fit.s].toLowerCase()}`).join('; ')}. The project places ${s.warn.length > 1 ? 'them' : 'it'} diagonally for you, the way USSA exported ${s.warn.length > 1 ? 'them' : 'it'}.</span></div>`;
+    return `<div class="alert ok"><strong>Every file fits the ${esc(pn)} as exported.</strong></div>`;
+  }
+  function statsBlock(s, label) {
+    return `<div class="stats">
+      <div class="stat"><b>${s.prints}</b><span>parts to print</span></div>
+      <div class="stat"><b>${s.files}</b><span>different files</span></div>
+      <div class="stat"><b>\u2248 ${gramsStr(s.g)}</b><span>filament, rough</span></div>
+      ${fitStat(s)}</div>`;
+  }
+  function hwTable(hw, title, sub) {
+    if (!hw.length) return '';
+    return `<div class="panel hw"><h3 class="ph">${title || 'Hardware to buy'}</h3><p class="pp">${sub || 'Not printed.'}</p>
+      <table><tbody>${hw.map(h => `<tr><td class="q">${h.total}\u00d7</td><td>${esc(h.item)}${h.spareN ? ` <small style="color:var(--muted)">incl. ${h.spareN} spare</small>` : ''}</td><td class="why">${esc(h.why)}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+
+  // ---------- copy helpers ----------
+  function copy(text, msg, fallbackEl) {
+    try { navigator.clipboard.writeText(text).then(() => toast(msg), () => selectEl(fallbackEl)); } catch (e) { selectEl(fallbackEl); }
+  }
+  function selectEl(el) {
+    if (!el) return toast('Copy was blocked. Select the text and copy it.');
+    const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    toast('Copy blocked here. The text is selected; press \u2318C.');
+  }
+  let tt; function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2400); }
+  const listText = (lines, label) => label + '\n' + lines.map(l => `${l.total}x  ${l.label}  \u2014  ${l.file.path}`).join('\n');
+
+  // ---------- unit editor ----------
+  function seg(el, items, cur, onPick) {
+    el.innerHTML = '';
+    items.forEach(it => {
+      if (it.hidden) return;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = it.label + (it.sub ? `<small>${it.sub}</small>` : '') + (it.nofit ? '<i class="dot" aria-label="too big for your printer"></i>' : '');
+      if (it.nofit) b.classList.add('nofit');
+      b.setAttribute('aria-pressed', String(it.v === cur));
+      b.disabled = !!it.disabled;
+      b.onclick = () => onPick(it.v);
+      el.appendChild(b);
+    });
+  }
+  // Does this unit (with everything else as set) have a part too big for the printer?
+  function unitTooBig(patch) {
+    const k = clean(Object.assign({}, c, patch, { wallMount: false, pegboard: 'none', backbone: 'none' }));
+    const hs = R.HEIGHTS[k.type][k.w]; if (!hs) return true; if (!hs.includes(k.h)) k.h = hs[0];
+    if (k.roof !== 'none' && !R.ROOFS.find(r => r.id === k.roof).widths.includes(k.w)) k.roof = 'grid';
+    return computeUnit(k).lines.some(l => l.fit.s === 'no' || l.fit.s === 'reorient');
+  }
+  function set(patch) { Object.assign(c, patch); normalize(); store.set('config', c); renderAll(); }
+  function normalize() {
+    const widths = Object.keys(R.HEIGHTS[c.type]);
+    if (!widths.includes(c.w)) c.w = c.w === 'L2' ? 'L' : c.w === 'XL2' ? 'XL' : 'S';
+    let hs = R.HEIGHTS[c.type][c.w];
+    if (!hs.includes(c.h)) c.h = hs[0];
+    const roofs = R.ROOFS.filter(r => r.widths.includes(c.w)).map(r => r.id);
+    if (c.roof !== 'none' && !roofs.includes(c.roof)) c.roof = 'grid';
+    if (onlyFits && unitTooBig({})) {
+      // Move to the nearest size that fits: try the roof first, then depth, height and width
+      const tries = [];
+      if (c.type === 'drawer') tries.push(...['grid', 'table', 'bowl', 'undertable'].map(roof => ({ roof })));
+      for (const d of [...R.DEPTHS].sort((a, b) => Math.abs(a - c.d) - Math.abs(b - c.d))) for (const h of [c.h, 1, 2, 4]) for (const w of [c.w, ...widths]) tries.push({ w, d, h });
+      for (const p of tries) {
+        if (p.w && !(R.HEIGHTS[c.type][p.w] || []).includes(p.h)) continue;
+        if (!unitTooBig(p)) { Object.assign(c, p); break; }
+      }
+    }
+  }
+
+  function checkbox(id, label, sub, val) {
+    return `<label class="opt"><input type="checkbox" id="${id}" ${val ? 'checked' : ''}><span>${label}${sub ? `<small>${sub}</small>` : ''}</span></label>`;
+  }
+  function selectField(id, label, hint, options, val) {
+    return `<div class="field"><div class="lbl"><label for="${id}">${label}</label>${hint ? `<span class="hint">${hint}</span>` : ''}</div>
+      <select class="full" id="${id}">${options.map(o => `<option value="${o[0]}" ${String(o[0]) === String(val) ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></div>`;
+  }
+  function stepper(id, label, val) {
+    return `<div class="stepper"><span>${label}</span><div><button type="button" data-step="${id}" data-d="-1" aria-label="Fewer ${label}">\u2212</button><output>${val}</output><button type="button" data-step="${id}" data-d="1" aria-label="More ${label}">+</button></div></div>`;
+  }
+
+  function renderControls() {
+    if (editing) {
+      const t = towers.find(t => t.id === editing.t);
+      $('editingBox').innerHTML = `<div class="editing"><span>Editing level ${editing.l + 1} of <b>${esc(t ? t.name : '')}</b></span><span class="actions"><button class="btn primary" id="saveEdit">Save to tower</button><button class="btn" id="cancelEdit">Cancel</button></span></div>`;
+      $('saveEdit').onclick = () => { const t = towers.find(t => t.id === editing.t); if (t && t.levels[editing.l]) t.levels[editing.l][editing.u] = clean(c); save(); editing = null; view = 'build'; renderAll(); toast('Saved to ' + t.name); };
+      $('cancelEdit').onclick = () => { editing = null; view = 'build'; renderAll(); };
+    } else $('editingBox').innerHTML = '';
+
+    seg($('type'), [{ v: 'drawer', label: 'Drawer', sub: 'pulls out the front' }, { v: 'case', label: 'Top-opening case', sub: '\u201csustainer\u201d in the files' }], c.type, v => set({ type: v }));
+    const widths = Object.keys(R.HEIGHTS[c.type]);
+    const WSUB = { S: '165 mm', M: '254 mm', L: '330 mm', L2: '2 \u00d7 S', XL: '419 mm', XL2: 'S + M' };
+    const WLBL = { S: 'S', M: 'M', L: 'L', L2: 'L\u00b2', XL: 'XL', XL2: 'XL\u00b2' };
+    const mark = (patch, extra = {}) => { const nf = unitTooBig(patch); return { ...extra, nofit: nf && !onlyFits, hidden: nf && onlyFits && !extra.disabled }; };
+    seg($('width'), widths.map(w => mark({ w }, { v: w, label: WLBL[w], sub: WSUB[w] })), c.w, v => set({ w: v }));
+    $('widthHint').textContent = c.type === 'drawer' ? 'L\u00b2 and XL\u00b2 hold two drawers side by side' : '';
+    seg($('depth'), R.DEPTHS.map(d => mark({ d }, { v: d, label: 'x' + d, sub: Math.round(156.1 + (d - 3) * 42) + '' })), c.d, v => set({ d: v }));
+    const hs = R.HEIGHTS[c.type][c.w];
+    seg($('height'), [1, 2, 4].map(h => hs.includes(h) ? mark({ h }, { v: h, label: h + 'F', sub: Math.round(R.exterior(c.type, c.w, c.d, h)[2]) + ' mm' }) : { v: h, label: h + 'F', disabled: true, sub: 'n/a' }), c.h, v => set({ h: v }));
+    $('fitKey').hidden = onlyFits || !document.querySelector('.config .nofit');
+
+    let o = '';
+    if (c.type === 'drawer') {
+      o += selectField('interior', 'Inside the drawer', '', [['empty', 'Empty (perforated floor)'], ['gridfinity', 'Gridfinity baseplate'], ['grid', 'Grid dividers']], c.interior);
+      if (c.interior === 'gridfinity' && (c.w === 'S' || c.w === 'M' || c.w === 'L2' || c.w === 'XL2'))
+        o += selectField('baseplateHandles', 'Baseplate cut-outs', 'for lifting it out', [['0', 'None'], ...(c.w === 'M' ? [] : [['1', '1 handle']]), ['2', '2 handles']], c.baseplateHandles);
+      if (c.interior === 'grid') {
+        o += `<div class="field"><div class="lbl">Grid dividers <span class="hint">per drawer, full-span pieces</span></div><div class="steppers">${stepper('gridAcross', 'Side to side', c.gridAcross)}${stepper('gridAlong', 'Front to back', c.gridAlong)}</div></div>`;
+        o += selectField('gridHeight', 'Divider height', '', [['20', '20 mm (low)'], ['full', c.h === 1 ? 'Full height, 34.5 mm' : 'Tall, 82.5 mm']], c.gridHeight);
+        o += selectField('gridEdge', 'Edge pieces', '', [['straight', 'Straight'], ['rounded', 'Rounded']], c.gridEdge);
+      }
+      const roofOpts = R.ROOFS.filter(r => r.widths.includes(c.w)).filter(r => !onlyFits || !unitTooBig({ roof: r.id })).map(r => [r.id, r.label + (!onlyFits && unitTooBig({ roof: r.id }) ? ' \u2014 too big' : '')]);
+      o += selectField('roof', 'Roof', 'used only when this unit is on top', [['none', 'No roof'], ...roofOpts], c.roof);
+      if (c.roof === 'grid') o += checkbox('topHandle', 'Add a carry handle on the roof', '2 \u00d7 M6 \u00d7 50 mm bolts', c.topHandle);
+      o += selectField('lock', 'Lock', '', [['std', 'Standard key lock'], ['hidden', 'Hidden key (flush)']], c.lock);
+      o += checkbox('gearedRails', 'Geared rails', 'Optional in the manual. Recommended for 2F/4F and for extra locking force.', c.gearedRails);
+      o += checkbox('manualSupports', 'Manual support helper', 'Optional printing aid for tall parts.', c.manualSupports);
+    } else {
+      if (c.w === 'L' || c.w === 'XL') o += selectField('caseInterior', 'Case body style', '', [['flat', 'Flat (open box)'], ['dividers', 'Dividers (slotted walls)'], ['sealed', 'Sealed (slots for seal dividers)']], c.caseInterior);
+      o += checkbox('caseBaseplate', 'Gridfinity baseplate inside', '', c.caseBaseplate);
+      const dv = c.dividers;
+      const steppers = c.w === 'S' || c.w === 'M' ? stepper('dv_plain', 'Dividers', dv.plain)
+        : stepper('dv_depth', 'Depth', dv.depth) + stepper('dv_width', 'Width', dv.width) + stepper('dv_seal', 'Seal', dv.seal);
+      o += `<div class="field"><div class="lbl">Dividers <span class="hint">how many to print</span></div><div class="steppers">${steppers}</div></div>`;
+    }
+    $('opts').innerHTML = o;
+
+    let m = checkbox('wallMount', 'Wall mount', 'Plate on the back of this unit, plus two wall cleats.', c.wallMount);
+    if (c.h <= 2) {
+      m += selectField('pegboard', 'Pegboard attachment', '1F and 2F only', [['none', 'None'], ['ikea', 'IKEA Sk\u00e5dis'], ['ussa', 'USSA pegboard']], c.pegboard);
+      m += selectField('backbone', 'Backbone (rear spine for trolleys)', '1F and 2F only', [['none', 'None'], ['family', 'Sized to this width'], ['universal', 'Universal']], c.backbone);
+    }
+    m += '<p class="pnote" style="margin:0">Base, wheels, feet and handles belong to a whole tower. Set them in the Build tab.</p>';
+    $('mountOpts').innerHTML = m;
+
+    const bind = (id, key) => { const el = $(id); if (el) el.onchange = () => set({ [key]: el.type === 'checkbox' ? el.checked : el.value }); };
+    ['interior', 'baseplateHandles', 'gridHeight', 'gridEdge', 'roof', 'lock', 'caseInterior', 'pegboard', 'backbone'].forEach(k => bind(k, k));
+    ['topHandle', 'gearedRails', 'manualSupports', 'caseBaseplate', 'wallMount'].forEach(k => bind(k, k));
+    document.querySelectorAll('#config [data-step]').forEach(b => b.onclick = () => {
+      const id = b.dataset.step, d = +b.dataset.d;
+      if (id.startsWith('dv_')) { const k = id.slice(3); set({ dividers: { ...c.dividers, [k]: Math.max(0, Math.min(20, (c.dividers[k] || 0) + d)) } }); }
+      else set({ [id]: Math.max(0, Math.min(12, (c[id] || 0) + d)) });
+    });
+  }
+
+  function renderPrinter() {
+    const sel = $('printer');
+    sel.innerHTML = PRINTERS.map(p => `<option value="${p.id}" ${p.id === printer.id ? 'selected' : ''}>${p.name}</option>`).join('');
+    $('printerVol').textContent = printer.v.join(' \u00d7 ') + ' mm';
+    $('customVol').hidden = printer.id !== 'custom';
+    $('printerVol').hidden = printer.id === 'custom';
+    ['pvx', 'pvy', 'pvz'].forEach((id, i) => { $(id).value = printer.v[i]; $(id).onchange = () => { const v = [...printer.v]; v[i] = Math.max(100, +$(id).value || 256); printer = { id: 'custom', v }; store.set('printer', printer); normalize(); renderAll(); }; });
+    sel.onchange = () => { const p = PRINTERS.find(p => p.id === sel.value); printer = { id: p.id, v: p.id === 'custom' ? printer.v : p.v }; store.set('printer', printer); normalize(); renderAll(); };
+    $('onlyFits').checked = onlyFits;
+    $('onlyFits').onchange = () => { onlyFits = $('onlyFits').checked; store.set('onlyFits', onlyFits); normalize(); store.set('config', c); renderAll(); toast(onlyFits ? 'Hiding sizes and options that don\u2019t fit the ' + printerName() : 'Showing everything'); };
+  }
+
+  // ---------- starting points ----------
+  const U = (type, w, d, h, extra = {}) => clean({ type, w, d, h, roof: 'none', ...extra });
+  const PRESETS = [
+    { name: 'Desk parts drawer', why: 'One shallow drawer for small parts, with a Gridfinity top.', levels: [[U('drawer', 'S', 3, 1, { roof: 'grid' })]] },
+    { name: 'Small-parts tower', why: 'Four S drawers: one deep at the bottom, three shallow, carry handle on top.',
+      levels: [[U('drawer', 'S', 4, 2)], [U('drawer', 'S', 4, 1)], [U('drawer', 'S', 4, 1)], [U('drawer', 'S', 4, 1, { roof: 'grid', topHandle: true })]] },
+    { name: 'Under-desk drawers', why: 'Three shallow drawers hung from the underside of a desk.',
+      levels: [[U('drawer', 'S', 3, 1)], [U('drawer', 'S', 3, 1)], [U('drawer', 'S', 3, 1, { roof: 'undertable' })]] },
+    { name: 'Workbench tower', why: 'M drawers with a top-opening case on top, on a base with feet.',
+      levels: [[U('drawer', 'M', 5, 2)], [U('drawer', 'M', 5, 1)], [U('drawer', 'M', 5, 1)], [U('case', 'M', 5, 2)]], stack: { base: true, feet: true } },
+    { name: 'Rolling tool cart', why: 'M drawers with backbones, wheels and a pull-out trolley handle.',
+      levels: [[U('drawer', 'M', 5, 2, { backbone: 'family' })], [U('drawer', 'M', 5, 1, { backbone: 'family' })], [U('drawer', 'M', 5, 1, { backbone: 'family' })], [U('drawer', 'M', 5, 2, { backbone: 'family', roof: 'table' })]],
+      stack: { base: true, wheels: true, feet: true, pullHandle: true } },
+    { name: 'Wall-mounted cases', why: 'Two S cases hung on the wall with mount plates.',
+      levels: [[U('case', 'S', 4, 2, { wallMount: true })], [U('case', 'S', 4, 1, { wallMount: true })]] },
+    { name: 'Side-by-side S drawers', why: 'Pairs of S drawers, as wide as one L unit.',
+      levels: [[U('drawer', 'S', 4, 2), U('drawer', 'S', 4, 2)], [U('drawer', 'S', 4, 1, { roof: 'grid' }), U('drawer', 'S', 4, 1, { roof: 'grid' })]] },
+  ];
+  function presetFits(p) {
+    const t = { levels: p.levels, stack: { ...STACK_DEFAULT, ...(p.stack || {}) } };
+    return !analyzeTower(t).parts.some(r => r.lines.some(l => l.fit.s === 'no'));
+  }
+  function presetsBlock(open) {
+    const items = PRESETS.map((p, i) => ({ p, i, fits: presetFits(p) })).filter(x => x.fits || !onlyFits);
+    return `<details class="panel fold" ${open ? 'open' : ''}><summary>Starting points <small>${items.length} ready-made towers</small></summary>
+      <p class="pp">Add one to your build, then change anything in it.</p>
+      <div class="presets">${items.map(({ p, i, fits }) => {
+        const mod = computeUnit(p.levels[0][0]).lines.find(l => l.group === 'Module');
+        const lv = p.levels, w = Math.round(levelWidth(lv[0])), h = Math.round(lv.reduce((a, l) => a + levelHeight(l), 0));
+        return `<button type="button" class="preset ${fits ? '' : 'nofit'} ${HAS_PREVIEWS ? '' : 'nopic'}" data-preset="${i}">${!HAS_PREVIEWS ? '' : mod ? `<span class="thumb sm" style="${spriteStyle(mod.file)}"></span>` : '<span></span>'}
+          <span><b>${esc(p.name)}</b><span>${esc(p.why)}</span><span class="mono num">${w} mm wide \u00b7 ${h} mm tall${fits ? '' : ' \u00b7 <span class="warnline">has parts too big for your printer</span>'}</span></span></button>`;
+      }).join('')}</div></details>`;
+  }
+  function bindPresets(root) {
+    root.querySelectorAll('[data-preset]').forEach(b => b.onclick = () => {
+      const p = PRESETS[+b.dataset.preset];
+      towers.push({ id: seq++, name: p.name, levels: p.levels.map(lv => lv.map(u => clean(u))), stack: { ...STACK_DEFAULT, ...(p.stack || {}) } });
+      save(); view = 'build'; renderAll(); toast('Added \u201c' + p.name + '\u201d to your build');
+    });
+  }
+
+  // ---------- 1 · unit view ----------
+  function heroStrip(lines) {
+    if (!HAS_PREVIEWS) return '';
+    const pick = [];
+    for (const g of ['Module', 'Drawer', 'Lid', 'Roof']) {
+      const l = lines.find(x => x.group === g && !x.aid && x.file.sheet && !/part 2|connector/i.test(x.label));
+      if (l) pick.push(l);
+      if (g === 'Drawer') { const f = lines.find(x => x.group === 'Drawer' && /front/i.test(x.label)); if (f && f !== l) pick.push(f); }
+    }
+    return `<div class="hero">${pick.slice(0, 4).map(l => `<figure>${thumb(l, 'md')}<figcaption>${esc(l.label.replace(/ \(.*\)$/, ''))}</figcaption></figure>`).join('')}</div>`;
+  }
+
+  function renderUnit() {
+    const res = withSpares(computeUnit(c)), s = summary(res.lines);
+    const ext = unitExt(c);
+    const label = unitCode(c);
+    const inferred = res.lines.filter(l => l.inferred);
+    const dest = towers.map(t => `<option value="top:${t.id}">On top of ${esc(t.name)}</option>` +
+      (t.levels.length && t.levels[t.levels.length - 1].length === 1 ? `<option value="beside:${t.id}">Beside the top unit of ${esc(t.name)}</option>` : '')).join('');
+    $('view-unit').innerHTML = `
+      ${towers.length ? '' : presetsBlock(false)}
+      <div class="panel unit-head">
+        <div class="unit-title"><h2>${esc(label)}</h2><span class="dims mono num">${ext.map(n => Math.round(n)).join(' \u00d7 ')} mm outside (W \u00d7 D \u00d7 H)</span></div>
+        ${heroStrip(res.lines)}
+        ${statsBlock(s)}
+        ${fitAlert(s)}
+        ${res.notes.map(n => `<div class="alert warn">${esc(n)}</div>`).join('')}
+        ${inferred.length ? `<div class="alert warn"><span><strong>${plural(inferred.length, 'count')} here ${inferred.length > 1 ? 'are' : 'is'} inferred, not from the manual.</strong> They\u2019re marked <span class="badge inf">Inferred</span> below with the reason. Check those in your slicer before printing a batch.</span></div>` : ''}
+        ${editing ? '' : `<div class="addrow">
+          <label for="addDest" class="pnote" style="margin:0">Add to build:</label>
+          <select id="addDest"><option value="new">As a new tower</option>${dest}</select>
+          <span class="stepper" style="padding:4px 4px 4px 10px">\u00d7<div><button type="button" id="addLess" aria-label="Fewer">\u2212</button><output id="addN">1</output><button type="button" id="addMore" aria-label="More">+</button></div></span>
+          <button class="btn primary" id="addBuild">Add</button>
+          <button class="btn" id="copyList">Copy part list</button>
+        </div>`}
+      </div>
+      <div class="panel parts">
+        <div class="legend"><span style="padding-top:12px">Part list for one unit, roof included. ${HAS_PREVIEWS ? 'Click a picture to enlarge it. ' : ''}The square shows the part\u2019s footprint on your ${printer.v[0]} \u00d7 ${printer.v[1]} mm plate, front edge in bold.</span></div>
+        ${partRows(res.lines)}
+      </div>
+      ${hwTable(res.hardware)}`;
+    bindPresets($('view-unit'));
+    if (!editing) {
+      let n = 1;
+      $('addLess').onclick = () => { n = Math.max(1, n - 1); $('addN').textContent = n; };
+      $('addMore').onclick = () => { n = Math.min(12, n + 1); $('addN').textContent = n; };
+      $('addBuild').onclick = () => {
+        const v = $('addDest').value, unit = () => clean(c);
+        let t;
+        if (v === 'new') { t = { id: seq++, name: 'Tower ' + (towers.length + 1), levels: [], stack: { ...STACK_DEFAULT } }; towers.push(t); }
+        else t = towers.find(x => x.id === +v.split(':')[1]);
+        if (v.startsWith('beside:')) t.levels[t.levels.length - 1].push(unit());
+        else for (let i = 0; i < n; i++) t.levels.push([unit()]);
+        // Only the top unit keeps a roof
+        save(); renderTabs(); toast(`Added ${n > 1 && !v.startsWith('beside:') ? n + ' \u00d7 ' : ''}${label} to ${t.name}`);
+      };
+      $('copyList').onclick = () => copy(listText(res.lines, label), 'Part list copied');
+    }
+  }
+
+  // ---------- 2 · build view (towers) ----------
+  function stackViz(t, a) {
+    const maxW = 419, scaleH = 0.32;
+    const lv = [...t.levels].reverse().map((L, ri) => {
+      const i = t.levels.length - 1 - ri;
+      const bad = a.issues.some(x => x.k === 'bad' && x.m.startsWith(`Level ${i + 1}`));
+      return `<div class="lvl">${L.map(u => `<div class="blk ${u.type === 'case' ? 'case' : ''} ${bad ? 'bad' : ''}" style="width:${R.WIDTH_MM[u.w] / maxW * 100}%;height:${Math.max(14, unitExt(u)[2] * scaleH)}px" title="${esc(unitCode(u))}">${esc(unitCode(u).split(' \u00b7 ')[0])}\u00b7${u.h}F</div>`).join('')}</div>`;
+    }).join('');
+    const top = t.levels[t.levels.length - 1];
+    const roof = top && top.every(u => u.type === 'drawer') && top[0].roof !== 'none' ? `<div class="roofbar" style="width:${levelWidth(top) / maxW * 100}%"></div>` : '';
+    const base = t.stack && t.stack.base && t.levels.length ? `<div class="basebar" style="width:${levelWidth(t.levels[0]) / maxW * 100}%"></div>` : '';
+    return `<div class="stackviz">${roof}${lv}${base}<div class="caption num">${Math.round(a.height)} mm tall without base</div></div>`;
+  }
+  function xResults() {
+    const q = xq.trim().toLowerCase();
+    if (q.length < 2) return '';
+    const toks = q.split(/\s+/), hits = [];
+    for (const f of FILES) {
+      const m = partMeta(f.path);
+      const caseWords = f.path.startsWith('02. SUSTAINERS') ? ' case' + (/\/Roofs?\//.test(f.path) ? ' lid' : '') : '';
+      const hay = (f.path + ' ' + niceName(f.path) + ' ' + (m ? m.label : '') + caseWords).toLowerCase();
+      if (toks.every(tk => hay.includes(tk))) hits.push(f);
+    }
+    if (!hits.length) return '<p class="pnote">No parts match. Try fewer words, like \u201croof\u201d or \u201cS3\u201d.</p>';
+    hits.sort((a, b) => niceName(a.path).length - niceName(b.path).length || a.path.localeCompare(b.path));
+    return hits.slice(0, 12).map(f => {
+      const l = extraLine(f.path, 0);
+      return `<div class="pitem xitem">${thumb(l, 'sm')}<span class="lbl"><b>${esc(l.label)}</b>${tagsFor(l).join('')}<small class="mono">${esc(folder(f.path))} \u00b7 ${dimStr(f.dims)}</small></span><button class="btn" data-addextra="${esc(f.path)}">Add</button></div>`;
+    }).join('') + (hits.length > 12 ? `<p class="pnote">${hits.length - 12} more match. Add a word to narrow it down.</p>` : '');
+  }
+  function extrasPanel() {
+    const xl = extraLines();
+    return `<div class="panel">
+      <h3 class="ph">Extra parts</h3>
+      <p class="pp">Single parts to print on their own: a spare, a replacement, or just one roof. Search by name, like \u201cS3 grid roof\u201d, \u201clatch\u201d or \u201cM5 box\u201d. They print in step 3 with the right walls and supports, and count separately from your towers.</p>
+      <div class="xsearch"><input id="xq" type="search" placeholder="Search all ${FILES.length} parts\u2026" value="${esc(xq)}" autocomplete="off" aria-label="Search parts"></div>
+      <div class="xresults" id="xresults">${xResults()}</div>
+      ${xl.length ? `<div class="xlist"><div class="xhead">In your extra parts</div>
+        ${xl.map(l => `<div class="pitem xitem">${thumb(l, 'sm')}<span class="lbl"><b>${esc(l.label)}</b>${tagsFor(l).join('')}<small class="mono">${esc(folder(l.file.path))}</small></span>
+          <span class="stepper" style="padding:4px 4px 4px 10px">\u00d7<div><button type="button" data-xstep="${esc(l.file.path)}" data-d="-1" aria-label="Fewer ${esc(l.label)}">\u2212</button><output>${l.qty}</output><button type="button" data-xstep="${esc(l.file.path)}" data-d="1" aria-label="More ${esc(l.label)}">+</button></div></span></div>`).join('')}
+        <div class="actions" style="padding-top:8px"><button class="btn primary" id="xprint">Print only these \u2192</button><button class="btn" id="xclear">Clear extra parts</button></div></div>` : ''}
+    </div>`;
+  }
+  function bindExtras() {
+    const inp = $('xq'); if (!inp) return;
+    inp.oninput = () => { xq = inp.value; $('xresults').innerHTML = xResults(); };
+    document.querySelectorAll('#view-build [data-xstep]').forEach(b => b.onclick = () => {
+      const e = extras.find(x => x.path === b.dataset.xstep); if (!e) return;
+      e.qty += +b.dataset.d; if (e.qty <= 0) extras = extras.filter(x => x !== e);
+      saveExtras(); renderTabs(); renderBuild();
+    });
+    if ($('xprint')) $('xprint').onclick = () => { printScope = 'extras'; store.set('printScope', printScope); view = 'print'; renderAll(); window.scrollTo(0, 0); };
+    if ($('xclear')) $('xclear').onclick = () => { extras = []; saveExtras(); renderTabs(); renderBuild(); };
+  }
+
+  function renderBuild() {
+    if (!towers.length) {
+      $('view-build').innerHTML = `${presetsBlock(!extras.length)}${extrasPanel()}<div class="panel empty">No towers yet. Pick a starting point above, or design a unit in step 1 and press <b>Add</b>.</div>`;
+      bindPresets($('view-build')); bindExtras();
+      return;
+    }
+    const html = towers.map(t => {
+      const a = analyzeTower(t), s = t.stack || STACK_DEFAULT;
+      const fam = a.fam;
+      return `<div class="panel tower" data-tower="${t.id}">
+        <div class="tower-head"><input class="tname" value="${esc(t.name)}" data-rename="${t.id}" aria-label="Tower name">
+          <span class="actions"><button class="btn" data-dup-tower="${t.id}">Duplicate</button><button class="btn" data-del-tower="${t.id}">Remove tower</button></span></div>
+        <div class="tower-body">
+          ${t.levels.length ? stackViz(t, a) : '<div class="stackviz"><div class="caption">Empty</div></div>'}
+          <div style="display:grid;gap:12px;min-width:0">
+            <div class="levels">${[...t.levels].map((L, i) => ({ L, i })).reverse().map(({ L, i }) => `<div class="level">
+              <span class="n">${i + 1}</span>
+              <div class="units">${L.map((u, ui) => `<div class="unit"><b>${esc(unitCode(u))}</b><small>${esc(optSummary(u, i === t.levels.length - 1))}</small>
+                <button class="iconbtn" data-edit="${t.id}:${i}:${ui}" title="Edit in step 1">Edit</button>${L.length > 1 ? `<button class="iconbtn" data-del-unit="${t.id}:${i}:${ui}" title="Remove this unit">\u2715</button>` : ''}</div>`).join('')}</div>
+              <div class="ctl">
+                <button class="iconbtn" data-move="${t.id}:${i}:1" ${i === t.levels.length - 1 ? 'disabled' : ''} aria-label="Move up">\u2191</button>
+                <button class="iconbtn" data-move="${t.id}:${i}:-1" ${i === 0 ? 'disabled' : ''} aria-label="Move down">\u2193</button>
+                <button class="iconbtn" data-dup="${t.id}:${i}" aria-label="Duplicate level">\u29c9</button>
+                <button class="iconbtn" data-del="${t.id}:${i}" aria-label="Remove level">\u2715</button>
+              </div></div>`).join('') || '<div class="pnote">No units yet.</div>'}</div>
+            <div class="pnote" style="margin:0">Level 1 is the bottom. The roof comes from the top drawer\u2019s roof setting.</div>
+            <div class="checks">
+              ${checkbox(`st-base-${t.id}`, 'Base', fam ? `${fam}${t.levels[0] ? t.levels[0][0].d : ''} base under level 1` : 'needs a standard width at the bottom', s.base)}
+              ${s.base ? checkbox(`st-wheels-${t.id}`, 'Wheels', 'TPU tyres, bearings, M16 axle', s.wheels) + checkbox(`st-feet-${t.id}`, 'Feet', '', s.feet) + (s.wheels ? '' : checkbox(`st-casters-${t.id}`, 'Casters instead', '4 \u00d7 M8, bought', s.casters)) : ''}
+              ${checkbox(`st-stationaryHandle-${t.id}`, 'Stationary handle', '', s.stationaryHandle)}
+              ${checkbox(`st-pullHandle-${t.id}`, 'Pull-out trolley handle', 'needs backbones', s.pullHandle)}
+            </div>
+            <div class="issues">${a.issues.length ? a.issues.map(x => `<div class="issue ${x.k}">${esc(x.m)}</div>`).join('') : '<div class="issue ok">Everything in this tower stacks together.</div>'}</div>
+          </div>
+        </div></div>`;
+    }).join('');
+    $('view-build').innerHTML = `${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
+      <div class="actions"><button class="btn" id="newTower">New empty tower</button><button class="btn primary" id="toPrint">Next: print plates \u2192</button></div>`;
+    bindPresets($('view-build')); bindExtras();
+    const V = $('view-build'), find = id => towers.find(t => t.id === +id);
+    V.querySelectorAll('[data-rename]').forEach(i => i.onchange = () => { find(i.dataset.rename).name = i.value.trim() || 'Tower'; save(); renderTabs(); });
+    V.querySelectorAll('[data-del-tower]').forEach(b => b.onclick = () => { towers = towers.filter(t => t.id !== +b.dataset.delTower); save(); renderAll(); });
+    V.querySelectorAll('[data-dup-tower]').forEach(b => b.onclick = () => { const t = find(b.dataset.dupTower); towers.push({ ...JSON.parse(JSON.stringify(t)), id: seq++, name: t.name + ' copy' }); save(); renderAll(); });
+    V.querySelectorAll('[data-move]').forEach(b => b.onclick = () => { const [tid, i, d] = b.dataset.move.split(':').map(Number); const L = find(tid).levels; [L[i], L[i + d]] = [L[i + d], L[i]]; save(); renderAll(); });
+    V.querySelectorAll('[data-dup]').forEach(b => b.onclick = () => { const [tid, i] = b.dataset.dup.split(':').map(Number); const L = find(tid).levels; L.splice(i + 1, 0, JSON.parse(JSON.stringify(L[i]))); save(); renderAll(); });
+    V.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { const [tid, i] = b.dataset.del.split(':').map(Number); find(tid).levels.splice(i, 1); save(); renderAll(); });
+    V.querySelectorAll('[data-del-unit]').forEach(b => b.onclick = () => { const [tid, i, u] = b.dataset.delUnit.split(':').map(Number); find(tid).levels[i].splice(u, 1); save(); renderAll(); });
+    V.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const [tid, i, u] = b.dataset.edit.split(':').map(Number); c = clean(find(tid).levels[i][u]); editing = { t: tid, l: i, u }; view = 'unit'; renderAll(); window.scrollTo(0, 0); });
+    towers.forEach(t => ['base', 'wheels', 'feet', 'casters', 'stationaryHandle', 'pullHandle'].forEach(k => { const el = $(`st-${k}-${t.id}`); if (el) el.onchange = () => { t.stack = { ...STACK_DEFAULT, ...t.stack, [k]: el.checked }; save(); renderAll(); }; }));
+    $('newTower').onclick = () => { towers.push({ id: seq++, name: 'Tower ' + (towers.length + 1), levels: [], stack: { ...STACK_DEFAULT } }); save(); renderAll(); };
+    $('toPrint').onclick = () => { view = 'print'; renderAll(); window.scrollTo(0, 0); };
+  }
+  function optSummary(k, top) {
+    const bits = [];
+    if (k.type === 'drawer') {
+      bits.push({ empty: 'empty', gridfinity: 'Gridfinity baseplate', grid: 'grid dividers' }[k.interior]);
+      if (top && k.roof !== 'none') bits.push(R.ROOFS.find(r => r.id === k.roof).label.replace(/ \(.*\)/, '').toLowerCase());
+    } else bits.push((k.w === 'L' || k.w === 'XL') ? k.caseInterior + ' body' : 'case');
+    if (k.wallMount) bits.push('wall mount');
+    if (k.backbone && k.backbone !== 'none') bits.push('backbone');
+    if (k.pegboard && k.pegboard !== 'none') bits.push('pegboard');
+    return bits.join(' \u00b7 ');
+  }
+
+  // ---------- 3 · print view: plate planner ----------
+  const COLOR_NAME = { body: 'Light grey', inner: 'Charcoal', accent: 'Orange', tpu: 'TPU', all: 'Any PLA', big: 'Big parts', small: 'Small parts' };
+  const COLOR_FILL = { body: '#d4d6d3', inner: '#3a3d3f', accent: '#e8742f', tpu: '#1f1f1f', all: '#9fa3a1', big: '#d4d6d3', small: '#3a3d3f' };
+  const COLOR_ORDER = ['body', 'big', 'inner', 'small', 'accent', 'all', 'tpu'];
+  // Big = the shell you see: bodies, boxes, fronts, roofs, base plates (over 40 cm³ and over 4 cm on its two longest
+  // sides). Small = runners, rails, latches, springs, keys, dividers: long-and-thin or little parts.
+  const sizeOf = f => { const d = [...f.dims].sort((x, y) => y - x); return f.vol >= 40000 && d[1] >= 40 ? 'big' : 'small'; };
+  const colorKey = l => l.tpu ? 'tpu' : plateColors === 'renders' ? l.color : plateColors === 'size' ? sizeOf(l.file) : 'all';
+  const MARGIN = 5, GAP = 4, EXCL_CLEAR = 5, BRIM = 5;
+  // Tall, thin parts (height over 4x their narrowest side, like a roof standing on its edge) get a 5 mm brim so they
+  // don't wobble loose late in the print. Only when the brim still fits on the bed.
+  const needsBrim = f => f.dims[2] > 60 && f.dims[2] / Math.min(f.dims[0], f.dims[1]) > 4;
+  const brimFits = f => Math.max(f.dims[0], f.dims[1]) + 2 * BRIM <= Math.max(printer.v[0], printer.v[1]) - 2 && Math.min(f.dims[0], f.dims[1]) + 2 * BRIM <= Math.min(printer.v[0], printer.v[1]) - 2;
+  const brimOf = f => needsBrim(f) && brimFits(f);
+  function planPlates(lines) {
+    const V = printer.v, W = V[0] - 2 * MARGIN, H = V[1] - 2 * MARGIN;
+    const ex = preset().excl, KX = ex ? ex[0] + EXCL_CLEAR : 0, KY = ex ? ex[1] + EXCL_CLEAR : 0;
+    // Where a row starting at plate height y (absolute mm) may begin, so it stays clear of the no-print corner
+    const rowStart = y => (ex && y < KY ? KX : MARGIN);
+    const pieces = [], skipped = [];
+    lines.forEach(l => {
+      const left = Math.max(0, l.total - (printed[pkey(l)] || 0));
+      for (let i = 0; i < left; i++) {
+        // Parts that would only fit tipped onto another face are left out too: a drawer box printed on its side
+        // needs heavy supports and is weak along its layers, and as exported it would hang off the plate
+        if (l.fit.s === 'no' || l.fit.s === 'reorient') { skipped.push(l); continue; }
+        const [a, b] = l.file.dims, pad = brimOf(l.file) ? BRIM : 0;
+        pieces.push({ l, pad, a: Math.max(a, b) + 2 * pad, b: Math.min(a, b) + 2 * pad, care: l.fit.s !== 'ok',
+          group: colorKey(l) + (l.supports && !mixSupports ? '|sup' : '') });
+      }
+    });
+    // USSA's manual supports are props that stand touching the end of a tall, thin part of the same height (their
+    // manual shows one at the end of a roof). Pack each with such a part so they print side by side, as shown.
+    const SUP = 35, paired = new Set();
+    pieces.filter(s => /Manual Supports\//.test(s.l.file.path)).forEach(s => {
+      const z = s.l.file.dims[2];
+      const mate = pieces.filter(q => !q.mate && !q.l.aid && !q.care && Math.abs(q.l.file.dims[2] - z) < 1.5 && q.l.file.dims[1] <= 30)
+        .sort((q, r) => /roof/i.test(r.l.label) - /roof/i.test(q.l.label))[0];
+      if (!mate) return;
+      const a = mate.a - mate.pad + SUP, b = Math.max(mate.b, SUP + mate.pad);
+      if (a > Math.max(V[0], V[1]) + eps) return;
+      // Local layout: the part's padded box from x=0; the support's right-angle corner (its full-height edge) touches
+      // the part's end on its far face, one leg running on along that face, the other back across the end
+      const dy = b - mate.b;
+      mate.mate = { s, a0: mate.a, b0: mate.b, dy, sx: mate.a - mate.pad, sy: dy + mate.b - mate.pad - SUP };
+      mate.a = a; mate.b = b; s.pad = 0; paired.add(s); // the support touches the part, so no brim box of its own
+    });
+    for (let i = pieces.length - 1; i >= 0; i--) if (paired.has(pieces[i])) pieces.splice(i, 1);
+    const gramsOfPiece = p => gramsOf(p.l.file) + (p.mate ? gramsOf(p.mate.s.l.file) : 0);
+    const plates = [];
+    const groups = [...new Set(pieces.map(p => p.group))].sort((x, y) => COLOR_ORDER.indexOf(x.split('|')[0]) - COLOR_ORDER.indexOf(y.split('|')[0]) || x.localeCompare(y));
+    for (const g of groups) {
+      const gp = pieces.filter(p => p.group === g).sort((p, q) => q.a - p.a || q.b - p.b);
+      const open = [];
+      for (const p of gp) {
+        if (p.care && p.l.fit.s === 'diag') {
+          // Too long to lie straight: on the diagonal from back-left to front-right, clear of the no-print corner.
+          // A smaller brim so its corners stay on the bed.
+          p.pad = Math.min(p.pad, 3);
+          const [a, b] = p.l.file.dims, s = (Math.max(a, b) + Math.min(a, b) + 4 * p.pad) / Math.SQRT2;
+          p.a = Math.max(a, b) + 2 * p.pad; p.b = Math.min(a, b) + 2 * p.pad;
+          plates.push({ group: g, care: true, shelves: [], items: [{ p, diag: true, x: (V[0] - s) / 2, y: (V[1] - s) / 2, w: s, h: s }] });
+          continue;
+        }
+        if (p.care) { plates.push({ group: g, care: true, shelves: [], items: [{ p, x: ex ? KX : MARGIN, y: MARGIN, w: p.a, h: p.b }] }); continue; }
+        let placed = false;
+        const pg = gramsOfPiece(p);
+        for (const pl of open) {
+          if (pl.g + pg > SPOOL_G) continue; // keep each plate within one 1 kg spool
+          for (const sh of pl.shelves) {
+            for (const [w, h] of [[p.a, p.b], [p.b, p.a]]) {
+              if (h <= sh.h + eps && sh.x + w <= W + eps) { pl.items.push({ p, x: MARGIN + sh.x, y: MARGIN + sh.y, w, h }); sh.x += w + GAP; pl.g += pg; placed = true; break; }
+            }
+            if (placed) break;
+          }
+          if (placed) break;
+          const y = pl.shelves.reduce((a, s) => Math.max(a, s.y + s.h + GAP), 0);
+          for (const [w, h] of [[p.a, p.b], [p.b, p.a]]) {
+            const sx = rowStart(MARGIN + y) - MARGIN;
+            if (sx + w <= W + eps && y + h <= H + eps) { pl.shelves.push({ y, h, x: sx + w + GAP }); pl.items.push({ p, x: MARGIN + sx, y: MARGIN + y, w, h }); pl.g += pg; placed = true; break; }
+          }
+          if (placed) break;
+        }
+        if (!placed) {
+          const pl = { group: g, care: false, shelves: [], items: [], g: pg };
+          // Parts wider than the margined area (M width is 254 mm on a 256 mm bed) skip the margin and sit centred
+          // Long side front to back when it's too long for the margined width, so more parts fit beside it
+          const [w, h] = p.a <= W + eps ? [p.a, p.b] : p.b <= W + eps && p.a <= V[1] + eps ? [p.b, p.a] : [p.a, p.b];
+          let y0 = h > H + eps ? (V[1] - h) / 2 : MARGIN;
+          let x0 = w > W + eps ? (V[0] - w) / 2 : MARGIN;
+          if (ex && x0 < KX && y0 < KY) {
+            if (Math.max(x0, KX) + w <= V[0] - 1) x0 = Math.max(x0, KX);      // slide right, past the corner
+            else if (KY + h <= V[1] - 1) y0 = KY;                             // or start the row behind it
+          }
+          pl.shelves.push({ y: y0 - MARGIN, h, x: x0 - MARGIN + w + GAP }); pl.items.push({ p, x: x0, y: y0, w, h });
+          open.push(pl); plates.push(pl);
+        }
+      }
+    }
+    // Unpack each part + manual support pair into its two parts, turned with the pair if the packer turned it
+    plates.forEach(pl => {
+      pl.items = pl.items.flatMap(it => {
+        const m = it.p.mate; if (!m) return [it];
+        const turned = Math.abs(it.w - it.p.a) > eps, B = it.p.b;
+        const at = (lx, ly) => turned ? [it.x + B - ly, it.y + lx] : [it.x + lx, it.y + ly];
+        const box = (x0, y0, x1, y1) => { const [p, q] = [at(x0, y0), at(x1, y1)]; return { x: Math.min(p[0], q[0]), y: Math.min(p[1], q[1]), w: Math.abs(q[0] - p[0]), h: Math.abs(q[1] - p[1]) }; };
+        const part = { ...it.p, a: m.a0, b: m.b0, mate: null };
+        const sb = box(m.sx, m.sy, m.sx + SUP, m.sy + SUP), r = at(m.sx, m.sy + SUP);
+        return [{ p: part, ...box(0, m.dy, m.a0, m.dy + m.b0) },
+          { p: m.s, ...sb, corner: [r[0] - sb.x < SUP / 2 ? 0 : 1, r[1] - sb.y < SUP / 2 ? 0 : 1] }];
+      });
+    });
+    // Centre each plate's layout on the bed: a lone part shouldn't sit in a corner. Skip a shift that would push
+    // anything off the bed or into the no-print corner.
+    const fits = (pl, dx, dy) => pl.items.every(it => {
+      const x = it.x + dx, y = it.y + dy;
+      if (x < -eps || y < -eps || x + it.w > V[0] + eps || y + it.h > V[1] + eps) return false;
+      return !(ex && x < KX && y < KY);
+    });
+    plates.forEach(pl => {
+      const x0 = Math.min(...pl.items.map(it => it.x)), x1 = Math.max(...pl.items.map(it => it.x + it.w));
+      const y0 = Math.min(...pl.items.map(it => it.y)), y1 = Math.max(...pl.items.map(it => it.y + it.h));
+      const dx = (V[0] - x0 - x1) / 2, dy = (V[1] - y0 - y1) / 2;
+      const shift = [[dx, dy], [dx, 0], [0, dy]].find(([sx, sy]) => fits(pl, sx, sy));
+      if (shift) pl.items.forEach(it => { it.x += shift[0]; it.y += shift[1]; });
+    });
+    plates.forEach((pl, i) => {
+      pl.n = i + 1;
+      const [color, sup] = pl.group.split('|');
+      pl.color = color; pl.supports = !!sup;
+      pl.someSup = sup ? 0 : pl.items.filter(it => it.p.l.supports).length; // supported parts mixed into a normal plate
+      const by = new Map(); pl.items.forEach(it => { const m = by.get(it.p.l.file.path); if (m) m.count++; else by.set(it.p.l.file.path, { l: it.p.l, count: 1 }); });
+      pl.lines = [...by.values()];
+      pl.grams = pl.items.reduce((a, it) => a + gramsOf(it.p.l.file), 0);
+      pl.tallest = Math.max(...pl.items.map(it => it.p.l.file.dims[2]));
+    });
+    return { plates, skipped: [...new Set(skipped)] };
+  }
+  function plateSvg(pl) {
+    const V = printer.v;
+    const items = pl.items.map((it, k) => {
+      const f = COLOR_FILL[pl.color] || COLOR_FILL.all;
+      const label = pl.lines.findIndex(x => x.l === it.p.l) + 1;
+      const pad = it.p.pad || 0, fy = V[1] - it.y - it.h;
+      if (it.diag) { // drawn turned 45 degrees: back-left to front-right in this top view
+        const cx = it.x + it.w / 2, cy = fy + it.h / 2, rw = it.p.a - 2 * pad, rh = it.p.b - 2 * pad;
+        return `<rect x="${cx - rw / 2}" y="${cy - rh / 2}" width="${rw}" height="${rh}" rx="2" transform="rotate(45 ${cx} ${cy})" fill="${f}" fill-opacity=".9" stroke="var(--ink)" stroke-opacity=".35" stroke-width="1"/>` +
+          `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="11" font-weight="700" fill="${pl.color === 'body' ? '#222' : '#fff'}">${label}</text>`;
+      }
+      const rx = it.x + pad, ry = fy + pad, rw = it.w - 2 * pad, rh = it.h - 2 * pad;
+      return (pad ? `<rect x="${it.x}" y="${fy}" width="${it.w}" height="${it.h}" rx="3" fill="none" stroke="var(--muted)" stroke-dasharray="3 2" stroke-width="1"/>` : '') +
+        `<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" rx="2" fill="${f}" fill-opacity="${pl.color === 'body' || pl.color === 'big' ? .9 : .8}" stroke="var(--ink)" stroke-opacity=".35" stroke-width="1"/>` +
+        (Math.min(rw, rh) > 12 ? `<text x="${rx + rw / 2}" y="${ry + rh / 2 + 4}" text-anchor="middle" font-size="11" font-weight="700" fill="${pl.color === 'body' || pl.color === 'big' ? '#222' : '#fff'}">${label}</text>` : '');
+    }).join('');
+    // Drawn as in Bambu Studio's top view: back of the plate at the top, front (door side) at the bottom
+    const ex = preset().excl, pid = 'nop' + pl.n;
+    const noPrint = ex ? `<defs><pattern id="${pid}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="6" fill="var(--bad)" fill-opacity=".35"/></pattern></defs>
+      <rect x="0" y="${V[1] - ex[1]}" width="${ex[0]}" height="${ex[1]}" fill="url(#${pid})" stroke="var(--bad)" stroke-opacity=".5" stroke-width="1"><title>No-print zone</title></rect>` : '';
+    return `<svg class="platesvg" viewBox="-2 -18 ${V[0] + 4} ${V[1] + 38}" role="img" aria-label="Layout of plate ${pl.n}, back of the plate at the top, front at the bottom">
+      <text x="${V[0] / 2}" y="-6" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="2" fill="var(--muted)">BACK</text>
+      <rect x="0" y="0" width="${V[0]}" height="${V[1]}" rx="6" fill="var(--bed)" stroke="var(--line)" stroke-width="2"/>${noPrint}${items}
+      <line x1="6" y1="${V[1]}" x2="${V[0] - 6}" y2="${V[1]}" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+      <text x="${V[0] / 2}" y="${V[1] + 15}" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="2" fill="var(--ink)">FRONT</text></svg>`;
+  }
+
+  function renderPrint() {
+    const b = computeBuild();
+    const s = summary(b.lines);
+    const { plates, skipped } = planPlates(b.lines);
+    const total = b.lines.reduce((a, l) => a + (l.fit.s === 'no' || l.fit.s === 'reorient' ? 0 : l.total), 0);
+    const done = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0), 0);
+    const gDone = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0) * gramsOf(l.file), 0);
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const printedLines = b.lines.filter(l => printed[pkey(l)]);
+    $('view-print').innerHTML = `
+      ${b.preview ? `<div class="alert warn"><span><strong>Your build is empty, so this plans the unit open in step 1 (${esc(unitCode(c))}).</strong> Add units or a starting point in step 2 to plan a whole build.</span></div>` : ''}
+      ${b.extras && towers.length ? `<div class="seg scope" role="group" aria-label="What to print">
+        <button type="button" data-scope="all" aria-pressed="${!b.onlyExtras}">Whole build<small>towers and extra parts</small></button>
+        <button type="button" data-scope="extras" aria-pressed="${b.onlyExtras}">Only extra parts<small>${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button></div>` : ''}
+      ${b.towerIssues.length ? `<div class="alert bad"><strong>Some towers won\u2019t stack as designed.</strong><span>${b.towerIssues.map(esc).join(' ')} Fix them in step 2 before printing.</span></div>` : ''}
+      <div class="panel progress">
+        <div class="unit-title"><h2>${pct}% printed</h2><span class="dims num">${plural(plates.length, 'plate')} left on the ${esc(printerName())}</span></div>
+        <div class="bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
+        <div class="progress-nums"><span><b>${done}</b> of <b>${total}</b> parts</span><span><b>\u2248 ${gramsStr(gDone)}</b> of \u2248 ${gramsStr(s.g)} filament</span>${b.list.length ? `<span><b>${b.list.length}</b> ${b.list.length === 1 ? 'tower' : 'towers'}</span>` : ''}${b.extras ? `<span><b>${b.extras}</b> extra ${b.extras === 1 ? 'part' : 'parts'}</span>` : ''}</div>
+        ${b.preview ? '' : `<div class="actions" style="align-items:center"><button class="btn" id="clearPlates">${b.onlyExtras ? 'Clear extra parts' : 'Clear all plates'}</button><span class="pnote" style="margin:0">${b.onlyExtras ? 'Removes the extra parts and their progress. Your towers stay.' : 'Starting over? Removes every tower, extra part and printed mark.'}</span></div>`}
+      </div>
+      ${skipped.length ? `<div class="alert bad"><strong>${plural(skipped.length, 'file')} too big for the ${esc(printerName())}, so ${skipped.length === 1 ? 'it\u2019s' : 'they\u2019re'} left out of the plates:</strong><span>${skipped.map(l => esc(l.label) + ' (' + dimStr(l.file.dims) + (l.fit.s === 'reorient' ? ', would only fit tipped on its side' : '') + ')').join('; ')}. Print ${skipped.length === 1 ? 'it' : 'them'} on a bigger printer, or pick a smaller size in step 1.</span></div>` : ''}
+      <div class="panel">
+        <div class="printopts" style="padding-top:14px">
+          <div class="seg" role="group" aria-label="Plate colors" style="flex:1 1 100%">
+            <button type="button" data-colors="renders" aria-pressed="${plateColors === 'renders'}">Like the renders<small>Grey body, charcoal parts, orange accents</small></button>
+            <button type="button" data-colors="size" aria-pressed="${plateColors === 'size'}">Big &amp; small<small>Shell in one color, small parts in another</small></button>
+            <button type="button" data-colors="one" aria-pressed="${plateColors === 'one'}">One color<small>Fewest plates</small></button>
+          </div>
+          <label class="switch" for="mixSupports"><input type="checkbox" id="mixSupports" ${mixSupports ? 'checked' : ''}><span class="track"></span><span>Fewer plates<small>Parts that need supports share plates with the rest. Supports stay on per part in the Bambu Studio project</small></span></label>
+          <label class="switch" for="spares"><input type="checkbox" id="spares" ${spares ? 'checked' : ''}><span class="track"></span><span>Add spares<small>+10% on small loseable parts and bolts</small></span></label>
+        </div>
+        <p class="pp">Plates are packed for a ${printer.v[0]} \u00d7 ${printer.v[1]} mm bed with 5 mm edges, and kept under one 1 kg spool each. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Wall counts are set per part, so they can share a plate. Plates are drawn like Bambu Studio\u2019s top view: front at the bottom, with the printer\u2019s no-print corner hatched in red. Press <b>Printed</b> when a plate comes off; that plate drops off the list.</p>
+      </div>
+      ${plates.length ? gatherPanel(plates) : ''}
+      ${plates.length ? `<div class="plates">${plates.map(pl => `<div class="panel plate">
+        <div class="plate-head"><b>Plate ${pl.n}</b><span><span class="swatch sw-${pl.color}"></span>${COLOR_NAME[pl.color]}${pl.supports ? ' \u00b7 supports on' : pl.someSup ? ` \u00b7 supports on ${pl.someSup === pl.items.length ? 'all' : pl.someSup} ${pl.someSup === 1 ? 'part' : 'parts'}` : ''}${pl.color === 'tpu' ? ' \u00b7 TPU settings' : ''}<br>${plural(pl.items.length, 'part')} \u00b7 \u2248 ${gramsStr(pl.grams)} \u00b7 ${Math.round(pl.tallest)} mm tall</span></div>
+        ${plateSvg(pl)}
+        ${pl.care ? `<div class="alert ${pl.items[0].diag ? 'ok' : 'warn'}" style="font-size:13px">${pl.items[0].diag ? 'Too long to lie straight, so it\u2019s placed diagonally, the way USSA exported it.' : 'Lay this part on a different face than exported to fit; check supports.'}</div>` : ''}
+        <div class="pitems">${pl.lines.map((x, i) => `<div class="pitem">${thumb(x.l, 'sm')}<span class="q">${x.count}\u00d7</span><span class="lbl"><b>${i + 1}</b> \u00b7 ${esc(x.l.label)}${x.l.walls ? ` <span class="tag wall">${x.l.walls} walls${x.l.infill ? ' \u00b7 ' + x.l.infill + '%' : ''}</span>` : ''}<small class="mono">${esc(fileName(x.l.file.path))}</small></span></div>`).join('')}</div>
+        <div class="actions"><button class="btn primary" data-plate="${pl.n}">Printed</button></div>
+      </div>`).join('')}</div>` : `<div class="panel empty">${total ? 'Everything is printed. Head to step 4 to assemble.' : 'Nothing to print yet.'}</div>`}
+      ${printedLines.length ? `<details class="panel fold"><summary>Already printed <small>${done} parts</small></summary>
+        <div class="donelist">${printedLines.map(l => `<div class="doneitem"><span>${esc(l.label)}${l.key ? ' <span class="tag">extra</span>' : ''} <small class="mono" style="color:var(--muted)">${esc(fileName(l.file.path))}</small></span><span class="num">${Math.min(printed[pkey(l)], l.total)} / ${l.total}</span><button class="iconbtn" data-unprint="${esc(pkey(l))}" aria-label="Take one back">\u22121</button></div>`).join('')}
+        <div class="actions" style="padding-top:8px"><button class="btn" id="resetPrinted">Reset all progress</button></div></div></details>` : ''}
+      ${hwTable(b.hardware, 'Shopping list', 'Hardware for the whole build. Not printed.' + (spares ? ' Includes spares.' : ''))}
+      <details class="panel fold"><summary>All parts in this build <small>${s.prints} parts \u00b7 ${s.files} files</small></summary>
+        <div class="parts">${partRows(b.lines)}</div>
+        <div class="actions" style="padding:0 18px 16px"><button class="btn" id="copyAll">Copy part list</button></div></details>`;
+    const V = $('view-print');
+    V.querySelectorAll('[data-scope]').forEach(btn => btn.onclick = () => { printScope = btn.dataset.scope; store.set('printScope', printScope); renderPrint(); renderTabs(); });
+    V.querySelectorAll('[data-colors]').forEach(btn => btn.onclick = () => { plateColors = btn.dataset.colors; store.set('plateColors', plateColors); renderPrint(); });
+    $('mixSupports').onchange = () => { mixSupports = $('mixSupports').checked; store.set('mixSupports', mixSupports); renderPrint(); };
+    $('spares').onchange = () => { spares = $('spares').checked; store.set('spares', spares); renderAll(); };
+    V.querySelectorAll('[data-plate]').forEach(btn => btn.onclick = () => {
+      const pl = plates.find(p => p.n === +btn.dataset.plate);
+      pl.lines.forEach(x => { printed[pkey(x.l)] = (printed[pkey(x.l)] || 0) + x.count; });
+      store.set('printed', printed); renderPrint(); renderTabs(); toast(`Plate ${pl.n} marked printed`);
+    });
+    V.querySelectorAll('[data-unprint]').forEach(btn => btn.onclick = () => { const p = btn.dataset.unprint; printed[p] = Math.max(0, (printed[p] || 0) - 1); if (!printed[p]) delete printed[p]; store.set('printed', printed); renderPrint(); renderTabs(); });
+    if ($('resetPrinted')) $('resetPrinted').onclick = () => {
+      const btn = $('resetPrinted');
+      if (btn.dataset.confirm) { printed = {}; store.set('printed', printed); renderPrint(); renderTabs(); toast('Progress reset'); }
+      else { btn.dataset.confirm = '1'; btn.textContent = 'Press again to reset everything'; }
+    };
+    if ($('clearPlates')) $('clearPlates').onclick = () => {
+      const btn = $('clearPlates');
+      if (!btn.dataset.confirm) { btn.dataset.confirm = '1'; btn.textContent = 'Press again to clear'; return; }
+      // Only extra parts: drop them and their progress, keep the towers. Otherwise wipe the whole build.
+      if (b.onlyExtras) { for (const k of Object.keys(printed)) if (k.startsWith('extra:')) delete printed[k]; }
+      else { towers = []; save(); printed = {}; }
+      extras = []; saveExtras(); store.set('printed', printed);
+      printScope = 'all'; store.set('printScope', printScope);
+      renderAll(); toast(b.onlyExtras ? 'Extra parts cleared' : 'All plates cleared');
+    };
+    $('copyAll').onclick = () => copy(listText(b.lines, 'Vault build'), 'Part list copied');
+    if (plates.length) bindGather(plates);
+  }
+
+  // ---------- gather script: one folder per plate, optional .3mf per plate ----------
+  function plateFolder(pl) { return `Plate ${String(pl.n).padStart(2, '0')} - ${COLOR_NAME[pl.color]}${pl.supports ? ' - supports' : ''}`; }
+  // The plate plan the project builder reads: each part's file, position on its plate, and per-part print settings
+  function planFor(plates) {
+    return { bed: [printer.v[0], printer.v[1]], bambu: preset().bambu || null, plates: plates.map(pl => ({ name: plateFolder(pl),
+      pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, spin: +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + (it.p.pad || 0)).toFixed(2), y: +(it.y + (it.p.pad || 0)).toFixed(2), w: +(it.w - 2 * (it.p.pad || 0)).toFixed(2), h: +(it.h - 2 * (it.p.pad || 0)).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: true } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: true } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
+  }
+  // The button hands the plan to the VaultPrint app on this Mac. Only on a Mac with a mouse or trackpad:
+  // phones and iPads can't build the project (the STL files and Bambu Studio are on the Mac).
+  const canOpenApp = !window.VAULT_PUBLIC && /Mac/.test(navigator.platform || navigator.userAgent) && navigator.maxTouchPoints === 0 && matchMedia('(pointer: fine)').matches;
+  async function openInBambu(plates) {
+    const bytes = new TextEncoder().encode(JSON.stringify(planFor(plates)));
+    const cs = new CompressionStream('deflate-raw');
+    const w = cs.writable.getWriter(); w.write(bytes); w.close();
+    const zipped = new Uint8Array(await new Response(cs.readable).arrayBuffer());
+    let bin = ''; zipped.forEach(b => { bin += String.fromCharCode(b); });
+    const b64 = btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    location.href = 'vaultprint://build?v=1&plan=' + b64;
+    toast('Sent to VaultPrint. Bambu Studio opens when the project is ready; watch for a notification.');
+  }
+  // ---------- Bambu Studio project, built right here in the browser ----------
+  // Reads the STLs from the Vault folder the user picks (nothing is uploaded) and writes the same .3mf layout
+  // Bambu Studio saves itself: one object file per part, every plate with its name, and the printer's full
+  // project settings (captured from Bambu Studio, see src/bambu-settings), so each plate opens as its own tab.
+  const BAMBU = window.BAMBU_SETTINGS || { base: {}, per: {} };
+  const canPickFolder = 'showDirectoryPicker' in window || 'webkitdirectory' in document.createElement('input');
+  const CRC = new Uint32Array(256).map((_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; return c; });
+  function crc32(crc, b) { crc = ~crc; for (let i = 0; i < b.length; i++) crc = CRC[(crc ^ b[i]) & 255] ^ (crc >>> 8); return ~crc >>> 0; }
+  // A small zip writer: each entry is deflated as it's written, so huge meshes never sit in memory as text
+  function zipWriter() {
+    const parts = [], dir = [], now = new Date(); let offset = 0;
+    const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+    const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+    const enc = new TextEncoder();
+    const u16 = (v, a, o) => { a[o] = v & 255; a[o + 1] = (v >>> 8) & 255; };
+    const u32 = (v, a, o) => { u16(v & 0xffff, a, o); u16(v >>> 16, a, o + 2); };
+    return {
+      async add(name, writeAll) {
+        const cs = new CompressionStream('deflate-raw'), w = cs.writable.getWriter();
+        const done = new Response(cs.readable).arrayBuffer();
+        let crc = 0, size = 0;
+        const put = async s => { const b = typeof s === 'string' ? enc.encode(s) : s; crc = crc32(crc, b); size += b.length; await w.ready; w.write(b); };
+        await writeAll(put); await w.close();
+        const data = new Uint8Array(await done), nm = enc.encode(name);
+        if (offset + data.length > 0xFFFFFFF0 || size > 0xFFFFFFF0) throw new Error('This build is too big for one project file. Mark some plates printed or print fewer towers at once.');
+        const h = new Uint8Array(30 + nm.length);
+        u32(0x04034b50, h, 0); u16(20, h, 4); u16(0x800, h, 6); u16(8, h, 8); u16(dosTime, h, 10); u16(dosDate, h, 12); u32(crc, h, 14); u32(data.length, h, 18); u32(size, h, 22); u16(nm.length, h, 26); h.set(nm, 30);
+        const c = new Uint8Array(46 + nm.length);
+        u32(0x02014b50, c, 0); u16(20, c, 4); u16(20, c, 6); u16(0x800, c, 8); u16(8, c, 10); u16(dosTime, c, 12); u16(dosDate, c, 14); u32(crc, c, 16); u32(data.length, c, 20); u32(size, c, 24); u16(nm.length, c, 28); u32(offset, c, 42); c.set(nm, 46);
+        parts.push(h, data); dir.push(c); offset += h.length + data.length;
+      },
+      text(name, s) { return this.add(name, put => put(s)); },
+      blob() {
+        const size = dir.reduce((a, c) => a + c.length, 0), e = new Uint8Array(22);
+        u32(0x06054b50, e, 0); u16(dir.length, e, 8); u16(dir.length, e, 10); u32(size, e, 12); u32(offset, e, 16);
+        return new Blob([...parts, ...dir, e], { type: 'model/3mf' });
+      },
+    };
+  }
+  // Read an STL (binary, or ASCII just in case), weld shared corners, undo the export spin and move it to start at 0,0,0
+  function readStl(buf, spin, name) {
+    const dv = new DataView(buf), n = buf.byteLength >= 84 ? dv.getUint32(80, true) : 0;
+    let raw; // 9 floats per triangle
+    if (84 + n * 50 === buf.byteLength) {
+      raw = new Float32Array(n * 9);
+      for (let i = 0; i < n; i++) for (let k = 0; k < 9; k++) raw[i * 9 + k] = dv.getFloat32(84 + i * 50 + 12 + k * 4, true);
+    } else {
+      const nums = new TextDecoder().decode(buf).match(/vertex\s+\S+\s+\S+\s+\S+/g) || [];
+      raw = new Float32Array(nums.length * 3);
+      nums.forEach((v, i) => v.split(/\s+/).slice(1).forEach((x, k) => { raw[i * 3 + k] = +x; }));
+    }
+    const bits = new Uint32Array(raw.buffer), nv = raw.length / 3;
+    let cap = 1; while (cap < nv * 2) cap <<= 1;
+    const keys = new Int32Array(cap).fill(-1), pts = new Float32Array(nv * 3), pbits = new Uint32Array(pts.buffer), idx = new Uint32Array(nv);
+    let count = 0;
+    for (let v = 0; v < nv; v++) {
+      const a = bits[v * 3], b = bits[v * 3 + 1], c = bits[v * 3 + 2];
+      let h = (Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791)) & (cap - 1);
+      for (;;) {
+        const j = keys[h];
+        if (j < 0) { keys[h] = count; pts.set(raw.subarray(v * 3, v * 3 + 3), count * 3); idx[v] = count++; break; }
+        if (pbits[j * 3] === a && pbits[j * 3 + 1] === b && pbits[j * 3 + 2] === c) { idx[v] = j; break; }
+        h = (h + 1) & (cap - 1);
+      }
+    }
+    const tris = [];
+    if (!count) throw new Error(`Couldn\u2019t read ${name || 'a part file'}: it has no shape in it. Try downloading the Vault files again.`);
+    for (let t = 0; t < nv; t += 3) { const p = idx[t], q = idx[t + 1], r = idx[t + 2]; if (p !== q && q !== r && p !== r) tris.push(p, q, r); }
+    const co = Math.cos(-spin * Math.PI / 180), si = Math.sin(-spin * Math.PI / 180), out = new Float64Array(count * 3);
+    const mn = [Infinity, Infinity, Infinity], mx = [-Infinity, -Infinity, -Infinity];
+    for (let i = 0; i < count; i++) {
+      const x = pts[i * 3], y = pts[i * 3 + 1];
+      out[i * 3] = x * co - y * si; out[i * 3 + 1] = x * si + y * co; out[i * 3 + 2] = pts[i * 3 + 2];
+      for (let k = 0; k < 3; k++) { mn[k] = Math.min(mn[k], out[i * 3 + k]); mx[k] = Math.max(mx[k], out[i * 3 + k]); }
+    }
+    for (let i = 0; i < count * 3; i++) out[i] -= mn[i % 3];
+    return { pts: out, tris: Uint32Array.from(tris), w: mx[0] - mn[0], h: mx[1] - mn[1] };
+  }
+  // Turn a loaded mesh a quarter turn counter-clockwise about its vertical axis, keeping it at 0,0
+  function quarterTurn(m) {
+    const pts = new Float64Array(m.pts.length);
+    for (let i = 0; i < pts.length; i += 3) { pts[i] = m.h - m.pts[i + 1]; pts[i + 1] = m.pts[i]; pts[i + 2] = m.pts[i + 2]; }
+    return { pts, tris: m.tris, w: m.h, h: m.w };
+  }
+  // Which footprint corner the top of a part sits over (manual supports taper to their full-height edge)
+  function topCorner(m) {
+    let zt = 0, sx = 0, sy = 0, n = 0;
+    for (let i = 2; i < m.pts.length; i += 3) zt = Math.max(zt, m.pts[i]);
+    for (let i = 0; i < m.pts.length; i += 3) if (m.pts[i + 2] > zt - 1) { sx += m.pts[i]; sy += m.pts[i + 1]; n++; }
+    return [sx / n < m.w / 2 ? 0 : 1, sy / n < m.h / 2 ? 0 : 1];
+  }
+  // How a piece goes on the plate: undo the export spin; turn diagonal parts onto the back-left to front-right
+  // diagonal; turn manual supports so their full-height edge touches the part beside them
+  async function placedMesh(p, buf) {
+    let m = readStl(buf, p.spin, fileName(p.path));
+    if (p.diag) m = readStl(buf, p.spin + (m.w >= m.h ? 45 : -45), fileName(p.path));
+    if (p.corner) for (let k = 0; k < 4; k++) { const c = topCorner(m); if (c[0] === p.corner[0] && c[1] === p.corner[1]) break; m = quarterTurn(m); }
+    return m;
+  }
+  // The Vault folder the user picked: relative path -> File. Matching by the end of the path also works when
+  // they picked the folder above or below the download's top folder.
+  let vaultFolder = null;
+  async function filesFromHandle(dir, prefix = '', out = new Map()) {
+    for await (const [name, h] of dir.entries()) {
+      if (h.kind === 'directory') await filesFromHandle(h, prefix + name + '/', out);
+      else if (/\.stl$/i.test(name)) out.set(prefix + name, h);
+    }
+    return out;
+  }
+  function findFile(map, path) {
+    if (map.has(path)) return map.get(path);
+    for (const [k, v] of map) if (k.endsWith('/' + path)) return v;
+    const tail = path.split('/').slice(1).join('/'); // picked a folder inside the download
+    return tail && map.has(tail) ? map.get(tail) : null;
+  }
+  const idb = (mode, fn) => new Promise((res, rej) => {
+    const r = indexedDB.open('vault-planner', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onsuccess = () => { const tx = r.result.transaction('kv', mode), q = fn(tx.objectStore('kv')); tx.oncomplete = () => res(q && q.result); tx.onerror = () => rej(tx.error); };
+    r.onerror = () => rej(r.error);
+  });
+  async function pickVaultFolder(fresh) {
+    if ('showDirectoryPicker' in window) {
+      let h = null;
+      if (!fresh) try { h = await idb('readonly', s => s.get('folder')); } catch (e) { /* no saved folder */ }
+      if (h && (await h.requestPermission({ mode: 'read' })) !== 'granted') h = null;
+      if (!h) {
+        h = await window.showDirectoryPicker({ id: 'vault', mode: 'read', startIn: 'downloads' });
+        try { await idb('readwrite', s => s.put(h, 'folder')); } catch (e) { /* remembering it is only a convenience */ }
+      }
+      return { name: h.name, files: await filesFromHandle(h), handle: true };
+    }
+    // Safari and Firefox: a folder upload field. Files stay on this computer; the page only reads them.
+    return new Promise((res, rej) => {
+      const inp = Object.assign(document.createElement('input'), { type: 'file', webkitdirectory: true, multiple: true });
+      inp.onchange = () => {
+        const files = new Map();
+        for (const f of inp.files) if (/\.stl$/i.test(f.name)) files.set(f.webkitRelativePath.split('/').slice(1).join('/'), f);
+        files.size ? res({ name: (inp.files[0].webkitRelativePath || '').split('/')[0], files }) : rej(new Error('No STL files in that folder.'));
+      };
+      inp.oncancel = () => rej(new DOMException('cancelled', 'AbortError'));
+      inp.click();
+    });
+  }
+  const fileBytes = async f => (f.getFile ? await f.getFile() : f).arrayBuffer();
+  const xmlEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  async function buildProject(plan, folder, progress) {
+    const missing = [...new Set(plan.plates.flatMap(p => p.pieces.map(x => x.path)))].filter(p => !findFile(folder.files, p));
+    if (missing.length) throw new Error(`${plural(missing.length, 'part')} not found in \u201c${folder.name}\u201d, for example ${fileName(missing[0])}. Pick the Vault download folder (${SRC_DEFAULT.split('/').pop()}).`);
+    const ps = plan.printer && BAMBU.per[plan.printer] ? { ...BAMBU.base, ...BAMBU.per[plan.printer] } : null;
+    const ver = (ps && ps.version) || '02.09.01.70';
+    const [BED_W, BED_D] = plan.bed, count = plan.plates.length;
+    const root = Math.sqrt(count), cols = Math.round(root) + (root > Math.round(root) ? 1 : 0);
+    const NS = 'xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:BambuStudio="http://schemas.bambulab.com/package/2021" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" requiredextensions="p"';
+    const uuid = (n, tail) => n.toString(16).padStart(8, '0') + tail;
+    const z = zipWriter(), objs = [], items = [], rels = [], settings = [], platesXml = [], cut = [];
+    const total = plan.plates.reduce((a, p) => a + p.pieces.length, 0);
+    let done = 0, id = 1;
+    for (const [pi, plate] of plan.plates.entries()) {
+      const ox = (pi % cols) * BED_W * 1.2, oy = -Math.floor(pi / cols) * BED_D * 1.2, cache = new Map(), inst = [];
+      for (const p of plate.pieces) {
+        progress(done / total, `Plate ${pi + 1} of ${count}: ${p.name}`);
+        await new Promise(r => setTimeout(r));
+        const key = [p.path, p.spin, p.diag, p.corner].join('|');
+        if (!cache.has(key)) cache.set(key, await placedMesh(p, await fileBytes(findFile(folder.files, p.path))));
+        const m = cache.get(key), meshId = id++, objId = id++, file = `3D/Objects/object_${meshId}.model`;
+        await z.add(file, async put => {
+          await put(`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" ${NS}>\n <metadata name="BambuStudio:3mfVersion">1</metadata>\n <resources>\n  <object id="${meshId}" p:UUID="${uuid(meshId, '-81cb-4c03-9d28-80fed5dfa1dc')}" type="model">\n   <mesh>\n    <vertices>\n`);
+          for (let a = 0; a < m.pts.length; a += 60000) {
+            let s = '';
+            for (let i = a; i < Math.min(a + 60000, m.pts.length); i += 3) s += `     <vertex x="${m.pts[i].toFixed(4)}" y="${m.pts[i + 1].toFixed(4)}" z="${m.pts[i + 2].toFixed(4)}"/>\n`;
+            await put(s);
+          }
+          await put('    </vertices>\n    <triangles>\n');
+          for (let a = 0; a < m.tris.length; a += 90000) {
+            let s = '';
+            for (let i = a; i < Math.min(a + 90000, m.tris.length); i += 3) s += `     <triangle v1="${m.tris[i]}" v2="${m.tris[i + 1]}" v3="${m.tris[i + 2]}"/>\n`;
+            await put(s);
+          }
+          await put('    </triangles>\n   </mesh>\n  </object>\n </resources>\n <build/>\n</model>\n');
+        });
+        // Lay the part the way the plan placed it: as-is, or turned 90 degrees on the plate
+        const x = ox + p.x, y = oy + p.y;
+        const tr = p.diag || p.corner ? `1 0 0 0 1 0 0 0 1 ${(ox + p.x + (p.w - m.w) / 2).toFixed(3)} ${(oy + p.y + (p.h - m.h) / 2).toFixed(3)} 0` : Math.abs(m.w - p.w) + Math.abs(m.h - p.h) <= Math.abs(m.h - p.w) + Math.abs(m.w - p.h)
+          ? `1 0 0 0 1 0 0 0 1 ${x.toFixed(3)} ${y.toFixed(3)} 0` : `0 1 0 -1 0 0 0 0 1 ${(x + m.h).toFixed(3)} ${y.toFixed(3)} 0`;
+        objs.push(`  <object id="${objId}" p:UUID="${uuid(objId, '-61cb-4c03-9d28-80fed5dfa1dc')}" type="model">\n   <components>\n    <component p:path="/${file}" objectid="${meshId}" p:UUID="${uuid(meshId, '-b206-40ff-9872-83e8017abed1')}" transform="1 0 0 0 1 0 0 0 1 0 0 0"/>\n   </components>\n  </object>\n`);
+        items.push(`  <item objectid="${objId}" p:UUID="${uuid(objId, '-b1ec-4553-aec9-835e5b724bb4')}" transform="${tr}" printable="1"/>\n`);
+        rels.push(` <Relationship Target="/${file}" Id="rel-${rels.length + 1}" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>\n`);
+        // Per-part print settings that override the printer profile for this object only
+        let extra = p.supports ? '    <metadata key="enable_support" value="1"/>\n' : '';
+        if (p.walls) extra += `    <metadata key="wall_loops" value="${p.walls}"/>\n`;
+        if (p.infill) extra += `    <metadata key="sparse_infill_density" value="${p.infill}%"/>\n`;
+        if (p.brim) extra += `    <metadata key="brim_type" value="outer_only"/>\n    <metadata key="brim_width" value="${p.brim === true ? 5 : p.brim}"/>\n`;
+        settings.push(`  <object id="${objId}">\n    <metadata key="name" value="${xmlEsc(p.name)}"/>\n    <metadata key="extruder" value="${p.tpu && ps && ps.filament_settings_id.length > 1 ? 2 : 1}"/>\n${extra}    <part id="${meshId}" subtype="normal_part">\n      <metadata key="name" value="${xmlEsc(p.name)}"/>\n      <metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>\n    </part>\n  </object>\n`);
+        inst.push(`    <model_instance>\n      <metadata key="object_id" value="${objId}"/>\n      <metadata key="instance_id" value="0"/>\n      <metadata key="identify_id" value="${objId}"/>\n    </model_instance>\n`);
+        cut.push(` <object id="${cut.length + 1}">\n  <cut_id id="0" check_sum="1" connectors_cnt="0"/>\n </object>\n`);
+        done++;
+      }
+      platesXml.push(`  <plate>\n    <metadata key="plater_id" value="${pi + 1}"/>\n    <metadata key="plater_name" value="${xmlEsc(plate.name)}"/>\n    <metadata key="locked" value="false"/>\n${inst.join('')}  </plate>\n`);
+    }
+    progress(1, 'Finishing the project file\u2026');
+    const today = new Date().toISOString().slice(0, 10);
+    await z.text('3D/3dmodel.model', `<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" ${NS}>\n` +
+      (ps ? ` <metadata name="Application">BambuStudio-${ver}</metadata>\n` : '') +
+      ` <metadata name="BambuStudio:3mfVersion">1</metadata>\n <metadata name="CreationDate">${today}</metadata>\n <metadata name="ModificationDate">${today}</metadata>\n <metadata name="Title">Vault print plan</metadata>\n <resources>\n${objs.join('')} </resources>\n <build p:UUID="2c7c17d8-22b5-4d84-8835-1976022ea369">\n${items.join('')} </build>\n</model>\n`);
+    await z.text('3D/_rels/3dmodel.model.rels', `<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n${rels.join('')}</Relationships>\n`);
+    await z.text('Metadata/model_settings.config', `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n${settings.join('')}${platesXml.join('')}  <assemble>\n  </assemble>\n</config>\n`);
+    if (ps) {
+      await z.text('Metadata/project_settings.config', JSON.stringify(ps, null, 4));
+      await z.text('Metadata/slice_info.config', `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n  <header>\n    <header_item key="X-BBL-Client-Type" value="slicer"/>\n    <header_item key="X-BBL-Client-Version" value="${ver}"/>\n  </header>\n</config>\n`);
+      await z.text('Metadata/cut_information.xml', `<?xml version="1.0" encoding="utf-8"?>\n<objects>\n${cut.join('')}</objects>\n`);
+    }
+    await z.text('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>\n <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/>\n <Default Extension="png" ContentType="image/png"/>\n <Default Extension="gcode" ContentType="text/x.gcode"/>\n</Types>\n');
+    await z.text('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>\n</Relationships>\n');
+    return z.blob();
+  }
+  // STL folders as one zip: a folder per plate, each file named by how many to print. For any slicer.
+  async function buildFolders(plates, folder, progress) {
+    const z = zipWriter(), all = plates.flatMap(pl => pl.lines.map(x => [pl, x]));
+    const missing = all.filter(([, x]) => !findFile(folder.files, x.l.file.path));
+    if (missing.length) throw new Error(`${plural(missing.length, 'part')} not found in \u201c${folder.name}\u201d, for example ${fileName(missing[0][1].l.file.path)}. Pick the Vault download folder.`);
+    for (const [i, [pl, x]] of all.entries()) {
+      progress(i / all.length, `${plateFolder(pl)}: ${x.l.label}`);
+      const b = new Uint8Array(await fileBytes(findFile(folder.files, x.l.file.path)));
+      await z.add(`Vault prints/${plateFolder(pl)}/${x.count}x ${x.l.label.replace(/[\/:"\\]/g, '-')} - ${fileName(x.l.file.path)}`, put => put(b));
+    }
+    return z.blob();
+  }
+  async function makeDownload(plates, fresh) {
+    const box = $('gProg'), btns = document.querySelectorAll('#gMake, #gRepick');
+    const progress = (f, msg) => { box.hidden = false; box.querySelector('i').style.width = Math.round(f * 100) + '%'; box.querySelector('span').textContent = msg; };
+    btns.forEach(b => { b.disabled = true; });
+    try {
+      if (fresh || !vaultFolder) { progress(0, 'Pick your Vault download folder\u2026'); vaultFolder = await pickVaultFolder(fresh); }
+      const folders = gatherMode === 'folders';
+      const blob = folders ? await buildFolders(plates, vaultFolder, progress)
+        : await buildProject({ ...planFor(plates), printer: preset().bambu ? printer.id : null }, vaultFolder, progress);
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: folders ? 'Vault prints.zip' : 'Vault print plan.3mf' });
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      progress(1, folders ? `Saved Vault prints.zip (${(blob.size / 1e6).toFixed(0)} MB) to your downloads.` : `Saved Vault print plan.3mf (${(blob.size / 1e6).toFixed(0)} MB) to your downloads. Open it in Bambu Studio.`);
+    } catch (e) {
+      if (e.name === 'AbortError') { box.hidden = true; return; }
+      vaultFolder = null;
+      progress(0, e.message || String(e));
+    } finally { btns.forEach(b => { b.disabled = false; }); }
+  }
+  function scriptText(plates) {
+    const q = s => '"' + s.replace(/(["\\$`])/g, '\\$1') + '"';
+    const qd = s => '"' + s.replace(/(["\\`])/g, '\\$1') + '"'; // keeps $HOME expandable
+    const out = [`SRC=${q(srcRoot)}`, `DEST=${qd(destRoot.replace(/\/$/, ''))}`, 'mkdir -p "$DEST"'];
+    if (!plates.length) return out.concat('# Nothing left to print.').join('\n');
+    if (gatherMode === 'folders') {
+      plates.forEach(pl => {
+        out.push(`mkdir -p "$DEST/${plateFolder(pl)}"`);
+        pl.lines.forEach(x => out.push(`cp "$SRC/${x.l.file.path.replace(/(["\\$`])/g, '\\$1')}" "$DEST/${plateFolder(pl)}/${x.count}x ${x.l.label.replace(/[\/:"$`\\]/g, '-')} - ${fileName(x.l.file.path).replace(/(["\\$`])/g, '\\$1')}"`));
+      });
+      out.push('open "$DEST"');
+    } else {
+      out.push("cat > \"$DEST/.plates.json\" <<'JSON'", JSON.stringify(planFor(plates)), 'JSON');
+      out.push("cat > \"$DEST/.make3mf.py\" <<'PY'", $('py3mf').textContent.trim(), 'PY');
+      out.push('python3 "$DEST/.make3mf.py" "$SRC" "$DEST/Vault print plan.3mf" "$DEST/.plates.json" && open -a BambuStudio "$DEST/Vault print plan.3mf"');
+    }
+    return out.join('\n');
+  }
+  const canMake = canPickFolder && matchMedia('(pointer: fine)').matches; // folder picking needs a computer
+  function gatherPanel(plates) {
+    const folders = gatherMode === 'folders', bambu = !!preset().bambu;
+    return `<div class="panel"><h3 class="ph">Get your print files</h3>
+      <div class="seg" id="gatherMode" role="group" aria-label="What to make" style="margin:0 18px">
+        <button type="button" data-mode="project" aria-pressed="${!folders}">One ${bambu ? 'Bambu Studio ' : ''}project<small>${bambu ? 'every plate as a tab' : '.3mf with every part'}</small></button>
+        <button type="button" data-mode="folders" aria-pressed="${folders}">STL folders<small>a zip, one folder per plate</small></button>
+      </div>
+      ${canMake ? `<div class="openrow"><button class="btn primary big" id="gMake">${folders ? 'Save STL folders' : bambu ? 'Make Bambu Studio project' : 'Make 3MF project'}</button>
+        <p class="pnote" style="margin:0">${folders
+          ? 'Saves <b>Vault prints.zip</b>: a folder per plate, each STL named by how many to print. Drag a plate\u2019s files into any slicer and arrange.'
+          : bambu ? `Saves <b>Vault print plan.3mf</b>. Open it in Bambu Studio and every plate below is its own tab, set up for the ${esc(preset().name)} (0.20 mm Standard, PLA Basic) and laid out as shown, clear of the no-print corner. Supports are on where USSA\u2019s files ask for them or Bambu Studio would warn about overhangs, and walls are set per part: 2 by default, 3 where bolts go in or parts slide, 4 walls and 25% infill for parts that carry the tower.`
+          : 'Saves <b>Vault print plan.3mf</b> with every part placed as planned. Only Bambu printers get separate plate tabs; for this printer, STL folders are often easier.'}
+          The first time, pick your Vault download folder (${esc(SRC_DEFAULT.split('/').pop())}). The files are read on this computer; nothing is uploaded. Only plates not yet marked printed are included.</p></div>
+        <div class="gprog" id="gProg" hidden><div class="bar"><i></i></div><span></span></div>
+        ${'showDirectoryPicker' in window ? '<div class="actions" style="padding:0 18px"><button class="linkbtn" id="gRepick" style="margin:0">Use a different Vault folder</button></div>' : ''}`
+      : '<p class="pp">Open this page on a computer with your Vault download to make the print files.</p>'}
+      ${canOpenApp ? `<details class="termfold"><summary>Other ways on this Mac</summary>
+      ${folders ? '' : `<div class="openrow"><button class="btn" id="gOpen">Build with VaultPrint and open Bambu Studio</button>
+        <p class="pnote" style="margin:0">Uses the VaultPrint helper: builds from your Vault download in Downloads, saves to <b>Vault prints</b> on your Desktop and opens Bambu Studio for you.</p></div>`}
+      <p class="pp">Or paste this into Terminal. ${folders ? 'It makes one folder per plate, with each STL named by how many to print.' : 'It builds the same project with Python and opens it.'}</p>
+      <div class="script">
+        <label>Where your Vault download lives<input id="gSrc" value="${esc(srcRoot)}" spellcheck="false"></label>
+        <label>Copy into<input id="gDest" value="${esc(destRoot)}" spellcheck="false"></label>
+        <pre class="code" id="gCode">${esc(scriptText(plates))}</pre>
+        <div class="actions"><button class="btn" id="gCopy">Copy script</button></div>
+      </div></details>` : ''}</div>`;
+  }
+  function bindGather(plates) {
+    document.querySelectorAll('#gatherMode [data-mode]').forEach(b => b.onclick = () => { gatherMode = b.dataset.mode; store.set('gatherMode', gatherMode); renderPrint(); });
+    if ($('gMake')) $('gMake').onclick = () => makeDownload(plates, false);
+    if ($('gRepick')) $('gRepick').onclick = () => makeDownload(plates, true);
+    if ($('gOpen')) $('gOpen').onclick = () => openInBambu(plates);
+    if (!$('gCode')) return;
+    $('gSrc').onchange = e => { srcRoot = e.target.value.trim() || SRC_DEFAULT; store.set('src', srcRoot); $('gCode').textContent = scriptText(plates); };
+    $('gDest').onchange = e => { destRoot = e.target.value.trim() || '$HOME/Desktop/Vault prints'; store.set('dest', destRoot); $('gCode').textContent = scriptText(plates); };
+    $('gCopy').onclick = () => copy(scriptText(plates), 'Script copied', $('gCode'));
+  }
+
+  // ---------- 4 · assembly guide ----------
+  // Each step: what to do, which printed parts and bolts it uses (matched against your build), and where it comes from.
+  const GUIDE = [
+    { id: 'drawer', title: 'Drawers', when: b => b.lines.some(l => /Key lock|Hidden key|Drawer box/.test(l.label)),
+      intro: 'Repeat for every drawer. From the 8-page Drawer Assembly PDF.', steps: [
+      { t: 'Push the key lock up into the drawer front. Match the orientation in the manual\u2019s picture.', p: /^(Key lock|Hidden key)|Drawer front/, src: 'Drawer Assembly 1/8' },
+      { t: 'Tap the key cap onto the key with a hammer or mallet.', p: /^Key cap/, src: 'Drawer Assembly 1/8' },
+      { t: 'Push the two springs into the front, flat side up.', p: /^Springs/, src: 'Drawer Assembly 2/8' },
+      { t: 'Snap off the manual supports printed inside the drawer box.', p: /^Drawer box/, src: 'Drawer Assembly 3/8' },
+      { t: 'Optional: slide the top and bottom geared rails into the box, all the way to the stop.', p: /^Geared rail/, src: 'Drawer Assembly 4/8' },
+      { t: 'Slide the runner slides into the box.', p: /^Runner slide/, src: 'Drawer Assembly 4/8' },
+      { t: 'Bolt the front to the box. Set the lock to \u201copen\u201d first so its gear meets the rails.', p: /Drawer front|^Drawer box/, hw: /M4 \u00d7 14/, src: 'Drawer Assembly 6/8' },
+      { t: 'Slide the label in and push the facade cap into the front.', p: /^Label|^Facade cap/, src: 'Drawer Assembly 6/8' },
+      { t: 'Clip the runner guides onto both sides.', p: /^Runner guide/, src: 'Drawer Assembly 7/8' },
+      { t: 'Slide the whole drawer into the module.', p: /^Module shell/, src: 'Drawer Assembly 7/8' },
+      { t: 'Only once the box is fully in, push the two runner stoppers into the module sides.', p: /^Runner stopper/, src: 'Drawer Assembly 8/8' },
+      { t: 'Flip the module over and push the latch into its slot.', p: /^Latch/, src: 'Drawer Assembly 8/8' },
+    ] },
+    { id: 'interior', title: 'Drawer interiors', when: b => b.lines.some(l => /Gridfinity baseplate|Grid divider/.test(l.label)), steps: [
+      { t: 'Drop the Gridfinity baseplate into the drawer box.', p: /Gridfinity baseplate/, when: b => b.lines.some(l => /Gridfinity baseplate/.test(l.label)), src: 'Manual: Interiors' },
+      { t: 'Set each full-width grid divider across the box and add an edge piece at each wall.', p: /Grid divider, full width|Divider edge/, when: b => b.lines.some(l => /Grid divider/.test(l.label)), src: 'Grid Dividers instructions 1\u20132' },
+      { t: 'Pin the dividers into the floor holes. Count open holes to size any partial divider: the number on a divider file is how many holes it spans.', p: /Divider pin|Grid divider, full depth/, when: b => b.lines.some(l => /Grid divider/.test(l.label)), src: 'Grid Dividers instructions 3\u20136' },
+    ] },
+    { id: 'case', title: 'Top-opening cases', inferred: 'USSA has no step-by-step for cases. This order is worked out from the naming and hardware pages.', when: b => b.lines.some(l => /^Case body/.test(l.label)), steps: [
+      { t: 'Bolt the case front to the case body.', p: /^Case body|^Case front/, hw: /M4 \u00d7 20/, src: 'Manual: Required Hardware \u2013 Sustainers' },
+      { t: 'Fit the hinge rods through the two hinges.', p: /^Hinge rods|^Hinge$/, src: 'Manual: Sustainers Naming' },
+      { t: 'Bolt the hinges to the back of the body.', p: /^Hinge$/, hw: /M4 \u00d7 10/, src: 'Manual: Required Hardware \u2013 Sustainers' },
+      { t: 'Bolt the hinge tops to the lid, then join lid and body.', p: /^Hinge top|^Lid/, hw: /M4 \u00d7 14/, src: 'Manual: Required Hardware \u2013 Sustainers' },
+      { t: 'Build each lock: holder, inner part, outer part and its four pins. Bolt both locks to the front.', p: /^Lock/, hw: /M4 \u00d7 14/, src: 'Manual: Sustainers Naming' },
+      { t: 'Slide in the case label and front label. Add any dividers or baseplate.', p: /label|divider|baseplate/i, src: 'Manual: Sustainers Naming' },
+    ] },
+    { id: 'stack', title: 'Stacking', when: b => b.list.some(t => t.levels.length > 1), steps: [
+      { t: 'Stack units with the same width and depth, lining up the \u201calign to connect\u201d marks. Drawers and cases stack on each other; two S side by side match one L, and S + M match one XL.', p: /^Module shell|^Case body/, src: 'Manual: Stacking Options' },
+      { t: 'Put the roof on the top drawer. Under-table roofs screw to the desk first; then hang the drawers from it.', p: /roof/i, src: 'Manual: Roof Types; Mounting: Table Mount' },
+      { t: 'Bolt the carry handle onto the grid roof.', p: /^Top handle/, hw: /M6 \u00d7 50/, when: b => b.lines.some(l => l.label === 'Top handle'), src: 'Manual: Required Hardware \u2013 Drawers' },
+    ] },
+    { id: 'base', title: 'Base and wheels', when: b => b.lines.some(l => l.group === 'Base'), intro: 'From the 15-page Modifications PDF.', steps: [
+      { t: 'Cut the M16 rod to length (248 mm S, 338 mm M, 414 mm L, 504 mm XL) and push it through the base.', p: /^Base/, hw: /M16 threaded rod/, when: b => b.lines.some(l => l.group === 'Wheels'), src: 'Modifications 2/15' },
+      { t: 'Press a bushing onto each end with the jig, leaving 10 mm of rod showing. Remove the jig.', p: /^Bushing/, src: 'Modifications 3/15', when: b => b.lines.some(l => l.group === 'Wheels') },
+      { t: 'Slide a wheel disk onto each side, then press a 6205ZZ bearing onto each bushing.', p: /^Wheel disk/, hw: /6205ZZ/, src: 'Modifications 4/15', when: b => b.lines.some(l => l.group === 'Wheels') },
+      { t: 'Lock the bearings with the shaft collars. Stretch the TPU tyres onto the disks.', p: /^Tyre/, hw: /SCSAW/, src: 'Modifications 5/15', when: b => b.lines.some(l => l.group === 'Wheels') },
+      { t: 'Close each wheel with a cover and six M4 \u00d7 25 bolts.', p: /^Wheel cover/, hw: /M4 \u00d7 25/, src: 'Modifications 6/15', when: b => b.lines.some(l => l.group === 'Wheels') },
+      { t: 'Flip the base and bolt on the foot with M6 \u00d7 90 bolts.', p: /^Foot/, hw: /M6 \u00d7 90/, src: 'Modifications 6/15', when: b => b.lines.some(l => l.label === 'Foot') },
+      { t: 'For casters instead of wheels: flip the base and fit four casters with M8 bolts.', hw: /Caster/, when: b => b.hardware.some(h => /Caster/.test(h.item)), src: 'Modifications: Casters Mode' },
+      { t: 'Put the first module on the base. USSA strongly recommends a 2F module here.', p: /^Module shell|^Case body/, src: 'Modifications 7/15' },
+    ] },
+    { id: 'backbone', title: 'Backbones and handles', when: b => b.lines.some(l => /backbone|handle/i.test(l.label) && l.group !== 'Roof'), steps: [
+      { t: '2F backbones come sealed. Hold one against the module, mark the three spots, and drill them through with a 4 mm bit.', p: /backbone/i, src: 'Modifications 7\u20138/15' },
+      { t: 'Bolt the backbone to the base and the module, then connect the remaining modules the same way.', p: /backbone/i, hw: /M4 bolt, 60/, src: 'Modifications 10\u201311/15' },
+      { t: 'Stationary handle: bolt it on from the other side of the backbone, before the backbone goes on the module.', p: /^Stationary handle/, hw: /M4 \u00d7 60/, when: b => b.lines.some(l => l.label === 'Stationary handle'), src: 'Modifications 12/15' },
+      { t: 'Heat the inserts and press them into the lock knobs, then cap them.', p: /knob/i, hw: /heat insert/, when: b => b.lines.some(l => /knob/i.test(l.label)), src: 'Modifications 13/15' },
+      { t: 'Fit the handle lock with M6 \u00d7 35 hex bolts from the back of the backbone.', p: /^Pull-out handle lock/, hw: /M6 \u00d7 35/, when: b => b.lines.some(l => /Pull-out handle/.test(l.label)), src: 'Modifications 13/15' },
+      { t: 'Cut two M16 rods to the tower height and slide them in with the handle. Drill and tap M6 holes in the rods and bolt on the handle.', p: /^Pull-out handle$/, hw: /M6 \u00d7 30|M16 rod, cut/, when: b => b.lines.some(l => /Pull-out handle/.test(l.label)), src: 'Modifications 14/15' },
+      { t: 'Bolt the pegboard attachments onto the backbones.', p: /pegboard/i, hw: /M4 \u00d7 40/, when: b => b.lines.some(l => /pegboard/i.test(l.label)), src: 'Modifications 15/15' },
+    ] },
+    { id: 'wall', title: 'Wall mounting', when: b => b.lines.some(l => l.group === 'Wall mount'), intro: 'From the 12-page Mounting Instructions PDF.', steps: [
+      { t: 'Bolt a full-height wall mount plate to the back of the tower to use as a template.', p: /^Wall mount plate/, src: 'Mounting 1\u20133' },
+      { t: 'Hold the tower where it will hang and mark its sides and bottom on the wall with a pencil.', src: 'Mounting 4' },
+      { t: 'Take the plate off. Put it and its wall cleats on the marks, drill for anchors (or screw into wood), and fix the cleats to the wall.', p: /second part/i, src: 'Mounting 5\u20136' },
+      { t: 'Repeat for the floors above, stacking each on the one below.', src: 'Mounting 7' },
+      { t: 'Bolt the plates onto the tower and hang it on the cleats.', p: /^Wall mount plate/, src: 'Mounting 8\u20139' },
+    ] },
+  ];
+  function renderAssemble() {
+    const b = computeBuild();
+    const sections = GUIDE.filter(g => g.when(b));
+    const total = sections.reduce((a, g) => a + g.steps.filter(s => !s.when || s.when(b)).length, 0);
+    const doneN = sections.reduce((a, g) => a + g.steps.filter(s => (!s.when || s.when(b)) && stepsDone[g.id + ':' + s.t]).length, 0);
+    $('view-assemble').innerHTML = `
+      ${b.preview ? `<div class="alert warn"><span><strong>Your build is empty, so these steps are for the unit open in step 1 (${esc(unitCode(c))}).</strong></span></div>` : ''}
+      <div class="panel progress"><div class="unit-title"><h2>Assembly</h2><span class="dims num">${doneN} of ${total} steps done</span></div>
+        <div class="bar"><i style="width:${total ? doneN / total * 100 : 0}%"></i></div>
+        <div class="progress-nums">Only the steps your build needs are shown. Each lists the printed parts and bolts it uses, and the manual page it comes from.</div></div>
+      ${sections.map(g => {
+        const steps = g.steps.filter(s => !s.when || s.when(b));
+        return `<div class="panel guide"><h3>${esc(g.title)}${g.inferred ? ' <span class="badge inf">Inferred order</span>' : ''}</h3>
+          ${g.intro || g.inferred ? `<p>${esc(g.inferred || g.intro)}</p>` : ''}
+          ${steps.map((s, i) => {
+            const key = g.id + ':' + s.t, isDone = !!stepsDone[key];
+            const parts = s.p ? b.lines.filter(l => s.p.test(l.label)) : [];
+            const uniq = []; parts.forEach(l => { if (!uniq.some(u => u.label.replace(/ \(.*\)$/, '') === l.label.replace(/ \(.*\)$/, ''))) uniq.push(l); });
+            const hw = s.hw ? b.hardware.filter(h => s.hw.test(h.item)) : [];
+            return `<div class="step ${isDone ? 'done' : ''}"><input type="checkbox" data-stepkey="${esc(key)}" ${isDone ? 'checked' : ''} aria-label="Step ${i + 1} done"><span class="sn">${i + 1}</span>
+              <div class="stext"><span>${esc(s.t)}</span>
+                ${uniq.length || hw.length ? `<div class="uses">${uniq.slice(0, 6).map(l => thumb(l, 'sm')).join('')}${hw.map(h => `<span class="hwchip">${esc(h.item)}</span>`).join('')}</div>` : ''}
+                <span class="src">${esc(s.src)}</span></div></div>`;
+          }).join('')}</div>`;
+      }).join('')}`;
+    $('view-assemble').querySelectorAll('[data-stepkey]').forEach(cb => cb.onchange = () => {
+      if (cb.checked) stepsDone[cb.dataset.stepkey] = 1; else delete stepsDone[cb.dataset.stepkey];
+      store.set('steps', stepsDone); renderAssemble();
+    });
+  }
+
+  // ---------- tabs ----------
+  function renderTabs() {
+    ['unit', 'build', 'print', 'assemble'].forEach(v => {
+      $('tab-' + v).setAttribute('aria-selected', String(view === v));
+      $('view-' + v).hidden = view !== v;
+    });
+    $('config').hidden = view !== 'unit';
+    $('main').classList.toggle('single', view !== 'unit');
+    const units = towers.reduce((a, t) => a + t.levels.reduce((x, l) => x + l.length, 0), 0);
+    const nx = extras.reduce((a, e) => a + e.qty, 0);
+    $('countBuild').textContent = units + nx ? `(${units + nx})` : '';
+    const b = computeBuild();
+    const total = b.lines.reduce((a, l) => a + (l.fit.s === 'no' || l.fit.s === 'reorient' ? 0 : l.total), 0);
+    const done = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0), 0);
+    $('countPrint').textContent = total ? `${Math.round(done / total * 100)}%` : '';
+    store.set('view', view);
+  }
+  document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { view = b.dataset.tab; renderAll(); });
+
+  function renderAll() {
+    renderPrinter();
+    if (view === 'unit') renderControls();
+    renderTabs();
+    ({ unit: renderUnit, build: renderBuild, print: renderPrint, assemble: renderAssemble })[view]();
+  }
+
+  $('footnote').innerHTML = `Part rules come from the four PDF manuals in the Vault download and USSA\u2019s published component counts; anything worked out beyond them is marked <span class="badge inf">Inferred</span>. Sizes are measured from each STL (${FILES.length} files)${HAS_PREVIEWS ? ' and pictures are rendered from them' : ''}. Filament is a rough figure from part volume at standard settings, calibrated against USSA\u2019s own gram estimates. Progress and towers are saved in this browser only.${window.VAULT_PUBLIC ? ' Free and open source, provided as is, with no support.' : ''}`;
+
+  normalize();
+  renderAll();
+})();
+</script>
