@@ -192,6 +192,9 @@ dialog#viewer { position: fixed; }
 .hw td { padding: 8px 18px; border-top: 1px solid var(--line); }
 .hw td.q { width: 70px; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
 .hw td.why { color: var(--muted); }
+.hw td.hd { width: 76px; padding-left: 0; padding-right: 0; }
+.hw svg.bolt { display: block; width: 72px; height: 30px; fill: var(--muted); }
+.hw .heads { margin-top: -2px; }
 .panel > h3.ph { margin: 0; padding: 14px 18px 4px; font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
 .panel > p.pp { margin: 0; padding: 0 18px 10px; color: var(--muted); font-size: 13.5px; }
 .script { padding: 0 18px 16px; display: grid; gap: 10px; }
@@ -814,10 +817,19 @@ details.termfold[open] > summary { color: var(--ink); }
       <div class="stat"><b>\u2248 ${gramsStr(s.g)}</b><span>filament, rough</span></div>
       ${fitStat(s)}</div>`;
   }
+  // Bolt head shapes, from the manual's hardware list: drawn side-on, head at the left
+  const headOf = item => /countersunk/.test(item) ? 'countersunk' : /hex bolt/.test(item) ? 'hex' : /button-head/.test(item) ? 'button' : '';
+  const HEADS = {
+    button: '<path d="M15 2.5v15C8 17.5 4 14.5 4 10S8 2.5 15 2.5z"/>',
+    countersunk: '<path d="M4 2.5h2l9 5v5l-9 5H4z"/>',
+    hex: '<path d="M5 3.5h10v13H5z"/><path d="M5 10h10" style="stroke:var(--sheet);stroke-width:1.2"/>',
+  };
+  const headIcon = item => { const k = headOf(item); return k ? `<svg class="bolt" viewBox="0 0 48 20" role="img" aria-label="${k === 'button' ? 'button head' : k === 'hex' ? 'hex head' : 'countersunk head'}">${HEADS[k]}<path d="M15 7h30v6H15z"/><path d="M17 7v6M20 7v6M23 7v6M26 7v6M29 7v6M32 7v6M35 7v6M38 7v6M41 7v6" style="stroke:var(--sheet);stroke-width:1"/></svg>` : ''; };
   function hwTable(hw, title, sub) {
     if (!hw.length) return '';
     return `<div class="panel hw"><h3 class="ph">${title || 'Hardware to buy'}</h3><p class="pp">${sub || 'Not printed.'}</p>
-      <table><tbody>${hw.map(h => `<tr><td class="q">${h.total}\u00d7</td><td>${esc(h.item)}${h.spareN ? ` <small style="color:var(--muted)">incl. ${h.spareN} spare</small>` : ''}</td><td class="why">${esc(h.why)}</td></tr>`).join('')}</tbody></table></div>`;
+      ${hw.some(h => headOf(h.item)) ? '<p class="pp heads">Check the head shape: button heads are domed and sit on top of the part; countersunk heads have a flat top and sit flush in a cone-shaped hole.</p>' : ''}
+      <table><tbody>${hw.map(h => `<tr><td class="q">${h.total}\u00d7</td><td class="hd">${headIcon(h.item)}</td><td>${esc(h.item)}${h.spareN ? ` <small style="color:var(--muted)">incl. ${h.spareN} spare</small>` : ''}</td><td class="why">${esc(h.why)}</td></tr>`).join('')}</tbody></table></div>`;
   }
 
   // ---------- copy helpers ----------
@@ -917,7 +929,7 @@ details.termfold[open] > summary { color: var(--ink); }
       }
       const roofOpts = R.ROOFS.filter(r => r.widths.includes(c.w)).filter(r => !onlyFits || !unitTooBig({ roof: r.id })).map(r => [r.id, r.label + (!onlyFits && unitTooBig({ roof: r.id }) ? ' \u2014 too big' : '')]);
       o += selectField('roof', 'Roof', 'used only when this unit is on top', [['none', 'No roof'], ...roofOpts], c.roof);
-      if (c.roof === 'grid') o += checkbox('topHandle', 'Add a carry handle on the roof', '2 \u00d7 M6 \u00d7 50 mm bolts', c.topHandle);
+      if (c.roof === 'grid') o += checkbox('topHandle', 'Add a carry handle on the roof', '2 \u00d7 M6 \u00d7 50 mm countersunk bolts', c.topHandle);
       o += selectField('lock', 'Lock', '', [['std', 'Standard key lock'], ['hidden', 'Hidden key (flush)']], c.lock);
       o += checkbox('gearedRails', 'Geared rails', 'Optional in the manual. Recommended for 2F/4F and for extra locking force.', c.gearedRails);
       o += checkbox('manualSupports', 'Manual support helper', 'Optional printing aid for tall parts.', c.manualSupports);
@@ -1754,7 +1766,7 @@ details.termfold[open] > summary { color: var(--ink); }
     ] },
     { id: 'backbone', title: 'Backbones and handles', when: b => b.lines.some(l => /backbone|handle/i.test(l.label) && l.group !== 'Roof'), steps: [
       { t: '2F backbones come sealed. Hold one against the module, mark the three spots, and drill them through with a 4 mm bit.', p: /backbone/i, src: 'Modifications 7\u20138/15' },
-      { t: 'Bolt the backbone to the base and the module, then connect the remaining modules the same way.', p: /backbone/i, hw: /M4 bolt, 60/, src: 'Modifications 10\u201311/15' },
+      { t: 'Bolt the backbone to the base and the module, then connect the remaining modules the same way.', p: /backbone/i, hw: /M4 button-head bolt, 60/, src: 'Modifications 10\u201311/15' },
       { t: 'Stationary handle: bolt it on from the other side of the backbone, before the backbone goes on the module.', p: /^Stationary handle/, hw: /M4 \u00d7 60/, when: b => b.lines.some(l => l.label === 'Stationary handle'), src: 'Modifications 12/15' },
       { t: 'Heat the inserts and press them into the lock knobs, then cap them.', p: /knob/i, hw: /heat insert/, when: b => b.lines.some(l => /knob/i.test(l.label)), src: 'Modifications 13/15' },
       { t: 'Fit the handle lock with M6 \u00d7 35 hex bolts from the back of the backbone.', p: /^Pull-out handle lock/, hw: /M6 \u00d7 35/, when: b => b.lines.some(l => /Pull-out handle/.test(l.label)), src: 'Modifications 13/15' },

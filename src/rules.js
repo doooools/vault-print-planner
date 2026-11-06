@@ -279,15 +279,15 @@
     const push = (item, qty, why) => qty && hw.push({ item, qty, why });
     if (c.type === 'drawer') {
       const inserts = c.w === 'L2' || c.w === 'XL2' ? 2 : 1;
-      push('M4 × 14 mm bolt', (c.h === 1 ? 4 : 6) * inserts, 'Drawer front to box');
-      if (c.roof === 'grid' && c.topHandle) push('M6 × 50 mm bolt', 2, 'Roof top handle');
+      push('M4 × 14 mm button-head bolt', (c.h === 1 ? 4 : 6) * inserts, 'Drawer front to box');
+      if (c.roof === 'grid' && c.topHandle) push('M6 × 50 mm countersunk bolt', 2, 'Roof top handle');
     } else {
-      push('M4 × 14 mm bolt', 16, 'Case hinge tops and locks');
-      push('M4 × 10 mm bolt', 8, 'Case hinges');
-      push('M4 × 20 mm bolt', 7, 'Case front and body');
+      push('M4 × 14 mm button-head bolt', 16, 'Case hinge tops and locks');
+      push('M4 × 10 mm button-head bolt', 8, 'Case hinges');
+      push('M4 × 20 mm button-head bolt', 7, 'Case front and body');
     }
-    if (c.pegboard && c.pegboard !== 'none' && c.h <= 2) push('M4 × 40 mm bolt', 4, 'Pegboard attachment');
-    if (c.backbone && c.backbone !== 'none' && c.h <= 2) push('M4 bolt, 60–100 mm (to fit)', 4, 'Backbone');
+    if (c.pegboard && c.pegboard !== 'none' && c.h <= 2) push('M4 × 40 mm button-head bolt', 4, 'Pegboard attachment');
+    if (c.backbone && c.backbone !== 'none' && c.h <= 2) push('M4 button-head bolt, 60–100 mm (to fit)', 4, 'Backbone');
     return hw;
   }
 
@@ -296,15 +296,15 @@
     const push = (item, qty, why) => qty && hw.push({ item, qty, why });
     if (s.base && s.wheels) {
       push('M16 threaded rod, ' + { S: 248, M: 338, L: 414, XL: 504 }[s.w] + ' mm', 1, 'Wheel axle');
-      push('M4 × 25 mm bolt', 12, 'Wheel covers (6 per wheel)');
+      push('M4 × 25 mm button-head bolt', 12, 'Wheel covers (6 per wheel)');
       push('6205ZZ bearing (25 × 52 × 15 mm)', 2, 'Wheels');
       push('SCSAW shaft collar (16 mm bore)', 2, 'Wheels');
     }
-    if (s.base && s.feet) push('M6 × 90 mm bolt', 2 * (s.wheels ? 1 : 2), 'Feet');
+    if (s.base && s.feet) push('M6 × 90 mm button-head bolt', 2 * (s.wheels ? 1 : 2), 'Feet');
     if (s.base && !s.wheels && s.casters) push('Caster with M8 bolt', 4, 'Casters (instead of wheels)');
-    if (s.stationaryHandle) push('M4 × 60 mm bolt', 8, 'Stationary handle');
+    if (s.stationaryHandle) push('M4 × 60 mm button-head bolt', 8, 'Stationary handle');
     if (s.pullHandle) {
-      push('M6 × 30 mm flat bolt', 4, 'Pull-out handle');
+      push('M6 × 30 mm countersunk bolt', 4, 'Pull-out handle');
       push('M6 × 35 mm hex bolt', 2, 'Handle lock');
       push('M6 × 8 × 8 heat insert', 2, 'Handle lock knobs');
       push('M16 rod, cut to tower height', 2, 'Pull-out handle');
@@ -342,7 +342,7 @@
   function buildRoof(rw, d, kind, topHandle, resolve) {
     const k = collector(resolve);
     roof(k.add, rw, d, kind, topHandle);
-    return { lines: k.lines, missing: k.missing, hardware: kind === 'grid' && topHandle ? [{ item: 'M6 × 50 mm bolt', qty: 2, why: 'Roof top handle' }] : [] };
+    return { lines: k.lines, missing: k.missing, hardware: kind === 'grid' && topHandle ? [{ item: 'M6 × 50 mm countersunk bolt', qty: 2, why: 'Roof top handle' }] : [] };
   }
 
   const api = { buildUnit, buildStack, buildRoof, makeResolver, exterior, familyForWidth, HEIGHTS, DEPTHS, ROOFS, WIDTH_MM, norm };
