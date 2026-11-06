@@ -53,6 +53,8 @@ if public:
     catalog += "window.VAULT_PUBLIC=true;"
     html = re.sub(r'<script type="text/plain" id="py3mf">.*?</script>\n', "", html, flags=re.S)
     html = re.sub(r"const SRC_DEFAULT = '[^']*/", "const SRC_DEFAULT = '", html)
+    # The VaultPrint helper and Terminal script only work on the author's Mac (the public template has them removed already)
+    html = re.sub(r"  /\*MAC\*/.*?/\*END MAC\*/", "  const macPanel = () => '', bindMac = () => {};", html, flags=re.S)
 html = html.replace("/*CATALOG*/", catalog).replace("/*RULES*/", (here / "rules.js").read_text())
 pathlib.Path(out).write_text(html)
 print(f"{len(rows)} files -> {out} ({len(html) // 1024} KB)")

@@ -1,7 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Vault Print Planner</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Unofficial planner for Vault by USSA: pick units, get the exact STL files and counts, check them against your printer and print plate by plate in Bambu Studio.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -131,8 +134,6 @@ details.more > div { display: grid; gap: 14px; margin-top: 14px; }
 .btn { border: 1px solid var(--line); background: var(--sheet); border-radius: 8px; padding: 8px 12px; font-weight: 600; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn:hover { border-color: var(--ink); }
-.qtybox { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
-.qtybox input { width: 56px; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; color: var(--ink); }
 
 .group { padding: 4px 0 6px; }
 .group h3 { margin: 0; padding: 12px 18px 6px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
@@ -193,11 +194,6 @@ dialog#viewer { position: fixed; }
 .script label { font-size: 12px; color: var(--muted); display: grid; gap: 4px; }
 .script input { background: var(--sheet-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-family: var(--f-mono); font-size: 12.5px; width: 100%; }
 pre.code { margin: 0; background: var(--sheet-2); border-radius: 8px; padding: 12px; overflow-x: auto; font-family: var(--f-mono); font-size: 12px; line-height: 1.55; max-height: 240px; }
-.blist { display: grid; }
-.bitem { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 10px 18px; border-top: 1px solid var(--line); align-items: center; }
-.bitem b { font-stretch: 112%; }
-.bitem small { color: var(--muted); display: block; }
-.bitem .ctl { display: flex; gap: 6px; align-items: center; }
 .empty { padding: 18px; color: var(--muted); }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 0 18px 14px; font-size: 12.5px; color: var(--muted); align-items: center; }
 .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); transform: translateX(-50%); background: var(--ink); color: var(--sheet); padding: 8px 14px; border-radius: 8px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
@@ -270,7 +266,6 @@ footer.site .ytbtn { text-decoration: none; color: var(--ink); }
 .issues { display: grid; gap: 6px; }
 .issue { font-size: 13.5px; border-radius: 8px; padding: 8px 10px; }
 .issue.bad { background: var(--bad-soft); } .issue.warn { background: var(--warn-soft); } .issue.info { background: var(--sheet-2); } .issue.ok { background: var(--ok-soft); }
-.addbox { display: grid; gap: 10px; padding: 14px 18px 16px; }
 .addrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .addrow select { background: var(--sheet-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; max-width: 100%; }
 
@@ -287,7 +282,6 @@ footer.site .ytbtn { text-decoration: none; color: var(--ink); }
 .plate-head b { font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
 .plate-head span { font-size: 12.5px; color: var(--muted); text-align: right; }
 .platesvg { width: 100%; height: auto; max-width: 100%; display: block; }
-.chips { display: flex; gap: 4px; flex-wrap: wrap; }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
 .sw-body { background: #d4d6d3; } .sw-inner { background: #3a3d3f; } .sw-accent { background: #e8742f; } .sw-tpu { background: #222; } .sw-big { background: #d4d6d3; } .sw-small { background: #3a3d3f; } .sw-all { background: linear-gradient(90deg, #d4d6d3 50%, #3a3d3f 50%); }
 .pitems { display: grid; gap: 6px; }
@@ -343,6 +337,8 @@ details.termfold[open] > summary { color: var(--ink); }
 .step .uses .thumb { width: 40px; height: 40px; }
 .step .hwchip { font-size: 12px; background: var(--sheet-2); border-radius: 6px; padding: 3px 7px; }
 </style>
+</head>
+<body>
 
 <div class="wrap">
   <header class="top">
@@ -834,8 +830,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   let plateColors = store.get('plateColors', store.get('byColor', true) ? 'renders' : 'one');
   let mixSupports = store.get('mixSupports', false); // parts that need supports share plates with the rest
   let gatherMode = store.get('gatherMode', 'project'); // 'project' = one Bambu Studio .3mf with every plate, 'folders' = STLs per plate
-  let srcRoot = store.get('src', SRC_DEFAULT);
-  let destRoot = store.get('dest', '$HOME/Desktop/Vault prints');
   let printed = store.get('printed', {});   // path -> pieces already printed
   let stepsDone = store.get('steps', {});
   let editing = null;                       // { t, l, u } when a tower unit is loaded into the editor
@@ -1776,19 +1770,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     return { bed: [printer.v[0], printer.v[1]], bambu: preset().bambu || null, plates: plates.map(pl => ({ name: plateFolder(pl),
       pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, spin: +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + (it.p.pad || 0)).toFixed(2), y: +(it.y + (it.p.pad || 0)).toFixed(2), w: +(it.w - 2 * (it.p.pad || 0)).toFixed(2), h: +(it.h - 2 * (it.p.pad || 0)).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: true } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: true } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
   }
-  // The button hands the plan to the VaultPrint app on this Mac. Only on a Mac with a mouse or trackpad:
-  // phones and iPads can't build the project (the STL files and Bambu Studio are on the Mac).
-  const canOpenApp = !window.VAULT_PUBLIC && /Mac/.test(navigator.platform || navigator.userAgent) && navigator.maxTouchPoints === 0 && matchMedia('(pointer: fine)').matches;
-  async function openInBambu(plates) {
-    const bytes = new TextEncoder().encode(JSON.stringify(planFor(plates)));
-    const cs = new CompressionStream('deflate-raw');
-    const w = cs.writable.getWriter(); w.write(bytes); w.close();
-    const zipped = new Uint8Array(await new Response(cs.readable).arrayBuffer());
-    let bin = ''; zipped.forEach(b => { bin += String.fromCharCode(b); });
-    const b64 = btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    location.href = 'vaultprint://build?v=1&plan=' + b64;
-    toast('Sent to VaultPrint. Bambu Studio opens when the project is ready; watch for a notification.');
-  }
   // ---------- Bambu Studio project, built right here in the browser ----------
   // Reads the STLs from the Vault folder the user picks (nothing is uploaded) and writes the same .3mf layout
   // Bambu Studio saves itself: one object file per part, every plate with its name, and the printer's full
@@ -2035,25 +2016,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       progress(0, e.message || String(e));
     } finally { btns.forEach(b => { b.disabled = false; }); }
   }
-  function scriptText(plates) {
-    const q = s => '"' + s.replace(/(["\\$`])/g, '\\$1') + '"';
-    const qd = s => '"' + s.replace(/(["\\`])/g, '\\$1') + '"'; // keeps $HOME expandable
-    const out = [`SRC=${q(srcRoot)}`, `DEST=${qd(destRoot.replace(/\/$/, ''))}`, 'mkdir -p "$DEST"'];
-    if (!plates.length) return out.concat('# Nothing left to print.').join('\n');
-    if (gatherMode === 'folders') {
-      plates.forEach(pl => {
-        out.push(`mkdir -p "$DEST/${plateFolder(pl)}"`);
-        pl.lines.forEach(x => out.push(`cp "$SRC/${x.l.file.path.replace(/(["\\$`])/g, '\\$1')}" "$DEST/${plateFolder(pl)}/${x.count}x ${x.l.label.replace(/[\/:"$`\\]/g, '-')} - ${fileName(x.l.file.path).replace(/(["\\$`])/g, '\\$1')}"`));
-      });
-      out.push('open "$DEST"');
-    } else {
-      out.push("cat > \"$DEST/.plates.json\" <<'JSON'", JSON.stringify(planFor(plates)), 'JSON');
-      out.push("cat > \"$DEST/.make3mf.py\" <<'PY'", $('py3mf').textContent.trim(), 'PY');
-      out.push('python3 "$DEST/.make3mf.py" "$SRC" "$DEST/Vault print plan.3mf" "$DEST/.plates.json" && open -a BambuStudio "$DEST/Vault print plan.3mf"');
-    }
-    return out.join('\n');
-  }
   const canMake = canPickFolder && matchMedia('(pointer: fine)').matches; // folder picking needs a computer
+  const macPanel = () => '', bindMac = () => {};
   function gatherPanel(plates) {
     const folders = gatherMode === 'folders', bambu = !!preset().bambu;
     return `<div class="panel"><h3 class="ph">Get your print files</h3>
@@ -2070,26 +2034,13 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <div class="gprog" id="gProg" hidden><div class="bar"><i></i></div><span></span></div>
         ${'showDirectoryPicker' in window ? '<div class="actions" style="padding:0 18px"><button class="linkbtn" id="gRepick" style="margin:0">Use a different Vault folder</button></div>' : ''}`
       : '<p class="pp">Open this page on a computer with your Vault download to make the print files.</p>'}
-      ${canOpenApp ? `<details class="termfold"><summary>Other ways on this Mac</summary>
-      ${folders ? '' : `<div class="openrow"><button class="btn" id="gOpen">Build with VaultPrint and open Bambu Studio</button>
-        <p class="pnote" style="margin:0">Uses the VaultPrint helper: builds from your Vault download in Downloads, saves to <b>Vault prints</b> on your Desktop and opens Bambu Studio for you.</p></div>`}
-      <p class="pp">Or paste this into Terminal. ${folders ? 'It makes one folder per plate, with each STL named by how many to print.' : 'It builds the same project with Python and opens it.'}</p>
-      <div class="script">
-        <label>Where your Vault download lives<input id="gSrc" value="${esc(srcRoot)}" spellcheck="false"></label>
-        <label>Copy into<input id="gDest" value="${esc(destRoot)}" spellcheck="false"></label>
-        <pre class="code" id="gCode">${esc(scriptText(plates))}</pre>
-        <div class="actions"><button class="btn" id="gCopy">Copy script</button></div>
-      </div></details>` : ''}</div>`;
+      ${macPanel(plates, folders)}</div>`;
   }
   function bindGather(plates) {
     document.querySelectorAll('#gatherMode [data-mode]').forEach(b => b.onclick = () => { gatherMode = b.dataset.mode; store.set('gatherMode', gatherMode); renderPrint(); });
     if ($('gMake')) $('gMake').onclick = () => makeDownload(plates, false);
     if ($('gRepick')) $('gRepick').onclick = () => makeDownload(plates, true);
-    if ($('gOpen')) $('gOpen').onclick = () => openInBambu(plates);
-    if (!$('gCode')) return;
-    $('gSrc').onchange = e => { srcRoot = e.target.value.trim() || SRC_DEFAULT; store.set('src', srcRoot); $('gCode').textContent = scriptText(plates); };
-    $('gDest').onchange = e => { destRoot = e.target.value.trim() || '$HOME/Desktop/Vault prints'; store.set('dest', destRoot); $('gCode').textContent = scriptText(plates); };
-    $('gCopy').onclick = () => copy(scriptText(plates), 'Script copied', $('gCode'));
+    bindMac(plates);
   }
 
   // ---------- 4 · assembly guide ----------
@@ -2218,3 +2169,5 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   renderAll();
 })();
 </script>
+</body>
+</html>

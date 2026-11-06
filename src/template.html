@@ -1,7 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Vault Print Planner</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Unofficial planner for Vault by USSA: pick units, get the exact STL files and counts, check them against your printer and print plate by plate in Bambu Studio.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -131,8 +134,6 @@ details.more > div { display: grid; gap: 14px; margin-top: 14px; }
 .btn { border: 1px solid var(--line); background: var(--sheet); border-radius: 8px; padding: 8px 12px; font-weight: 600; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn:hover { border-color: var(--ink); }
-.qtybox { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
-.qtybox input { width: 56px; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; color: var(--ink); }
 
 .group { padding: 4px 0 6px; }
 .group h3 { margin: 0; padding: 12px 18px 6px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
@@ -193,11 +194,6 @@ dialog#viewer { position: fixed; }
 .script label { font-size: 12px; color: var(--muted); display: grid; gap: 4px; }
 .script input { background: var(--sheet-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-family: var(--f-mono); font-size: 12.5px; width: 100%; }
 pre.code { margin: 0; background: var(--sheet-2); border-radius: 8px; padding: 12px; overflow-x: auto; font-family: var(--f-mono); font-size: 12px; line-height: 1.55; max-height: 240px; }
-.blist { display: grid; }
-.bitem { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 10px 18px; border-top: 1px solid var(--line); align-items: center; }
-.bitem b { font-stretch: 112%; }
-.bitem small { color: var(--muted); display: block; }
-.bitem .ctl { display: flex; gap: 6px; align-items: center; }
 .empty { padding: 18px; color: var(--muted); }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 0 18px 14px; font-size: 12.5px; color: var(--muted); align-items: center; }
 .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); transform: translateX(-50%); background: var(--ink); color: var(--sheet); padding: 8px 14px; border-radius: 8px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
@@ -270,7 +266,6 @@ footer.site .ytbtn { text-decoration: none; color: var(--ink); }
 .issues { display: grid; gap: 6px; }
 .issue { font-size: 13.5px; border-radius: 8px; padding: 8px 10px; }
 .issue.bad { background: var(--bad-soft); } .issue.warn { background: var(--warn-soft); } .issue.info { background: var(--sheet-2); } .issue.ok { background: var(--ok-soft); }
-.addbox { display: grid; gap: 10px; padding: 14px 18px 16px; }
 .addrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .addrow select { background: var(--sheet-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; max-width: 100%; }
 
@@ -287,7 +282,6 @@ footer.site .ytbtn { text-decoration: none; color: var(--ink); }
 .plate-head b { font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
 .plate-head span { font-size: 12.5px; color: var(--muted); text-align: right; }
 .platesvg { width: 100%; height: auto; max-width: 100%; display: block; }
-.chips { display: flex; gap: 4px; flex-wrap: wrap; }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
 .sw-body { background: #d4d6d3; } .sw-inner { background: #3a3d3f; } .sw-accent { background: #e8742f; } .sw-tpu { background: #222; } .sw-big { background: #d4d6d3; } .sw-small { background: #3a3d3f; } .sw-all { background: linear-gradient(90deg, #d4d6d3 50%, #3a3d3f 50%); }
 .pitems { display: grid; gap: 6px; }
@@ -343,6 +337,8 @@ details.termfold[open] > summary { color: var(--ink); }
 .step .uses .thumb { width: 40px; height: 40px; }
 .step .hwchip { font-size: 12px; background: var(--sheet-2); border-radius: 6px; padding: 3px 7px; }
 </style>
+</head>
+<body>
 
 <div class="wrap">
   <header class="top">
@@ -422,211 +418,6 @@ details.termfold[open] > summary { color: var(--ink); }
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog id="viewer" aria-label="Part preview"><button type="button" class="vclose" id="viewerClose" aria-label="Close preview">&times;</button><div id="viewerBody" class="vbody"></div></dialog>
 
-<script type="text/plain" id="py3mf">
-# Builds ONE Bambu Studio project (.3mf) with every plate from the planner, parts laid out as planned.
-# usage: python3 make3mf.py <vault folder> <output .3mf> <plates.json>
-# Step 1 writes the plates and layout. Step 2 has Bambu Studio's own command line re-save it with the printer's
-# profiles, which turns it into a real project; without that, the Bambu Studio app imports everything onto one plate.
-# Note: no 'Application: BambuStudio' header on purpose. With it, Bambu Studio expects full printer settings inside
-# the file and crashes without them. Without it, Bambu still reads the plates from Metadata/model_settings.config.
-# plates.json: {"bed": [256, 256], "bambu": [printer, process, PLA filament, TPU filament] profile names or null,
-#   "plates": [{"name": "...", "pieces": [{"path", "name", "spin", "x", "y", "w", "h", "supports", "walls", "infill", "brim", "diag", "corner", "tpu"}]}]}
-# diag: turn the part onto the back-left to front-right diagonal and centre it in its box.
-# corner: [x, y] footprint corner (0 = low side) the part's top should sit over; used to stand USSA's manual supports
-# with their full-height edge against the part beside them.
-import json, math, os, shutil, struct, subprocess, sys, tempfile, zipfile
-
-src, final_out, plan_path = sys.argv[1], sys.argv[2], sys.argv[3]
-out = os.path.join(os.path.dirname(final_out), '.layout-' + os.path.basename(final_out))
-plan = json.load(open(plan_path))
-BED_W, BED_D = plan['bed']
-CT = ('<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
-      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
-      '<Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/>'
-      '<Default Extension="config" ContentType="text/xml"/></Types>')
-RELS = ('<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-        '<Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>')
-
-
-def esc(s):
-    return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
-
-
-def load(path, spin):
-    """Read a binary STL, weld shared vertices, undo the export spin, and move it to start at 0,0,0."""
-    data = open(os.path.join(src, path), 'rb').read()
-    n = struct.unpack_from('<I', data, 80)[0]
-    index, raw, tris = {}, [], []
-    for i in range(n):
-        o = 96 + i * 50
-        t = []
-        for k in (0, 12, 24):
-            b = data[o + k:o + k + 12]
-            j = index.get(b)
-            if j is None:
-                j = index[b] = len(raw)
-                raw.append(b)
-            t.append(j)
-        if t[0] != t[1] and t[1] != t[2] and t[0] != t[2]:
-            tris.append(t)
-    c, s = math.cos(math.radians(-spin)), math.sin(math.radians(-spin))
-    pts = []
-    for b in raw:
-        x, y, z = struct.unpack('<fff', b)
-        pts.append((x * c - y * s, x * s + y * c, z))
-    mn = [min(p[i] for p in pts) for i in range(3)]
-    mx = [max(p[i] for p in pts) for i in range(3)]
-    pts = [(p[0] - mn[0], p[1] - mn[1], p[2] - mn[2]) for p in pts]
-    return pts, tris, mx[0] - mn[0], mx[1] - mn[1]
-
-
-def quarter_turn(pts, w, h):
-    """Turn a loaded mesh a quarter turn counter-clockwise about its vertical axis, keeping it at 0,0."""
-    return [(h - p[1], p[0], p[2]) for p in pts], h, w
-
-
-def top_corner(pts, w, h):
-    zt = max(p[2] for p in pts)
-    top = [p for p in pts if p[2] > zt - 1]
-    return [0 if sum(p[0] for p in top) / len(top) < w / 2 else 1, 0 if sum(p[1] for p in top) / len(top) < h / 2 else 1]
-
-
-def placed(p):
-    pts, tris, wx, wy = load(p['path'], p['spin'])
-    if p.get('diag'):
-        pts, tris, wx, wy = load(p['path'], p['spin'] + (45 if wx >= wy else -45))
-    if p.get('corner'):
-        for _ in range(4):
-            if top_corner(pts, wx, wy) == list(p['corner']):
-                break
-            pts, wx, wy = quarter_turn(pts, wx, wy)
-    return pts, tris, wx, wy
-
-
-# Bambu Studio lays plates out in a grid, roughly square, with a fifth of a plate between them.
-count = len(plan['plates'])
-root = math.sqrt(count)
-cols = int(round(root)) + (1 if root > round(root) else 0)
-stride_x, stride_y = BED_W * 1.2, BED_D * 1.2
-
-mesh_ids, sizes, items, settings = {}, {}, [], []
-next_id = 1
-with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
-    z.writestr('[Content_Types].xml', CT)
-    z.writestr('_rels/.rels', RELS)
-    with z.open('3D/3dmodel.model', 'w', force_zip64=True) as f:
-        f.write(b'<?xml version="1.0" encoding="UTF-8"?><model unit="millimeter" xml:lang="en-US" '
-                b'xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:BambuStudio="http://schemas.bambulab.com/package/2021">'
-                b'<metadata name="Title">Vault print plan</metadata><resources>')
-        plates_xml = []
-        for pi, plate in enumerate(plan['plates']):
-            print('Plate %d of %d: %s' % (pi + 1, count, plate['name']), flush=True)
-            ox, oy = (pi % cols) * stride_x, -(pi // cols) * stride_y
-            instances = []
-            for p in plate['pieces']:
-                key = (p['path'], p['spin'], bool(p.get('diag')), tuple(p.get('corner') or ()))
-                if key not in mesh_ids:
-                    # Each STL is written once as a mesh; every printed copy points at it
-                    pts, tris, wx, wy = placed(p)
-                    mesh_ids[key], sizes[key] = next_id, (wx, wy)
-                    f.write(('<object id="%d" type="model"><mesh><vertices>' % next_id).encode())
-                    for a in range(0, len(pts), 50000):
-                        f.write(''.join('<vertex x="%.4f" y="%.4f" z="%.4f"/>' % v for v in pts[a:a + 50000]).encode())
-                    f.write(b'</vertices><triangles>')
-                    for a in range(0, len(tris), 50000):
-                        f.write(''.join('<triangle v1="%d" v2="%d" v3="%d"/>' % tuple(t) for t in tris[a:a + 50000]).encode())
-                    f.write(b'</triangles></mesh></object>')
-                    next_id += 1
-                    del pts, tris
-                wx, wy = sizes[key]
-                x, y = ox + p['x'], oy + p['y']
-                # Lay the part the way the plan placed it: as-is, or turned 90 degrees on the plate
-                if p.get('diag') or p.get('corner'):  # already turned; centre it in its box
-                    tr = '1 0 0 0 1 0 0 0 1 %.3f %.3f 0' % (x + (p['w'] - wx) / 2, y + (p['h'] - wy) / 2)
-                elif abs(wx - p['w']) + abs(wy - p['h']) <= abs(wy - p['w']) + abs(wx - p['h']):
-                    tr = '1 0 0 0 1 0 0 0 1 %.3f %.3f 0' % (x, y)
-                else:
-                    tr = '0 1 0 -1 0 0 0 0 1 %.3f %.3f 0' % (x + wy, y)
-                oid = next_id
-                next_id += 1
-                f.write(('<object id="%d" name="%s" type="model"><components><component objectid="%d"/></components></object>'
-                         % (oid, esc(p['name']), mesh_ids[key])).encode())
-                items.append('<item objectid="%d" transform="%s" printable="1"/>' % (oid, tr))
-                # Per-part print settings that override the printer profile for this object only:
-                # supports for parts whose files say "Turn On Supports", extra walls/infill for parts that bear load
-                sup = '<metadata key="enable_support" value="1"/>' if p.get('supports') else ''
-                if p.get('walls'):
-                    sup += '<metadata key="wall_loops" value="%d"/>' % p['walls']
-                if p.get('infill'):
-                    sup += '<metadata key="sparse_infill_density" value="%d%%"/>' % p['infill']
-                if p.get('brim'):  # tall, thin parts: a brim so they don't wobble loose
-                    sup += '<metadata key="brim_type" value="outer_only"/><metadata key="brim_width" value="%g"/>' % (5 if p['brim'] is True else p['brim'])
-                settings.append('<object id="%d"><metadata key="name" value="%s"/><metadata key="extruder" value="%d"/>%s'
-                                '<part id="%d" subtype="normal_part"><metadata key="name" value="%s"/></part></object>'
-                                % (oid, esc(p['name']), 2 if p.get('tpu') and len(plan.get('bambu') or []) > 3 else 1, sup, mesh_ids[key], esc(p['name'])))
-                instances.append('<model_instance><metadata key="object_id" value="%d"/><metadata key="instance_id" value="0"/>'
-                                 '<metadata key="identify_id" value="%d"/></model_instance>' % (oid, oid))
-            plates_xml.append('<plate><metadata key="plater_id" value="%d"/><metadata key="plater_name" value="%s"/>'
-                              '<metadata key="locked" value="false"/>%s</plate>' % (pi + 1, esc(plate['name']), ''.join(instances)))
-            mesh_ids.clear()  # meshes are not shared across plates; keeps memory down on big builds
-            sizes.clear()
-        f.write(('</resources><build>' + ''.join(items) + '</build></model>').encode())
-    z.writestr('Metadata/model_settings.config', '<?xml version="1.0" encoding="UTF-8"?><config>' + ''.join(settings) + ''.join(plates_xml) + '<assemble></assemble></config>')
-
-APP = '/Applications/BambuStudio.app'
-EXE, PROFILES = APP + '/Contents/MacOS/BambuStudio', APP + '/Contents/Resources/profiles/BBL'
-
-
-def profile(kind, name):
-    """Bambu's profile files build on parent files; merge the chain into one complete profile."""
-    chain = []
-    while name:
-        with open(os.path.join(PROFILES, kind, name + '.json')) as fh:
-            d = json.load(fh)
-        chain.append(d)
-        name = d.get('inherits')
-    merged = {}
-    for d in reversed(chain):
-        merged.update(d)
-    merged.pop('inherits', None)
-    return merged
-
-
-def save_as_project(names):
-    if not names or not os.path.exists(EXE):
-        return 'Bambu Studio not found in Applications' if names else 'no Bambu profile for this printer'
-    work = tempfile.mkdtemp()
-    try:
-        files = []
-        for i, name in enumerate(names):  # printer, process, then one or more filaments
-            kind = ('machine', 'process')[i] if i < 2 else 'filament'
-            path = os.path.join(work, '%d-%s.json' % (i, kind))
-            with open(path, 'w') as fh:
-                json.dump(profile(kind, name), fh)
-            files.append(path)
-        print('Saving as a Bambu Studio project for', names[0], '(this can take a few minutes)...', flush=True)
-        r = subprocess.run([EXE, '--load-settings', files[0] + ';' + files[1], '--load-filaments', ';'.join(files[2:]), '--arrange', '0',
-                            '--outputdir', work, '--export-3mf', 'project.3mf', out], capture_output=True, timeout=3600)
-        made = os.path.join(work, 'project.3mf')
-        if not os.path.exists(made):
-            return 'Bambu Studio could not save it (exit code %d)' % r.returncode
-        shutil.move(made, final_out)
-        return None
-    except Exception as e:
-        return str(e)
-    finally:
-        shutil.rmtree(work, ignore_errors=True)
-
-
-problem = save_as_project(plan.get('bambu'))
-if problem:
-    shutil.move(out, final_out)
-    print('NOTE:', problem + '. The file will open in Bambu Studio with everything on one plate; '
-          'use Arrange there, or pick a Bambu printer in the planner.')
-else:
-    os.remove(out)
-print('Done: %d plates in %s' % (count, final_out))
-</script>
 
 <script>
 /*CATALOG*/
@@ -689,8 +480,6 @@ print('Done: %d plates in %s' % (count, final_out))
   let plateColors = store.get('plateColors', store.get('byColor', true) ? 'renders' : 'one');
   let mixSupports = store.get('mixSupports', false); // parts that need supports share plates with the rest
   let gatherMode = store.get('gatherMode', 'project'); // 'project' = one Bambu Studio .3mf with every plate, 'folders' = STLs per plate
-  let srcRoot = store.get('src', SRC_DEFAULT);
-  let destRoot = store.get('dest', '$HOME/Desktop/Vault prints');
   let printed = store.get('printed', {});   // path -> pieces already printed
   let stepsDone = store.get('steps', {});
   let editing = null;                       // { t, l, u } when a tower unit is loaded into the editor
@@ -1631,19 +1420,6 @@ print('Done: %d plates in %s' % (count, final_out))
     return { bed: [printer.v[0], printer.v[1]], bambu: preset().bambu || null, plates: plates.map(pl => ({ name: plateFolder(pl),
       pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, spin: +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + (it.p.pad || 0)).toFixed(2), y: +(it.y + (it.p.pad || 0)).toFixed(2), w: +(it.w - 2 * (it.p.pad || 0)).toFixed(2), h: +(it.h - 2 * (it.p.pad || 0)).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: true } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: true } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
   }
-  // The button hands the plan to the VaultPrint app on this Mac. Only on a Mac with a mouse or trackpad:
-  // phones and iPads can't build the project (the STL files and Bambu Studio are on the Mac).
-  const canOpenApp = !window.VAULT_PUBLIC && /Mac/.test(navigator.platform || navigator.userAgent) && navigator.maxTouchPoints === 0 && matchMedia('(pointer: fine)').matches;
-  async function openInBambu(plates) {
-    const bytes = new TextEncoder().encode(JSON.stringify(planFor(plates)));
-    const cs = new CompressionStream('deflate-raw');
-    const w = cs.writable.getWriter(); w.write(bytes); w.close();
-    const zipped = new Uint8Array(await new Response(cs.readable).arrayBuffer());
-    let bin = ''; zipped.forEach(b => { bin += String.fromCharCode(b); });
-    const b64 = btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    location.href = 'vaultprint://build?v=1&plan=' + b64;
-    toast('Sent to VaultPrint. Bambu Studio opens when the project is ready; watch for a notification.');
-  }
   // ---------- Bambu Studio project, built right here in the browser ----------
   // Reads the STLs from the Vault folder the user picks (nothing is uploaded) and writes the same .3mf layout
   // Bambu Studio saves itself: one object file per part, every plate with its name, and the printer's full
@@ -1890,25 +1666,8 @@ print('Done: %d plates in %s' % (count, final_out))
       progress(0, e.message || String(e));
     } finally { btns.forEach(b => { b.disabled = false; }); }
   }
-  function scriptText(plates) {
-    const q = s => '"' + s.replace(/(["\\$`])/g, '\\$1') + '"';
-    const qd = s => '"' + s.replace(/(["\\`])/g, '\\$1') + '"'; // keeps $HOME expandable
-    const out = [`SRC=${q(srcRoot)}`, `DEST=${qd(destRoot.replace(/\/$/, ''))}`, 'mkdir -p "$DEST"'];
-    if (!plates.length) return out.concat('# Nothing left to print.').join('\n');
-    if (gatherMode === 'folders') {
-      plates.forEach(pl => {
-        out.push(`mkdir -p "$DEST/${plateFolder(pl)}"`);
-        pl.lines.forEach(x => out.push(`cp "$SRC/${x.l.file.path.replace(/(["\\$`])/g, '\\$1')}" "$DEST/${plateFolder(pl)}/${x.count}x ${x.l.label.replace(/[\/:"$`\\]/g, '-')} - ${fileName(x.l.file.path).replace(/(["\\$`])/g, '\\$1')}"`));
-      });
-      out.push('open "$DEST"');
-    } else {
-      out.push("cat > \"$DEST/.plates.json\" <<'JSON'", JSON.stringify(planFor(plates)), 'JSON');
-      out.push("cat > \"$DEST/.make3mf.py\" <<'PY'", $('py3mf').textContent.trim(), 'PY');
-      out.push('python3 "$DEST/.make3mf.py" "$SRC" "$DEST/Vault print plan.3mf" "$DEST/.plates.json" && open -a BambuStudio "$DEST/Vault print plan.3mf"');
-    }
-    return out.join('\n');
-  }
   const canMake = canPickFolder && matchMedia('(pointer: fine)').matches; // folder picking needs a computer
+  const macPanel = () => '', bindMac = () => {};
   function gatherPanel(plates) {
     const folders = gatherMode === 'folders', bambu = !!preset().bambu;
     return `<div class="panel"><h3 class="ph">Get your print files</h3>
@@ -1925,26 +1684,13 @@ print('Done: %d plates in %s' % (count, final_out))
         <div class="gprog" id="gProg" hidden><div class="bar"><i></i></div><span></span></div>
         ${'showDirectoryPicker' in window ? '<div class="actions" style="padding:0 18px"><button class="linkbtn" id="gRepick" style="margin:0">Use a different Vault folder</button></div>' : ''}`
       : '<p class="pp">Open this page on a computer with your Vault download to make the print files.</p>'}
-      ${canOpenApp ? `<details class="termfold"><summary>Other ways on this Mac</summary>
-      ${folders ? '' : `<div class="openrow"><button class="btn" id="gOpen">Build with VaultPrint and open Bambu Studio</button>
-        <p class="pnote" style="margin:0">Uses the VaultPrint helper: builds from your Vault download in Downloads, saves to <b>Vault prints</b> on your Desktop and opens Bambu Studio for you.</p></div>`}
-      <p class="pp">Or paste this into Terminal. ${folders ? 'It makes one folder per plate, with each STL named by how many to print.' : 'It builds the same project with Python and opens it.'}</p>
-      <div class="script">
-        <label>Where your Vault download lives<input id="gSrc" value="${esc(srcRoot)}" spellcheck="false"></label>
-        <label>Copy into<input id="gDest" value="${esc(destRoot)}" spellcheck="false"></label>
-        <pre class="code" id="gCode">${esc(scriptText(plates))}</pre>
-        <div class="actions"><button class="btn" id="gCopy">Copy script</button></div>
-      </div></details>` : ''}</div>`;
+      ${macPanel(plates, folders)}</div>`;
   }
   function bindGather(plates) {
     document.querySelectorAll('#gatherMode [data-mode]').forEach(b => b.onclick = () => { gatherMode = b.dataset.mode; store.set('gatherMode', gatherMode); renderPrint(); });
     if ($('gMake')) $('gMake').onclick = () => makeDownload(plates, false);
     if ($('gRepick')) $('gRepick').onclick = () => makeDownload(plates, true);
-    if ($('gOpen')) $('gOpen').onclick = () => openInBambu(plates);
-    if (!$('gCode')) return;
-    $('gSrc').onchange = e => { srcRoot = e.target.value.trim() || SRC_DEFAULT; store.set('src', srcRoot); $('gCode').textContent = scriptText(plates); };
-    $('gDest').onchange = e => { destRoot = e.target.value.trim() || '$HOME/Desktop/Vault prints'; store.set('dest', destRoot); $('gCode').textContent = scriptText(plates); };
-    $('gCopy').onclick = () => copy(scriptText(plates), 'Script copied', $('gCode'));
+    bindMac(plates);
   }
 
   // ---------- 4 · assembly guide ----------
@@ -2073,3 +1819,5 @@ print('Done: %d plates in %s' % (count, final_out))
   renderAll();
 })();
 </script>
+</body>
+</html>
