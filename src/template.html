@@ -55,9 +55,10 @@ header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: 
 .brand h1 { margin: 0; font-family: var(--f-display); font-stretch: 125%; font-weight: 800; font-size: clamp(26px, 4vw, 38px); letter-spacing: -0.01em; line-height: 1; text-wrap: balance; }
 .brand p { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
 .brand .credit { font-size: 12.5px; }
-.kofi { align-self: start; display: block; line-height: 0; flex: none; }
+.kofi { align-self: start; flex: none; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 10px; border-radius: 10px; background: #72a4f2; color: #fff; font-weight: 700; font-size: 14.5px; text-decoration: none; white-space: nowrap; }
+.kofi:hover { background: #5f95ec; }
+.kofi img { height: 19px; width: auto; border: 0; }
 .brand { flex: 1 1 0; min-width: min(100%, 300px); }
-.kofi img { height: 36px; width: auto; border: 0; }
 .maker { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-weight: 600; font-size: 14px; }
 .ytbtn { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 5px 12px 5px 9px; font-size: 13px; font-weight: 700; text-decoration: none; }
 .ytbtn:hover { border-color: var(--muted); }
@@ -350,7 +351,7 @@ details.termfold[open] > summary { color: var(--ink); }
       <p>Because “Hidden Key Part 2 (Turn on Supports)” shouldn’t be a riddle.</p>
       <p class="credit">Unofficial and fan-made for <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault by USSA</a>. Not affiliated with USSA.</p>
     </div>
-    <a class="kofi" href="https://ko-fi.com/E8R32A64D1" target="_blank" rel="noopener"><img height="36" src="https://storage.ko-fi.com/cdn/kofi6.png?v=6" alt="Buy Me a Coffee at ko-fi.com"></a>
+    <a class="kofi" href="https://ko-fi.com/E8R32A64D1" target="_blank" rel="noopener"><img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="">Support me on Ko-fi</a>
   </header>
 
   <nav class="nav">
