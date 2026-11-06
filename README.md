@@ -4,7 +4,7 @@ An unofficial, fan-made planner for [Vault by USSA](https://www.ussadesign.com/p
 
 Pick a unit and the planner tells you exactly which STL files to print and how many. You can stack units into towers and check every part against your printer's bed. It packs the parts onto plates and makes a Bambu Studio project with one plate per tab.
 
-**Use it:** [open the planner](https://rmacasieb.github.io/vault-print-planner/). It runs entirely in your browser.
+**Use it:** [open the planner](https://vault.romy.io). It runs entirely in your browser.
 
 > This project is not made, endorsed or supported by USSA. It contains no Vault STL files: you need your own copy, [bought from USSA](https://www.ussadesign.com/products/vault).
 
