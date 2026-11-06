@@ -713,8 +713,11 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const hw = [];
     const push = (item, qty, why) => qty && hw.push({ item, qty, why });
     if (c.type === 'drawer') {
-      const inserts = c.w === 'L2' || c.w === 'XL2' ? 2 : 1;
-      push('M4 × 14 mm button-head bolt', (c.h === 1 ? 4 : 6) * inserts, 'Drawer front to box');
+      // Front to box: one bolt per hole in the drawer front, counted in the STLs (Drawer Assembly 6/8 shows the 2 on an S 1F).
+      // S: 2 at 1F, 4 at 2F/4F. M and L: 4 at 1F, 6 at 2F/4F. XL (1F only): 4. L² is two S drawers, XL² an S and an M (both 1F).
+      const front = (w, h) => w === 'S' ? (h === 1 ? 2 : 4) : w === 'XL' ? 4 : (h === 1 ? 4 : 6);
+      const bolts = c.w === 'L2' ? 2 * front('S', c.h) : c.w === 'XL2' ? front('S', 1) + front('M', 1) : front(c.w, c.h);
+      push('M4 × 14 mm button-head bolt', bolts, 'Drawer front to box');
       if (c.roof === 'grid' && c.topHandle) push('M6 × 50 mm countersunk bolt', 2, 'Roof top handle');
     } else {
       push('M4 × 14 mm button-head bolt', 16, 'Case hinge tops and locks');
