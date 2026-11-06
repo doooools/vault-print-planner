@@ -409,7 +409,7 @@ details.termfold[open] > summary { color: var(--ink); }
     <div class="fmaker">
       <div class="maker"><span>Made by Romy</span>
         <a class="ytbtn" href="https://www.youtube.com/@romyromes?sub_confirmation=1" target="_blank" rel="noopener"><svg viewBox="0 0 24 17" width="20" height="14" aria-hidden="true"><rect width="24" height="17" rx="4" fill="#ff0033"/><path d="M9.6 4.6v7.8l6.4-3.9z" fill="#fff"/></svg>Watch on YouTube</a>
-        <a class="vidlink" href="https://youtu.be/89nARFpuMbw" target="_blank" rel="noopener">See how it was built</a></div>
+        <a class="vidlink" href="https://youtu.be/89nARFpuMbw" target="_blank" rel="noopener">See why it was built</a></div>
       <p>An unofficial fan project. Vault, its designs and its files belong to <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">USSA</a>; you need your own copy of the files to print anything.</p>
     </div>
     <p class="fnotes" id="footnote"></p>
@@ -2027,10 +2027,10 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       </div>
       ${canMake ? `<div class="openrow"><button class="btn primary big" id="gMake">${folders ? 'Save STL folders' : bambu ? 'Make Bambu Studio project' : 'Make 3MF project'}</button>
         <p class="pnote" style="margin:0">${folders
-          ? 'Saves <b>Vault prints.zip</b>: a folder per plate, each STL named by how many to print. Drag a plate\u2019s files into any slicer and arrange.'
-          : bambu ? `Saves <b>Vault print plan.3mf</b>. Open it in Bambu Studio and every plate below is its own tab, set up for the ${esc(preset().name)} (0.20 mm Standard, PLA Basic) and laid out as shown, clear of the no-print corner. Supports are on where USSA\u2019s files ask for them or Bambu Studio would warn about overhangs, and walls are set per part: 2 by default, 3 where bolts go in or parts slide, 4 walls and 25% infill for parts that carry the tower.`
-          : 'Saves <b>Vault print plan.3mf</b> with every part placed as planned. Only Bambu printers get separate plate tabs; for this printer, STL folders are often easier.'}
-          The first time, pick your Vault download folder (${esc(SRC_DEFAULT.split('/').pop())}). The files are read on this computer; nothing is uploaded. Only plates not yet marked printed are included.</p></div>
+          ? 'One folder per plate, each STL named with how many to print, ready to drag into any slicer.'
+          : bambu ? `Every plate opens as its own Bambu Studio tab, already set up for the ${esc(preset().name)}: supports where parts need them, extra walls where they carry weight, clear of the no-print corner.`
+          : 'Bambu Studio is the only slicer that splits a project into plates, so for this printer STL folders are often easier.'}
+          <br><b>Why it asks for your Vault folder:</b> this site doesn\u2019t host USSA\u2019s files, so it reads the parts it needs from your own copy (${esc(SRC_DEFAULT.split('/').pop())}). That happens on your computer and nothing is uploaded. Plates you\u2019ve marked printed are left out.</p></div>
         <div class="gprog" id="gProg" hidden><div class="bar"><i></i></div><span></span></div>
         ${'showDirectoryPicker' in window ? '<div class="actions" style="padding:0 18px"><button class="linkbtn" id="gRepick" style="margin:0">Use a different Vault folder</button></div>' : ''}`
       : '<p class="pp">Open this page on a computer with your Vault download to make the print files.</p>'}
