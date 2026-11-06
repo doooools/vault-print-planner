@@ -27,7 +27,7 @@ Your files are read on your own computer and never uploaded. Your towers and pro
 
 - The Vault STL download, release **261021** (folder `261021_VAULT_USSA_S`). Other releases may rename files, and the planner will say which parts it can't find.
 - A desktop browser. Chrome or Edge works best and remembers your Vault folder. Safari and Firefox work too, but ask for the folder each time.
-- Bambu Studio projects come with settings for these printers: P1S, X1C, P1P, A1, A1 mini, H2S and H2D (single nozzle). Each uses the 0.4 mm nozzle, 0.20 mm Standard and PLA Basic. Other printers still get bed-fit checks and plate plans.
+- Bambu Studio projects come with settings for these printers: P1S, P2S, X1C, X2D, P1P, A1, A1 mini, A2L, H2S, H2D, H2D Pro, H2C and H3C (the dual-nozzle ones use the left nozzle only). Each uses the 0.4 mm nozzle, 0.20 mm Standard and PLA Basic. Other printers still get bed-fit checks and plate plans.
 
 ## No support
 
