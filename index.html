@@ -2112,7 +2112,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       ${canMake ? `<ol class="gsteps">
         <li class="gstep${fs.ready ? ' done' : ''}"><span class="gnum">1</span>
           <div class="gtext"><b>Choose your unzipped Vault folder</b>
-            <small>The <code>${esc(SRC_DEFAULT.split('/').pop())}</code> folder from USSA. It’s read on your computer; nothing is uploaded.</small>
+            <small>The <code>${esc(SRC_DEFAULT.split('/').pop())}</code> folder from USSA. If your browser asks to let this site view it, click <b>Allow</b>: the page only reads the part files to build the project, and nothing is uploaded or changed.</small>
             ${fs.html}</div>
           <button class="btn${fs.ready ? '' : ' primary'}" id="gPick">${picked ? 'Change folder' : 'Choose folder…'}</button></li>
         <li class="gstep"><span class="gnum">2</span>
