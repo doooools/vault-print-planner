@@ -58,22 +58,29 @@ button { cursor: pointer; }
 .num { font-variant-numeric: tabular-nums; }
 
 /* Header */
-header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 14px 24px; padding-bottom: 4px; }
-.brand h1 { margin: 0; font-family: var(--f-display); font-stretch: 125%; font-weight: 800; font-size: clamp(26px, 4vw, 38px); letter-spacing: -0.01em; line-height: 1; text-wrap: balance; }
-.brand p { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
-.brand .credit { font-size: 12.5px; }
-.kofi { align-self: start; flex: none; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 10px; border-radius: 10px; background: #ff6433; color: #fff; font-weight: 700; font-size: 14.5px; text-decoration: none; white-space: nowrap; }
-.kofi:hover { background: #ef531f; }
-.kofi img { height: 19px; width: auto; border: 0; }
-.brand { flex: 1 1 0; min-width: min(100%, 300px); }
-.hside { align-self: start; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px 14px; }
-.hside .maker { color: var(--ink); }
-@media (max-width: 640px) { .hside { justify-content: flex-start; gap: 10px; } .hside .vidlink { display: none; } }
-.maker { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-weight: 600; font-size: 14px; }
-.ytbtn { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 5px 12px 5px 9px; font-size: 13px; font-weight: 700; text-decoration: none; }
-.ytbtn:hover { border-color: var(--muted); }
-.vidlink { color: var(--muted); font-size: 13px; font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
-.brand .credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+header.top { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 16px 32px; padding-bottom: 6px; }
+.brand h1 { margin: 0; font-family: var(--f-display); font-stretch: 125%; font-weight: 800; font-size: clamp(28px, 4vw, 38px); letter-spacing: -0.01em; line-height: 1; text-wrap: balance; }
+.brand p { margin: 8px 0 0; color: var(--muted); max-width: 62ch; text-wrap: pretty; }
+.hside { display: grid; justify-items: end; gap: 8px; }
+.byline { margin: 0; font-size: 13px; color: var(--muted); }
+.byline a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.byline a:hover { color: var(--ink); }
+.hbtns { display: flex; gap: 8px; }
+.hbtn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 38px; padding: 0 14px 0 11px; border-radius: 10px; font-weight: 700; font-size: 14px; text-decoration: none; white-space: nowrap; }
+.hbtn.yt { border: 1px solid var(--line); background: var(--sheet); color: var(--ink); }
+.hbtn.yt:hover { border-color: var(--muted); }
+.hbtn.kofi { background: #ff6433; color: #fff; }
+.hbtn.kofi:hover { background: #ef531f; }
+.hbtn img { height: 19px; width: auto; border: 0; }
+@media (max-width: 860px) {
+  header.top { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .hside { justify-items: start; gap: 6px; }
+}
+@media (max-width: 640px) {
+  .hside { justify-items: stretch; }
+  .hbtns { display: grid; grid-template-columns: 1fr 1fr; }
+  .hbtn .lg { display: none; }
+}
 .printer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 12px; }
 .printer > label:not(.switch) { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .printer select { background: transparent; border: 0; font-weight: 600; padding: 2px 0; }
@@ -212,10 +219,11 @@ pre.code { margin: 0; background: var(--sheet-2); border-radius: 8px; padding: 1
 .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); transform: translateX(-50%); background: var(--ink); color: var(--sheet); padding: 8px 14px; border-radius: 8px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
 .toast.show { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
-footer.site { display: grid; justify-items: center; text-align: center; gap: 6px; border-top: 1px solid var(--line); margin-top: 18px; padding: 22px 0 8px; color: var(--muted); font-size: 12.5px; }
-footer.site h2 { margin: 0; font-size: 13px; color: var(--ink); }
-footer.site p { margin: 0; max-width: 72ch; text-wrap: pretty; }
+footer.site { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 18px 40px; border-top: 1px solid var(--line); margin-top: 24px; padding: 22px 0 8px; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+footer.site h2 { margin: 0 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--ink); }
+footer.site p { margin: 0; max-width: 75ch; text-wrap: pretty; }
 footer.site a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+@media (max-width: 760px) { footer.site { grid-template-columns: minmax(0, 1fr); } }
 /* ---- v3: tabs as top-level navigation, towers, plates, guide ---- */
 .nav { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
 .nav .tabs button { padding: 8px 16px; font-size: 15px; }
@@ -382,13 +390,13 @@ details.termfold[open] > summary { color: var(--ink); }
     <div class="brand">
       <h1>Vault Print Planner</h1>
       <p>Because “Hidden Key Part 2 (Turn on Supports)” shouldn’t be a riddle.</p>
-      <p class="credit">Unofficial and fan-made for <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault by USSA</a>. Not affiliated with USSA. You need your own copy of their files to print anything.</p>
     </div>
     <div class="hside">
-      <div class="maker"><span>Made by Romy</span>
-        <a class="ytbtn" href="https://www.youtube.com/@romyromes?sub_confirmation=1" target="_blank" rel="noopener"><svg viewBox="0 0 24 17" width="20" height="14" aria-hidden="true"><rect width="24" height="17" rx="4" fill="#ff0033"/><path d="M9.6 4.6v7.8l6.4-3.9z" fill="#fff"/></svg>Watch on YouTube</a>
-        <a class="vidlink" href="https://youtu.be/89nARFpuMbw" target="_blank" rel="noopener">See why it was built</a></div>
-      <a class="kofi" href="https://ko-fi.com/E8R32A64D1" target="_blank" rel="noopener"><img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="">Support me on Ko-fi</a>
+      <p class="byline">An unofficial fan project by Romy · <a href="https://youtu.be/89nARFpuMbw" target="_blank" rel="noopener">Why I built it</a></p>
+      <div class="hbtns">
+        <a class="hbtn yt" href="https://www.youtube.com/@romyromes?sub_confirmation=1" target="_blank" rel="noopener"><svg viewBox="0 0 24 17" width="20" height="14" aria-hidden="true"><rect width="24" height="17" rx="4" fill="#ff0033"/><path d="M9.6 4.6v7.8l6.4-3.9z" fill="#fff"/></svg><span><span class="lg">Watch on </span>YouTube</span></a>
+        <a class="hbtn kofi" href="https://ko-fi.com/E8R32A64D1" target="_blank" rel="noopener"><img src="https://storage.ko-fi.com/cdn/cup-border.png" alt=""><span>Support<span class="lg"> me</span> on Ko-fi</span></a>
+      </div>
     </div>
   </header>
 
@@ -448,8 +456,14 @@ details.termfold[open] > summary { color: var(--ink); }
   </div>
 
   <footer class="site">
-    <h2>Where the numbers come from</h2>
-    <p class="fnotes" id="footnote"></p>
+    <section>
+      <h2>Not affiliated with USSA</h2>
+      <p>An unofficial, fan-made planner. <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault</a>, its designs and its files belong to USSA; you need your own copy of the files to print anything.</p>
+    </section>
+    <section>
+      <h2>Where the numbers come from</h2>
+      <p class="fnotes" id="footnote"></p>
+    </section>
   </footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
