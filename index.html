@@ -66,6 +66,9 @@ header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: 
 .kofi:hover { background: #ef531f; }
 .kofi img { height: 19px; width: auto; border: 0; }
 .brand { flex: 1 1 0; min-width: min(100%, 300px); }
+.hside { align-self: start; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px 14px; }
+.hside .maker { color: var(--ink); }
+@media (max-width: 640px) { .hside { justify-content: flex-start; gap: 10px; } .hside .vidlink { display: none; } }
 .maker { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-weight: 600; font-size: 14px; }
 .ytbtn { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 5px 12px 5px 9px; font-size: 13px; font-weight: 700; text-decoration: none; }
 .ytbtn:hover { border-color: var(--muted); }
@@ -209,13 +212,10 @@ pre.code { margin: 0; background: var(--sheet-2); border-radius: 8px; padding: 1
 .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); transform: translateX(-50%); background: var(--ink); color: var(--sheet); padding: 8px 14px; border-radius: 8px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
 .toast.show { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
-footer.site { display: grid; grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); gap: 18px; border-top: 1px solid var(--line); margin-top: 18px; padding: 22px 0 8px; color: var(--muted); font-size: 12.5px; }
-footer.site p { margin: 0; max-width: 80ch; }
+footer.site { display: grid; justify-items: center; text-align: center; gap: 6px; border-top: 1px solid var(--line); margin-top: 18px; padding: 22px 0 8px; color: var(--muted); font-size: 12.5px; }
+footer.site h2 { margin: 0; font-size: 13px; color: var(--ink); }
+footer.site p { margin: 0; max-width: 72ch; text-wrap: pretty; }
 footer.site a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
-footer.site .ytbtn { text-decoration: none; color: var(--ink); }
-.fmaker { display: grid; gap: 10px; align-content: start; }
-.fmaker .maker { color: var(--ink); }
-@media (max-width: 860px) { footer.site { grid-template-columns: minmax(0, 1fr); } }
 /* ---- v3: tabs as top-level navigation, towers, plates, guide ---- */
 .nav { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
 .nav .tabs button { padding: 8px 16px; font-size: 15px; }
@@ -285,12 +285,17 @@ footer.site .ytbtn { text-decoration: none; color: var(--ink); }
 .bar > i { display: block; height: 100%; background: var(--ok); border-radius: 999px; }
 .progress-nums { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13.5px; color: var(--muted); }
 .progress-nums b { color: var(--ink); font-variant-numeric: tabular-nums; }
-.printopts { display: flex; flex-wrap: wrap; gap: 12px 22px; padding: 0 18px 14px; }
+.printopts { display: grid; gap: 14px; padding: 0 18px 12px; justify-items: start; }
+.printopts .seg { width: 100%; }
 .plates { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
 .plate { padding: 14px; display: grid; gap: 10px; align-content: start; }
 .plate-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
 .plate-head b { font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
 .plate-head span { font-size: 12.5px; color: var(--muted); text-align: right; }
+.plate.done { align-self: start; opacity: .75; }
+.plate.done .donerow { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13.5px; font-weight: 600; }
+.plate.done .donerow .ok { display: inline-flex; align-items: center; gap: 6px; color: var(--ok); }
+.plate.done .donerow svg { width: 16px; height: 16px; }
 .platesvg { width: 100%; height: auto; max-width: 100%; display: block; }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
 .sw-body { background: #d4d6d3; } .sw-inner { background: #3a3d3f; } .sw-accent { background: #e8742f; } .sw-tpu { background: #222; } .sw-big { background: #d4d6d3; } .sw-small { background: #3a3d3f; } .sw-all { background: linear-gradient(90deg, #d4d6d3 50%, #3a3d3f 50%); }
@@ -315,7 +320,7 @@ details.info > summary::before { content: "i"; display: inline-grid; place-items
 details.info > summary:hover, details.info[open] > summary { color: var(--ink); }
 details.info > p { margin: 6px 0 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
 .panel > details.info { padding: 0 18px 12px; }
-footer details.info > p { font-size: 12.5px; }
+
 
 /* Extra parts */
 .xsearch { padding: 0 18px 10px; }
@@ -377,9 +382,14 @@ details.termfold[open] > summary { color: var(--ink); }
     <div class="brand">
       <h1>Vault Print Planner</h1>
       <p>Because “Hidden Key Part 2 (Turn on Supports)” shouldn’t be a riddle.</p>
-      <p class="credit">Unofficial and fan-made for <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault by USSA</a>. Not affiliated with USSA.</p>
+      <p class="credit">Unofficial and fan-made for <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault by USSA</a>. Not affiliated with USSA. You need your own copy of their files to print anything.</p>
     </div>
-    <a class="kofi" href="https://ko-fi.com/E8R32A64D1" target="_blank" rel="noopener"><img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="">Support me on Ko-fi</a>
+    <div class="hside">
+      <div class="maker"><span>Made by Romy</span>
+        <a class="ytbtn" href="https://www.youtube.com/@romyromes?sub_confirmation=1" target="_blank" rel="noopener"><svg viewBox="0 0 24 17" width="20" height="14" aria-hidden="true"><rect width="24" height="17" rx="4" fill="#ff0033"/><path d="M9.6 4.6v7.8l6.4-3.9z" fill="#fff"/></svg>Watch on YouTube</a>
+        <a class="vidlink" href="https://youtu.be/89nARFpuMbw" target="_blank" rel="noopener">See why it was built</a></div>
+      <a class="kofi" href="https://ko-fi.com/E8R32A64D1" target="_blank" rel="noopener"><img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="">Support me on Ko-fi</a>
+    </div>
   </header>
 
   <nav class="nav">
@@ -438,13 +448,8 @@ details.termfold[open] > summary { color: var(--ink); }
   </div>
 
   <footer class="site">
-    <div class="fmaker">
-      <div class="maker"><span>Made by Romy</span>
-        <a class="ytbtn" href="https://www.youtube.com/@romyromes?sub_confirmation=1" target="_blank" rel="noopener"><svg viewBox="0 0 24 17" width="20" height="14" aria-hidden="true"><rect width="24" height="17" rx="4" fill="#ff0033"/><path d="M9.6 4.6v7.8l6.4-3.9z" fill="#fff"/></svg>Watch on YouTube</a>
-        <a class="vidlink" href="https://youtu.be/89nARFpuMbw" target="_blank" rel="noopener">See why it was built</a></div>
-      <p>An unofficial fan project. Vault, its designs and its files belong to <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">USSA</a>; you need your own copy of the files to print anything.</p>
-    </div>
-    <details class="info fnotes"><summary>Where the numbers come from</summary><p id="footnote"></p></details>
+    <h2>Where the numbers come from</h2>
+    <p class="fnotes" id="footnote"></p>
   </footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -867,13 +872,17 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   { const pp = PRINTERS.find(p => p.id === printer.id); if (!pp) printer = { id: 'p1s', v: PRINTERS[0].v }; else if (pp.id !== 'custom') printer = { id: pp.id, v: pp.v }; }
   const preset = () => PRINTERS.find(p => p.id === printer.id) || {};
   let onlyFits = store.get('onlyFits', false);
-  let spares = store.get('spares', true);
+  const spares = true; // +10% on small loseable parts and bolts
   // How plates are split by filament: 'renders' = USSA's three colours, 'size' = big parts in one colour and small
   // parts in another, 'one' = a single colour. Older saves only had the on/off byColor switch.
   let plateColors = store.get('plateColors', store.get('byColor', true) ? 'renders' : 'one');
   let mixSupports = store.get('mixSupports', false); // parts that need supports share plates with the rest
   let gatherMode = store.get('gatherMode', 'project'); // 'project' = one Bambu Studio .3mf with every plate, 'folders' = STLs per plate
   let printed = store.get('printed', {});   // path -> pieces already printed
+  // Plate numbers stay put as plates are marked printed, so they keep matching a project made earlier. Plates are
+  // packed from everything except `base` (parts printed before the current plan was made); plates marked printed
+  // since are kept by number and contents in `done`. Any other change (build, printer, settings) starts a new plan.
+  let plateState = store.get('plateState', {});   // scope -> { base: {path: count}, done: [{ n, sig }] }
   let stepsDone = store.get('steps', {});
   let editing = null;                       // { t, l, u } when a tower unit is loaded into the editor
   let view = store.get('view', 'unit');
@@ -1607,14 +1616,14 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   const needsBrim = f => f.dims[2] > 60 && f.dims[2] / Math.min(f.dims[0], f.dims[1]) > 4;
   const brimFits = f => Math.max(f.dims[0], f.dims[1]) + 2 * BRIM <= Math.max(printer.v[0], printer.v[1]) - 2 && Math.min(f.dims[0], f.dims[1]) + 2 * BRIM <= Math.min(printer.v[0], printer.v[1]) - 2;
   const brimOf = f => needsBrim(f) && brimFits(f);
-  function planPlates(lines) {
+  function planPlates(lines, base) {
     const V = printer.v, W = V[0] - 2 * MARGIN, H = V[1] - 2 * MARGIN;
     const ex = preset().excl, KX = ex ? ex[0] + EXCL_CLEAR : 0, KY = ex ? ex[1] + EXCL_CLEAR : 0;
     // Where a row starting at plate height y (absolute mm) may begin, so it stays clear of the no-print corner
     const rowStart = y => (ex && y < KY ? KX : MARGIN);
     const pieces = [], skipped = [];
     lines.forEach(l => {
-      const left = Math.max(0, l.total - (printed[pkey(l)] || 0));
+      const left = Math.max(0, l.total - ((base || printed)[pkey(l)] || 0));
       for (let i = 0; i < left; i++) {
         // Parts that would only fit tipped onto another face are left out too: a drawer box printed on its side
         // needs heavy supports and is weak along its layers, and as exported it would hang off the plate
@@ -1758,6 +1767,33 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       <text x="${V[0] / 2}" y="${V[1] + 15}" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="2" fill="var(--ink)">FRONT</text></svg>`;
   }
 
+  // Plates for the print step, numbered the same as when the plan was made. Marks each plate printed or not.
+  function stablePlates(lines, scope) {
+    const sig = pl => pl.lines.map(x => pkey(x.l) + '*' + x.count).sort().join('|');
+    const keys = lines.map(pkey);
+    const tryPlan = st => {
+      const r = planPlates(lines, st.base);
+      const pool = st.done.slice(), want = {};
+      keys.forEach(k => { want[k] = st.base[k] || 0; });
+      r.plates.forEach(pl => {
+        pl.sig = sig(pl);
+        const i = pool.findIndex(d => d.n === pl.n && d.sig === pl.sig);
+        if (i < 0) return;
+        pl.done = true; pool.splice(i, 1);
+        pl.lines.forEach(x => { want[pkey(x.l)] += x.count; });
+      });
+      // The plan still holds if every printed part is accounted for by the base or a plate marked printed
+      return !pool.length && keys.every(k => want[k] === (printed[k] || 0)) ? r : null;
+    };
+    let st = plateState[scope] || { base: {}, done: [] }, r = tryPlan(st);
+    if (!r) {
+      st = { base: Object.fromEntries(keys.filter(k => printed[k]).map(k => [k, printed[k]])), done: [] };
+      r = tryPlan(st);
+    }
+    plateState[scope] = st; store.set('plateState', plateState);
+    return { ...r, state: st };
+  }
+
   // Remember which info disclosures are open so re-renders keep them open
   const openInfo = new Set();
   document.addEventListener('toggle', e => { const d = e.target; if (d.matches && d.matches('details.info[data-k]')) d.open ? openInfo.add(d.dataset.k) : openInfo.delete(d.dataset.k); }, true);
@@ -1765,7 +1801,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   function renderPrint() {
     const b = computeBuild();
     const s = summary(b.lines);
-    const { plates, skipped } = planPlates(b.lines);
+    const scope = b.onlyExtras ? 'extras' : 'all';
+    const { plates: allPlates, skipped, state: pst } = stablePlates(b.lines, scope);
+    const plates = allPlates.filter(pl => !pl.done);
     const total = b.lines.reduce((a, l) => a + (l.fit.s === 'no' || l.fit.s === 'reorient' ? 0 : l.total), 0);
     const done = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0), 0);
     const gDone = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0) * gramsOf(l.file), 0);
@@ -1786,26 +1824,24 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       ${skipped.length ? `<div class="alert bad"><strong>${plural(skipped.length, 'file')} too big for the ${esc(printerName())}, so ${skipped.length === 1 ? 'it\u2019s' : 'they\u2019re'} left out of the plates:</strong><span>${skipped.map(l => esc(l.label) + ' (' + dimStr(l.file.dims) + (l.fit.s === 'reorient' ? ', would only fit tipped on its side' : '') + ')').join('; ')}. Print ${skipped.length === 1 ? 'it' : 'them'} on a bigger printer, or pick a smaller size in step 1.</span></div>` : ''}
       <div class="panel">
         <div class="printopts" style="padding-top:14px">
-          <div class="seg" role="group" aria-label="Plate colors" style="flex:1 1 100%">
+          <div class="seg" role="group" aria-label="Plate colors">
             <button type="button" data-colors="renders" aria-pressed="${plateColors === 'renders'}">Like the renders<small>Grey body, charcoal parts, orange accents</small></button>
             <button type="button" data-colors="size" aria-pressed="${plateColors === 'size'}">Big &amp; small<small>Shell in one color, small parts in another</small></button>
             <button type="button" data-colors="one" aria-pressed="${plateColors === 'one'}">One color<small>Fewest plates</small></button>
           </div>
           <label class="switch" for="mixSupports"><input type="checkbox" id="mixSupports" ${mixSupports ? 'checked' : ''}><span class="track"></span><span>Fewer plates<small>Support parts share plates; supports stay on just for them</small></span></label>
-          <label class="switch" for="spares"><input type="checkbox" id="spares" ${spares ? 'checked' : ''}><span class="track"></span><span>Add spares<small>+10% on small loseable parts and bolts</small></span></label>
         </div>
-        <p class="pp">Press <b>Printed</b> when a plate comes off; it drops off the list.</p>
-        <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plates are packed for a ${printer.v[0]} \u00d7 ${printer.v[1]} mm bed with 5 mm edges, and kept under one 1 kg spool each. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Wall counts are set per part, so they can share a plate. Plates are drawn like Bambu Studio\u2019s top view: front at the bottom, with the printer\u2019s no-print corner hatched in red.</p></details>
+        <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Press <b>Printed</b> when a plate comes off. Plate numbers stay the same, so they keep matching your Bambu Studio project. Small parts that are easy to lose come with 10% spares. Plates are packed for a ${printer.v[0]} \u00d7 ${printer.v[1]} mm bed with 5 mm edges, and kept under one 1 kg spool each. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Wall counts are set per part, so they can share a plate. Plates are drawn like Bambu Studio\u2019s top view: front at the bottom, with the printer\u2019s no-print corner hatched in red.</p></details>
       </div>
       ${plates.length ? gatherPanel(plates) : ''}
-      ${plates.length ? `<div class="plates">${plates.map(pl => `<div class="panel plate">
+      ${plates.length ? `<div class="plates">${allPlates.map(pl => pl.done ? `<div class="panel plate done"><div class="plate-head"><b>Plate ${pl.n}</b><span><span class="swatch sw-${pl.color}"></span>${COLOR_NAME[pl.color]} \u00b7 ${plural(pl.items.length, 'part')}</span></div><div class="donerow"><span class="ok">${ICON_OK}Printed</span><button class="btn" data-undoplate="${pl.n}">Undo</button></div></div>` : `<div class="panel plate">
         <div class="plate-head"><b>Plate ${pl.n}</b><span><span class="swatch sw-${pl.color}"></span>${COLOR_NAME[pl.color]}${pl.supports ? ' \u00b7 supports on' : pl.someSup ? ` \u00b7 supports on ${pl.someSup === pl.items.length ? 'all' : pl.someSup} ${pl.someSup === 1 ? 'part' : 'parts'}` : ''}${pl.color === 'tpu' ? ' \u00b7 TPU settings' : ''}<br>${plural(pl.items.length, 'part')} \u00b7 \u2248 ${gramsStr(pl.grams)} \u00b7 ${Math.round(pl.tallest)} mm tall</span></div>
         ${plateSvg(pl)}
         ${pl.care ? `<div class="alert ${pl.items[0].diag ? 'ok' : 'warn'}" style="font-size:13px">${pl.items[0].diag ? 'Too long to lie straight, so it\u2019s placed diagonally, the way USSA exported it.' : 'Lay this part on a different face than exported to fit; check supports.'}</div>` : ''}
         <div class="pitems">${pl.lines.map((x, i) => `<div class="pitem">${thumb(x.l, 'sm')}<span class="q">${x.count}\u00d7</span><span class="lbl"><b>${i + 1}</b> \u00b7 ${esc(x.l.label)}${x.l.walls ? ` <span class="tag wall">${x.l.walls} walls${x.l.infill ? ' \u00b7 ' + x.l.infill + '%' : ''}</span>` : ''}<small class="mono">${esc(fileName(x.l.file.path))}</small></span></div>`).join('')}</div>
         <div class="actions"><button class="btn primary" data-plate="${pl.n}">Printed</button></div>
       </div>`).join('')}</div>` : `<div class="panel empty">${total ? 'Everything is printed. Head to step 4 to assemble.' : 'Nothing to print yet.'}</div>`}
-      ${printedLines.length ? `<details class="panel fold"><summary>Already printed <small>${done} parts</small></summary>
+      ${printedLines.length ? `<details class="panel fold"><summary>Already printed <small>${plural(done, 'part')}</small></summary>
         <div class="donelist">${printedLines.map(l => `<div class="doneitem"><span>${esc(l.label)}${l.key ? ' <span class="tag">extra</span>' : ''} <small class="mono" style="color:var(--muted)">${esc(fileName(l.file.path))}</small></span><span class="num">${Math.min(printed[pkey(l)], l.total)} / ${l.total}</span><button class="iconbtn" data-unprint="${esc(pkey(l))}" aria-label="Take one back">\u22121</button></div>`).join('')}
         <div class="actions" style="padding-top:8px"><button class="btn" id="resetPrinted">Reset all progress</button></div></div></details>` : ''}
       ${hwTable(b.hardware, 'Shopping list', 'Hardware for the whole build. Not printed.' + (spares ? ' Includes spares.' : ''))}
@@ -1816,11 +1852,17 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     V.querySelectorAll('[data-scope]').forEach(btn => btn.onclick = () => { printScope = btn.dataset.scope; store.set('printScope', printScope); renderPrint(); renderTabs(); });
     V.querySelectorAll('[data-colors]').forEach(btn => btn.onclick = () => { plateColors = btn.dataset.colors; store.set('plateColors', plateColors); renderPrint(); });
     $('mixSupports').onchange = () => { mixSupports = $('mixSupports').checked; store.set('mixSupports', mixSupports); renderPrint(); };
-    $('spares').onchange = () => { spares = $('spares').checked; store.set('spares', spares); renderAll(); };
     V.querySelectorAll('[data-plate]').forEach(btn => btn.onclick = () => {
       const pl = plates.find(p => p.n === +btn.dataset.plate);
       pl.lines.forEach(x => { printed[pkey(x.l)] = (printed[pkey(x.l)] || 0) + x.count; });
+      pst.done.push({ n: pl.n, sig: pl.sig }); store.set('plateState', plateState);
       store.set('printed', printed); renderPrint(); renderTabs(); toast(`Plate ${pl.n} marked printed`);
+    });
+    V.querySelectorAll('[data-undoplate]').forEach(btn => btn.onclick = () => {
+      const pl = allPlates.find(p => p.n === +btn.dataset.undoplate);
+      pl.lines.forEach(x => { const k = pkey(x.l); printed[k] = Math.max(0, (printed[k] || 0) - x.count); if (!printed[k]) delete printed[k]; });
+      pst.done = pst.done.filter(d => !(d.n === pl.n && d.sig === pl.sig)); store.set('plateState', plateState);
+      store.set('printed', printed); renderPrint(); renderTabs(); toast(`Plate ${pl.n} back on the list`);
     });
     V.querySelectorAll('[data-unprint]').forEach(btn => btn.onclick = () => { const p = btn.dataset.unprint; printed[p] = Math.max(0, (printed[p] || 0) - 1); if (!printed[p]) delete printed[p]; store.set('printed', printed); renderPrint(); renderTabs(); });
     if ($('resetPrinted')) $('resetPrinted').onclick = () => {
@@ -2130,7 +2172,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
             ${fs.html}</div>
           <button class="btn${fs.ready ? '' : ' primary'}" id="gPick">${picked ? 'Change folder' : 'Choose folder…'}</button></li>
         <li class="gstep"><span class="gnum">2</span>
-          <div class="gtext"><b>${makeLabel}</b><small>${makeNote} Plates marked printed are skipped.</small></div>
+          <div class="gtext"><b>${makeLabel}</b><small>${makeNote} Plates marked printed are left out; the rest keep their numbers.</small></div>
           <button class="btn${fs.ready ? ' primary' : ''}" id="gMake"${fs.ready ? '' : ' disabled'}>${folders ? 'Save zip' : 'Make project'}</button></li>
       </ol>
       <div class="gprog" id="gProg" hidden><div class="bar"><i></i></div><span></span></div>`
