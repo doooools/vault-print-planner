@@ -313,7 +313,7 @@ details.folded > summary .mini { min-width: 40px; }
 .tower { padding: 16px 18px; display: grid; gap: 14px; }
 .tower-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
 .tower-head input.tname { font-family: var(--f-display); font-stretch: 115%; font-weight: 800; font-size: 22px; border: 0; background: transparent; padding: 2px 0; min-width: 0; width: 14ch; border-bottom: 1px dashed var(--line); }
-.tower-body { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 18px; align-items: start; }
+.tower-body { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 18px; align-items: start; }
 @media (max-width: 760px) { .tower-body { grid-template-columns: minmax(0, 1fr); } }
 .stackviz { display: grid; gap: 3px; justify-items: center; padding: 10px; background: var(--sheet-2); border-radius: 10px; }
 .stackviz .lvl { display: flex; gap: 3px; justify-content: center; width: 100%; }
@@ -343,6 +343,15 @@ details.folded > summary .mini { min-width: 40px; }
 .sv .sv-back-fill { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 3; opacity: .8; }
 .sv-mini .sv-back-fill { stroke-width: 1; stroke-dasharray: 2 1.5; }
 .sv .sv-floor { stroke: var(--line); stroke-width: 1.5; }
+.stackviz .views { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 6px 14px; }
+.stackviz figure { margin: 0; display: grid; justify-items: center; gap: 2px; }
+.stackviz figcaption { font-size: 11px; color: var(--muted); }
+.sv .sv-pull { fill: var(--accent); }
+.sv .sv-bb { fill: var(--ink); opacity: .8; }
+.sv .sv-plate { fill: var(--muted); }
+.sv .sv-peg { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; opacity: .85; }
+.sv .sv-handle { fill: none; stroke: var(--ink); stroke-width: 3; opacity: .85; }
+.sv .sv-rod { stroke: var(--muted); stroke-width: 2.5; }
 .levels { display: grid; gap: 6px; }
 .level { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
 .level .n { font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; text-align: center; }
@@ -1311,7 +1320,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const accH = wheels ? r * 1.15 : casters ? Math.max(4, 40 * sy) : feet ? Math.max(3, 22 * sy) : 0;
     const baseH = base ? Math.max(o.labels ? 8 : 3, 28 * sy) : 0, roofH = roof ? Math.max(o.labels ? 5 : 2, 12 * sy) : 0;
     const lh = L.map(lv => Math.max(o.minLv, unitExt(lv[0])[2] * sy)), gap = o.labels ? 2 : 1;
-    const up = s.pullHandle ? Math.max(o.labels ? 26 : 6, 160 * sy) : 0;
+    const up = s.pullHandle && o.back !== false ? Math.max(o.labels ? 26 : 6, 160 * sy) : 0;
     const pad = Math.max(o.labels ? 12 : 3, wheels ? r + 2 : 0);
     const W = Math.max(maxw, bw) + 2 * pad, cx = W / 2;
     const stackH = lh.reduce((x, h) => x + h + gap, 0);
@@ -1319,14 +1328,14 @@ details.termfold[open] > summary { color: var(--ink); }
     const floor = H - (o.labels ? 2 : 0.5), baseTop = floor - accH - baseH;
     const out = [];
     // Pull-out handle: two rods up the back, extended above the top, with a grip
-    if (s.pullHandle) {
+    if (s.pullHandle && o.back !== false) {
       const rx = Math.min(bw / 2 - 4 * (o.labels ? 1 : .5), Math.max(10, bw * 0.38));
       out.push(`<path class="sv-back" d="M${cx - rx} ${baseTop} V${up * 0.35} M${cx + rx} ${baseTop} V${up * 0.35}"/><rect class="sv-grip" x="${cx - rx - 3}" y="${up * 0.15}" width="${2 * rx + 6}" height="${Math.max(3, up * 0.22)}" rx="${Math.max(1.5, up * 0.1)}"/>`);
     }
     // Stationary handle: a U-shaped grab handle bolted to a backbone on the back, narrower than the stack. Drawn
     // dashed at the level joint nearest halfway up (or the top edge of a one-level stack), over the levels.
     let handle = '';
-    if (s.stationaryHandle) {
+    if (s.stationaryHandle && o.back !== false) {
       const HW = { S: 122.8, M: 212, L: 287.6, XL: 376.8 }[R.familyForWidth(levelWidth(L[0])) || 'S'];
       const joints = []; let jy = up + roofH;
       [...L].reverse().forEach((lv, ri) => { jy += lh[L.length - 1 - ri] + gap; if (ri < L.length - 1) joints.push(jy - gap / 2); });
@@ -1369,16 +1378,74 @@ details.termfold[open] > summary { color: var(--ink); }
     if (o.labels) out.push(`<line class="sv-floor" x1="0" y1="${floor}" x2="${W}" y2="${floor}"/>`);
     return `<svg class="sv${o.labels ? '' : ' sv-mini'}" viewBox="0 0 ${W.toFixed(1)} ${H.toFixed(1)}" width="${W.toFixed(0)}" height="${H.toFixed(0)}" aria-hidden="true">${out.join('')}</svg>`;
   }
+  // Side view, back on the left and front on the right, like USSA's photos: depth and height of every level, and the
+  // parts that hang off the back (backbones, pegboard attachments, wall plate, both handles) or sit under the base
+  // (wheels at the back, the foot at the front, or two feet, or casters).
+  function sideSvg(t, a, o) {
+    const L = t.levels, s = t.stack || STACK_DEFAULT, sx = o.sx, sy = o.sy;
+    if (!L.length) return '';
+    const base = s.base, wheels = base && s.wheels, casters = base && !wheels && s.casters, feet = base && s.feet && !casters;
+    const top = L[L.length - 1], roof = top.every(u => u.type === 'drawer') && top[0].roof !== 'none';
+    const depth = Math.max(...L.map(lv => unitExt(lv[0])[1])) * sx;
+    const r = Math.max(11, 55 * sy);
+    const accH = wheels ? r * 1.15 : casters ? Math.max(4, 40 * sy) : feet ? Math.max(3, 22 * sy) : 0;
+    const baseH = base ? Math.max(8, 28 * sy) : 0, roofH = roof ? Math.max(5, 12 * sy) : 0, gap = 2;
+    const lh = L.map(lv => Math.max(o.minLv, unitExt(lv[0])[2] * sy));
+    const up = s.pullHandle ? Math.max(26, 160 * sy) : 0;
+    const anyPeg = L.some(lv => lv.some(u => u.pegboard && u.pegboard !== 'none'));
+    const back = Math.max(10, (anyPeg ? 60 : s.stationaryHandle ? 50 : 22) * sx, wheels ? r * 0.6 + 4 : 0);
+    const W = back + depth + 10, x0 = back, x1 = back + depth;
+    const stackH = lh.reduce((x, h) => x + h + gap, 0);
+    const H = up + roofH + stackH + baseH + accH + 4, floor = H - 2, baseTop = floor - accH - baseH;
+    const bbW = Math.max(3, 14 * sx), out = [];
+    if (s.pullHandle) out.push(`<line class="sv-rod" x1="${x0 - bbW - 2}" y1="${baseTop}" x2="${x0 - bbW - 2}" y2="${up * 0.3}"/><rect class="sv-grip" x="${x0 - bbW - 8}" y="${up * 0.08}" width="${bbW + 14}" height="${Math.max(6, up * 0.3)}" rx="2"/>`);
+    if (roof) out.push(`<rect class="sv-roof" x="${x0}" y="${up}" width="${unitExt(top[0])[1] * sx}" height="${roofH}" rx="2"/>`);
+    let y = up + roofH;
+    [...L].reverse().forEach((lv, ri) => {
+      const i = L.length - 1 - ri, h = lh[i], u = lv[0], d = unitExt(u)[1] * sx;
+      const bad = a.issues.some(x => x.k === 'bad' && x.m.startsWith(`Level ${i + 1}`));
+      out.push(`<rect class="sv-u${u.type === 'case' ? ' case' : ''}${bad ? ' bad' : ''}" x="${x0}" y="${y}" width="${d}" height="${h}" rx="3"><title>${esc(lv.map(unitCode).join(' + '))}</title></rect>`);
+      if (u.type === 'drawer') out.push(`<rect class="sv-pull" x="${x0 + d - 2}" y="${y + h / 2 - Math.min(4, h * 0.2)}" width="3" height="${Math.min(8, h * 0.4)}" rx="1"/>`);
+      if (lv.some(k => k.backbone && k.backbone !== 'none')) out.push(`<rect class="sv-bb" x="${x0 - bbW}" y="${y}" width="${bbW}" height="${h}" rx="1"/>`);
+      if (lv.some(k => k.wallMount)) out.push(`<rect class="sv-plate" x="${x0 - Math.max(2, 5 * sx)}" y="${y + 1}" width="${Math.max(2, 5 * sx)}" height="${h - 2}"/>`);
+      if (lv.some(k => k.pegboard && k.pegboard !== 'none')) {
+        const px = x0 - bbW, pw = 45 * sx, ph = Math.min(h - 4, Math.max(6, 30 * sy));
+        out.push(`<path class="sv-peg" d="M${px} ${y + 3} h${-pw} v${ph} h${pw * 0.35}"/>`);
+      }
+      y += h + gap;
+    });
+    if (s.stationaryHandle) {
+      const mid = up + roofH + stackH * 0.5, hp = 47 * sx, hh = Math.max(8, 50 * sy);
+      out.push(`<path class="sv-handle" d="M${x0 - bbW} ${mid - hh / 2} h${-hp + 3} q-3 0 -3 3 v${hh - 6} q0 3 3 3 h${hp - 3}"/>`);
+    }
+    if (base) {
+      out.push(`<rect class="sv-base" x="${x0 - 1}" y="${baseTop}" width="${depth + 2}" height="${baseH}" rx="2"/>`);
+      const by = baseTop + baseH, fd = Math.max(6, 92 * sx);
+      if (wheels) {
+        if (s.feet) out.push(`<rect class="sv-foot" x="${x1 - fd - 2}" y="${by}" width="${fd}" height="${floor - by}" rx="1"/>`);
+        const wx = x0 + r * 0.6;
+        out.push(`<circle class="sv-wheel" cx="${wx}" cy="${floor - r}" r="${r}"/><circle class="sv-hub" cx="${wx}" cy="${floor - r}" r="${r * 0.55}"/>`);
+      } else if (casters) {
+        const cr = Math.max(2, accH * 0.32);
+        for (const wx of [x0 + cr + 4, x1 - cr - 4]) out.push(`<rect class="sv-foot" x="${wx - cr * 0.5}" y="${by}" width="${cr}" height="${accH - 2 * cr}"/><circle class="sv-wheel" cx="${wx}" cy="${floor - cr}" r="${cr}"/>`);
+      } else if (feet) {
+        for (const fx of [x0 + 2, x1 - fd - 2]) out.push(`<rect class="sv-foot" x="${fx}" y="${by}" width="${fd}" height="${floor - by}" rx="1"/>`);
+      }
+    }
+    out.push(`<line class="sv-floor" x1="0" y1="${floor}" x2="${W}" y2="${floor}"/>`);
+    return `<svg class="sv" viewBox="0 0 ${W.toFixed(1)} ${H.toFixed(1)}" width="${W.toFixed(0)}" height="${H.toFixed(0)}" aria-hidden="true">${out.join('')}</svg>`;
+  }
   function stackViz(t, a) {
     const s = t.stack || STACK_DEFAULT;
     const bits = [];
     if (s.base) bits.push(s.wheels ? (s.feet ? 'base, wheels and a foot' : 'base and wheels') : s.casters ? 'base on casters' : s.feet ? 'base on feet' : 'base');
     if (s.stationaryHandle) bits.push('stationary handle');
     if (s.pullHandle) bits.push('pull-out handle');
-    const back = s.stationaryHandle || s.pullHandle;
-    return `<div class="stackviz">${stackSvg(t, a, { sx: 220 / 419, sy: 0.32, minLv: 14, labels: true })}
-      <div class="caption num">${Math.round(a.height)} mm tall without base${bits.length ? ` · ${bits.join(', ')}` : ''}</div>
-      ${back ? '<div class="caption">Dashed parts bolt onto the back.</div>' : ''}</div>`;
+    const o = { sx: 200 / 419, sy: 0.32, minLv: 14, labels: true };
+    return `<div class="stackviz"><div class="views">
+        <figure>${stackSvg(t, a, { ...o, back: false })}<figcaption>Front</figcaption></figure>
+        <figure>${sideSvg(t, a, o)}<figcaption>Side \u00b7 back on the left</figcaption></figure></div>
+      <div class="caption num">${Math.round(a.height)} mm tall without base${bits.length ? ` \u00b7 ${bits.join(', ')}` : ''}</div></div>`;
   }
 
   // Picture of what a stack is: one with three levels on wheels, one with two S drawers side by side
