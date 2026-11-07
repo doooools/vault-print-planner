@@ -256,6 +256,40 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 
 /* Towers */
 .towers { display: grid; gap: 14px; }
+.overview { padding: 14px 18px 4px; display: grid; gap: 10px; }
+.overview > p.pp { padding: 0 0 10px; }
+.ov-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
+.ov-head h3 { margin: 0; font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
+.ov-head span { font-size: 13px; color: var(--muted); }
+.ov-row { display: flex; gap: 10px; align-items: stretch; overflow-x: auto; padding-bottom: 4px; }
+.ov-t { flex: none; display: grid; grid-template-rows: 1fr auto auto; justify-items: center; gap: 4px; min-width: 112px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet-2); text-align: center; cursor: pointer; }
+.ov-t:hover { border-color: var(--muted); }
+.ov-t.bad { border-color: var(--bad); }
+.ov-t b { font-size: 13.5px; max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ov-t small { font-size: 11.5px; color: var(--muted); line-height: 1.35; }
+.ov-new { border-style: dashed; background: transparent; align-content: center; grid-template-rows: auto auto; }
+.ov-new span { font-size: 26px; line-height: 1; color: var(--muted); }
+.mini { display: grid; justify-items: center; align-content: end; gap: 1px; }
+.mini.empty { font-size: 11px; color: var(--muted); align-self: center; }
+.mini .mlvl { display: flex; gap: 1px; }
+.mini i { display: block; background: var(--bed); border: 1px solid var(--muted); border-radius: 2px; }
+.mini i.case { background: color-mix(in srgb, var(--bed) 60%, var(--accent-soft)); }
+.mini .mroof { height: 3px; border-radius: 2px 2px 0 0; background: var(--muted); }
+.mini .mbase { height: 5px; border-radius: 0 0 2px 2px; background: var(--ink); opacity: .7; }
+.mini .mbase.wheels { height: 7px; border-bottom: 2px dotted var(--sheet-2); }
+details.folded > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 14px; margin: -16px -18px; padding: 12px 18px; }
+details.folded > summary::-webkit-details-marker { display: none; }
+details.folded > summary::after { content: "+"; margin-left: auto; color: var(--muted); font-size: 20px; line-height: 1; }
+details.folded[open] > summary::after { content: "\2212"; }
+details.folded[open] > summary { display: none; }
+.foldbtn { font-size: 18px; min-width: 36px; height: auto; align-self: stretch; }
+.ov-t .mini { align-self: end; }
+details.folded > summary .mini { min-width: 40px; }
+.ft-name { display: grid; gap: 2px; min-width: 0; }
+.ft-name b { font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
+.ft-name small { font-size: 12.5px; color: var(--muted); }
+.tag.bad { background: var(--bad-soft); color: var(--bad); }
+.addto { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
 .tower { padding: 16px 18px; display: grid; gap: 14px; }
 .tower-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
 .tower-head input.tname { font-family: var(--f-display); font-stretch: 115%; font-weight: 800; font-size: 22px; border: 0; background: transparent; padding: 2px 0; min-width: 0; width: 14ch; border-bottom: 1px dashed var(--line); }
@@ -899,6 +933,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   let plateState = store.get('plateState', {});   // scope -> { base: {path: count}, done: [{ n, sig }] }
   let stepsDone = store.get('steps', {});
   let editing = null;                       // { t, l, u } when a tower unit is loaded into the editor
+  let lastTower = store.get('lastTower', null); // the tower Add puts units on by default
+  let addTo = null;                         // tower id when the user came from a tower's "Add a unit" button
+  const openTowers = new Set();             // tower cards opened when cards are folded (3+ towers)
   let view = store.get('view', 'unit');
   let towers = store.get('towers', null);
   let seq = store.get('seq', 1);
@@ -1433,6 +1470,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     root.querySelectorAll('[data-preset]').forEach(b => b.onclick = () => {
       const p = PRESETS[+b.dataset.preset];
       towers.push({ id: seq++, name: p.name, levels: p.levels.map(lv => lv.map(u => clean(u))), stack: { ...STACK_DEFAULT, ...(p.stack || {}) } });
+      lastTower = towers[towers.length - 1].id; store.set('lastTower', lastTower); openTowers.clear(); openTowers.add(lastTower);
       save(); view = 'build'; renderAll(); toast('Added \u201c' + p.name + '\u201d to your build');
     });
   }
@@ -1454,7 +1492,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const ext = unitExt(c);
     const label = unitCode(c);
     const inferred = res.lines.filter(l => l.inferred);
-    const dest = towers.map(t => `<option value="top:${t.id}">On top of ${esc(t.name)}</option>` +
+    const defT = towers.find(t => t.id === addTo) || towers.find(t => t.id === lastTower) || towers[towers.length - 1];
+    const dest = towers.map(t => `<option value="top:${t.id}" ${defT && t.id === defT.id ? 'selected' : ''}>On top of ${esc(t.name)}</option>` +
       (t.levels.length && t.levels[t.levels.length - 1].length === 1 ? `<option value="beside:${t.id}">Beside the top unit of ${esc(t.name)}</option>` : '')).join('');
     $('view-unit').innerHTML = `
       ${towers.length ? '' : presetsBlock(false)}
@@ -1465,9 +1504,10 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         ${fitAlert(s)}
         ${res.notes.map(n => `<div class="alert warn">${esc(n)}</div>`).join('')}
         ${inferred.length ? `<div class="alert warn"><span><strong>${plural(inferred.length, 'count')} here ${inferred.length > 1 ? 'are' : 'is'} inferred, not from the manual.</strong> They\u2019re marked <span class="badge inf">Inferred</span> below with the reason. Check those in your slicer before printing a batch.</span></div>` : ''}
+        ${!editing && addTo !== null && defT ? `<div class="alert ok addto"><span>Adding to <b>${esc(defT.name)}</b>. Set up the unit, then press <b>Add</b> to put it on top.</span><button class="btn" id="cancelAddTo">Back to step 2</button></div>` : ''}
         ${editing ? '' : `<div class="addrow">
           <label for="addDest" class="pnote" style="margin:0">Add to build:</label>
-          <select id="addDest"><option value="new">As a new tower</option>${dest}</select>
+          <select id="addDest">${dest}<option value="new">As a new tower</option></select>
           <span class="stepper" style="padding:4px 4px 4px 10px">\u00d7<div><button type="button" id="addLess" aria-label="Fewer">\u2212</button><output id="addN">1</output><button type="button" id="addMore" aria-label="More">+</button></div></span>
           <button class="btn primary" id="addBuild">Add</button>
           <button class="btn" id="copyList">Copy part list</button>
@@ -1490,11 +1530,17 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         else t = towers.find(x => x.id === +v.split(':')[1]);
         if (v.startsWith('beside:')) t.levels[t.levels.length - 1].push(unit());
         else for (let i = 0; i < n; i++) t.levels.push([unit()]);
-        // Only the top unit keeps a roof
-        save(); renderTabs(); toast(`Added ${n > 1 && !v.startsWith('beside:') ? n + ' \u00d7 ' : ''}${label} to ${t.name}`);
+        lastTower = t.id; store.set('lastTower', lastTower);
+        if (addTo !== null) { addTo = null; openTowers.add(t.id); save(); view = 'build'; renderAll(); scrollToTower(t.id); }
+        else { save(); renderUnit(); renderTabs(); }
+        toast(`Added ${n > 1 && !v.startsWith('beside:') ? n + ' \u00d7 ' : ''}${label} to ${t.name}`);
       };
       $('copyList').onclick = () => copy(listText(res.lines, label), 'Part list copied');
     }
+    if ($('cancelAddTo')) $('cancelAddTo').onclick = () => { const id = addTo; addTo = null; view = 'build'; renderAll(); scrollToTower(id); };
+  }
+  function scrollToTower(id) {
+    requestAnimationFrame(() => { const el = document.getElementById('tower-' + id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   }
 
   // ---------- 2 · build view (towers) ----------
@@ -1509,6 +1555,32 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const roof = top && top.every(u => u.type === 'drawer') && top[0].roof !== 'none' ? `<div class="roofbar" style="width:${levelWidth(top) / maxW * 100}%"></div>` : '';
     const base = t.stack && t.stack.base && t.levels.length ? `<div class="basebar" style="width:${levelWidth(t.levels[0]) / maxW * 100}%"></div>` : '';
     return `<div class="stackviz">${roof}${lv}${base}<div class="caption num">${Math.round(a.height)} mm tall without base</div></div>`;
+  }
+  // Small to-scale drawing of a tower for the overview strip and folded cards. px per mm is shared so towers compare.
+  function miniTower(t, a, pxPerMm) {
+    const lv = [...t.levels].reverse().map(L => `<div class="mlvl">${L.map(u => `<i class="${u.type === 'case' ? 'case' : ''}" style="width:${R.WIDTH_MM[u.w] * pxPerMm}px;height:${Math.max(3, unitExt(u)[2] * pxPerMm - 1)}px"></i>`).join('')}</div>`).join('');
+    const top = t.levels[t.levels.length - 1];
+    const roof = top && top.every(u => u.type === 'drawer') && top[0].roof !== 'none' ? `<b class="mroof" style="width:${levelWidth(top) * pxPerMm}px"></b>` : '';
+    const s = t.stack || STACK_DEFAULT;
+    const base = s.base && t.levels.length ? `<b class="mbase${s.wheels ? ' wheels' : ''}" style="width:${levelWidth(t.levels[0]) * pxPerMm}px"></b>` : '';
+    return `<div class="mini" aria-hidden="true">${roof}${lv}${base}</div>`;
+  }
+  function towerStats(t, a) {
+    const res = withSpares(merge(a.parts)), s = summary(res.lines);
+    const plates = t.levels.length ? planPlates(res.lines, {}).plates.length : 0;
+    return { prints: s.prints, g: s.g, plates };
+  }
+  function overviewPanel(info) {
+    const maxH = Math.max(...info.map(x => x.a.height), 200), px = Math.min(0.3, 150 / maxH);
+    const tot = info.reduce((acc, x) => ({ g: acc.g + x.st.g, p: acc.p + x.st.prints }), { g: 0, p: 0 });
+    return `<div class="panel overview">
+      <div class="ov-head"><h3>Your build</h3><span class="num">${plural(info.length, 'tower')} · ${plural(tot.p, 'part')} · ≈ ${gramsStr(tot.g)}</span></div>
+      <div class="ov-row">${info.map(({ t, a, st }) => `<button type="button" class="ov-t${a.issues.some(x => x.k === 'bad') ? ' bad' : ''}" data-goto="${t.id}">
+        ${t.levels.length ? miniTower(t, a, px) : '<div class="mini empty">empty</div>'}
+        <b>${esc(t.name)}</b><small class="num">${t.levels.length ? `${Math.round(a.height)} mm · ${plural(st.plates, 'plate')}<br>≈ ${gramsStr(st.g)}` : 'no units yet'}</small></button>`).join('')}
+        <button type="button" class="ov-t ov-new" id="ovNew"><span>+</span><b>New tower</b></button></div>
+      <p class="pp">Each tower stands on its own. Units stack inside a tower, bottom to top. Plate counts are for printing that tower alone.</p>
+    </div>`;
   }
   function xResults() {
     const q = xq.trim().toLowerCase();
@@ -1558,12 +1630,20 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       bindPresets($('view-build')); bindExtras();
       return;
     }
-    const html = towers.map(t => {
-      const a = analyzeTower(t), s = t.stack || STACK_DEFAULT;
+    const info = towers.map(t => { const a = analyzeTower(t); return { t, a, st: towerStats(t, a) }; });
+    const fold = towers.length >= 3;
+    if (fold && !openTowers.size && lastTower !== null) openTowers.add(lastTower);
+    const fpx = Math.min(0.3, 60 / Math.max(...info.map(x => x.a.height), 200));
+    const html = info.map(({ t, a, st }) => {
+      const s = t.stack || STACK_DEFAULT;
       const fam = a.fam;
-      return `<div class="panel tower" data-tower="${t.id}">
-        <div class="tower-head"><input class="tname" value="${esc(t.name)}" data-rename="${t.id}" aria-label="Tower name">
-          <span class="actions"><button class="btn" data-dup-tower="${t.id}">Duplicate</button><button class="btn" data-del-tower="${t.id}">Remove tower</button></span></div>
+      const bad = a.issues.some(x => x.k === 'bad');
+      const head = `<div class="tower-head"><input class="tname" value="${esc(t.name)}" data-rename="${t.id}" aria-label="Tower name">
+          <span class="actions"><button class="btn primary" data-addunit="${t.id}">+ Add a unit</button><button class="btn" data-dup-tower="${t.id}">Duplicate</button><button class="btn" data-del-tower="${t.id}">Remove tower</button>${fold ? `<button class="iconbtn foldbtn" data-fold="${t.id}" aria-label="Fold ${esc(t.name)}" title="Fold">\u2212</button>` : ''}</span></div>`;
+      const open = fold ? `<details class="panel tower folded" id="tower-${t.id}" data-tower="${t.id}" ${openTowers.has(t.id) ? 'open' : ''}>
+        <summary>${t.levels.length ? miniTower(t, a, fpx) : ''}<span class="ft-name"><b>${esc(t.name)}</b><small class="num">${t.levels.length ? `${plural(t.levels.length, 'level')} · ${Math.round(a.height)} mm · ${plural(st.plates, 'plate')} · ≈ ${gramsStr(st.g)}` : 'no units yet'}</small></span>${bad ? '<span class="tag bad">Won\u2019t stack</span>' : ''}</summary>` : `<div class="panel tower" id="tower-${t.id}" data-tower="${t.id}">`;
+      return `${open}
+        ${head}
         <div class="tower-body">
           ${t.levels.length ? stackViz(t, a) : '<div class="stackviz"><div class="caption">Empty</div></div>'}
           <div style="display:grid;gap:12px;min-width:0">
@@ -1586,9 +1666,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
             </div>
             <div class="issues">${a.issues.length ? a.issues.map(x => `<div class="issue ${x.k}">${esc(x.m)}</div>`).join('') : '<div class="issue ok">Everything in this tower stacks together.</div>'}</div>
           </div>
-        </div></div>`;
+        </div>${fold ? '</details>' : '</div>'}`;
     }).join('');
-    $('view-build').innerHTML = `${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
+    $('view-build').innerHTML = `${overviewPanel(info)}${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
       <div class="actions"><button class="btn" id="newTower">New empty tower</button><button class="btn primary" id="toPrint">Next: print plates \u2192</button></div>`;
     bindPresets($('view-build')); bindExtras();
     const V = $('view-build'), find = id => towers.find(t => t.id === +id);
@@ -1601,7 +1681,17 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     V.querySelectorAll('[data-del-unit]').forEach(b => b.onclick = () => { const [tid, i, u] = b.dataset.delUnit.split(':').map(Number); find(tid).levels[i].splice(u, 1); save(); renderAll(); });
     V.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const [tid, i, u] = b.dataset.edit.split(':').map(Number); c = clean(find(tid).levels[i][u]); editing = { t: tid, l: i, u }; view = 'unit'; renderAll(); window.scrollTo(0, 0); });
     towers.forEach(t => ['base', 'wheels', 'feet', 'casters', 'stationaryHandle', 'pullHandle'].forEach(k => { const el = $(`st-${k}-${t.id}`); if (el) el.onchange = () => { t.stack = { ...STACK_DEFAULT, ...t.stack, [k]: el.checked }; save(); renderAll(); }; }));
-    $('newTower').onclick = () => { towers.push({ id: seq++, name: 'Tower ' + (towers.length + 1), levels: [], stack: { ...STACK_DEFAULT } }); save(); renderAll(); };
+    const newTower = () => { const t = { id: seq++, name: 'Tower ' + (towers.length + 1), levels: [], stack: { ...STACK_DEFAULT } }; towers.push(t); lastTower = t.id; store.set('lastTower', lastTower); openTowers.clear(); openTowers.add(t.id); save(); renderAll(); scrollToTower(t.id); };
+    $('newTower').onclick = newTower; $('ovNew').onclick = newTower;
+    V.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { const id = +b.dataset.goto; openTowers.add(id); const d = document.getElementById('tower-' + id); if (d && d.tagName === 'DETAILS') d.open = true; scrollToTower(id); });
+    V.querySelectorAll('[data-fold]').forEach(b => b.onclick = () => { const d = document.getElementById('tower-' + b.dataset.fold); d.open = false; d.scrollIntoView({ block: 'nearest' }); });
+    V.querySelectorAll('details.folded').forEach(d => d.ontoggle = () => { const id = +d.dataset.tower; d.open ? openTowers.add(id) : openTowers.delete(id); });
+    V.querySelectorAll('[data-addunit]').forEach(b => b.onclick = () => {
+      const t = find(b.dataset.addunit), top = t.levels[t.levels.length - 1];
+      addTo = t.id; editing = null;
+      if (top) c = clean(top[0]); // start from the unit below so it stacks
+      view = 'unit'; renderAll(); window.scrollTo(0, 0);
+    });
     $('toPrint').onclick = () => { view = 'print'; renderAll(); window.scrollTo(0, 0); };
   }
   function optSummary(k, top) {
