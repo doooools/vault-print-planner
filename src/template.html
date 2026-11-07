@@ -899,12 +899,13 @@ details.termfold[open] > summary { color: var(--ink); }
   function computeBuild() {
     const xl = extraLines();
     const onlyExtras = printScope === 'extras' && xl.length > 0;
-    const preview = !onlyExtras && !towers.length && !xl.length;
-    const list = onlyExtras ? [] : towers.length ? towers : preview ? [{ id: 0, name: 'This unit', levels: [[clean(c)]], stack: { ...STACK_DEFAULT }, preview: true }] : [];
+    // Nothing in the build: steps 3 and 4 stay empty rather than planning the unit open in step 1 unasked
+    const empty = !towers.length && !xl.length;
+    const list = onlyExtras ? [] : towers;
     const all = [], issues = [];
     list.forEach(t => { const a = analyzeTower(t); all.push(...a.parts); a.issues.filter(i => i.k === 'bad').forEach(i => issues.push(t.name + ': ' + i.m)); });
     if (xl.length) all.push({ lines: xl, hardware: [] });
-    return { ...withSpares(merge(all)), towerIssues: issues, preview, list, extras: xl.length, onlyExtras };
+    return { ...withSpares(merge(all)), towerIssues: issues, empty, list, extras: xl.length, onlyExtras };
   }
 
   // ---------- part previews ----------
@@ -1881,8 +1882,20 @@ details.termfold[open] > summary { color: var(--ink); }
   const openInfo = new Set();
   document.addEventListener('toggle', e => { const d = e.target; if (d.matches && d.matches('details.info[data-k]')) d.open ? openInfo.add(d.dataset.k) : openInfo.delete(d.dataset.k); }, true);
 
+  // Steps 3 and 4 with an empty build: say so, and offer to add the unit from step 1 only when asked
+  function emptyStep(id, what) {
+    $(id).innerHTML = `<div class="panel empty"><p style="margin:0 0 12px"><strong>Nothing ${what} yet.</strong> Add units to your build first: pick a starting point in step 2, or design a unit in step 1 and press <b>Add</b>.</p>
+      <div class="actions"><button class="btn primary" data-empty-add>Add ${esc(unitCode(c))} to build</button><button class="btn" data-empty-go="build">Go to step 2</button></div></div>`;
+    $(id).querySelector('[data-empty-add]').onclick = () => {
+      const t = { id: seq++, name: 'Stack ' + (towers.length + 1), levels: [[clean(c)]], stack: { ...STACK_DEFAULT } };
+      towers.push(t); lastTower = t.id; store.set('lastTower', lastTower); save(); renderAll();
+      toast(`Added ${unitCode(c)} to ${t.name}`);
+    };
+    $(id).querySelector('[data-empty-go]').onclick = () => { view = 'build'; renderAll(); };
+  }
   function renderPrint() {
     const b = computeBuild();
+    if (b.empty) return emptyStep('view-print', 'to print');
     const s = summary(b.lines);
     const scope = b.onlyExtras ? 'extras' : 'all';
     const { plates: allPlates, skipped, state: pst } = stablePlates(b.lines, scope);
@@ -1893,7 +1906,6 @@ details.termfold[open] > summary { color: var(--ink); }
     const pct = total ? Math.round(done / total * 100) : 0;
     const printedLines = b.lines.filter(l => printed[pkey(l)]);
     $('view-print').innerHTML = `
-      ${b.preview ? `<div class="alert warn"><span><strong>Your build is empty, so this plans the unit open in step 1 (${esc(unitCode(c))}).</strong> Add units or a starting point in step 2 to plan a whole build.</span></div>` : ''}
       ${b.extras && towers.length ? `<div class="seg scope" role="group" aria-label="What to print">
         <button type="button" data-scope="all" aria-pressed="${!b.onlyExtras}">Whole build<small>stacks and extra parts</small></button>
         <button type="button" data-scope="extras" aria-pressed="${b.onlyExtras}">Only extra parts<small>${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button></div>` : ''}
@@ -1902,7 +1914,7 @@ details.termfold[open] > summary { color: var(--ink); }
         <div class="unit-title"><h2>${pct}% printed</h2><span class="dims num">${plural(plates.length, 'plate')} left on the ${esc(printerName())}</span></div>
         <div class="bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
         <div class="progress-nums"><span><b>${done}</b> of <b>${total}</b> parts</span><span><b>\u2248 ${gramsStr(gDone)}</b> of \u2248 ${gramsStr(s.g)} filament</span>${b.list.length ? `<span><b>${b.list.length}</b> ${b.list.length === 1 ? 'stack' : 'stacks'}</span>` : ''}${b.extras ? `<span><b>${b.extras}</b> extra ${b.extras === 1 ? 'part' : 'parts'}</span>` : ''}</div>
-        ${b.preview ? '' : `<div class="actions" style="align-items:center"><button class="btn" id="clearPlates">${b.onlyExtras ? 'Clear extra parts' : 'Clear all plates'}</button><span class="pnote" style="margin:0">${b.onlyExtras ? 'Removes the extra parts and their progress. Your stacks stay.' : 'Starting over? Removes every stack, extra part and printed mark.'}</span></div>`}
+        ${b.empty ? '' : `<div class="actions" style="align-items:center"><button class="btn" id="clearPlates">${b.onlyExtras ? 'Clear extra parts' : 'Clear all plates'}</button><span class="pnote" style="margin:0">${b.onlyExtras ? 'Removes the extra parts and their progress. Your stacks stay.' : 'Starting over? Removes every stack, extra part and printed mark.'}</span></div>`}
       </div>
       ${skipped.length ? `<div class="alert bad"><strong>${plural(skipped.length, 'file')} too big for the ${esc(printerName())}, so ${skipped.length === 1 ? 'it\u2019s' : 'they\u2019re'} left out of the plates:</strong><span>${skipped.map(l => esc(l.label) + ' (' + dimStr(l.file.dims) + (l.fit.s === 'reorient' ? ', would only fit tipped on its side' : '') + ')').join('; ')}. Print ${skipped.length === 1 ? 'it' : 'them'} on a bigger printer, or pick a smaller size in step 1.</span></div>` : ''}
       <div class="panel">
@@ -2362,11 +2374,11 @@ details.termfold[open] > summary { color: var(--ink); }
   ];
   function renderAssemble() {
     const b = computeBuild();
+    if (b.empty) return emptyStep('view-assemble', 'to assemble');
     const sections = GUIDE.filter(g => g.when(b));
     const total = sections.reduce((a, g) => a + g.steps.filter(s => !s.when || s.when(b)).length, 0);
     const doneN = sections.reduce((a, g) => a + g.steps.filter(s => (!s.when || s.when(b)) && stepsDone[g.id + ':' + s.t]).length, 0);
     $('view-assemble').innerHTML = `
-      ${b.preview ? `<div class="alert warn"><span><strong>Your build is empty, so these steps are for the unit open in step 1 (${esc(unitCode(c))}).</strong></span></div>` : ''}
       <div class="panel progress"><div class="unit-title"><h2>Assembly</h2><span class="dims num">${doneN} of ${total} steps done</span></div>
         <div class="bar"><i style="width:${total ? doneN / total * 100 : 0}%"></i></div>
         <div class="progress-nums">Only the steps your build needs are shown. Each lists the printed parts and bolts it uses, and the manual page it comes from.</div></div>
