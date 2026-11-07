@@ -110,6 +110,11 @@ header.top { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-it
 .seg button .dot { position: absolute; top: 5px; right: 5px; }
 .seg button.nofit:not([aria-pressed=true]) { color: var(--muted); }
 .fitkey { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.ring { display: inline-block; width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--warn, #c98a12); box-sizing: border-box; flex: none; }
+.seg button .ring { position: absolute; top: 5px; right: 5px; }
+.stackchk, .alert.stackchk { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.stackchk.okline { color: var(--ok); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; justify-content: flex-start; }
+.stackchk.okline svg { width: 15px; height: 15px; }
 .opt { display: flex; gap: 10px; align-items: flex-start; }
 .opt input[type=checkbox] { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
 .opt span small { display: block; color: var(--muted); font-size: 12.5px; }
@@ -488,6 +493,7 @@ details.termfold[open] > summary { color: var(--ink); }
         <div class="lbl">Height <span class="hint">1F · 2F · 4F</span></div>
         <div class="seg" id="height"></div>
         <div class="fitkey" id="fitKey"><i class="dot"></i> A part of that size is too big for your printer</div>
+        <div class="fitkey" id="stackKey" hidden></div>
       </div>
       <div id="opts" style="display:grid;gap:16px"></div>
       <details class="more" id="moreBox">
@@ -949,6 +955,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   let stepsDone = store.get('steps', {});
   let editing = null;                       // { t, l, u } when a tower unit is loaded into the editor
   let lastTower = store.get('lastTower', null); // the tower Add puts units on by default
+  let destChoice = null;                   // the Add destination the user picked in step 1 ('top:id', 'beside:id', 'new')
   let addTo = null;                         // tower id when the user came from a tower's "Add a unit" button
   const openTowers = new Set();             // tower cards opened when cards are folded (3+ towers)
   let view = store.get('view', 'unit');
@@ -1044,6 +1051,48 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // ---------- towers ----------
   // A tower is levels from the bottom up. Each level is one unit, or two side by side (S+S = L wide, S+M = XL wide).
   const levelWidth = lv => lv.reduce((a, u) => a + R.WIDTH_MM[u.w], 0);
+  // Where step 1's Add puts the unit, and the stack check for a unit there
+  function currentDest() {
+    if (editing) return { v: 'edit', t: towers.find(t => t.id === editing.t) };
+    const ok = v => { if (!v || v === 'new') return v === 'new'; const t = towers.find(x => x.id === +v.split(':')[1]); return !!t && (!v.startsWith('beside:') || (t.levels.length && t.levels[t.levels.length - 1].length === 1)); };
+    let v = destChoice && ok(destChoice) ? destChoice : null;
+    if (!v) { const t = towers.find(t => t.id === addTo) || towers.find(t => t.id === lastTower) || towers[towers.length - 1]; v = t ? 'top:' + t.id : 'new'; }
+    return { v, t: v === 'new' ? null : towers.find(x => x.id === +v.split(':')[1]) };
+  }
+  const WNAME = { S: 'S', M: 'M', L: 'L', L2: 'L\u00b2', XL: 'XL', XL2: 'XL\u00b2' };
+  const lvDesc = lv => lv.map(u => WNAME[u.w]).join(' + ') + ' \u00d7 x' + lv[0].d;
+  const sameSize = (a, b) => Math.abs(levelWidth(a) - levelWidth(b)) <= 2 && a[0].d === b[0].d;
+  // Returns '' when unit k fits where step 1 would put it, or why it doesn't
+  function stackProblem(k, dest = currentDest()) {
+    const t = dest.t; if (!t || !t.levels.length) return '';
+    const L = t.levels, top = L[L.length - 1];
+    if (dest.v.startsWith('top:'))
+      return sameSize([k], top) ? '' : `Won\u2019t sit on ${t.name}: its top level is ${lvDesc(top)}, this is ${lvDesc([k])}.`;
+    if (dest.v.startsWith('beside:')) {
+      const u0 = top[0], pair = [u0, k];
+      if (k.d !== u0.d) return `Side by side needs the same depth: the top unit of ${t.name} is x${u0.d}.`;
+      if (Math.abs(unitExt(k)[2] - unitExt(u0)[2]) > 0.5) return `Side by side needs the same height: the top unit of ${t.name} is ${u0.h}F.`;
+      if (!R.familyForWidth(levelWidth(pair))) return `${WNAME[u0.w]} + ${WNAME[k.w]} side by side isn\u2019t a Vault width. Pairs that work: S + S and S + M.`;
+      if (L.length > 1 && !sameSize(pair, L[L.length - 2])) return `The pair would be ${Math.round(levelWidth(pair))} mm wide, but the level below is ${lvDesc(L[L.length - 2])}.`;
+      return '';
+    }
+    if (dest.v === 'edit') {
+      const i = editing.l; if (!L[i] || L[i].length > 1) return '';
+      if (i > 0 && !sameSize([k], L[i - 1])) return `Won\u2019t sit on level ${i}, which is ${lvDesc(L[i - 1])}.`;
+      if (i < L.length - 1 && !sameSize([k], L[i + 1])) return `Level ${i + 2} above is ${lvDesc(L[i + 1])}, so it won\u2019t sit on this.`;
+    }
+    return '';
+  }
+  // The width, depth and height that would make the current unit fit its destination, or null
+  function stackMatch() {
+    const dest = currentDest(), t = dest.t; if (!t || !t.levels.length) return null;
+    const L = t.levels, top = L[L.length - 1];
+    const ref = dest.v === 'edit' ? (editing.l > 0 ? L[editing.l - 1] : L[editing.l + 1]) : dest.v.startsWith('beside:') ? null : top;
+    const widths = Object.keys(R.HEIGHTS[c.type]);
+    const tryW = (ws, d, hs) => { for (const w of ws) for (const h of hs) { const k = clean({ ...c, w, d, h }); if ((R.HEIGHTS[c.type][w] || []).includes(h) && !stackProblem(k, dest)) return { w, d, h }; } return null; };
+    if (ref) return tryW([ref.length === 1 ? ref[0].w : null, c.w, ...widths].filter(w => w && widths.includes(w)), ref[0].d, [c.h, 1, 2, 4]);
+    const u0 = top[0]; return tryW([c.w, ...widths], u0.d, [u0.h]);
+  }
   const levelHeight = lv => Math.max(...lv.map(u => unitExt(u)[2]));
   function analyzeTower(t) {
     const issues = [], parts = [], L = t.levels;
@@ -1326,8 +1375,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       if (it.hidden) return;
       const b = document.createElement('button');
       b.type = 'button';
-      b.innerHTML = it.label + (it.sub ? `<small>${it.sub}</small>` : '') + (it.nofit ? '<i class="dot" aria-label="too big for your printer"></i>' : '');
+      b.innerHTML = it.label + (it.sub ? `<small>${it.sub}</small>` : '') + (it.nofit ? '<i class="dot" aria-label="too big for your printer"></i>' : it.nostack ? '<i class="ring" aria-label="won\u2019t stack here"></i>' : '');
       if (it.nofit) b.classList.add('nofit');
+      if (it.nostack) b.classList.add('nostack');
       b.setAttribute('aria-pressed', String(it.v === cur));
       b.disabled = !!it.disabled;
       b.onclick = () => onPick(it.v);
@@ -1384,13 +1434,24 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const widths = Object.keys(R.HEIGHTS[c.type]);
     const WSUB = { S: '165 mm', M: '254 mm', L: '330 mm', L2: '2 \u00d7 S', XL: '419 mm', XL2: 'S + M' };
     const WLBL = { S: 'S', M: 'M', L: 'L', L2: 'L\u00b2', XL: 'XL', XL2: 'XL\u00b2' };
-    const mark = (patch, extra = {}) => { const nf = unitTooBig(patch); return { ...extra, nofit: nf && !onlyFits, hidden: nf && onlyFits && !extra.disabled }; };
+    const dest = currentDest();
+    // Judge each button on its own dimension: the others are taken as already matching the stack
+    const base = stackProblem(clean(c), dest) ? (stackMatch() || {}) : {};
+    const mark = (patch, extra = {}) => {
+      const nf = unitTooBig(patch);
+      const k = clean({ ...c, ...base, ...patch }), hs2 = R.HEIGHTS[k.type][k.w] || [];
+      if (!hs2.includes(k.h)) k.h = hs2[0];
+      return { ...extra, nofit: nf && !onlyFits, hidden: nf && onlyFits && !extra.disabled, nostack: !nf && !extra.disabled && !!stackProblem(k, dest) };
+    };
     seg($('width'), widths.map(w => mark({ w }, { v: w, label: WLBL[w], sub: WSUB[w] })), c.w, v => set({ w: v }));
     $('widthHint').textContent = c.type === 'drawer' ? 'L\u00b2 and XL\u00b2 hold two drawers side by side' : '';
     seg($('depth'), R.DEPTHS.map(d => mark({ d }, { v: d, label: 'x' + d, sub: Math.round(156.1 + (d - 3) * 42) + '' })), c.d, v => set({ d: v }));
     const hs = R.HEIGHTS[c.type][c.w];
     seg($('height'), [1, 2, 4].map(h => hs.includes(h) ? mark({ h }, { v: h, label: h + 'F', sub: Math.round(R.exterior(c.type, c.w, c.d, h)[2]) + ' mm' }) : { v: h, label: h + 'F', disabled: true, sub: 'n/a' }), c.h, v => set({ h: v }));
     $('fitKey').hidden = onlyFits || !document.querySelector('.config .nofit');
+    const sk = $('stackKey'), anyNostack = !!document.querySelector('.config .nostack');
+    sk.hidden = !anyNostack;
+    if (anyNostack && dest.t) sk.innerHTML = `<i class="ring"></i> Won\u2019t stack ${dest.v === 'edit' ? 'in this level of' : dest.v.startsWith('beside:') ? 'beside the top unit of' : 'on'} ${esc(dest.t.name)}`;
 
     let o = '';
     if (c.type === 'drawer') {
@@ -1507,9 +1568,15 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const ext = unitExt(c);
     const label = unitCode(c);
     const inferred = res.lines.filter(l => l.inferred);
-    const defT = towers.find(t => t.id === addTo) || towers.find(t => t.id === lastTower) || towers[towers.length - 1];
-    const dest = towers.map(t => `<option value="top:${t.id}" ${defT && t.id === defT.id ? 'selected' : ''}>On top of ${esc(t.name)}</option>` +
-      (t.levels.length && t.levels[t.levels.length - 1].length === 1 ? `<option value="beside:${t.id}">Beside the top unit of ${esc(t.name)}</option>` : '')).join('');
+    const cd = currentDest(), defT = towers.find(t => t.id === addTo) || cd.t;
+    const opt = (v, txt) => `<option value="${v}" ${cd.v === v ? 'selected' : ''}>${txt}</option>`;
+    const dest = towers.map(t => opt('top:' + t.id, 'On top of ' + esc(t.name)) +
+      (t.levels.length && t.levels[t.levels.length - 1].length === 1 ? opt('beside:' + t.id, 'Beside the top unit of ' + esc(t.name)) : '')).join('');
+    const prob = stackProblem(clean(c)), match = prob ? stackMatch() : null;
+    const where = cd.v === 'edit' ? '' : cd.v.startsWith('beside:') ? 'beside the top unit of ' : 'on top of ';
+    const check = !cd.t || !cd.t.levels.length ? '' : prob
+      ? `<div class="alert warn stackchk"><span><strong>${esc(prob)}</strong>${cd.v.startsWith('beside:') ? '' : ' Stacked units need the same width and depth.'}</span>${match ? `<button class="btn" id="matchIt">Match it: ${WNAME[match.w]} \u00d7 x${match.d}${match.h !== c.h ? ' \u00b7 ' + match.h + 'F' : ''}</button>` : ''}</div>`
+      : `<div class="stackchk okline">${ICON_OK}Fits ${where}${esc(cd.t.name)}${cd.v === 'edit' ? ` (level ${editing.l + 1})` : ''}</div>`;
     $('view-unit').innerHTML = `
       ${towers.length ? '' : presetsBlock(false)}
       <div class="panel unit-head">
@@ -1520,9 +1587,10 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         ${res.notes.map(n => `<div class="alert warn">${esc(n)}</div>`).join('')}
         ${inferred.length ? `<div class="alert warn"><span><strong>${plural(inferred.length, 'count')} here ${inferred.length > 1 ? 'are' : 'is'} inferred, not from the manual.</strong> They\u2019re marked <span class="badge inf">Inferred</span> below with the reason. Check those in your slicer before printing a batch.</span></div>` : ''}
         ${!editing && addTo !== null && defT ? `<div class="alert ok addto"><span>Adding to <b>${esc(defT.name)}</b>. Set up the unit, then press <b>Add</b> to put it on top.</span><button class="btn" id="cancelAddTo">Back to step 2</button></div>` : ''}
+        ${check}
         ${editing ? '' : `<div class="addrow">
           <label for="addDest" class="pnote" style="margin:0">Add to build:</label>
-          <select id="addDest">${dest}<option value="new">As a new stack</option></select>
+          <select id="addDest">${dest}${opt('new', 'As a new stack')}</select>
           <span class="stepper" style="padding:4px 4px 4px 10px">\u00d7<div><button type="button" id="addLess" aria-label="Fewer">\u2212</button><output id="addN">1</output><button type="button" id="addMore" aria-label="More">+</button></div></span>
           <button class="btn primary" id="addBuild">Add</button>
           <button class="btn" id="copyList">Copy part list</button>
@@ -1536,6 +1604,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     bindPresets($('view-unit'));
     if (!editing) {
       let n = 1;
+      $('addDest').onchange = () => { destChoice = $('addDest').value; renderControls(); renderUnit(); };
       $('addLess').onclick = () => { n = Math.max(1, n - 1); $('addN').textContent = n; };
       $('addMore').onclick = () => { n = Math.min(12, n + 1); $('addN').textContent = n; };
       $('addBuild').onclick = () => {
@@ -1547,11 +1616,12 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         else for (let i = 0; i < n; i++) t.levels.push([unit()]);
         lastTower = t.id; store.set('lastTower', lastTower);
         if (addTo !== null) { addTo = null; openTowers.add(t.id); save(); view = 'build'; renderAll(); scrollToTower(t.id); }
-        else { save(); renderUnit(); renderTabs(); }
+        else { save(); renderControls(); renderUnit(); renderTabs(); }
         toast(`Added ${n > 1 && !v.startsWith('beside:') ? n + ' \u00d7 ' : ''}${label} to ${t.name}`);
       };
       $('copyList').onclick = () => copy(listText(res.lines, label), 'Part list copied');
     }
+    if ($('matchIt')) $('matchIt').onclick = () => { const m = stackMatch(); if (m) { set(m); toast(`Changed to ${WNAME[m.w]} \u00d7 x${m.d} \u00b7 ${m.h}F`); } };
     if ($('cancelAddTo')) $('cancelAddTo').onclick = () => { const id = addTo; addTo = null; view = 'build'; renderAll(); scrollToTower(id); };
   }
   function scrollToTower(id) {
