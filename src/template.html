@@ -352,6 +352,9 @@ details.folded > summary .mini { min-width: 40px; }
 .sv .sv-peg { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; opacity: .85; }
 .sv .sv-handle { fill: none; stroke: var(--ink); stroke-width: 3; opacity: .85; }
 .sv .sv-rod { stroke: var(--muted); stroke-width: 2.5; }
+.sv .sv-dl { fill: none; stroke: var(--accent); stroke-width: 1; }
+.sv .sv-dim { fill: var(--accent); font: 600 10.5px var(--f-body); }
+.stackviz .caption b { color: var(--ink); font-weight: 700; }
 .levels { display: grid; gap: 6px; }
 .level { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
 .level .n { font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; text-align: center; }
@@ -1306,6 +1309,38 @@ details.termfold[open] > summary { color: var(--ink); }
   }
 
   // ---------- 2 · build view (towers) ----------
+  // Overall outside size of a stack in mm, from the STLs: base 52.2 mm thick, foot 60.5 mm tall (the base sits on it, and
+  // the 160 mm wheels' axle runs through the base at that height), roof 14.8 mm, backbone 33 mm off the back (47 mm at
+  // the pull-out handle lock, 33 + 12 with a pegboard attachment, about 33 + 47 at the stationary handle). Across the
+  // wheels it's the axle rod length from the manual. Casters are bought, so their height isn't known.
+  function stackSize(t, a) {
+    const L = t.levels, s = t.stack || STACK_DEFAULT;
+    if (!L.length) return null;
+    const fam = R.familyForWidth(levelWidth(L[0]));
+    const base = s.base, wheels = base && s.wheels, casters = base && !wheels && s.casters, feet = base && s.feet && !casters;
+    const top = L[L.length - 1], roof = top.every(u => u.type === 'drawer') && top[0].roof !== 'none';
+    const has = f => L.some(lv => lv.some(f));
+    const bb = has(u => u.backbone && u.backbone !== 'none'), peg = has(u => u.pegboard && u.pegboard !== 'none');
+    let w = Math.max(...L.map(levelWidth));
+    if (wheels && fam) w = Math.max(w, { S: 248, M: 338, L: 414, XL: 504 }[fam]);
+    const backMm = Math.max(bb ? 33 : 0, s.pullHandle ? 47 : 0, s.stationaryHandle ? 80 : 0, peg ? 45 : 0);
+    const d = Math.max(...L.map(lv => unitExt(lv[0])[1])) + backMm;
+    const h = (wheels || feet ? 60.5 : 0) + (base ? 52.2 : 0) + a.height + (roof ? 14.8 : 0);
+    const notes = [];
+    if (casters) notes.push('plus the casters');
+    if (s.pullHandle) notes.push('plus the pull-out handle when it’s up');
+    if (peg) notes.push('plus whatever hangs on the pegboard');
+    return { w, d, h, notes };
+  }
+  const dimText = mm => '≈ ' + Math.round(mm) + ' mm';
+  // A dimension line with end ticks; horizontal (label under it) or vertical (label to its right)
+  function dimLine(x1, y1, x2, y2, label) {
+    const v = x1 === x2, t = 4;
+    const ticks = v ? `M${x1 - t} ${y1}h${2 * t}M${x2 - t} ${y2}h${2 * t}` : `M${x1} ${y1 - t}v${2 * t}M${x2} ${y2 - t}v${2 * t}`;
+    const txt = v ? `<text class="sv-dim" x="${x1 + 6}" y="${(y1 + y2) / 2 - 2}">${label.split(' ').slice(0, 2).join(' ')}</text><text class="sv-dim" x="${x1 + 6}" y="${(y1 + y2) / 2 + 10}">mm</text>`
+      : `<text class="sv-dim" x="${(x1 + x2) / 2}" y="${y1 + 14}" text-anchor="middle">${label}</text>`;
+    return `<path class="sv-dl" d="M${x1} ${y1}L${x2} ${y2}${ticks}"/>${txt}`;
+  }
   // Front view of a stack, drawn to scale in mm: levels, roof, and the base with whatever sits under it (wheels at the
   // sides, one foot between them, or two feet, or casters at the corners). Handles bolt onto the back, so they're
   // drawn dashed: the pull-out handle's rods and grip rise above the top, the stationary handle sits across the middle.
@@ -1376,7 +1411,14 @@ details.termfold[open] > summary { color: var(--ink); }
       }
     }
     if (o.labels) out.push(`<line class="sv-floor" x1="0" y1="${floor}" x2="${W}" y2="${floor}"/>`);
-    return `<svg class="sv${o.labels ? '' : ' sv-mini'}" viewBox="0 0 ${W.toFixed(1)} ${H.toFixed(1)}" width="${W.toFixed(0)}" height="${H.toFixed(0)}" aria-hidden="true">${out.join('')}</svg>`;
+    let VW = W, VH = H;
+    if (o.dims) {
+      const half = wheels ? bw / 2 + r : Math.max(maxw, bw) / 2;
+      out.push(dimLine(cx - half, floor + 8, cx + half, floor + 8, dimText(o.dims.w)));
+      out.push(dimLine(W + 6, up, W + 6, floor, dimText(o.dims.h)));
+      VW = W + 46; VH = H + 26;
+    }
+    return `<svg class="sv${o.labels ? '' : ' sv-mini'}" viewBox="0 0 ${VW.toFixed(1)} ${VH.toFixed(1)}" width="${VW.toFixed(0)}" height="${VH.toFixed(0)}" aria-hidden="true">${out.join('')}</svg>`;
   }
   // Side view, back on the left and front on the right, like USSA's photos: depth and height of every level, and the
   // parts that hang off the back (backbones, pegboard attachments, wall plate, both handles) or sit under the base
@@ -1433,7 +1475,15 @@ details.termfold[open] > summary { color: var(--ink); }
       }
     }
     out.push(`<line class="sv-floor" x1="0" y1="${floor}" x2="${W}" y2="${floor}"/>`);
-    return `<svg class="sv" viewBox="0 0 ${W.toFixed(1)} ${H.toFixed(1)}" width="${W.toFixed(0)}" height="${H.toFixed(0)}" aria-hidden="true">${out.join('')}</svg>`;
+    let VH = H;
+    if (o.dims) {
+      // From the furthest thing off the back to the front face
+      const bbOn = L.some(lv => lv.some(k => k.backbone && k.backbone !== 'none'));
+      const left = Math.min(x0 - (bbOn ? bbW : 0), anyPeg ? x0 - bbW - 45 * sx : x0, s.stationaryHandle ? x0 - bbW - 47 * sx : x0, s.pullHandle ? x0 - bbW - 8 : x0);
+      out.push(dimLine(left, floor + 8, x1, floor + 8, dimText(o.dims.d)));
+      VH = H + 26;
+    }
+    return `<svg class="sv" viewBox="0 0 ${W.toFixed(1)} ${VH.toFixed(1)}" width="${W.toFixed(0)}" height="${VH.toFixed(0)}" aria-hidden="true">${out.join('')}</svg>`;
   }
   function stackViz(t, a) {
     const s = t.stack || STACK_DEFAULT;
@@ -1441,11 +1491,12 @@ details.termfold[open] > summary { color: var(--ink); }
     if (s.base) bits.push(s.wheels ? (s.feet ? 'base, wheels and a foot' : 'base and wheels') : s.casters ? 'base on casters' : s.feet ? 'base on feet' : 'base');
     if (s.stationaryHandle) bits.push('stationary handle');
     if (s.pullHandle) bits.push('pull-out handle');
-    const o = { sx: 200 / 419, sy: 0.32, minLv: 14, labels: true };
+    const o = { sx: 200 / 419, sy: 0.32, minLv: 14, labels: true }, sz = stackSize(t, a);
     return `<div class="stackviz"><div class="views">
-        <figure>${stackSvg(t, a, { ...o, back: false })}<figcaption>Front</figcaption></figure>
-        <figure>${sideSvg(t, a, o)}<figcaption>Side \u00b7 back on the left</figcaption></figure></div>
-      <div class="caption num">${Math.round(a.height)} mm tall without base${bits.length ? ` \u00b7 ${bits.join(', ')}` : ''}</div></div>`;
+        <figure>${stackSvg(t, a, { ...o, back: false, dims: sz })}<figcaption>Front</figcaption></figure>
+        <figure>${sideSvg(t, a, { ...o, dims: sz })}<figcaption>Side \u00b7 back on the left</figcaption></figure></div>
+      ${sz ? `<div class="caption num"><b>Outside: ${Math.round(sz.w)} \u00d7 ${Math.round(sz.d)} \u00d7 ${Math.round(sz.h)} mm</b> (W \u00d7 D \u00d7 H, approx.)${sz.notes.length ? ', ' + sz.notes.join(', ') : ''}</div>` : ''}
+      ${bits.length ? `<div class="caption">${bits.join(', ').replace(/^./, ch => ch.toUpperCase())}</div>` : ''}</div>`;
   }
 
   // Picture of what a stack is: one with three levels on wheels, one with two S drawers side by side
