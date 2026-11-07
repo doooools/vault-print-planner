@@ -567,7 +567,7 @@ details.termfold[open] > summary { color: var(--ink); }
 (function () {
   const R = window.VaultRules;
   // Row: path, true footprint a, b (smallest rectangle around the part seen from above), height z, volume mm³, export angle, sprite sheet, cell, Bambu says it needs supports
-  const FILES = window.VAULT_FILES.map(r => ({ path: r[0], dims: [r[1], r[2], r[3]], vol: r[4], angle: r[5], sheet: r[6], cell: r[7], needsSupport: !!r[8] }));
+  const FILES = window.VAULT_FILES.map(r => ({ path: r[0], dims: [r[1], r[2], r[3]], vol: r[4], angle: r[5], sheet: r[6], cell: r[7], needsSupport: !!r[8], supReach: r[9] == null || r[9] < 0 ? null : r[9] }));
   const resolve = R.makeResolver(FILES);
   const SRC_DEFAULT = '261021_VAULT_USSA_S';
   // Filament estimate. Thin-walled parts print close to solid (0.78 g/cm³ of part volume, the median of USSA's published
@@ -655,10 +655,8 @@ details.termfold[open] > summary { color: var(--ink); }
   const eps = 1e-6;
   function rectInRect(a, b, X, Y) {
     if ((a <= X + eps && b <= Y + eps) || (b <= X + eps && a <= Y + eps)) return 'straight';
-    for (let deg = 1; deg < 90; deg += 0.5) {
-      const t = deg * Math.PI / 180, cs = Math.cos(t), sn = Math.sin(t);
-      if (a * cs + b * sn <= X + eps && a * sn + b * cs <= Y + eps) return 'diagonal';
-    }
+    // The builders turn a part that doesn't lie straight by exactly 45 degrees, so that's the only angle that counts
+    if ((a + b) / Math.SQRT2 <= Math.min(X, Y) + eps) return 'diagonal';
     return null;
   }
   function fitOf(dims, V) {
@@ -1710,9 +1708,18 @@ details.termfold[open] > summary { color: var(--ink); }
       mate.a = a; mate.b = b; s.pad = 0; paired.add(s); // the support touches the part, so no brim box of its own
     });
     for (let i = pieces.length - 1; i >= 0; i--) if (paired.has(pieces[i])) pieces.splice(i, 1);
-    // Bambu's tree supports spread past a part's outline at plate level (tall parts standing on an edge
-    // get straight supports for that reason), so a supported part keeps SUP_CLEAR more room from its neighbours, or the slicer reports clashing paths
-    pieces.forEach(p => { p.sup = !!p.l.supports && !p.care && !p.mate; });
+    // Bambu's supports aren't trimmed around other parts the way brims are, and tree supports fan out past a part's
+    // outline (src/bambu-reach.tsv measures how far for each part). Neighbours keep that far away, or the slicer
+    // reports clashing paths. Parts never measured fall back to SUP_CLEAR.
+    pieces.forEach(p => { p.r = !p.l.supports || p.care ? 0 : Math.max(0, (p.l.file.supReach ?? SUP_CLEAR) - p.pad); });
+    const apart = (r1, r2) => r1 + r2 > 0 ? Math.max(0, r1 + r2 + 1 - GAP) : 0; // room beyond GAP between two parts
+    const edge = p => Math.max(0, p.r + 1 - MARGIN); // room beyond MARGIN from the bed's edge, so supports stay on the bed
+    // A part joining a row also has to keep that room from the parts in the rows next to it
+    const clearOf = (pl, x, y, w, h, r) => pl.items.every(it => {
+      const q = it.p.r || 0; if (r + q <= 0) return true;
+      const need = GAP + apart(r, q) - eps;
+      return Math.max(it.x - x - w, x - it.x - it.w) >= need || Math.max(it.y - y - h, y - it.y - it.h) >= need;
+    });
     const gramsOfPiece = p => gramsOf(p.l.file) + (p.mate ? gramsOf(p.mate.s.l.file) : 0);
     const plates = [];
     const groups = [...new Set(pieces.map(p => p.group))].sort((x, y) => COLOR_ORDER.indexOf(x.split('|')[0]) - COLOR_ORDER.indexOf(y.split('|')[0]) || x.localeCompare(y));
@@ -1723,8 +1730,9 @@ details.termfold[open] > summary { color: var(--ink); }
         if (p.care && p.l.fit.s === 'diag') {
           // Too long to lie straight: on the diagonal from back-left to front-right, clear of the no-print corner.
           // A smaller brim so its corners stay on the bed.
-          p.pad = Math.min(p.pad, 3);
-          const [a, b] = p.l.file.dims, s = (Math.max(a, b) + Math.min(a, b) + 4 * p.pad) / Math.SQRT2;
+          const [a, b] = p.l.file.dims;
+          p.pad = Math.max(0, Math.min(p.pad, 3, (Math.min(V[0], V[1]) * Math.SQRT2 - a - b) / 4 - 0.5));
+          const s = (Math.max(a, b) + Math.min(a, b) + 4 * p.pad) / Math.SQRT2;
           p.a = Math.max(a, b) + 2 * p.pad; p.b = Math.min(a, b) + 2 * p.pad;
           plates.push({ group: g, care: true, shelves: [], items: [{ p, diag: true, x: (V[0] - s) / 2, y: (V[1] - s) / 2, w: s, h: s }] });
           continue;
@@ -1736,16 +1744,16 @@ details.termfold[open] > summary { color: var(--ink); }
           if (pl.g + pg > SPOOL_G) continue; // keep each plate within one 1 kg spool
           for (const sh of pl.shelves) {
             for (const [w, h] of [[p.a, p.b], [p.b, p.a]]) {
-              const gx = sh.sup || p.sup ? SUP_CLEAR : 0;
-              if (h <= sh.h + eps && sh.x + gx + w <= W + eps) { pl.items.push({ p, x: MARGIN + sh.x + gx, y: MARGIN + sh.y, w, h }); sh.x += gx + w + GAP; sh.sup = p.sup; sh.anySup = sh.anySup || p.sup; pl.g += pg; placed = true; break; }
+              const gx = apart(sh.r, p.r), e = edge(p), x = MARGIN + sh.x + gx, y = MARGIN + sh.y;
+              if (h <= sh.h + eps && sh.x + gx + w <= W - e + eps && (!e || (sh.y >= e - eps && sh.y + h <= H - e + eps)) && clearOf(pl, x, y, w, h, p.r)) { pl.items.push({ p, x, y, w, h }); sh.x += gx + w + GAP; sh.r = p.r; sh.maxR = Math.max(sh.maxR, p.r); pl.g += pg; placed = true; break; }
             }
             if (placed) break;
           }
           if (placed) break;
-          const y = pl.shelves.reduce((a, s) => Math.max(a, s.y + s.h + GAP + (s.anySup || p.sup ? SUP_CLEAR : 0)), 0);
+          const e = edge(p), y = Math.max(e, pl.shelves.reduce((a, s) => Math.max(a, s.y + s.h + GAP + apart(s.maxR, p.r)), 0));
           for (const [w, h] of [[p.a, p.b], [p.b, p.a]]) {
-            const sx = rowStart(MARGIN + y) - MARGIN;
-            if (sx + w <= W + eps && y + h <= H + eps) { pl.shelves.push({ y, h, x: sx + w + GAP, sup: p.sup, anySup: p.sup }); pl.items.push({ p, x: MARGIN + sx, y: MARGIN + y, w, h }); pl.g += pg; placed = true; break; }
+            const sx = Math.max(e, rowStart(MARGIN + y) - MARGIN);
+            if (sx + w <= W - e + eps && y + h <= H - e + eps && clearOf(pl, MARGIN + sx, MARGIN + y, w, h, p.r)) { pl.shelves.push({ y, h, x: sx + w + GAP, r: p.r, maxR: p.r }); pl.items.push({ p, x: MARGIN + sx, y: MARGIN + y, w, h }); pl.g += pg; placed = true; break; }
           }
           if (placed) break;
         }
@@ -1754,13 +1762,14 @@ details.termfold[open] > summary { color: var(--ink); }
           // Parts wider than the margined area (M width is 254 mm on a 256 mm bed) skip the margin and sit centred
           // Long side front to back when it's too long for the margined width, so more parts fit beside it
           const [w, h] = p.a <= W + eps ? [p.a, p.b] : p.b <= W + eps && p.a <= V[1] + eps ? [p.b, p.a] : [p.a, p.b];
-          let y0 = h > H + eps ? (V[1] - h) / 2 : MARGIN;
-          let x0 = w > W + eps ? (V[0] - w) / 2 : MARGIN;
+          const e = edge(p); // as far in from the edge as its supports need, or as far as it can
+          let y0 = h > H + eps ? (V[1] - h) / 2 : MARGIN + Math.min(e, (H - h) / 2);
+          let x0 = w > W + eps ? (V[0] - w) / 2 : MARGIN + Math.min(e, (W - w) / 2);
           if (ex && x0 < KX && y0 < KY) {
             if (Math.max(x0, KX) + w <= V[0] - 1) x0 = Math.max(x0, KX);      // slide right, past the corner
             else if (KY + h <= V[1] - 1) y0 = KY;                             // or start the row behind it
           }
-          pl.shelves.push({ y: y0 - MARGIN, h, x: x0 - MARGIN + w + GAP, sup: p.sup, anySup: p.sup }); pl.items.push({ p, x: x0, y: y0, w, h });
+          pl.shelves.push({ y: y0 - MARGIN, h, x: x0 - MARGIN + w + GAP, r: p.r, maxR: p.r }); pl.items.push({ p, x: x0, y: y0, w, h });
           open.push(pl); plates.push(pl);
         }
       }
@@ -1781,8 +1790,8 @@ details.termfold[open] > summary { color: var(--ink); }
     // Centre each plate's layout on the bed: a lone part shouldn't sit in a corner. Skip a shift that would push
     // anything off the bed or into the no-print corner.
     const fits = (pl, dx, dy) => pl.items.every(it => {
-      const x = it.x + dx, y = it.y + dy;
-      if (x < -eps || y < -eps || x + it.w > V[0] + eps || y + it.h > V[1] + eps) return false;
+      const x = it.x + dx, y = it.y + dy, r = it.p.r ? it.p.r + 1 : 0; // nor a part's supports closer to the edge
+      if (x < Math.min(r, it.x) - eps || y < Math.min(r, it.y) - eps || x + it.w > V[0] - Math.min(r, V[0] - it.x - it.w) + eps || y + it.h > V[1] - Math.min(r, V[1] - it.y - it.h) + eps) return false;
       return !(ex && x < KX && y < KY);
     });
     plates.forEach(pl => {
@@ -1895,7 +1904,7 @@ details.termfold[open] > summary { color: var(--ink); }
           </div>
           <label class="switch" for="mixSupports"><input type="checkbox" id="mixSupports" ${mixSupports ? 'checked' : ''}><span class="track"></span><span>Fewer plates<small>Support parts share plates; supports stay on just for them</small></span></label>
         </div>
-        <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Press <b>Printed</b> when a plate comes off. Plate numbers stay the same, so they keep matching your Bambu Studio project. Small parts that are easy to lose come with 10% spares. Plates are packed for a ${printer.v[0]} \u00d7 ${printer.v[1]} mm bed with 5 mm edges, and kept under one 1 kg spool each. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Parts with supports sit 6 mm further from their neighbours. Tall parts printed on an edge get straight supports instead of tree supports, which would fan out about 40 mm into the part next door. Wall counts are set per part, so they can share a plate. Plates are drawn like Bambu Studio\u2019s top view: front at the bottom, with the printer\u2019s no-print corner hatched in red.</p></details>
+        <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Press <b>Printed</b> when a plate comes off. Plate numbers stay the same, so they keep matching your Bambu Studio project. Small parts that are easy to lose come with 10% spares. Plates are packed for a ${printer.v[0]} \u00d7 ${printer.v[1]} mm bed with 5 mm edges, and kept under one 1 kg spool each. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread (measured by slicing each part alone). Tall parts printed on an edge get straight supports instead of tree supports, which would fan out about 40 mm into the part next door. Wall counts are set per part, so they can share a plate. Plates are drawn like Bambu Studio\u2019s top view: front at the bottom, with the printer\u2019s no-print corner hatched in red.</p></details>
       </div>
       ${plates.length ? gatherPanel(plates) : ''}
       ${plates.length ? `<div class="plates">${allPlates.map(pl => pl.done ? `<div class="panel plate done"><div class="plate-head"><b>Plate ${pl.n}</b><span><span class="swatch sw-${pl.color}"></span>${COLOR_NAME[pl.color]} \u00b7 ${plural(pl.items.length, 'part')}</span></div><div class="donerow"><span class="ok">${ICON_OK}Printed</span><button class="btn" data-undoplate="${pl.n}">Undo</button></div></div>` : `<div class="panel plate">

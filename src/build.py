@@ -32,6 +32,17 @@ if audit.exists():
         if "enable support" in msg:
             needs.add(path)
 
+# How far Bambu's supports reach past each part at any layer, from slicing it alone with the planner's settings
+# (src/bambu-reach.tsv: path, printer, support reach, auto brim reach, skirt reach, warning). The packer keeps
+# neighbours that far away, since supports, unlike brims, aren't trimmed around other parts.
+reach = {}
+rf = here / "bambu-reach.tsv"
+if rf.exists():
+    for line in rf.read_text().strip().split("\n"):
+        c = line.split("\t")
+        if len(c) > 2 and c[2]:
+            reach[c[0]] = round(float(c[2]), 1)
+
 rows = []
 for line in pathlib.Path(foot).read_text().strip().split("\n"):
     p, bx, by, bz, vol, fa, fb, ang = line.split("\t")
@@ -39,7 +50,7 @@ for line in pathlib.Path(foot).read_text().strip().split("\n"):
     # Round parts (keys, knobs, disks): turning them doesn't shrink their footprint, so keep them as exported
     if float(bx) * float(by) <= float(fa) * float(fb) * 1.03:
         a, b, ang = *sorted((float(bx), float(by)), reverse=True), "0"
-    rows.append([p, a, b, float(bz), int(float(vol)), float(ang)] + thumbs.get(p, [0, 0]) + [1 if p in needs else 0])
+    rows.append([p, a, b, float(bz), int(float(vol)), float(ang)] + thumbs.get(p, [0, 0]) + [1 if p in needs else 0, reach.get(p, -1)])
 
 catalog = "window.VAULT_FILES=" + json.dumps(rows, ensure_ascii=False, separators=(",", ":")) + ";"
 # Bambu Studio's own project settings per printer (src/bambu-settings/<printer id>.json, each saved by Bambu Studio itself).
