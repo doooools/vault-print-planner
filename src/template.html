@@ -303,10 +303,19 @@ footer.site .ytbtn { text-decoration: none; color: var(--ink); }
 .donelist { padding: 0 18px 14px; display: grid; gap: 4px; }
 .doneitem { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; font-size: 13.5px; padding: 4px 0; border-top: 1px solid var(--line); }
 details.fold { padding: 0; }
-details.fold > summary { cursor: pointer; padding: 14px 18px; font-family: var(--f-display); font-stretch: 112%; font-weight: 700; font-size: 17px; list-style: none; display: flex; justify-content: space-between; gap: 8px; }
-details.fold > summary::after { content: "+"; color: var(--muted); font-family: var(--f-body); }
+details.fold > summary { cursor: pointer; padding: 14px 18px; font-family: var(--f-display); font-stretch: 112%; font-weight: 700; font-size: 17px; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::after { content: "+"; color: var(--muted); font-family: var(--f-body); font-weight: 400; font-size: 20px; line-height: 1; width: 1ch; text-align: center; }
 details.fold[open] > summary::after { content: "\2212"; }
 details.fold > summary small { font-family: var(--f-body); font-weight: 400; font-size: 13px; color: var(--muted); margin-left: auto; padding-right: 10px; }
+/* Small "more info" disclosures that tuck away detail */
+details.info > summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
+details.info > summary::-webkit-details-marker { display: none; }
+details.info > summary::before { content: "i"; display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; border: 1px solid currentColor; font: italic 700 11px/1 Georgia, serif; }
+details.info > summary:hover, details.info[open] > summary { color: var(--ink); }
+details.info > p { margin: 6px 0 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
+.panel > details.info { padding: 0 18px 12px; }
+footer details.info > p { font-size: 12.5px; }
 
 /* Extra parts */
 .xsearch { padding: 0 18px 10px; }
@@ -435,7 +444,7 @@ details.termfold[open] > summary { color: var(--ink); }
         <a class="vidlink" href="https://youtu.be/89nARFpuMbw" target="_blank" rel="noopener">See why it was built</a></div>
       <p>An unofficial fan project. Vault, its designs and its files belong to <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">USSA</a>; you need your own copy of the files to print anything.</p>
     </div>
-    <p class="fnotes" id="footnote"></p>
+    <details class="info fnotes"><summary>Where the numbers come from</summary><p id="footnote"></p></details>
   </footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -865,9 +874,9 @@ details.termfold[open] > summary { color: var(--ink); }
   function hwTable(hw, title, sub) {
     if (!hw.length) return '';
     return `<div class="panel hw"><h3 class="ph">${title || 'Hardware to buy'}</h3><p class="pp">${sub || 'Not printed.'}</p>
-      ${hw.some(h => headOf(h.item)) ? '<p class="pp heads">Check the head shape: button heads are domed and sit on top of the part; countersunk heads have a flat top and sit flush in a cone-shaped hole.</p>' : ''}
+      ${hw.some(h => headOf(h.item)) ? '<p class="pp heads">Match the head shape: button heads are domed; countersunk heads are flat and sit flush.</p>' : ''}
       <table><tbody>${hw.map(h => `<tr><td class="q">${h.total}\u00d7</td><td class="hd">${headIcon(h.item)}</td><td>${esc(h.item)}${h.spareN ? ` <small style="color:var(--muted)">incl. ${h.spareN} spare</small>` : ''}${buyLink(h.item)}</td><td class="why">${esc(h.why)}</td></tr>`).join('')}</tbody></table>
-      ${hw.some(h => shopOf(h.item).link) ? '<p class="pp aff">Amazon links are affiliate links: as an Amazon Associate I earn from qualifying purchases, at no extra cost to you.</p>' : ''}</div>`;
+      ${hw.some(h => shopOf(h.item).link) ? '<p class="pp aff">As an Amazon Associate I earn from qualifying purchases.</p>' : ''}</div>`;
   }
 
   // ---------- copy helpers ----------
@@ -1146,7 +1155,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const xl = extraLines();
     return `<div class="panel">
       <h3 class="ph">Extra parts</h3>
-      <p class="pp">Single parts to print on their own: a spare, a replacement, or just one roof. Search by name, like \u201cS3 grid roof\u201d, \u201clatch\u201d or \u201cM5 box\u201d. They print in step 3 with the right walls and supports, and count separately from your towers.</p>
+      <p class="pp">Spares, replacements or just one roof. Search by name, like \u201cS3 grid roof\u201d or \u201clatch\u201d.</p>
       <div class="xsearch"><input id="xq" type="search" placeholder="Search all ${FILES.length} parts\u2026" value="${esc(xq)}" autocomplete="off" aria-label="Search parts"></div>
       <div class="xresults" id="xresults">${xResults()}</div>
       ${xl.length ? `<div class="xlist"><div class="xhead">In your extra parts</div>
@@ -1396,6 +1405,10 @@ details.termfold[open] > summary { color: var(--ink); }
       <text x="${V[0] / 2}" y="${V[1] + 15}" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="2" fill="var(--ink)">FRONT</text></svg>`;
   }
 
+  // Remember which info disclosures are open so re-renders keep them open
+  const openInfo = new Set();
+  document.addEventListener('toggle', e => { const d = e.target; if (d.matches && d.matches('details.info[data-k]')) d.open ? openInfo.add(d.dataset.k) : openInfo.delete(d.dataset.k); }, true);
+
   function renderPrint() {
     const b = computeBuild();
     const s = summary(b.lines);
@@ -1425,10 +1438,11 @@ details.termfold[open] > summary { color: var(--ink); }
             <button type="button" data-colors="size" aria-pressed="${plateColors === 'size'}">Big &amp; small<small>Shell in one color, small parts in another</small></button>
             <button type="button" data-colors="one" aria-pressed="${plateColors === 'one'}">One color<small>Fewest plates</small></button>
           </div>
-          <label class="switch" for="mixSupports"><input type="checkbox" id="mixSupports" ${mixSupports ? 'checked' : ''}><span class="track"></span><span>Fewer plates<small>Parts that need supports share plates with the rest. Supports stay on per part in the Bambu Studio project</small></span></label>
+          <label class="switch" for="mixSupports"><input type="checkbox" id="mixSupports" ${mixSupports ? 'checked' : ''}><span class="track"></span><span>Fewer plates<small>Support parts share plates; supports stay on just for them</small></span></label>
           <label class="switch" for="spares"><input type="checkbox" id="spares" ${spares ? 'checked' : ''}><span class="track"></span><span>Add spares<small>+10% on small loseable parts and bolts</small></span></label>
         </div>
-        <p class="pp">Plates are packed for a ${printer.v[0]} \u00d7 ${printer.v[1]} mm bed with 5 mm edges, and kept under one 1 kg spool each. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Wall counts are set per part, so they can share a plate. Plates are drawn like Bambu Studio\u2019s top view: front at the bottom, with the printer\u2019s no-print corner hatched in red. Press <b>Printed</b> when a plate comes off; that plate drops off the list.</p>
+        <p class="pp">Press <b>Printed</b> when a plate comes off; it drops off the list.</p>
+        <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plates are packed for a ${printer.v[0]} \u00d7 ${printer.v[1]} mm bed with 5 mm edges, and kept under one 1 kg spool each. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Wall counts are set per part, so they can share a plate. Plates are drawn like Bambu Studio\u2019s top view: front at the bottom, with the printer\u2019s no-print corner hatched in red.</p></details>
       </div>
       ${plates.length ? gatherPanel(plates) : ''}
       ${plates.length ? `<div class="plates">${plates.map(pl => `<div class="panel plate">
