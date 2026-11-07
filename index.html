@@ -812,7 +812,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         add('Wheels', 'Tyre', MO + 'Wheels/Tyre (TPU).stl', 2, { tpu: true, note: 'Print in TPU.' });
         add('Wheels', 'Bushing jig (tool)', MO + 'Wheels/Jig.stl', 1, { aid: true, note: 'Tool for pressing bushings onto the rod. Print once.' });
       }
-      if (s.feet) add('Base', 'Foot', MO + `Feet/${w} Feet.stl`, s.wheels ? 1 : 2,
+      if (s.feet && (s.wheels || !s.casters)) add('Base', 'Foot', MO + `Feet/${w} Feet.stl`, s.wheels ? 1 : 2,
         s.wheels ? { note: 'One foot opposite the wheels.' } : { inferred: 'Without wheels, two feet are assumed. The manual only shows the wheeled version.' });
     }
     if (s.stationaryHandle) add('Handles', 'Stationary handle', MO + `Stationary Handle/${w} Stationary Handle.stl`, 1);
@@ -854,7 +854,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       push('6205ZZ bearing (25 × 52 × 15 mm)', 2, 'Wheels');
       push('SCSAW shaft collar (16 mm bore)', 2, 'Wheels');
     }
-    if (s.base && s.feet) push('M6 × 90 mm button-head bolt', 2 * (s.wheels ? 1 : 2), 'Feet');
+    if (s.base && s.feet && (s.wheels || !s.casters)) push('M6 × 90 mm button-head bolt', 2 * (s.wheels ? 1 : 2), 'Feet');
     if (s.base && !s.wheels && s.casters) push('Caster with M8 bolt', 4, 'Casters (instead of wheels)');
     if (s.stationaryHandle) push('M4 × 60 mm button-head bolt', 8, 'Stationary handle');
     if (s.pullHandle) {
@@ -1152,7 +1152,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       if (L.length > 1 && topLv.some(u => u.h !== 2)) issues.push({ k: 'info', m: 'USSA also recommends a 2F unit at the top, just under the roof.' });
     }
     const hasBackbone = L.some(lv => lv.some(u => u.backbone && u.backbone !== 'none'));
-    if (s.pullHandle && !hasBackbone) issues.push({ k: 'warn', m: 'The pull-out handle bolts onto backbones. Give the units backbones in the editor (Mounting section).' });
+    const needBB = [s.stationaryHandle && 'stationary handle', s.pullHandle && 'pull-out handle'].filter(Boolean);
+    if (needBB.length && !hasBackbone) issues.push({ k: 'warn', m: `The ${needBB.join(' and the ')} ${needBB.length > 1 ? 'bolt' : 'bolts'} onto backbones on the back. Give the units backbones in the editor (Mounting section).` });
     const height = L.reduce((a, lv) => a + levelHeight(lv), 0);
     return { issues, parts, height, fam };
   }
@@ -1675,8 +1676,18 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       const rx = Math.min(bw / 2 - 4 * (o.labels ? 1 : .5), Math.max(10, bw * 0.38));
       out.push(`<path class="sv-back" d="M${cx - rx} ${baseTop} V${up * 0.35} M${cx + rx} ${baseTop} V${up * 0.35}"/><rect class="sv-grip" x="${cx - rx - 3}" y="${up * 0.15}" width="${2 * rx + 6}" height="${Math.max(3, up * 0.22)}" rx="${Math.max(1.5, up * 0.1)}"/>`);
     }
-    // Stationary handle: bolted across the back about halfway up, so only its ends show past the sides
-    if (s.stationaryHandle) { const hw = bw + (o.labels ? 18 : 5), hh = Math.max(3, 18 * sy); out.push(`<rect class="sv-back-fill" x="${cx - hw / 2}" y="${up + roofH + stackH * 0.45 - hh / 2}" width="${hw}" height="${hh}" rx="${hh / 2}"/>`); }
+    // Stationary handle: a U-shaped grab handle bolted to a backbone on the back, narrower than the stack. Drawn
+    // dashed at the level joint nearest halfway up (or the top edge of a one-level stack), over the levels.
+    let handle = '';
+    if (s.stationaryHandle) {
+      const HW = { S: 122.8, M: 212, L: 287.6, XL: 376.8 }[R.familyForWidth(levelWidth(L[0])) || 'S'];
+      const joints = []; let jy = up + roofH;
+      [...L].reverse().forEach((lv, ri) => { jy += lh[L.length - 1 - ri] + gap; if (ri < L.length - 1) joints.push(jy - gap / 2); });
+      const target = up + roofH + stackH * 0.5;
+      const hy = joints.length ? joints.reduce((b, v) => Math.abs(v - target) < Math.abs(b - target) ? v : b) : up + roofH + 1;
+      const hw = HW * sx, hh = o.labels ? 6 : Math.max(2, 30 * sy);
+      handle = `<path class="sv-back-fill" d="M${cx - hw / 2} ${hy - hh / 2} v${hh * 0.5} q0 ${hh * 0.5} ${hh * 0.5} ${hh * 0.5} h${hw - hh} q${hh * 0.5} 0 ${hh * 0.5} ${-hh * 0.5} v${-hh * 0.5}"/>`;
+    }
     // Levels, top first
     let y = up + roofH;
     if (roof) out.push(`<rect class="sv-roof" x="${cx - levelWidth(top) * sx / 2}" y="${up}" width="${levelWidth(top) * sx}" height="${roofH}" rx="${Math.min(2, roofH / 2)}"/>`);
@@ -1692,6 +1703,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       });
       y += h + gap;
     });
+    if (handle) out.push(handle);
     if (base) {
       out.push(`<rect class="sv-base" x="${cx - bw / 2 - 1}" y="${baseTop}" width="${bw + 2}" height="${baseH}" rx="${o.labels ? 2 : 1}"/>`);
       const by = baseTop + baseH;
@@ -1703,8 +1715,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         const cr = Math.max(1.5, accH * 0.32);
         for (const wx of [cx - bw / 2 + cr + 3, cx + bw / 2 - cr - 3]) out.push(`<rect class="sv-foot" x="${wx - cr * 0.5}" y="${by}" width="${cr}" height="${accH - 2 * cr}"/><circle class="sv-wheel" cx="${wx}" cy="${floor - cr}" r="${cr}"/>`);
       } else if (feet) {
-        const fw = Math.max(3, 40 * sx);
-        for (const fx of [cx - bw / 2 + 2, cx + bw / 2 - 2 - fw]) out.push(`<rect class="sv-foot" x="${fx}" y="${by}" width="${fw}" height="${floor - by}" rx="1"/>`);
+        // Each foot is a bar the full width of the base; from the front the two (front and back) look like one
+        out.push(`<rect class="sv-foot" x="${cx - bw / 2 + 2}" y="${by}" width="${bw - 4}" height="${floor - by}" rx="1"/>`);
       }
     }
     if (o.labels) out.push(`<line class="sv-floor" x1="0" y1="${floor}" x2="${W}" y2="${floor}"/>`);
@@ -1839,8 +1851,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
             <div class="pnote" style="margin:0">Level 1 is the bottom. The roof comes from the top drawer\u2019s roof setting.</div>
             <div class="checks">
               ${checkbox(`st-base-${t.id}`, 'Base', fam ? `${fam}${t.levels[0] ? t.levels[0][0].d : ''} base under level 1` : 'needs a standard width at the bottom', s.base)}
-              ${s.base ? checkbox(`st-wheels-${t.id}`, 'Wheels', 'TPU tyres, bearings, M16 axle', s.wheels) + checkbox(`st-feet-${t.id}`, 'Feet', '', s.feet) + (s.wheels ? '' : checkbox(`st-casters-${t.id}`, 'Casters instead', '4 \u00d7 M8, bought', s.casters)) : ''}
-              ${checkbox(`st-stationaryHandle-${t.id}`, 'Stationary handle', '', s.stationaryHandle)}
+              ${s.base ? checkbox(`st-wheels-${t.id}`, 'Wheels', 'TPU tyres, bearings, M16 axle', s.wheels) + (s.wheels || !s.casters ? checkbox(`st-feet-${t.id}`, 'Feet', s.wheels ? 'one bar under the front, opposite the wheels' : 'two bars, front and back', s.feet) : '') + (s.wheels ? '' : checkbox(`st-casters-${t.id}`, 'Casters instead', '4 \u00d7 M8, bought; replace the feet', s.casters)) : ''}
+              ${checkbox(`st-stationaryHandle-${t.id}`, 'Stationary handle', 'fixed grab handle on the back; needs a backbone', s.stationaryHandle)}
               ${checkbox(`st-pullHandle-${t.id}`, 'Pull-out trolley handle', 'needs backbones', s.pullHandle)}
             </div>
             <div class="issues">${a.issues.length ? a.issues.map(x => `<div class="issue ${x.k}">${esc(x.m)}</div>`).join('') : '<div class="issue ok">Everything in this stack fits together.</div>'}</div>

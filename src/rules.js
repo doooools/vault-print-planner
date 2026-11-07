@@ -261,7 +261,7 @@
         add('Wheels', 'Tyre', MO + 'Wheels/Tyre (TPU).stl', 2, { tpu: true, note: 'Print in TPU.' });
         add('Wheels', 'Bushing jig (tool)', MO + 'Wheels/Jig.stl', 1, { aid: true, note: 'Tool for pressing bushings onto the rod. Print once.' });
       }
-      if (s.feet) add('Base', 'Foot', MO + `Feet/${w} Feet.stl`, s.wheels ? 1 : 2,
+      if (s.feet && (s.wheels || !s.casters)) add('Base', 'Foot', MO + `Feet/${w} Feet.stl`, s.wheels ? 1 : 2,
         s.wheels ? { note: 'One foot opposite the wheels.' } : { inferred: 'Without wheels, two feet are assumed. The manual only shows the wheeled version.' });
     }
     if (s.stationaryHandle) add('Handles', 'Stationary handle', MO + `Stationary Handle/${w} Stationary Handle.stl`, 1);
@@ -303,7 +303,7 @@
       push('6205ZZ bearing (25 × 52 × 15 mm)', 2, 'Wheels');
       push('SCSAW shaft collar (16 mm bore)', 2, 'Wheels');
     }
-    if (s.base && s.feet) push('M6 × 90 mm button-head bolt', 2 * (s.wheels ? 1 : 2), 'Feet');
+    if (s.base && s.feet && (s.wheels || !s.casters)) push('M6 × 90 mm button-head bolt', 2 * (s.wheels ? 1 : 2), 'Feet');
     if (s.base && !s.wheels && s.casters) push('Caster with M8 bolt', 4, 'Casters (instead of wheels)');
     if (s.stationaryHandle) push('M4 × 60 mm button-head bolt', 8, 'Stationary handle');
     if (s.pullHandle) {
