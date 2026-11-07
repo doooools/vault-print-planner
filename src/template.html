@@ -2073,12 +2073,30 @@ details.termfold[open] > summary { color: var(--ink); }
     }
     return out;
   }
+  // Names compared loosely: letters and digits only, so an unzip that garbles "²", drops the space in
+  // "M5 2F Module .stl" or changes case or Unicode form still matches
+  const loose = s => s.normalize('NFC').toLowerCase().replace(/[^a-z0-9/]+/g, '');
+  const sameName = s => fileName(s).normalize('NFC').toLowerCase().replace(/\s+/g, ' ').replace(/ ?\.stl$/, ''); // keeps "²", unlike loose
+  const looseIdx = new WeakMap();
   function findFile(map, path) {
     if (map.has(path)) return map.get(path);
     for (const [k, v] of map) if (k.endsWith('/' + path)) return v;
     const tail = path.split('/').slice(1).join('/'); // picked a folder inside the download
-    return tail && map.has(tail) ? map.get(tail) : null;
+    if (tail && map.has(tail)) return map.get(tail);
+    let ix = looseIdx.get(map);
+    if (!ix) {
+      ix = { paths: [...map].map(([k, v]) => [loose('/' + k), v]), names: new Map() };
+      for (const [k, v] of map) { const n = sameName(k); ix.names.set(n, ix.names.has(n) ? null : v); } // null: name not unique
+      looseIdx.set(map, ix);
+    }
+    const lp = loose(path), lt = loose(tail);
+    const hit = ix.paths.find(([k]) => k.endsWith('/' + lp)) || (lt && ix.paths.find(([k]) => k.endsWith('/' + lt)));
+    if (hit) return hit[1];
+    // Same file name in another folder (a newer download that moved it), if only one file has that name
+    return ix.names.get(sameName(path)) || null;
   }
+  // The missing files, by name, for the messages below
+  const missingList = paths => { const n = paths.map(p => '\u201c' + fileName(p) + '\u201d'); return n.length <= 4 ? n.join(', ') : n.slice(0, 3).join(', ') + ` and ${n.length - 3} more`; };
   const idb = (mode, fn) => new Promise((res, rej) => {
     const r = indexedDB.open('vault-planner', 1);
     r.onupgradeneeded = () => r.result.createObjectStore('kv');
@@ -2112,7 +2130,7 @@ details.termfold[open] > summary { color: var(--ink); }
   const xmlEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   async function buildProject(plan, folder, progress) {
     const missing = [...new Set(plan.plates.flatMap(p => p.pieces.map(x => x.path)))].filter(p => !findFile(folder.files, p));
-    if (missing.length) throw new Error(`${plural(missing.length, 'part')} not found in \u201c${folder.name}\u201d, for example ${fileName(missing[0])}. Pick the Vault download folder (${SRC_DEFAULT.split('/').pop()}).`);
+    if (missing.length) throw new Error(`${plural(missing.length, 'part')} not found in \u201c${folder.name}\u201d: ${missingList(missing)}. Pick the Vault download folder (${SRC_DEFAULT.split('/').pop()}).`);
     const ps = plan.printer && BAMBU.per[plan.printer] ? { ...BAMBU.base, ...BAMBU.per[plan.printer] } : null;
     const ver = (ps && ps.version) || '02.09.01.70';
     // Bambu Studio spaces plates by the whole bed, wider than one nozzle's reach on dual-nozzle printers
@@ -2186,7 +2204,7 @@ details.termfold[open] > summary { color: var(--ink); }
   async function buildFolders(plates, folder, progress) {
     const z = zipWriter(), all = plates.flatMap(pl => pl.lines.map(x => [pl, x]));
     const missing = all.filter(([, x]) => !findFile(folder.files, x.l.file.path));
-    if (missing.length) throw new Error(`${plural(missing.length, 'part')} not found in \u201c${folder.name}\u201d, for example ${fileName(missing[0][1].l.file.path)}. Pick the Vault download folder.`);
+    if (missing.length) throw new Error(`${plural(missing.length, 'part')} not found in \u201c${folder.name}\u201d: ${missingList(missing.map(([, x]) => x.l.file.path))}. Pick the Vault download folder.`);
     for (const [i, [pl, x]] of all.entries()) {
       progress(i / all.length, `${plateFolder(pl)}: ${x.l.label}`);
       const b = new Uint8Array(await fileBytes(findFile(folder.files, x.l.file.path)));
@@ -2221,8 +2239,10 @@ details.termfold[open] > summary { color: var(--ink); }
   const ICON_BAD = '<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M8 4.2v4.6M8 11.3v.2" stroke="var(--sheet)" stroke-width="1.9" stroke-linecap="round"/></svg>';
   function folderState(plates) {
     if (vaultFolder) {
-      const need = neededPaths(plates), miss = need.filter(p => !findFile(vaultFolder.files, p)).length;
-      return miss ? { ready: false, html: `<p class="fstat bad">${ICON_BAD}<span><b>${esc(vaultFolder.name)}</b> is missing ${miss} of ${need.length} parts. Choose the unzipped ${esc(SRC_DEFAULT.split('/').pop())} folder itself.</span></p>` }
+      const need = neededPaths(plates), gone = need.filter(p => !findFile(vaultFolder.files, p)), miss = gone.length;
+      // A few missing out of many: the right folder, but files named or placed differently (another release of the download?)
+      const hint = miss * 2 < need.length ? ` If that is the Vault download, your copy may name these differently from the one this planner knows (${esc(SRC_DEFAULT.split('/').pop())}).` : ` Choose the unzipped ${esc(SRC_DEFAULT.split('/').pop())} folder itself.`;
+      return miss ? { ready: false, html: `<p class="fstat bad">${ICON_BAD}<span><b>${esc(vaultFolder.name)}</b> is missing ${miss} of ${need.length} parts: ${esc(missingList(gone))}.${hint}</span></p>` }
         : { ready: true, html: `<p class="fstat ok">${ICON_OK}<span><b>${esc(vaultFolder.name)}</b>: all ${need.length} parts found</span></p>` };
     }
     if (rememberedFolder) return { ready: true, html: `<p class="fstat ok">${ICON_OK}<span><b>${esc(rememberedFolder)}</b>, the folder you used last time</span></p>` };
