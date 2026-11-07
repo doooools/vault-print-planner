@@ -1008,9 +1008,17 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   const eps = 1e-6;
   function rectInRect(a, b, X, Y) {
     if ((a <= X + eps && b <= Y + eps) || (b <= X + eps && a <= Y + eps)) return 'straight';
-    // The builders turn a part that doesn't lie straight by exactly 45 degrees, so that's the only angle that counts
-    if ((a + b) / Math.SQRT2 <= Math.min(X, Y) + eps) return 'diagonal';
+    if (diagAngle(Math.max(a, b), Math.min(a, b), X, Y) !== null) return 'diagonal';
     return null;
+  }
+  // The angle (degrees from the bed's width) for a too-long part's long side: 45 when it fits there, or else the angle
+  // with the most room, which on a bed that isn't square follows its diagonal (about 43\u00b0 on the H2S's 340 \u00d7 320)
+  function diagAngle(A, B, X, Y) {
+    const room = d => { const t = d * Math.PI / 180; return Math.min(X - A * Math.cos(t) - B * Math.sin(t), Y - A * Math.sin(t) - B * Math.cos(t)); };
+    if (room(45) >= -eps) return 45;
+    let best = null;
+    for (let d = 1; d < 89.95; d += 0.1) if (room(d) >= -eps && (best === null || room(d) > room(best))) best = d;
+    return best === null ? null : +best.toFixed(1);
   }
   function fitOf(dims, V) {
     const [x, y, z] = dims, [X, Y, Z] = V;
@@ -2083,11 +2091,13 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         if (p.care && p.l.fit.s === 'diag') {
           // Too long to lie straight: on the diagonal from back-left to front-right, clear of the no-print corner.
           // A smaller brim so its corners stay on the bed.
-          const [a, b] = p.l.file.dims;
-          p.pad = Math.max(0, Math.min(p.pad, 3, (Math.min(V[0], V[1]) * Math.SQRT2 - a - b) / 4 - 0.5));
-          const s = (Math.max(a, b) + Math.min(a, b) + 4 * p.pad) / Math.SQRT2;
-          p.a = Math.max(a, b) + 2 * p.pad; p.b = Math.min(a, b) + 2 * p.pad;
-          plates.push({ group: g, care: true, shelves: [], items: [{ p, diag: true, x: (V[0] - s) / 2, y: (V[1] - s) / 2, w: s, h: s }] });
+          const A = Math.max(...p.l.file.dims.slice(0, 2)), B = Math.min(...p.l.file.dims.slice(0, 2));
+          let pad = Math.min(p.pad, 3);
+          while (pad > 0 && diagAngle(A + 2 * pad, B + 2 * pad, V[0] - 1, V[1] - 1) === null) pad = Math.max(0, pad - 0.5);
+          p.pad = pad; p.a = A + 2 * pad; p.b = B + 2 * pad;
+          const d = diagAngle(p.a, p.b, V[0], V[1]), t = d * Math.PI / 180;
+          const w = p.a * Math.cos(t) + p.b * Math.sin(t), h = p.a * Math.sin(t) + p.b * Math.cos(t);
+          plates.push({ group: g, care: true, shelves: [], items: [{ p, diag: d, x: (V[0] - w) / 2, y: (V[1] - h) / 2, w, h }] });
           continue;
         }
         if (p.care) { plates.push({ group: g, care: true, shelves: [], items: [{ p, x: ex ? KX : MARGIN, y: MARGIN, w: p.a, h: p.b }] }); continue; }
@@ -2172,9 +2182,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       const f = COLOR_FILL[pl.color] || COLOR_FILL.all;
       const label = pl.lines.findIndex(x => x.l === it.p.l) + 1;
       const pad = it.p.pad || 0, fy = V[1] - it.y - it.h;
-      if (it.diag) { // drawn turned 45 degrees: back-left to front-right in this top view
+      if (it.diag) { // drawn turned (45 degrees, or along a bed's diagonal): back-left to front-right in this top view
         const cx = it.x + it.w / 2, cy = fy + it.h / 2, rw = it.p.a - 2 * pad, rh = it.p.b - 2 * pad;
-        return `<rect x="${cx - rw / 2}" y="${cy - rh / 2}" width="${rw}" height="${rh}" rx="2" transform="rotate(45 ${cx} ${cy})" fill="${f}" fill-opacity=".9" stroke="var(--ink)" stroke-opacity=".35" stroke-width="1"/>` +
+        return `<rect x="${cx - rw / 2}" y="${cy - rh / 2}" width="${rw}" height="${rh}" rx="2" transform="rotate(${it.diag} ${cx} ${cy})" fill="${f}" fill-opacity=".9" stroke="var(--ink)" stroke-opacity=".35" stroke-width="1"/>` +
           `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="11" font-weight="700" fill="${pl.color === 'body' ? '#222' : '#fff'}">${label}</text>`;
       }
       const rx = it.x + pad, ry = fy + pad, rw = it.w - 2 * pad, rh = it.h - 2 * pad;
@@ -2315,7 +2325,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // The plate plan the project builder reads: each part's file, position on its plate, and per-part print settings
   function planFor(plates) {
     return { bed: [printer.v[0], printer.v[1]], ...(preset().plate ? { plate: preset().plate } : {}), bambu: preset().bambu || null, plates: plates.map(pl => ({ name: plateFolder(pl),
-      pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, spin: +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + (it.p.pad || 0)).toFixed(2), y: +(it.y + (it.p.pad || 0)).toFixed(2), w: +(it.w - 2 * (it.p.pad || 0)).toFixed(2), h: +(it.h - 2 * (it.p.pad || 0)).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: true } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: true, ...(needsBrim(it.p.l.file) ? { standing: true } : {}) } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
+      pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, spin: +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + (it.p.pad || 0)).toFixed(2), y: +(it.y + (it.p.pad || 0)).toFixed(2), w: +(it.w - 2 * (it.p.pad || 0)).toFixed(2), h: +(it.h - 2 * (it.p.pad || 0)).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: it.diag === 45 ? true : it.diag } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: true, ...(needsBrim(it.p.l.file) ? { standing: true } : {}) } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
   }
   // ---------- Bambu Studio project, built right here in the browser ----------
   // Reads the STLs from the Vault folder the user picks (nothing is uploaded) and writes the same .3mf layout
@@ -2412,7 +2422,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // diagonal; turn manual supports so their full-height edge touches the part beside them
   async function placedMesh(p, buf) {
     let m = readStl(buf, p.spin, fileName(p.path));
-    if (p.diag) m = readStl(buf, p.spin + (m.w >= m.h ? 45 : -45), fileName(p.path));
+    const d = p.diag === true ? 45 : p.diag; // degrees for the long side; true is 45
+    if (p.diag) m = readStl(buf, p.spin + (m.w >= m.h ? d : d - 90), fileName(p.path));
     if (p.corner) for (let k = 0; k < 4; k++) { const c = topCorner(m); if (c[0] === p.corner[0] && c[1] === p.corner[1]) break; m = quarterTurn(m); }
     return m;
   }
