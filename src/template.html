@@ -322,7 +322,27 @@ details.folded > summary .mini { min-width: 40px; }
 .stackviz .blk.bad { border-color: var(--bad); color: var(--bad); }
 .stackviz .roofbar { height: 6px; border-radius: 3px 3px 0 0; background: var(--muted); opacity: .55; }
 .stackviz .basebar { height: 10px; border-radius: 0 0 4px 4px; background: var(--ink); opacity: .7; }
-.stackviz .caption { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+.stackviz .caption { font-size: 11.5px; color: var(--muted); text-align: center; }
+.stackviz .caption + .caption { margin-top: -2px; }
+.sv { max-width: 100%; height: auto; overflow: visible; }
+.sv .sv-u { fill: var(--bed); stroke: var(--muted); stroke-width: 1; }
+.sv-mini .sv-u { stroke-width: .75; }
+.sv .sv-u.case { fill: color-mix(in srgb, var(--bed) 65%, var(--accent-soft)); }
+.sv .sv-u.bad { stroke: var(--bad); stroke-width: 1.5; }
+.sv .sv-t { fill: var(--muted); font: 700 10.5px var(--f-body); }
+.sv .sv-t.bad { fill: var(--bad); }
+.sv .sv-roof { fill: var(--muted); opacity: .6; }
+.sv .sv-base { fill: var(--ink); opacity: .75; }
+.sv .sv-foot { fill: var(--ink); opacity: .55; }
+.sv .sv-wheel { fill: var(--sheet); stroke: var(--ink); stroke-width: 2; }
+.sv-mini .sv-wheel { stroke-width: 1; }
+.sv .sv-hub { fill: var(--muted); }
+.sv .sv-back { fill: none; stroke: var(--ink); stroke-width: 2; stroke-dasharray: 4 3; opacity: .7; }
+.sv-mini .sv-back { stroke-width: 1; stroke-dasharray: 2 1.5; }
+.sv .sv-grip { fill: var(--ink); opacity: .7; }
+.sv .sv-back-fill { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 3; opacity: .8; }
+.sv-mini .sv-back-fill { stroke-width: 1; stroke-dasharray: 2 1.5; }
+.sv .sv-floor { stroke: var(--line); stroke-width: 1.5; }
 .levels { display: grid; gap: 6px; }
 .level { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
 .level .n { font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; text-align: center; }
@@ -1276,18 +1296,79 @@ details.termfold[open] > summary { color: var(--ink); }
   }
 
   // ---------- 2 · build view (towers) ----------
-  function stackViz(t, a) {
-    const maxW = 419, scaleH = 0.32;
-    const lv = [...t.levels].reverse().map((L, ri) => {
-      const i = t.levels.length - 1 - ri;
+  // Front view of a stack, drawn to scale in mm: levels, roof, and the base with whatever sits under it (wheels at the
+  // sides, one foot between them, or two feet, or casters at the corners). Handles bolt onto the back, so they're
+  // drawn dashed: the pull-out handle's rods and grip rise above the top, the stationary handle sits across the middle.
+  // o = { sx, sy: px per mm across and up; minLv: smallest level height in px; labels: write unit codes in the levels }
+  function stackSvg(t, a, o) {
+    const L = t.levels, s = t.stack || STACK_DEFAULT, sx = o.sx, sy = o.sy;
+    if (!L.length) return '';
+    const base = s.base, wheels = base && s.wheels, casters = base && !wheels && s.casters, feet = base && s.feet && !casters;
+    const top = L[L.length - 1], roof = top.every(u => u.type === 'drawer') && top[0].roof !== 'none';
+    const bw = levelWidth(L[0]) * sx, maxw = Math.max(...L.map(levelWidth)) * sx;
+    const r = Math.max(o.labels ? 11 : 3, 55 * sy);                          // wheel radius
+    const accH = wheels ? r * 1.15 : casters ? Math.max(4, 40 * sy) : feet ? Math.max(3, 22 * sy) : 0;
+    const baseH = base ? Math.max(o.labels ? 8 : 3, 28 * sy) : 0, roofH = roof ? Math.max(o.labels ? 5 : 2, 12 * sy) : 0;
+    const lh = L.map(lv => Math.max(o.minLv, unitExt(lv[0])[2] * sy)), gap = o.labels ? 2 : 1;
+    const up = s.pullHandle ? Math.max(o.labels ? 26 : 6, 160 * sy) : 0;
+    const pad = Math.max(o.labels ? 12 : 3, wheels ? r + 2 : 0);
+    const W = Math.max(maxw, bw) + 2 * pad, cx = W / 2;
+    const stackH = lh.reduce((x, h) => x + h + gap, 0);
+    const H = up + roofH + stackH + baseH + accH + (o.labels ? 4 : 1);
+    const floor = H - (o.labels ? 2 : 0.5), baseTop = floor - accH - baseH;
+    const out = [];
+    // Pull-out handle: two rods up the back, extended above the top, with a grip
+    if (s.pullHandle) {
+      const rx = Math.min(bw / 2 - 4 * (o.labels ? 1 : .5), Math.max(10, bw * 0.38));
+      out.push(`<path class="sv-back" d="M${cx - rx} ${baseTop} V${up * 0.35} M${cx + rx} ${baseTop} V${up * 0.35}"/><rect class="sv-grip" x="${cx - rx - 3}" y="${up * 0.15}" width="${2 * rx + 6}" height="${Math.max(3, up * 0.22)}" rx="${Math.max(1.5, up * 0.1)}"/>`);
+    }
+    // Stationary handle: bolted across the back about halfway up, so only its ends show past the sides
+    if (s.stationaryHandle) { const hw = bw + (o.labels ? 18 : 5), hh = Math.max(3, 18 * sy); out.push(`<rect class="sv-back-fill" x="${cx - hw / 2}" y="${up + roofH + stackH * 0.45 - hh / 2}" width="${hw}" height="${hh}" rx="${hh / 2}"/>`); }
+    // Levels, top first
+    let y = up + roofH;
+    if (roof) out.push(`<rect class="sv-roof" x="${cx - levelWidth(top) * sx / 2}" y="${up}" width="${levelWidth(top) * sx}" height="${roofH}" rx="${Math.min(2, roofH / 2)}"/>`);
+    [...L].reverse().forEach((lv, ri) => {
+      const i = L.length - 1 - ri, h = lh[i];
       const bad = a.issues.some(x => x.k === 'bad' && x.m.startsWith(`Level ${i + 1}`));
-      return `<div class="lvl">${L.map(u => `<div class="blk ${u.type === 'case' ? 'case' : ''} ${bad ? 'bad' : ''}" style="width:${R.WIDTH_MM[u.w] / maxW * 100}%;height:${Math.max(14, unitExt(u)[2] * scaleH)}px" title="${esc(unitCode(u))}">${esc(unitCode(u).split(' \u00b7 ')[0])}\u00b7${u.h}F</div>`).join('')}</div>`;
-    }).join('');
-    const top = t.levels[t.levels.length - 1];
-    const roof = top && top.every(u => u.type === 'drawer') && top[0].roof !== 'none' ? `<div class="roofbar" style="width:${levelWidth(top) / maxW * 100}%"></div>` : '';
-    const base = t.stack && t.stack.base && t.levels.length ? `<div class="basebar" style="width:${levelWidth(t.levels[0]) / maxW * 100}%"></div>` : '';
-    return `<div class="stackviz">${roof}${lv}${base}<div class="caption num">${Math.round(a.height)} mm tall without base</div></div>`;
+      let x = cx - levelWidth(lv) * sx / 2;
+      lv.forEach((u, ui) => {
+        const w = R.WIDTH_MM[u.w] * sx - (lv.length > 1 ? gap / 2 : 0);
+        out.push(`<rect class="sv-u${u.type === 'case' ? ' case' : ''}${bad ? ' bad' : ''}" x="${x}" y="${y}" width="${w}" height="${h}" rx="${o.labels ? 3 : 1.5}"><title>${esc(unitCode(u))}</title></rect>`);
+        if (o.labels && h >= 12) out.push(`<text class="sv-t${bad ? ' bad' : ''}" x="${x + w / 2}" y="${y + h / 2 + 3.5}" text-anchor="middle">${esc(unitCode(u).split(' · ')[0])}·${u.h}F</text>`);
+        x += w + (lv.length > 1 ? gap : 0);
+      });
+      y += h + gap;
+    });
+    if (base) {
+      out.push(`<rect class="sv-base" x="${cx - bw / 2 - 1}" y="${baseTop}" width="${bw + 2}" height="${baseH}" rx="${o.labels ? 2 : 1}"/>`);
+      const by = baseTop + baseH;
+      if (wheels) {
+        // The foot runs across the front, between the wheels; the wheels sit outside the base on the axle
+        if (s.feet) out.push(`<rect class="sv-foot" x="${cx - bw / 2 + r * 0.6}" y="${by}" width="${bw - r * 1.2}" height="${floor - by}" rx="1"/>`);
+        for (const wx of [cx - bw / 2, cx + bw / 2]) out.push(`<circle class="sv-wheel" cx="${wx}" cy="${floor - r}" r="${r}"/><circle class="sv-hub" cx="${wx}" cy="${floor - r}" r="${r * 0.35}"/>`);
+      } else if (casters) {
+        const cr = Math.max(1.5, accH * 0.32);
+        for (const wx of [cx - bw / 2 + cr + 3, cx + bw / 2 - cr - 3]) out.push(`<rect class="sv-foot" x="${wx - cr * 0.5}" y="${by}" width="${cr}" height="${accH - 2 * cr}"/><circle class="sv-wheel" cx="${wx}" cy="${floor - cr}" r="${cr}"/>`);
+      } else if (feet) {
+        const fw = Math.max(3, 40 * sx);
+        for (const fx of [cx - bw / 2 + 2, cx + bw / 2 - 2 - fw]) out.push(`<rect class="sv-foot" x="${fx}" y="${by}" width="${fw}" height="${floor - by}" rx="1"/>`);
+      }
+    }
+    if (o.labels) out.push(`<line class="sv-floor" x1="0" y1="${floor}" x2="${W}" y2="${floor}"/>`);
+    return `<svg class="sv${o.labels ? '' : ' sv-mini'}" viewBox="0 0 ${W.toFixed(1)} ${H.toFixed(1)}" width="${W.toFixed(0)}" height="${H.toFixed(0)}" aria-hidden="true">${out.join('')}</svg>`;
   }
+  function stackViz(t, a) {
+    const s = t.stack || STACK_DEFAULT;
+    const bits = [];
+    if (s.base) bits.push(s.wheels ? (s.feet ? 'base, wheels and a foot' : 'base and wheels') : s.casters ? 'base on casters' : s.feet ? 'base on feet' : 'base');
+    if (s.stationaryHandle) bits.push('stationary handle');
+    if (s.pullHandle) bits.push('pull-out handle');
+    const back = s.stationaryHandle || s.pullHandle;
+    return `<div class="stackviz">${stackSvg(t, a, { sx: 220 / 419, sy: 0.32, minLv: 14, labels: true })}
+      <div class="caption num">${Math.round(a.height)} mm tall without base${bits.length ? ` · ${bits.join(', ')}` : ''}</div>
+      ${back ? '<div class="caption">Dashed parts bolt onto the back.</div>' : ''}</div>`;
+  }
+
   // Picture of what a stack is: one with three levels on wheels, one with two S drawers side by side
   function stackExplainer() {
     const d = (x, y, w, h, t) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" class="sx-d"/><text x="${x + w / 2}" y="${y + h / 2 + 4}" text-anchor="middle" class="sx-in">${t}</text>`;
@@ -1306,13 +1387,9 @@ details.termfold[open] > summary { color: var(--ink); }
   }
   // Small to-scale drawing of a tower for the overview strip and folded cards. px per mm is shared so towers compare.
   function miniTower(t, a, pxPerMm) {
-    const lv = [...t.levels].reverse().map(L => `<div class="mlvl">${L.map(u => `<i class="${u.type === 'case' ? 'case' : ''}" style="width:${R.WIDTH_MM[u.w] * pxPerMm}px;height:${Math.max(3, unitExt(u)[2] * pxPerMm - 1)}px"></i>`).join('')}</div>`).join('');
-    const top = t.levels[t.levels.length - 1];
-    const roof = top && top.every(u => u.type === 'drawer') && top[0].roof !== 'none' ? `<b class="mroof" style="width:${levelWidth(top) * pxPerMm}px"></b>` : '';
-    const s = t.stack || STACK_DEFAULT;
-    const base = s.base && t.levels.length ? `<b class="mbase${s.wheels ? ' wheels' : ''}" style="width:${levelWidth(t.levels[0]) * pxPerMm}px"></b>` : '';
-    return `<div class="mini" aria-hidden="true">${roof}${lv}${base}</div>`;
+    return `<div class="mini">${stackSvg(t, a, { sx: pxPerMm, sy: pxPerMm, minLv: 3, labels: false })}</div>`;
   }
+
   function towerStats(t, a) {
     const res = withSpares(merge(a.parts)), s = summary(res.lines);
     const plates = t.levels.length ? planPlates(res.lines, {}).plates.length : 0;
