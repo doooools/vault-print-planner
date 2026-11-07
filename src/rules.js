@@ -310,7 +310,7 @@
       push('M6 × 30 mm countersunk bolt', 4, 'Pull-out handle');
       push('M6 × 35 mm hex bolt', 2, 'Handle lock');
       push('M6 × 8 × 8 heat insert', 2, 'Handle lock knobs');
-      push('M16 rod, cut to tower height', 2, 'Pull-out handle');
+      push('M16 rod, cut to stack height', 2, 'Pull-out handle');
     }
     return hw;
   }

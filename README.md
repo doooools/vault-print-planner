@@ -2,7 +2,7 @@
 
 An unofficial, fan-made planner for [Vault by USSA](https://www.ussadesign.com/products/vault), the 3D-printable modular storage system.
 
-Pick a unit and the planner tells you exactly which STL files to print and how many. You can stack units into towers and check every part against your printer's bed. It packs the parts onto plates and makes a Bambu Studio project with one plate per tab.
+Pick a unit and the planner tells you exactly which STL files to print and how many. You can stack units on top of each other and check every part against your printer's bed. It packs the parts onto plates and makes a Bambu Studio project with one plate per tab.
 
 **Use it:** [open the planner](https://vault.romy.io). It runs entirely in your browser.
 
@@ -11,7 +11,7 @@ Pick a unit and the planner tells you exactly which STL files to print and how m
 ## What it does
 
 1. **Design a unit:** choose the width, depth, height, drawer or case, lock, roof and so on. You get the exact files and counts, with a flag on any part too big for your printer.
-2. **Build:** stack units into towers with a base, feet, wheels and a roof. You can also add single parts, like a spare roof or latch.
+2. **Build:** put units into stacks, each with its own base, feet or wheels and a roof. You can also add single parts, like a spare roof or latch.
 3. **Print:** parts are packed onto plates, kept under one 1 kg spool and grouped by color and by whether they need supports. Press **Make Bambu Studio project** and pick your Vault download folder. You get one `.3mf` with every plate as its own tab, with these settings already in place:
    - supports on for the parts whose files ask for them, and for every part Bambu Studio warns about when sliced without supports (each of the 733 files was sliced to check)
    - more walls on parts that carry load or take bolts
@@ -21,7 +21,7 @@ Pick a unit and the planner tells you exactly which STL files to print and how m
    On other printers, save STL folders instead: a zip with one folder per plate.
 4. **Assemble:** a checklist that follows the manuals, plus a hardware shopping list that shows each bolt's head shape and links to matching products on Amazon US (affiliate links).
 
-Your files are read on your own computer and never uploaded. Your towers and progress are saved in your browser.
+Your files are read on your own computer and never uploaded. Your stacks and progress are saved in your browser.
 
 ## Requirements
 

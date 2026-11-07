@@ -258,6 +258,21 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .towers { display: grid; gap: 14px; }
 .overview { padding: 14px 18px 4px; display: grid; gap: 10px; }
 .overview > p.pp { padding: 0 0 10px; }
+.sx { display: grid; gap: 8px; margin-top: 8px; max-width: 660px; }
+.panel.empty .sx { margin: 16px auto 0; text-align: left; }
+.sx-pics { display: flex; flex-wrap: wrap; gap: 0 10px; align-items: end; }
+.sx svg { width: 100%; height: auto; flex: 1 1 300px; }
+.sx p { margin: 0; color: var(--muted); font-size: 13px; }
+.sx .sx-d { fill: var(--bed); stroke: var(--muted); stroke-width: 1; }
+.sx .sx-roof { fill: var(--muted); }
+.sx .sx-base { fill: var(--ink); opacity: .75; }
+.sx .sx-w { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+.sx .sx-floor { stroke: var(--line); stroke-width: 1.5; }
+.sx .sx-l { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.sx text { font-family: var(--f-body); }
+.sx .sx-t { fill: var(--muted); font-size: 12px; }
+.sx .sx-in { fill: var(--ink); font-size: 11.5px; font-weight: 600; }
+.sx .sx-h { fill: var(--ink); font-size: 13.5px; font-weight: 700; }
 .ov-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
 .ov-head h3 { margin: 0; font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
 .ov-head span { font-size: 13px; color: var(--muted); }
@@ -587,7 +602,7 @@ details.termfold[open] > summary { color: var(--ink); }
   let towers = store.get('towers', null);
   let seq = store.get('seq', 1);
   if (!towers) { // migrate the old flat build list: each unit becomes its own tower
-    towers = (store.get('build', []) || []).map(b => ({ id: seq++, name: 'Tower ' + (seq - 1), levels: [[clean(b.cfg)]], stack: { ...STACK_DEFAULT } }));
+    towers = (store.get('build', []) || []).map(b => ({ id: seq++, name: 'Stack ' + (seq - 1), levels: [[clean(b.cfg)]], stack: { ...STACK_DEFAULT } }));
   }
   const save = () => { store.set('towers', towers); store.set('seq', seq); };
   let extras = store.get('extras', []);               // [{ path, qty }]: single parts printed on their own, outside any tower
@@ -679,7 +694,7 @@ details.termfold[open] > summary { color: var(--ink); }
   const levelHeight = lv => Math.max(...lv.map(u => unitExt(u)[2]));
   function analyzeTower(t) {
     const issues = [], parts = [], L = t.levels;
-    if (!L.length) return { issues: [{ k: 'info', m: 'This tower is empty. Design a unit and add it here.' }], parts, height: 0 };
+    if (!L.length) return { issues: [{ k: 'info', m: 'This stack is empty. Press + Add a unit to start it.' }], parts, height: 0 };
     L.forEach((lv, i) => {
       const top = i === L.length - 1;
       const pair = lv.length > 1;
@@ -1007,7 +1022,7 @@ details.termfold[open] > summary { color: var(--ink); }
   function renderControls() {
     if (editing) {
       const t = towers.find(t => t.id === editing.t);
-      $('editingBox').innerHTML = `<div class="editing"><span>Editing level ${editing.l + 1} of <b>${esc(t ? t.name : '')}</b></span><span class="actions"><button class="btn primary" id="saveEdit">Save to tower</button><button class="btn" id="cancelEdit">Cancel</button></span></div>`;
+      $('editingBox').innerHTML = `<div class="editing"><span>Editing level ${editing.l + 1} of <b>${esc(t ? t.name : '')}</b></span><span class="actions"><button class="btn primary" id="saveEdit">Save to stack</button><button class="btn" id="cancelEdit">Cancel</button></span></div>`;
       $('saveEdit').onclick = () => { const t = towers.find(t => t.id === editing.t); if (t && t.levels[editing.l]) t.levels[editing.l][editing.u] = clean(c); save(); editing = null; view = 'build'; renderAll(); toast('Saved to ' + t.name); };
       $('cancelEdit').onclick = () => { editing = null; view = 'build'; renderAll(); };
     } else $('editingBox').innerHTML = '';
@@ -1055,7 +1070,7 @@ details.termfold[open] > summary { color: var(--ink); }
       m += selectField('pegboard', 'Pegboard attachment', '1F and 2F only', [['none', 'None'], ['ikea', 'IKEA Sk\u00e5dis'], ['ussa', 'USSA pegboard']], c.pegboard);
       m += selectField('backbone', 'Backbone (rear spine for trolleys)', '1F and 2F only', [['none', 'None'], ['family', 'Sized to this width'], ['universal', 'Universal']], c.backbone);
     }
-    m += '<p class="pnote" style="margin:0">Base, wheels, feet and handles belong to a whole tower. Set them in the Build tab.</p>';
+    m += '<p class="pnote" style="margin:0">Base, wheels, feet and handles belong to a whole stack. Set them in the Build tab.</p>';
     $('mountOpts').innerHTML = m;
 
     const bind = (id, key) => { const el = $(id); if (el) el.onchange = () => set({ [key]: el.type === 'checkbox' ? el.checked : el.value }); };
@@ -1084,11 +1099,11 @@ details.termfold[open] > summary { color: var(--ink); }
   const U = (type, w, d, h, extra = {}) => clean({ type, w, d, h, roof: 'none', ...extra });
   const PRESETS = [
     { name: 'Desk parts drawer', why: 'One shallow drawer for small parts, with a Gridfinity top.', levels: [[U('drawer', 'S', 3, 1, { roof: 'grid' })]] },
-    { name: 'Small-parts tower', why: 'Four S drawers: one deep at the bottom, three shallow, carry handle on top.',
+    { name: 'Small-parts stack', why: 'Four S drawers: one deep at the bottom, three shallow, carry handle on top.',
       levels: [[U('drawer', 'S', 4, 2)], [U('drawer', 'S', 4, 1)], [U('drawer', 'S', 4, 1)], [U('drawer', 'S', 4, 1, { roof: 'grid', topHandle: true })]] },
     { name: 'Under-desk drawers', why: 'Three shallow drawers hung from the underside of a desk.',
       levels: [[U('drawer', 'S', 3, 1)], [U('drawer', 'S', 3, 1)], [U('drawer', 'S', 3, 1, { roof: 'undertable' })]] },
-    { name: 'Workbench tower', why: 'M drawers with a top-opening case on top, on a base with feet.',
+    { name: 'Workbench stack', why: 'M drawers with a top-opening case on top, on a base with feet.',
       levels: [[U('drawer', 'M', 5, 2)], [U('drawer', 'M', 5, 1)], [U('drawer', 'M', 5, 1)], [U('case', 'M', 5, 2)]], stack: { base: true, feet: true } },
     { name: 'Rolling tool cart', why: 'M drawers with backbones, wheels and a pull-out trolley handle.',
       levels: [[U('drawer', 'M', 5, 2, { backbone: 'family' })], [U('drawer', 'M', 5, 1, { backbone: 'family' })], [U('drawer', 'M', 5, 1, { backbone: 'family' })], [U('drawer', 'M', 5, 2, { backbone: 'family', roof: 'table' })]],
@@ -1104,7 +1119,7 @@ details.termfold[open] > summary { color: var(--ink); }
   }
   function presetsBlock(open) {
     const items = PRESETS.map((p, i) => ({ p, i, fits: presetFits(p) })).filter(x => x.fits || !onlyFits);
-    return `<details class="panel fold" ${open ? 'open' : ''}><summary>Starting points <small>${items.length} ready-made towers</small></summary>
+    return `<details class="panel fold" ${open ? 'open' : ''}><summary>Starting points <small>${items.length} ready-made stacks</small></summary>
       <p class="pp">Add one to your build, then change anything in it.</p>
       <div class="presets">${items.map(({ p, i, fits }) => {
         const mod = computeUnit(p.levels[0][0]).lines.find(l => l.group === 'Module');
@@ -1154,7 +1169,7 @@ details.termfold[open] > summary { color: var(--ink); }
         ${!editing && addTo !== null && defT ? `<div class="alert ok addto"><span>Adding to <b>${esc(defT.name)}</b>. Set up the unit, then press <b>Add</b> to put it on top.</span><button class="btn" id="cancelAddTo">Back to step 2</button></div>` : ''}
         ${editing ? '' : `<div class="addrow">
           <label for="addDest" class="pnote" style="margin:0">Add to build:</label>
-          <select id="addDest">${dest}<option value="new">As a new tower</option></select>
+          <select id="addDest">${dest}<option value="new">As a new stack</option></select>
           <span class="stepper" style="padding:4px 4px 4px 10px">\u00d7<div><button type="button" id="addLess" aria-label="Fewer">\u2212</button><output id="addN">1</output><button type="button" id="addMore" aria-label="More">+</button></div></span>
           <button class="btn primary" id="addBuild">Add</button>
           <button class="btn" id="copyList">Copy part list</button>
@@ -1173,7 +1188,7 @@ details.termfold[open] > summary { color: var(--ink); }
       $('addBuild').onclick = () => {
         const v = $('addDest').value, unit = () => clean(c);
         let t;
-        if (v === 'new') { t = { id: seq++, name: 'Tower ' + (towers.length + 1), levels: [], stack: { ...STACK_DEFAULT } }; towers.push(t); }
+        if (v === 'new') { t = { id: seq++, name: 'Stack ' + (towers.length + 1), levels: [], stack: { ...STACK_DEFAULT } }; towers.push(t); }
         else t = towers.find(x => x.id === +v.split(':')[1]);
         if (v.startsWith('beside:')) t.levels[t.levels.length - 1].push(unit());
         else for (let i = 0; i < n; i++) t.levels.push([unit()]);
@@ -1203,6 +1218,22 @@ details.termfold[open] > summary { color: var(--ink); }
     const base = t.stack && t.stack.base && t.levels.length ? `<div class="basebar" style="width:${levelWidth(t.levels[0]) / maxW * 100}%"></div>` : '';
     return `<div class="stackviz">${roof}${lv}${base}<div class="caption num">${Math.round(a.height)} mm tall without base</div></div>`;
   }
+  // Picture of what a stack is: one with three levels on wheels, one with two S drawers side by side
+  function stackExplainer() {
+    const d = (x, y, w, h, t) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" class="sx-d"/><text x="${x + w / 2}" y="${y + h / 2 + 4}" text-anchor="middle" class="sx-in">${t}</text>`;
+    const lab = (x1, y, t, t2) => `<line x1="${x1}" y1="${y}" x2="${x1 + 14}" y2="${y}" class="sx-l"/><text x="${x1 + 18}" y="${y + 4}" class="sx-t">${t}</text>${t2 ? `<text x="${x1 + 18}" y="${y + 18}" class="sx-t">${t2}</text>` : ''}`;
+    return `<div class="sx"><div class="sx-pics" role="img" aria-labelledby="sxTitle"><span id="sxTitle" hidden>Two stacks side by side: three drawers on a wheeled base under one roof, and two small drawers side by side under one wide roof</span><svg viewBox="0 0 330 300" style="max-width:330px" aria-hidden="true">
+      <line x1="10" y1="244" x2="320" y2="244" class="sx-floor"/>
+      <rect x="40" y="30" width="120" height="7" rx="2" class="sx-roof"/>${d(40, 39, 120, 38, 'S drawer')}${d(40, 79, 120, 38, 'S drawer')}${d(40, 119, 120, 78, 'S drawer, 2F')}
+      <rect x="36" y="199" width="128" height="14" rx="2" class="sx-base"/><circle cx="56" cy="228" r="11" class="sx-w"/><circle cx="144" cy="228" r="11" class="sx-w"/>
+      ${lab(166, 33, 'Roof, on the top only')}${lab(166, 58, 'Level 3')}${lab(166, 98, 'Level 2')}${lab(166, 158, 'Level 1, the bottom')}${lab(168, 206, 'Base and wheels')}
+<text x="100" y="270" text-anchor="middle" class="sx-h">Stack 1</text><text x="100" y="288" text-anchor="middle" class="sx-t">3 levels on wheels</text></svg><svg viewBox="300 0 370 300" style="max-width:370px" aria-hidden="true"><line x1="310" y1="244" x2="660" y2="244" class="sx-floor"/>      <rect x="350" y="150" width="164" height="7" rx="2" class="sx-roof"/>${d(350, 159, 80, 38, 'S')}${d(434, 159, 80, 38, 'S')}
+      <rect x="346" y="199" width="172" height="14" rx="2" class="sx-base"/><rect x="354" y="215" width="12" height="29" rx="2" class="sx-w"/><rect x="498" y="215" width="12" height="29" rx="2" class="sx-w"/>
+      ${lab(518, 153, 'One wide roof')}${lab(518, 178, 'Two S side by', 'side = L wide')}${lab(522, 230, 'Base, feet')}
+      
+      <text x="432" y="270" text-anchor="middle" class="sx-h">Stack 2</text><text x="432" y="288" text-anchor="middle" class="sx-t">1 level, 2 drawers</text>
+    </svg></div><p>A stack is one piece of furniture: the drawers that stand on one base under one roof. Only the top drawer gets a roof, and the base, wheels or feet are sized to the bottom one. Each stack you add is a separate piece standing next to the others.</p></div>`;
+  }
   // Small to-scale drawing of a tower for the overview strip and folded cards. px per mm is shared so towers compare.
   function miniTower(t, a, pxPerMm) {
     const lv = [...t.levels].reverse().map(L => `<div class="mlvl">${L.map(u => `<i class="${u.type === 'case' ? 'case' : ''}" style="width:${R.WIDTH_MM[u.w] * pxPerMm}px;height:${Math.max(3, unitExt(u)[2] * pxPerMm - 1)}px"></i>`).join('')}</div>`).join('');
@@ -1221,12 +1252,13 @@ details.termfold[open] > summary { color: var(--ink); }
     const maxH = Math.max(...info.map(x => x.a.height), 200), px = Math.min(0.3, 150 / maxH);
     const tot = info.reduce((acc, x) => ({ g: acc.g + x.st.g, p: acc.p + x.st.prints }), { g: 0, p: 0 });
     return `<div class="panel overview">
-      <div class="ov-head"><h3>Your build</h3><span class="num">${plural(info.length, 'tower')} · ${plural(tot.p, 'part')} · ≈ ${gramsStr(tot.g)}</span></div>
+      <div class="ov-head"><h3>Your build</h3><span class="num">${plural(info.length, 'stack')} · ${plural(tot.p, 'part')} · ≈ ${gramsStr(tot.g)}</span></div>
       <div class="ov-row">${info.map(({ t, a, st }) => `<button type="button" class="ov-t${a.issues.some(x => x.k === 'bad') ? ' bad' : ''}" data-goto="${t.id}">
         ${t.levels.length ? miniTower(t, a, px) : '<div class="mini empty">empty</div>'}
         <b>${esc(t.name)}</b><small class="num">${t.levels.length ? `${Math.round(a.height)} mm · ${plural(st.plates, 'plate')}<br>≈ ${gramsStr(st.g)}` : 'no units yet'}</small></button>`).join('')}
-        <button type="button" class="ov-t ov-new" id="ovNew"><span>+</span><b>New tower</b></button></div>
-      <p class="pp">Each tower stands on its own. Units stack inside a tower, bottom to top. Plate counts are for printing that tower alone.</p>
+        <button type="button" class="ov-t ov-new" id="ovNew"><span>+</span><b>New stack</b></button></div>
+      <details class="info" data-k="whatstack" ${openInfo.has('whatstack') ? 'open' : ''}><summary>What\u2019s a stack?</summary>${stackExplainer()}</details>
+      <p class="pp">Plate counts are for printing that stack alone.</p>
     </div>`;
   }
   function xResults() {
@@ -1273,7 +1305,7 @@ details.termfold[open] > summary { color: var(--ink); }
 
   function renderBuild() {
     if (!towers.length) {
-      $('view-build').innerHTML = `${presetsBlock(!extras.length)}${extrasPanel()}<div class="panel empty">No towers yet. Pick a starting point above, or design a unit in step 1 and press <b>Add</b>.</div>`;
+      $('view-build').innerHTML = `${presetsBlock(!extras.length)}${extrasPanel()}<div class="panel empty">No stacks yet. Pick a starting point above, or design a unit in step 1 and press <b>Add</b>.${stackExplainer()}</div>`;
       bindPresets($('view-build')); bindExtras();
       return;
     }
@@ -1285,8 +1317,8 @@ details.termfold[open] > summary { color: var(--ink); }
       const s = t.stack || STACK_DEFAULT;
       const fam = a.fam;
       const bad = a.issues.some(x => x.k === 'bad');
-      const head = `<div class="tower-head"><input class="tname" value="${esc(t.name)}" data-rename="${t.id}" aria-label="Tower name">
-          <span class="actions"><button class="btn primary" data-addunit="${t.id}">+ Add a unit</button><button class="btn" data-dup-tower="${t.id}">Duplicate</button><button class="btn" data-del-tower="${t.id}">Remove tower</button>${fold ? `<button class="iconbtn foldbtn" data-fold="${t.id}" aria-label="Fold ${esc(t.name)}" title="Fold">\u2212</button>` : ''}</span></div>`;
+      const head = `<div class="tower-head"><input class="tname" value="${esc(t.name)}" data-rename="${t.id}" aria-label="Stack name">
+          <span class="actions"><button class="btn primary" data-addunit="${t.id}">+ Add a unit</button><button class="btn" data-dup-tower="${t.id}">Duplicate</button><button class="btn" data-del-tower="${t.id}">Remove stack</button>${fold ? `<button class="iconbtn foldbtn" data-fold="${t.id}" aria-label="Fold ${esc(t.name)}" title="Fold">\u2212</button>` : ''}</span></div>`;
       const open = fold ? `<details class="panel tower folded" id="tower-${t.id}" data-tower="${t.id}" ${openTowers.has(t.id) ? 'open' : ''}>
         <summary>${t.levels.length ? miniTower(t, a, fpx) : ''}<span class="ft-name"><b>${esc(t.name)}</b><small class="num">${t.levels.length ? `${plural(t.levels.length, 'level')} · ${Math.round(a.height)} mm · ${plural(st.plates, 'plate')} · ≈ ${gramsStr(st.g)}` : 'no units yet'}</small></span>${bad ? '<span class="tag bad">Won\u2019t stack</span>' : ''}</summary>` : `<div class="panel tower" id="tower-${t.id}" data-tower="${t.id}">`;
       return `${open}
@@ -1311,15 +1343,15 @@ details.termfold[open] > summary { color: var(--ink); }
               ${checkbox(`st-stationaryHandle-${t.id}`, 'Stationary handle', '', s.stationaryHandle)}
               ${checkbox(`st-pullHandle-${t.id}`, 'Pull-out trolley handle', 'needs backbones', s.pullHandle)}
             </div>
-            <div class="issues">${a.issues.length ? a.issues.map(x => `<div class="issue ${x.k}">${esc(x.m)}</div>`).join('') : '<div class="issue ok">Everything in this tower stacks together.</div>'}</div>
+            <div class="issues">${a.issues.length ? a.issues.map(x => `<div class="issue ${x.k}">${esc(x.m)}</div>`).join('') : '<div class="issue ok">Everything in this stack fits together.</div>'}</div>
           </div>
         </div>${fold ? '</details>' : '</div>'}`;
     }).join('');
     $('view-build').innerHTML = `${overviewPanel(info)}${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
-      <div class="actions"><button class="btn" id="newTower">New empty tower</button><button class="btn primary" id="toPrint">Next: print plates \u2192</button></div>`;
+      <div class="actions"><button class="btn" id="newTower">New empty stack</button><button class="btn primary" id="toPrint">Next: print plates \u2192</button></div>`;
     bindPresets($('view-build')); bindExtras();
     const V = $('view-build'), find = id => towers.find(t => t.id === +id);
-    V.querySelectorAll('[data-rename]').forEach(i => i.onchange = () => { find(i.dataset.rename).name = i.value.trim() || 'Tower'; save(); renderTabs(); });
+    V.querySelectorAll('[data-rename]').forEach(i => i.onchange = () => { find(i.dataset.rename).name = i.value.trim() || 'Stack'; save(); renderTabs(); });
     V.querySelectorAll('[data-del-tower]').forEach(b => b.onclick = () => { towers = towers.filter(t => t.id !== +b.dataset.delTower); save(); renderAll(); });
     V.querySelectorAll('[data-dup-tower]').forEach(b => b.onclick = () => { const t = find(b.dataset.dupTower); towers.push({ ...JSON.parse(JSON.stringify(t)), id: seq++, name: t.name + ' copy' }); save(); renderAll(); });
     V.querySelectorAll('[data-move]').forEach(b => b.onclick = () => { const [tid, i, d] = b.dataset.move.split(':').map(Number); const L = find(tid).levels; [L[i], L[i + d]] = [L[i + d], L[i]]; save(); renderAll(); });
@@ -1328,7 +1360,7 @@ details.termfold[open] > summary { color: var(--ink); }
     V.querySelectorAll('[data-del-unit]').forEach(b => b.onclick = () => { const [tid, i, u] = b.dataset.delUnit.split(':').map(Number); find(tid).levels[i].splice(u, 1); save(); renderAll(); });
     V.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const [tid, i, u] = b.dataset.edit.split(':').map(Number); c = clean(find(tid).levels[i][u]); editing = { t: tid, l: i, u }; view = 'unit'; renderAll(); window.scrollTo(0, 0); });
     towers.forEach(t => ['base', 'wheels', 'feet', 'casters', 'stationaryHandle', 'pullHandle'].forEach(k => { const el = $(`st-${k}-${t.id}`); if (el) el.onchange = () => { t.stack = { ...STACK_DEFAULT, ...t.stack, [k]: el.checked }; save(); renderAll(); }; }));
-    const newTower = () => { const t = { id: seq++, name: 'Tower ' + (towers.length + 1), levels: [], stack: { ...STACK_DEFAULT } }; towers.push(t); lastTower = t.id; store.set('lastTower', lastTower); openTowers.clear(); openTowers.add(t.id); save(); renderAll(); scrollToTower(t.id); };
+    const newTower = () => { const t = { id: seq++, name: 'Stack ' + (towers.length + 1), levels: [], stack: { ...STACK_DEFAULT } }; towers.push(t); lastTower = t.id; store.set('lastTower', lastTower); openTowers.clear(); openTowers.add(t.id); save(); renderAll(); scrollToTower(t.id); };
     $('newTower').onclick = newTower; $('ovNew').onclick = newTower;
     V.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { const id = +b.dataset.goto; openTowers.add(id); const d = document.getElementById('tower-' + id); if (d && d.tagName === 'DETAILS') d.open = true; scrollToTower(id); });
     V.querySelectorAll('[data-fold]').forEach(b => b.onclick = () => { const d = document.getElementById('tower-' + b.dataset.fold); d.open = false; d.scrollIntoView({ block: 'nearest' }); });
@@ -1563,14 +1595,14 @@ details.termfold[open] > summary { color: var(--ink); }
     $('view-print').innerHTML = `
       ${b.preview ? `<div class="alert warn"><span><strong>Your build is empty, so this plans the unit open in step 1 (${esc(unitCode(c))}).</strong> Add units or a starting point in step 2 to plan a whole build.</span></div>` : ''}
       ${b.extras && towers.length ? `<div class="seg scope" role="group" aria-label="What to print">
-        <button type="button" data-scope="all" aria-pressed="${!b.onlyExtras}">Whole build<small>towers and extra parts</small></button>
+        <button type="button" data-scope="all" aria-pressed="${!b.onlyExtras}">Whole build<small>stacks and extra parts</small></button>
         <button type="button" data-scope="extras" aria-pressed="${b.onlyExtras}">Only extra parts<small>${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button></div>` : ''}
-      ${b.towerIssues.length ? `<div class="alert bad"><strong>Some towers won\u2019t stack as designed.</strong><span>${b.towerIssues.map(esc).join(' ')} Fix them in step 2 before printing.</span></div>` : ''}
+      ${b.towerIssues.length ? `<div class="alert bad"><strong>Some stacks won\u2019t fit together as designed.</strong><span>${b.towerIssues.map(esc).join(' ')} Fix them in step 2 before printing.</span></div>` : ''}
       <div class="panel progress">
         <div class="unit-title"><h2>${pct}% printed</h2><span class="dims num">${plural(plates.length, 'plate')} left on the ${esc(printerName())}</span></div>
         <div class="bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
-        <div class="progress-nums"><span><b>${done}</b> of <b>${total}</b> parts</span><span><b>\u2248 ${gramsStr(gDone)}</b> of \u2248 ${gramsStr(s.g)} filament</span>${b.list.length ? `<span><b>${b.list.length}</b> ${b.list.length === 1 ? 'tower' : 'towers'}</span>` : ''}${b.extras ? `<span><b>${b.extras}</b> extra ${b.extras === 1 ? 'part' : 'parts'}</span>` : ''}</div>
-        ${b.preview ? '' : `<div class="actions" style="align-items:center"><button class="btn" id="clearPlates">${b.onlyExtras ? 'Clear extra parts' : 'Clear all plates'}</button><span class="pnote" style="margin:0">${b.onlyExtras ? 'Removes the extra parts and their progress. Your towers stay.' : 'Starting over? Removes every tower, extra part and printed mark.'}</span></div>`}
+        <div class="progress-nums"><span><b>${done}</b> of <b>${total}</b> parts</span><span><b>\u2248 ${gramsStr(gDone)}</b> of \u2248 ${gramsStr(s.g)} filament</span>${b.list.length ? `<span><b>${b.list.length}</b> ${b.list.length === 1 ? 'stack' : 'stacks'}</span>` : ''}${b.extras ? `<span><b>${b.extras}</b> extra ${b.extras === 1 ? 'part' : 'parts'}</span>` : ''}</div>
+        ${b.preview ? '' : `<div class="actions" style="align-items:center"><button class="btn" id="clearPlates">${b.onlyExtras ? 'Clear extra parts' : 'Clear all plates'}</button><span class="pnote" style="margin:0">${b.onlyExtras ? 'Removes the extra parts and their progress. Your stacks stay.' : 'Starting over? Removes every stack, extra part and printed mark.'}</span></div>`}
       </div>
       ${skipped.length ? `<div class="alert bad"><strong>${plural(skipped.length, 'file')} too big for the ${esc(printerName())}, so ${skipped.length === 1 ? 'it\u2019s' : 'they\u2019re'} left out of the plates:</strong><span>${skipped.map(l => esc(l.label) + ' (' + dimStr(l.file.dims) + (l.fit.s === 'reorient' ? ', would only fit tipped on its side' : '') + ')').join('; ')}. Print ${skipped.length === 1 ? 'it' : 'them'} on a bigger printer, or pick a smaller size in step 1.</span></div>` : ''}
       <div class="panel">
@@ -1666,7 +1698,7 @@ details.termfold[open] > summary { color: var(--ink); }
         const put = async s => { const b = typeof s === 'string' ? enc.encode(s) : s; crc = crc32(crc, b); size += b.length; await w.ready; w.write(b); };
         await writeAll(put); await w.close();
         const data = new Uint8Array(await done), nm = enc.encode(name);
-        if (offset + data.length > 0xFFFFFFF0 || size > 0xFFFFFFF0) throw new Error('This build is too big for one project file. Mark some plates printed or print fewer towers at once.');
+        if (offset + data.length > 0xFFFFFFF0 || size > 0xFFFFFFF0) throw new Error('This build is too big for one project file. Mark some plates printed or print fewer stacks at once.');
         const h = new Uint8Array(30 + nm.length);
         u32(0x04034b50, h, 0); u16(20, h, 4); u16(0x800, h, 6); u16(8, h, 8); u16(dosTime, h, 10); u16(dosDate, h, 12); u32(crc, h, 14); u32(data.length, h, 18); u32(size, h, 22); u16(nm.length, h, 26); h.set(nm, 30);
         const c = new Uint8Array(46 + nm.length);
@@ -1995,15 +2027,15 @@ details.termfold[open] > summary { color: var(--ink); }
       { t: 'Stationary handle: bolt it on from the other side of the backbone, before the backbone goes on the module.', p: /^Stationary handle/, hw: /M4 \u00d7 60/, when: b => b.lines.some(l => l.label === 'Stationary handle'), src: 'Modifications 12/15' },
       { t: 'Heat the inserts and press them into the lock knobs, then cap them.', p: /knob/i, hw: /heat insert/, when: b => b.lines.some(l => /knob/i.test(l.label)), src: 'Modifications 13/15' },
       { t: 'Fit the handle lock with M6 \u00d7 35 hex bolts from the back of the backbone.', p: /^Pull-out handle lock/, hw: /M6 \u00d7 35/, when: b => b.lines.some(l => /Pull-out handle/.test(l.label)), src: 'Modifications 13/15' },
-      { t: 'Cut two M16 rods to the tower height and slide them in with the handle. Drill and tap M6 holes in the rods and bolt on the handle.', p: /^Pull-out handle$/, hw: /M6 \u00d7 30|M16 rod, cut/, when: b => b.lines.some(l => /Pull-out handle/.test(l.label)), src: 'Modifications 14/15' },
+      { t: 'Cut two M16 rods to the stack height and slide them in with the handle. Drill and tap M6 holes in the rods and bolt on the handle.', p: /^Pull-out handle$/, hw: /M6 \u00d7 30|M16 rod, cut/, when: b => b.lines.some(l => /Pull-out handle/.test(l.label)), src: 'Modifications 14/15' },
       { t: 'Bolt the pegboard attachments onto the backbones.', p: /pegboard/i, hw: /M4 \u00d7 40/, when: b => b.lines.some(l => /pegboard/i.test(l.label)), src: 'Modifications 15/15' },
     ] },
     { id: 'wall', title: 'Wall mounting', when: b => b.lines.some(l => l.group === 'Wall mount'), intro: 'From the 12-page Mounting Instructions PDF.', steps: [
-      { t: 'Bolt a full-height wall mount plate to the back of the tower to use as a template.', p: /^Wall mount plate/, src: 'Mounting 1\u20133' },
-      { t: 'Hold the tower where it will hang and mark its sides and bottom on the wall with a pencil.', src: 'Mounting 4' },
+      { t: 'Bolt a full-height wall mount plate to the back of the stack to use as a template.', p: /^Wall mount plate/, src: 'Mounting 1\u20133' },
+      { t: 'Hold the stack where it will hang and mark its sides and bottom on the wall with a pencil.', src: 'Mounting 4' },
       { t: 'Take the plate off. Put it and its wall cleats on the marks, drill for anchors (or screw into wood), and fix the cleats to the wall.', p: /second part/i, src: 'Mounting 5\u20136' },
       { t: 'Repeat for the floors above, stacking each on the one below.', src: 'Mounting 7' },
-      { t: 'Bolt the plates onto the tower and hang it on the cleats.', p: /^Wall mount plate/, src: 'Mounting 8\u20139' },
+      { t: 'Bolt the plates onto the stack and hang it on the cleats.', p: /^Wall mount plate/, src: 'Mounting 8\u20139' },
     ] },
   ];
   function renderAssemble() {
@@ -2063,7 +2095,7 @@ details.termfold[open] > summary { color: var(--ink); }
     ({ unit: renderUnit, build: renderBuild, print: renderPrint, assemble: renderAssemble })[view]();
   }
 
-  $('footnote').innerHTML = `Part rules come from the four PDF manuals in the Vault download and USSA\u2019s published component counts; anything worked out beyond them is marked <span class="badge inf">Inferred</span>. Sizes are measured from each STL (${FILES.length} files)${HAS_PREVIEWS ? ' and pictures are rendered from them' : ''}. Filament is a rough figure from part volume at standard settings, calibrated against USSA\u2019s own gram estimates. Progress and towers are saved in this browser only.${window.VAULT_PUBLIC ? ' Free and open source, provided as is, with no support.' : ''}`;
+  $('footnote').innerHTML = `Part rules come from the four PDF manuals in the Vault download and USSA\u2019s published component counts; anything worked out beyond them is marked <span class="badge inf">Inferred</span>. Sizes are measured from each STL (${FILES.length} files)${HAS_PREVIEWS ? ' and pictures are rendered from them' : ''}. Filament is a rough figure from part volume at standard settings, calibrated against USSA\u2019s own gram estimates. Progress and stacks are saved in this browser only.${window.VAULT_PUBLIC ? ' Free and open source, provided as is, with no support.' : ''}`;
 
   normalize();
   renderAll();
