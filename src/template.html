@@ -598,7 +598,23 @@ details.termfold[open] > summary { color: var(--ink); }
     { id: 'h2dpro', name: 'Bambu Lab H2D Pro (single nozzle)', v: [325, 320, 320], plate: [350, 320], bambu: ['Bambu Lab H2D Pro 0.4 nozzle', '0.20mm Standard @BBL H2DP', 'Bambu PLA Basic @BBL H2DP', 'Bambu TPU 95A @BBL H2DP'] },
     { id: 'h2c', name: 'Bambu Lab H2C (single nozzle)', v: [325, 320, 320], plate: [330, 320], bambu: ['Bambu Lab H2C 0.4 nozzle', '0.20mm Standard @BBL H2C', 'Bambu PLA Basic @BBL H2C', 'Bambu TPU 95A @BBL H2C 0.4 nozzle'] },
     { id: 'h3c', name: 'Bambu Lab H3C', v: [330, 320, 325], bambu: ['Bambu Lab H3C 0.4 nozzle', '0.20mm Standard @BBL H3C', 'Bambu PLA Basic @BBL H3C', 'Bambu TPU 95A HF @BBL H3C'] },
-    { id: 'mk4', name: 'Prusa MK4', v: [250, 210, 220] },
+    // Other brands: no Bambu project, so they get one 3MF per plate (PrusaSlicer, OrcaSlicer and its relatives read it).
+    // v = the printable area the maker's own slicer profile uses
+    { id: 'mk4', brand: 'Prusa', name: 'Prusa MK4 / MK4S', v: [250, 210, 220] },
+    { id: 'core1', brand: 'Prusa', name: 'Prusa CORE One', v: [250, 220, 270] },
+    { id: 'mini', brand: 'Prusa', name: 'Prusa MINI+', v: [180, 180, 180] },
+    { id: 'pxl', brand: 'Prusa', name: 'Prusa XL', v: [360, 360, 360] },
+    { id: 'k1', brand: 'Creality', name: 'Creality K1 / K1C', v: [220, 220, 250] },
+    { id: 'k1max', brand: 'Creality', name: 'Creality K1 Max', v: [300, 300, 300] },
+    { id: 'k2plus', brand: 'Creality', name: 'Creality K2 Plus', v: [350, 350, 350] },
+    { id: 'ender3v3', brand: 'Creality', name: 'Creality Ender-3 V3 SE', v: [220, 220, 250] },
+    { id: 'cc', brand: 'Elegoo', name: 'Elegoo Centauri Carbon', v: [256, 256, 256] },
+    { id: 'n4pro', brand: 'Elegoo', name: 'Elegoo Neptune 4 Pro', v: [225, 225, 265] },
+    { id: 'n4max', brand: 'Elegoo', name: 'Elegoo Neptune 4 Max', v: [420, 420, 480] },
+    { id: 'kobra3', brand: 'Anycubic', name: 'Anycubic Kobra 3', v: [250, 250, 260] },
+    { id: 'kobras1', brand: 'Anycubic', name: 'Anycubic Kobra S1', v: [250, 250, 250] },
+    { id: 'q1pro', brand: 'Qidi', name: 'Qidi Q1 Pro', v: [245, 245, 240] },
+    { id: 'plus4', brand: 'Qidi', name: 'Qidi Plus4', v: [305, 305, 280] },
     { id: 'custom', name: 'Custom size\u2026', v: [256, 256, 256] },
   ];
 
@@ -1186,7 +1202,12 @@ details.termfold[open] > summary { color: var(--ink); }
 
   function renderPrinter() {
     const sel = $('printer');
-    sel.innerHTML = PRINTERS.map(p => `<option value="${p.id}" ${p.id === printer.id ? 'selected' : ''}>${p.name}</option>`).join('');
+    // Grouped by brand; Bambu Lab first, as before
+    const opt = p => `<option value="${p.id}" ${p.id === printer.id ? 'selected' : ''}>${p.name}</option>`;
+    const brands = [...new Set(PRINTERS.filter(p => p.brand).map(p => p.brand))];
+    sel.innerHTML = `<optgroup label="Bambu Lab">${PRINTERS.filter(p => p.bambu).map(opt).join('')}</optgroup>` +
+      brands.map(b => `<optgroup label="${b}">${PRINTERS.filter(p => p.brand === b).map(opt).join('')}</optgroup>`).join('') +
+      `<optgroup label="Other">${PRINTERS.filter(p => !p.bambu && !p.brand).map(opt).join('')}</optgroup>`;
     $('printerVol').textContent = printer.v.join(' \u00d7 ') + ' mm';
     $('customVol').hidden = printer.id !== 'custom';
     $('printerVol').hidden = printer.id === 'custom';
@@ -2224,16 +2245,115 @@ details.termfold[open] > summary { color: var(--ink); }
     return z.blob();
   }
   // STL folders as one zip: a folder per plate, each file named by how many to print. For any slicer.
+  // ---------- print files for any slicer ----------
+  // The per-part settings the Bambu project sets for you, in words, for slicers that don't read them
+  function notesOf(p) {
+    const n = [];
+    if (p.supports) n.push(p.standing ? 'normal supports' : 'supports');
+    if (p.brim) n.push(`brim ${p.brim === true ? BRIM : p.brim} mm`);
+    if (p.walls) n.push(`${p.walls} walls`);
+    if (p.infill) n.push(`${p.infill}% infill`);
+    if (p.tpu) n.push('TPU');
+    return n;
+  }
+  const NOTE_HELP = [
+    'supports: turn supports on for this part.',
+    'normal supports: supports on, but normal/grid/snug style, not tree or organic (this tall part prints on its edge, and tree supports fan out into the next part).',
+    'brim N mm: an outer brim this wide, so the tall, narrow part stays down.',
+    'N walls / N% infill: what USSA asks for this part.',
+    'TPU: print in TPU 95A (the tyres).',
+  ];
+  function settingsText(plan, intro, placed) {
+    const out = [intro, '', 'Turn the skirt off, or keep it within 3 mm: parts sit close to the bed\u2019s edge.', '', 'Settings marked per part:', ...NOTE_HELP.map(h => '  ' + h), ''];
+    plan.plates.forEach(pl => {
+      out.push(pl.name);
+      const by = new Map(); pl.pieces.forEach(p => { const k = p.path; by.set(k, { p, n: (by.get(k)?.n || 0) + 1 }); });
+      for (const { p, n } of by.values()) { const t = notesOf(p); out.push(`  ${n}x ${p.name} (${fileName(p.path).replace(/\.stl$/i, '')})${t.length ? ': ' + t.join(', ') : ''}${p.diag ? (placed ? ' (placed diagonally: too long to lie straight)' : ' (lay it diagonally: too long to lie straight)') : ''}`); }
+      out.push('');
+    });
+    return out.join('\r\n');
+  }
   async function buildFolders(plates, folder, progress) {
     const z = zipWriter(), all = plates.flatMap(pl => pl.lines.map(x => [pl, x]));
+    const plan = planFor(plates), notes = new Map(); // plate number and file -> settings in words
+    plan.plates.forEach((pp, i) => pp.pieces.forEach(p => notes.set(plates[i].n + '|' + p.path, notesOf(p))));
     const missing = all.filter(([, x]) => !findFile(folder.files, x.l.file.path));
     if (missing.length) throw new Error(`${plural(missing.length, 'part')} not found in \u201c${folder.name}\u201d: ${missingList(missing.map(([, x]) => x.l.file.path))}. Pick the Vault download folder.`);
     for (const [i, [pl, x]] of all.entries()) {
       progress(i / all.length, `${plateFolder(pl)}: ${x.l.label}`);
       const b = new Uint8Array(await fileBytes(findFile(folder.files, x.l.file.path)));
-      await z.add(`Vault prints/${plateFolder(pl)}/${x.count}x ${x.l.label.replace(/[\/:"\\]/g, '-')} - ${fileName(x.l.file.path)}`, put => put(b));
+      const t = notes.get(pl.n + '|' + x.l.file.path) || [], base = fileName(x.l.file.path).replace(/\.stl$/i, '');
+      await z.add(`Vault prints/${plateFolder(pl)}/${x.count}x ${x.l.label.replace(/[\/:"\\]/g, '-')} - ${base}${t.length ? ` [${t.join(', ')}]` : ''}.stl`, put => put(b));
     }
+    for (const [i, pl] of plates.entries()) await z.text(`Vault prints/${plateFolder(pl)}/settings.txt`, settingsText({ plates: [plan.plates[i]] }, `${plateFolder(pl)}: what to print, and any settings a part needs. Arrange the parts on the plate in your slicer.`));
     return z.blob();
+  }
+  // One standard 3MF per plate, parts placed as planned, for slicers without Bambu Studio's plates (PrusaSlicer,
+  // OrcaSlicer, Cura, Creality Print and others). PrusaSlicer also reads each part's settings from it.
+  async function buildPlateFiles(plan, folder, progress) {
+    const missing = [...new Set(plan.plates.flatMap(p => p.pieces.map(x => x.path)))].filter(p => !findFile(folder.files, p));
+    if (missing.length) throw new Error(`${plural(missing.length, 'part')} not found in \u201c${folder.name}\u201d: ${missingList(missing)}. Pick the Vault download folder (${SRC_DEFAULT.split('/').pop()}).`);
+    const outer = zipWriter(), total = plan.plates.reduce((a, p) => a + p.pieces.length, 0);
+    let done = 0;
+    for (const [pi, plate] of plan.plates.entries()) {
+      const z = zipWriter(), items = [], conf = [], orca = [], cache = new Map();
+      // Meshes are written in chunks: some Vault parts are 350 MB STLs
+      await z.add('3D/3dmodel.model', async put => {
+        await put(`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:slic3rpe="http://schemas.slic3r.org/3mf/2017/06">\n <metadata name="slic3rpe:Version3mf">1</metadata>\n <metadata name="Title">${xmlEsc(plate.name)}</metadata>\n <resources>\n`);
+        for (const [k, p] of plate.pieces.entries()) {
+          progress(done / total, `Plate ${pi + 1} of ${plan.plates.length}: ${p.name}`);
+          await new Promise(r => setTimeout(r));
+          const key = [p.path, p.spin, p.diag, p.corner].join('|');
+          if (!cache.has(key)) cache.set(key, await placedMesh(p, await fileBytes(findFile(folder.files, p.path))));
+          const m = cache.get(key), id = k + 1;
+          await put(`  <object id="${id}" type="model">\n   <mesh>\n    <vertices>\n`);
+          for (let a = 0; a < m.pts.length; a += 60000) {
+            let s = '';
+            for (let i = a; i < Math.min(a + 60000, m.pts.length); i += 3) s += `     <vertex x="${m.pts[i].toFixed(4)}" y="${m.pts[i + 1].toFixed(4)}" z="${m.pts[i + 2].toFixed(4)}"/>\n`;
+            await put(s);
+          }
+          await put('    </vertices>\n    <triangles>\n');
+          for (let a = 0; a < m.tris.length; a += 90000) {
+            let s = '';
+            for (let i = a; i < Math.min(a + 90000, m.tris.length); i += 3) s += `     <triangle v1="${m.tris[i]}" v2="${m.tris[i + 1]}" v3="${m.tris[i + 2]}"/>\n`;
+            await put(s);
+          }
+          await put('    </triangles>\n   </mesh>\n  </object>\n');
+          // Placed as the plan says: as-is, or turned 90 degrees on the plate (diagonal parts and manual supports come turned)
+          const turned = !(p.diag || p.corner) && Math.abs(m.w - p.w) + Math.abs(m.h - p.h) > Math.abs(m.h - p.w) + Math.abs(m.w - p.h);
+          const tr = p.diag || p.corner ? `1 0 0 0 1 0 0 0 1 ${(p.x + (p.w - m.w) / 2).toFixed(3)} ${(p.y + (p.h - m.h) / 2).toFixed(3)} 0`
+            : turned ? `0 1 0 -1 0 0 0 0 1 ${(p.x + m.h).toFixed(3)} ${p.y.toFixed(3)} 0` : `1 0 0 0 1 0 0 0 1 ${p.x.toFixed(3)} ${p.y.toFixed(3)} 0`;
+          items.push(`  <item objectid="${id}" transform="${tr}" printable="1"/>\n`);
+          // PrusaSlicer's per-part settings
+          const md = (key, val) => `  <metadata type="object" key="${key}" value="${xmlEsc(val)}"/>\n`;
+          let c = md('name', p.name);
+          if (p.supports) c += md('support_material', 1) + md('support_material_auto', 1) + (p.standing ? md('support_material_style', 'snug') : '');
+          if (p.brim) c += md('brim_type', 'outer_only') + md('brim_width', p.brim === true ? BRIM : p.brim);
+          if (p.walls) c += md('perimeters', p.walls);
+          if (p.infill) c += md('fill_density', p.infill + '%');
+          // The same settings the way OrcaSlicer (and Bambu Studio) read them
+          const om = (key, val) => `    <metadata key="${key}" value="${xmlEsc(val)}"/>\n`;
+          let o = om('name', p.name);
+          if (p.supports) o += om('enable_support', 1) + (p.standing ? om('support_type', 'normal(auto)') : '');
+          if (p.brim) o += om('brim_type', 'outer_only') + om('brim_width', p.brim === true ? BRIM : p.brim);
+          if (p.walls) o += om('wall_loops', p.walls);
+          if (p.infill) o += om('sparse_infill_density', p.infill + '%');
+          orca.push(`  <object id="${id}">\n${o}    <part id="${id}" subtype="normal_part">\n      <metadata key="name" value="${xmlEsc(p.name)}"/>\n    </part>\n  </object>\n`);
+          conf.push(` <object id="${id}" instances_count="1">\n${c}  <volume firstid="0" lastid="${m.tris.length / 3 - 1}">\n   <metadata type="volume" key="name" value="${xmlEsc(p.name)}"/>\n   <metadata type="volume" key="volume_type" value="ModelPart"/>\n  </volume>\n </object>\n`);
+          done++;
+        }
+        await put(` </resources>\n <build>\n${items.join('')} </build>\n</model>\n`);
+      });
+      await z.text('Metadata/Slic3r_PE_model.config', `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n${conf.join('')}</config>\n`);
+      await z.text('Metadata/model_settings.config', `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n${orca.join('')}</config>\n`);
+      await z.text('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>\n <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/>\n</Types>\n');
+      await z.text('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n <Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>\n</Relationships>\n');
+      const bytes = new Uint8Array(await z.blob().arrayBuffer());
+      await outer.add(`Vault plates/${plate.name}.3mf`, put => put(bytes));
+    }
+    await outer.text('Vault plates/settings.txt', settingsText(plan, `One 3MF per plate, parts already placed on a ${plan.bed[0]} \u00d7 ${plan.bed[1]} mm bed. Open each in your slicer and don't re-arrange. PrusaSlicer and OrcaSlicer (and slicers based on it) read the per-part settings below from the files; in other slicers, set them by hand.`, true));
+    progress(1, 'Finishing\u2026');
+    return outer.blob();
   }
   async function makeDownload(plates, fresh) {
     const box = $('gProg'), btns = document.querySelectorAll('#gMake, #gPick');
@@ -2241,12 +2361,14 @@ details.termfold[open] > summary { color: var(--ink); }
     btns.forEach(b => { b.disabled = true; });
     try {
       if (fresh || !vaultFolder) { progress(0, 'Opening your Vault folder\u2026'); vaultFolder = await pickVaultFolder(fresh); rememberedFolder = ''; }
-      const folders = gatherMode === 'folders';
+      const folders = gatherMode === 'folders', plateFiles = !folders && !preset().bambu; // other printers: one 3MF per plate
       const blob = folders ? await buildFolders(plates, vaultFolder, progress)
-        : await buildProject({ ...planFor(plates), printer: preset().bambu ? printer.id : null }, vaultFolder, progress);
-      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: folders ? 'Vault prints.zip' : 'Vault print plan.3mf' });
+        : plateFiles ? await buildPlateFiles(planFor(plates), vaultFolder, progress)
+        : await buildProject({ ...planFor(plates), printer: printer.id }, vaultFolder, progress);
+      const name = folders ? 'Vault prints.zip' : plateFiles ? 'Vault plates.zip' : 'Vault print plan.3mf';
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: name });
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-      progress(1, folders ? `Saved Vault prints.zip (${(blob.size / 1e6).toFixed(0)} MB) to your downloads.` : `Saved Vault print plan.3mf (${(blob.size / 1e6).toFixed(0)} MB) to your downloads. Open it in Bambu Studio.`);
+      progress(1, folders || plateFiles ? `Saved ${name} (${(blob.size / 1e6).toFixed(0)} MB) to your downloads.${plateFiles ? ' Unzip it and open each plate in your slicer.' : ''}` : `Saved Vault print plan.3mf (${(blob.size / 1e6).toFixed(0)} MB) to your downloads. Open it in Bambu Studio.`);
     } catch (e) {
       if (e.name === 'AbortError') { box.hidden = true; return; }
       vaultFolder = null; rememberedFolder = '';
@@ -2273,13 +2395,13 @@ details.termfold[open] > summary { color: var(--ink); }
   }
   function gatherPanel(plates) {
     const folders = gatherMode === 'folders', bambu = !!preset().bambu, fs = folderState(plates), picked = !!(vaultFolder || rememberedFolder);
-    const makeLabel = folders ? 'Save STL folders' : bambu ? 'Make Bambu Studio project' : 'Make 3MF project';
-    const makeNote = folders ? 'A zip with one folder per plate, ready for any slicer.'
+    const makeLabel = folders ? 'Save STL folders' : bambu ? 'Make Bambu Studio project' : 'Make plate files';
+    const makeNote = folders ? 'A zip with one folder per plate, ready for any slicer. File names and a settings.txt say which parts need supports, a brim or other settings.'
       : bambu ? `Every plate opens as its own tab, set up for the ${esc(preset().name)}.`
-      : 'A .3mf with every part. Only Bambu Studio splits it into plates, so STL folders may be easier.';
+      : 'A zip with one .3mf per plate, parts already placed. PrusaSlicer, OrcaSlicer and slicers based on it (Creality Print, Elegoo Slicer, Anycubic Slicer Next, Qidi Studio) also read which parts need supports or a brim; settings.txt lists them for any other slicer.';
     return `<div class="panel"><h3 class="ph">Get your print files</h3>
       <div class="seg" id="gatherMode" role="group" aria-label="What to make" style="margin:0 18px">
-        <button type="button" data-mode="project" aria-pressed="${!folders}">One ${bambu ? 'Bambu Studio ' : ''}project<small>${bambu ? 'every plate as a tab' : '.3mf with every part'}</small></button>
+        <button type="button" data-mode="project" aria-pressed="${!folders}">${bambu ? 'One Bambu Studio project' : 'Plate files'}<small>${bambu ? 'every plate as a tab' : 'a .3mf per plate, parts placed'}</small></button>
         <button type="button" data-mode="folders" aria-pressed="${folders}">STL folders<small>a zip, one folder per plate</small></button>
       </div>
       ${canMake ? `<ol class="gsteps">
@@ -2290,7 +2412,7 @@ details.termfold[open] > summary { color: var(--ink); }
           <button class="btn${fs.ready ? '' : ' primary'}" id="gPick">${picked ? 'Change folder' : 'Choose folder…'}</button></li>
         <li class="gstep"><span class="gnum">2</span>
           <div class="gtext"><b>${makeLabel}</b><small>${makeNote} Plates marked printed are left out; the rest keep their numbers.</small></div>
-          <button class="btn${fs.ready ? ' primary' : ''}" id="gMake"${fs.ready ? '' : ' disabled'}>${folders ? 'Save zip' : 'Make project'}</button></li>
+          <button class="btn${fs.ready ? ' primary' : ''}" id="gMake"${fs.ready ? '' : ' disabled'}>${folders || !bambu ? 'Save zip' : 'Make project'}</button></li>
       </ol>
       <div class="gprog" id="gProg" hidden><div class="bar"><i></i></div><span></span></div>`
       : '<p class="pp">Open this page on a computer with your Vault download to make the print files.</p>'}
