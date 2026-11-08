@@ -3,6 +3,8 @@
 Changes to the Vault Print Planner at [vault.romy.io](https://vault.romy.io), newest first.
 
 ## 2026-11-08
+- **Filament per color:** step 3 shows roughly how much of each color the whole build needs, so you can check your spools before you start.
+- **Labels get their own plate,** so you can add your text and print them in several colors without touching the other plates.
 - **Manual supports go where they help:** each one prints standing against the end of a roof of the same depth. Ones with no roof to brace are left out (step 3 says which), and STL folder names say where to stand them.
 - **Download names say what's inside:** the build, the printer, and which plates if some are already printed, like "Vault - 3 units in 2 stacks - P1S - plates 4-12.3mf".
 - **Printer not listed?** Pick "My printer isn't listed" and type its name: the bed size for about 380 printers fills in, taken from OrcaSlicer's printer profiles. Or enter your bed size yourself. The bed size is all the planner needs.
