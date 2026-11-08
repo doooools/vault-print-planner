@@ -615,7 +615,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
 
   // Suggested filament colour, following USSA's renders: light-grey body, charcoal working parts, orange accents
   function colorOf(label, group) {
-    if (/tyre/i.test(label)) return 'tpu';
+    if (/tire|tyre/i.test(label)) return 'tpu';
     if (/spring|latch|geared rail|runner stopper|hinge rods/i.test(label)) return 'accent';
     if (/drawer box|back panel|runner slide|key lock|hidden key|top handle|hinge|lock (holder|inner|outer|pin)|backbone|handle lock|knob|second part|^divider$|depth divider|width divider|seal divider|heavyweight roof handle|^foot$/i.test(label)) return 'inner';
     return 'body';
@@ -838,7 +838,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         add('Wheels', 'Wheel disk', MO + 'Wheels/Disk.stl', 2);
         add('Wheels', 'Bushing', MO + 'Wheels/Bushing.stl', 2);
         add('Wheels', 'Wheel cover', MO + 'Wheels/Cover.stl', 2);
-        add('Wheels', 'Tyre', MO + 'Wheels/Tyre (TPU).stl', 2, { tpu: true, note: 'Print in TPU.' });
+        add('Wheels', 'Tire', MO + 'Wheels/Tyre (TPU).stl', 2, { tpu: true, note: 'Print in TPU.' });
         add('Wheels', 'Bushing jig (tool)', MO + 'Wheels/Jig.stl', 1, { aid: true, note: 'Tool for pressing bushings onto the rod. Print once.' });
       }
       if (s.feet && (s.wheels || !s.casters)) add('Base', 'Foot', MO + `Feet/${w} Feet.stl`, s.wheels ? 1 : 2,
@@ -952,7 +952,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
 
   const PRINTERS = [
     // v = bed X, Y and max height as Bambu Studio allows them; excl = no-print zone in the front-left corner (purge chute);
-    // bambu = profile names Bambu Studio uses to save a real project for this printer: printer, process, PLA, TPU (for the tyres)
+    // bambu = profile names Bambu Studio uses to save a real project for this printer: printer, process, PLA, TPU (for the tires)
     { id: 'p1s', name: 'Bambu Lab P1S', v: [256, 256, 250], excl: [18, 28], bambu: ['Bambu Lab P1S 0.4 nozzle', '0.20mm Standard @BBL X1C', 'Bambu PLA Basic @BBL P1S 0.4 nozzle', 'Bambu TPU 95A @BBL X1C'] },
     { id: 'p2s', name: 'Bambu Lab P2S', v: [256, 256, 256], bambu: ['Bambu Lab P2S 0.4 nozzle', '0.20mm Standard @BBL P2S', 'Bambu PLA Basic @BBL P2S', 'Bambu TPU 95A @BBL P2S'] },
     { id: 'x1c', name: 'Bambu Lab X1C', v: [256, 256, 250], excl: [18, 28], bambu: ['Bambu Lab X1 Carbon 0.4 nozzle', '0.20mm Standard @BBL X1C', 'Bambu PLA Basic @BBL X1C', 'Bambu TPU 95A @BBL X1C'] },
@@ -2032,7 +2032,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
             <div class="pnote" style="margin:0">Level 1 is the bottom. The roof comes from the top drawer\u2019s roof setting.</div>
             <div class="checks">
               ${checkbox(`st-base-${t.id}`, 'Base', fam ? `${fam}${t.levels[0] ? t.levels[0][0].d : ''} base under level 1` : 'needs a standard width at the bottom', s.base)}
-              ${s.base ? checkbox(`st-wheels-${t.id}`, 'Wheels', 'TPU tyres, bearings, M16 axle', s.wheels) + (s.wheels || !s.casters ? checkbox(`st-feet-${t.id}`, 'Feet', s.wheels ? 'one bar under the front, opposite the wheels' : 'two bars, front and back', s.feet) : '') + (s.wheels ? '' : checkbox(`st-casters-${t.id}`, 'Casters instead', '4 \u00d7 M8, bought; replace the feet', s.casters)) : ''}
+              ${s.base ? checkbox(`st-wheels-${t.id}`, 'Wheels', 'TPU tires, bearings, M16 axle', s.wheels) + (s.wheels || !s.casters ? checkbox(`st-feet-${t.id}`, 'Feet', s.wheels ? 'one bar under the front, opposite the wheels' : 'two bars, front and back', s.feet) : '') + (s.wheels ? '' : checkbox(`st-casters-${t.id}`, 'Casters instead', '4 \u00d7 M8, bought; replace the feet', s.casters)) : ''}
               ${checkbox(`st-stationaryHandle-${t.id}`, 'Stationary handle', 'fixed grab handle on the back; needs a backbone', s.stationaryHandle)}
               ${checkbox(`st-pullHandle-${t.id}`, 'Pull-out trolley handle', 'needs backbones', s.pullHandle)}
             </div>
@@ -2649,7 +2649,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     'normal supports: supports on, but normal/grid/snug style, not tree or organic (this tall part prints on its edge, and tree supports fan out into the next part).',
     'brim N mm: an outer brim this wide, so the tall, narrow part stays down.',
     'N walls / N% infill: what USSA asks for this part.',
-    'TPU: print in TPU 95A (the tyres).',
+    'TPU: print in TPU 95A (the tires).',
   ];
   function settingsText(plan, intro, placed) {
     const out = [intro, '', 'Turn the skirt off, or keep it within 3 mm: parts sit close to the bed\u2019s edge.', '', 'Settings marked per part:', ...NOTE_HELP.map(h => '  ' + h), ''];
@@ -2859,7 +2859,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       { t: 'Cut the M16 rod to length (248 mm S, 338 mm M, 414 mm L, 504 mm XL) and push it through the base.', p: /^Base/, hw: /M16 threaded rod/, when: b => b.lines.some(l => l.group === 'Wheels'), src: 'Modifications 2/15' },
       { t: 'Press a bushing onto each end with the jig, leaving 10 mm of rod showing. Remove the jig.', p: /^Bushing/, src: 'Modifications 3/15', when: b => b.lines.some(l => l.group === 'Wheels') },
       { t: 'Slide a wheel disk onto each side, then press a 6205ZZ bearing onto each bushing.', p: /^Wheel disk/, hw: /6205ZZ/, src: 'Modifications 4/15', when: b => b.lines.some(l => l.group === 'Wheels') },
-      { t: 'Lock the bearings with the shaft collars. Stretch the TPU tyres onto the disks.', p: /^Tyre/, hw: /SCSAW/, src: 'Modifications 5/15', when: b => b.lines.some(l => l.group === 'Wheels') },
+      { t: 'Lock the bearings with the shaft collars. Stretch the TPU tires onto the disks.', p: /^Tire/, hw: /SCSAW/, src: 'Modifications 5/15', when: b => b.lines.some(l => l.group === 'Wheels') },
       { t: 'Close each wheel with a cover and six M4 \u00d7 25 bolts.', p: /^Wheel cover/, hw: /M4 \u00d7 25/, src: 'Modifications 6/15', when: b => b.lines.some(l => l.group === 'Wheels') },
       { t: 'Flip the base and bolt on the foot with M6 \u00d7 90 bolts.', p: /^Foot/, hw: /M6 \u00d7 90/, src: 'Modifications 6/15', when: b => b.lines.some(l => l.label === 'Foot') },
       { t: 'For casters instead of wheels: flip the base and fit four casters with M8 bolts.', hw: /Caster/, when: b => b.hardware.some(h => /Caster/.test(h.item)), src: 'Modifications: Casters Mode' },

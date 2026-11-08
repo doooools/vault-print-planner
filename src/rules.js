@@ -35,7 +35,7 @@
 
   // Suggested filament colour, following USSA's renders: light-grey body, charcoal working parts, orange accents
   function colorOf(label, group) {
-    if (/tyre/i.test(label)) return 'tpu';
+    if (/tire|tyre/i.test(label)) return 'tpu';
     if (/spring|latch|geared rail|runner stopper|hinge rods/i.test(label)) return 'accent';
     if (/drawer box|back panel|runner slide|key lock|hidden key|top handle|hinge|lock (holder|inner|outer|pin)|backbone|handle lock|knob|second part|^divider$|depth divider|width divider|seal divider|heavyweight roof handle|^foot$/i.test(label)) return 'inner';
     return 'body';
@@ -258,7 +258,7 @@
         add('Wheels', 'Wheel disk', MO + 'Wheels/Disk.stl', 2);
         add('Wheels', 'Bushing', MO + 'Wheels/Bushing.stl', 2);
         add('Wheels', 'Wheel cover', MO + 'Wheels/Cover.stl', 2);
-        add('Wheels', 'Tyre', MO + 'Wheels/Tyre (TPU).stl', 2, { tpu: true, note: 'Print in TPU.' });
+        add('Wheels', 'Tire', MO + 'Wheels/Tyre (TPU).stl', 2, { tpu: true, note: 'Print in TPU.' });
         add('Wheels', 'Bushing jig (tool)', MO + 'Wheels/Jig.stl', 1, { aid: true, note: 'Tool for pressing bushings onto the rod. Print once.' });
       }
       if (s.feet && (s.wheels || !s.casters)) add('Base', 'Foot', MO + `Feet/${w} Feet.stl`, s.wheels ? 1 : 2,
