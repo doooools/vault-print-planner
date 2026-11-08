@@ -59,6 +59,9 @@ sets = {f.stem: json.loads(f.read_text()) for f in sorted((here / "bambu-setting
 base = {k: v for k, v in next(iter(sets.values()), {}).items() if all(k in d and d[k] == v for d in sets.values())}
 bambu = {"base": base, "per": {i: {k: v for k, v in d.items() if k not in base} for i, d in sets.items()}}
 catalog += "window.BAMBU_SETTINGS=" + json.dumps(bambu, ensure_ascii=False, separators=(",", ":")) + ";"
+# Bed sizes for the "My printer isn't listed" lookup (src/printer-beds.tsv, from OrcaSlicer's profiles by src/orca-beds.py)
+beds = [l.split("\t") for l in (here / "printer-beds.tsv").read_text().splitlines() if l and not l.startswith("#")]
+catalog += "window.PRINTER_BEDS=" + json.dumps([[b, m, int(w), int(d), int(h)] for b, m, w, d, h in beds], ensure_ascii=False, separators=(",", ":")) + ";"
 html = (here / "template.html").read_text()
 if public:
     catalog += "window.VAULT_PUBLIC=true;"

@@ -3,6 +3,8 @@
 Changes to the Vault Print Planner at [vault.romy.io](https://vault.romy.io), newest first.
 
 ## 2026-11-08
+- **Printer not listed?** Pick "My printer isn't listed" and type its name: the bed size for about 380 printers fills in, taken from OrcaSlicer's printer profiles. Or enter your bed size yourself. The bed size is all the planner needs.
+- **Voron 2.4 heights** now match OrcaSlicer's profiles (225, 275 and 325 mm).
 - **Voron presets:** 2.4 and Trident (250, 300, 350) and the 0.2. Like other non-Bambu printers, they get plate files for OrcaSlicer or PrusaSlicer.
 
 ## 2026-11-07
