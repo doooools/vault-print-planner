@@ -570,7 +570,7 @@ details.termfold[open] > summary { color: var(--ink); }
   </footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><h3>2026-11-08</h3><ul><li><b>Printer not listed?</b> Pick "My printer isn't listed" and type its name: the bed size for about 380 printers fills in, taken from OrcaSlicer's printer profiles. Or enter your bed size yourself. The bed size is all the planner needs.</li><li><b>Voron presets:</b> 2.4 and Trident (250, 300, 350) and the 0.2. Like other non-Bambu printers, they get plate files for OrcaSlicer or PrusaSlicer.</li></ul><h3>2026-11-07</h3><ul><li><b>More printers:</b> presets for Prusa (MK4/MK4S, CORE One, MINI+, XL), Creality (K1/K1C, K1 Max, K2 Plus, Ender-3 V3 SE), Elegoo (Centauri Carbon, Neptune 4 Pro and Max), Anycubic (Kobra 3, Kobra S1) and Qidi (Q1 Pro, Plus4), plus Custom size for anything else.</li><li><b>Plate files for non-Bambu printers:</b> step 3 now saves a zip with one standard .3mf per plate. Parts are already laid out, and the parts that need supports or a brim are already marked. Works in OrcaSlicer, PrusaSlicer and the slicers built on them; a settings.txt lists the same settings for any other slicer.</li><li><b>STL folders</b> now name each part's settings in its file name, with a settings.txt per plate.</li><li><b>XL units fit the H2S:</b> facades and backbones that are too long for the bed go on the diagonal, at whatever angle fits.</li><li><b>Missing parts are named:</b> if your Vault folder is missing files, step 3 lists them. File names that an unzip or a newer download changed are still matched.</li><li><b>Print and Assemble stay empty</b> until you add something to your build, with a button to add the unit you picked in step 1.</li><li><b>Fewer slicer conflicts:</b> parts with supports keep clear of neighbouring parts, the rows around them and the bed edge.</li></ul><h3>2026-11-06</h3><ul><li><b>First public version.</b></li><li><b>More Bambu printers:</b> P2S, X2D, A2L, H2D Pro, H2C and H3C; plate spacing fixed on dual-nozzle printers.</li><li><b>Stack pictures:</b> front and side views, overall size with dimension lines, and wheels, feet, casters and handles drawn where USSA's manual puts them.</li><li><b>Step 1 checks whether a unit stacks</b> before adding it and offers a matching size.</li><li><b>Hardware list:</b> bolt head shapes, drawer front bolts counted from the holes in each front, and links to matching products.</li><li><b>Choosing the Vault folder</b> is its own step, with a heads-up about the browser's permission prompt.</li><li><b>Plate numbers stay put</b> when you mark plates as printed.</li><li><b>Tree supports</b> no longer run into the next part.</li><li><b>Part pictures</b> at full size.</li></ul></div></dialog>
+<dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><h3>2026-11-08</h3><ul><li><b>Download names say what's inside:</b> the build, the printer, and which plates if some are already printed, like "Vault - 3 units in 2 stacks - P1S - plates 4-12.3mf".</li><li><b>Printer not listed?</b> Pick "My printer isn't listed" and type its name: the bed size for about 380 printers fills in, taken from OrcaSlicer's printer profiles. Or enter your bed size yourself. The bed size is all the planner needs.</li><li><b>Voron presets:</b> 2.4 and Trident (250, 300, 350) and the 0.2. Like other non-Bambu printers, they get plate files for OrcaSlicer or PrusaSlicer.</li></ul><h3>2026-11-07</h3><ul><li><b>More printers:</b> presets for Prusa (MK4/MK4S, CORE One, MINI+, XL), Creality (K1/K1C, K1 Max, K2 Plus, Ender-3 V3 SE), Elegoo (Centauri Carbon, Neptune 4 Pro and Max), Anycubic (Kobra 3, Kobra S1) and Qidi (Q1 Pro, Plus4), plus Custom size for anything else.</li><li><b>Plate files for non-Bambu printers:</b> step 3 now saves a zip with one standard .3mf per plate. Parts are already laid out, and the parts that need supports or a brim are already marked. Works in OrcaSlicer, PrusaSlicer and the slicers built on them; a settings.txt lists the same settings for any other slicer.</li><li><b>STL folders</b> now name each part's settings in its file name, with a settings.txt per plate.</li><li><b>XL units fit the H2S:</b> facades and backbones that are too long for the bed go on the diagonal, at whatever angle fits.</li><li><b>Missing parts are named:</b> if your Vault folder is missing files, step 3 lists them. File names that an unzip or a newer download changed are still matched.</li><li><b>Print and Assemble stay empty</b> until you add something to your build, with a button to add the unit you picked in step 1.</li><li><b>Fewer slicer conflicts:</b> parts with supports keep clear of neighbouring parts, the rows around them and the bed edge.</li></ul><h3>2026-11-06</h3><ul><li><b>First public version.</b></li><li><b>More Bambu printers:</b> P2S, X2D, A2L, H2D Pro, H2C and H3C; plate spacing fixed on dual-nozzle printers.</li><li><b>Stack pictures:</b> front and side views, overall size with dimension lines, and wheels, feet, casters and handles drawn where USSA's manual puts them.</li><li><b>Step 1 checks whether a unit stacks</b> before adding it and offers a matching size.</li><li><b>Hardware list:</b> bolt head shapes, drawer front bolts counted from the holes in each front, and links to matching products.</li><li><b>Choosing the Vault folder</b> is its own step, with a heads-up about the browser's permission prompt.</li><li><b>Plate numbers stay put</b> when you mark plates as printed.</li><li><b>Tree supports</b> no longer run into the next part.</li><li><b>Part pictures</b> at full size.</li></ul></div></dialog>
 <dialog id="viewer" aria-label="Part preview"><button type="button" class="vclose" id="viewerClose" aria-label="Close preview">&times;</button><div id="viewerBody" class="vbody"></div></dialog>
 
 
@@ -2309,6 +2309,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const scope = b.onlyExtras ? 'extras' : 'all';
     const { plates: allPlates, skipped, state: pst } = stablePlates(b.lines, scope);
     const plates = allPlates.filter(pl => !pl.done);
+    plateTotal = allPlates.length;
     const total = b.lines.reduce((a, l) => a + (l.fit.s === 'no' || l.fit.s === 'reorient' ? 0 : l.total), 0);
     const done = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0), 0);
     const gDone = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0) * gramsOf(l.file), 0);
@@ -2743,6 +2744,24 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     progress(1, 'Finishing\u2026');
     return outer.blob();
   }
+  // Download names say what's inside: the build, the printer, and which plates when some are already printed,
+  // e.g. "Vault - 9 units in 3 stacks - P1S - plates 4-12.3mf"
+  let plateTotal = 0;
+  function exportName(plates, ext) {
+    const b = computeBuild();
+    const units = b.onlyExtras ? [] : towers.flatMap(t => t.levels.flat());
+    const codes = units.map(u => unitCode(u).replace(' \u00b7 ', ' '));
+    const kinds = [...new Set(codes)];
+    let what = !units.length ? 'extra parts'
+      : kinds.length === 1 ? (codes.length > 1 ? codes.length + 'x ' : '') + kinds[0]
+      : plural(units.length, 'unit') + (towers.length > 1 ? ` in ${towers.length} stacks` : '');
+    if (units.length && b.extras) what += ' + extras';
+    const pr = printer.id === 'custom' ? (printer.from || `${printer.v[0]}x${printer.v[1]} bed`) : preset().name.replace(/^Bambu Lab /, '').replace(/ \(single nozzle\)$/, '').split(' / ')[0];
+    const ns = plates.map(p => p.n).sort((a, b) => a - b), runs = [];
+    ns.forEach(n => { const r = runs[runs.length - 1]; if (r && n === r[1] + 1) r[1] = n; else runs.push([n, n]); });
+    const which = ns.length >= plateTotal ? '' : runs.length > 3 ? ` - ${plural(ns.length, 'plate')} left` : ` - ${ns.length === 1 ? 'plate' : 'plates'} ${runs.map(([a, z]) => a === z ? a : a + '-' + z).join(', ')}`;
+    return `Vault - ${what} - ${pr}${which}${ext}`.replace(/[\\/:*?"<>|]/g, '-');
+  }
   async function makeDownload(plates, fresh) {
     const box = $('gProg'), btns = document.querySelectorAll('#gMake, #gPick');
     const progress = (f, msg) => { box.hidden = false; box.querySelector('i').style.width = Math.round(f * 100) + '%'; box.querySelector('span').textContent = msg; };
@@ -2753,10 +2772,10 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       const blob = folders ? await buildFolders(plates, vaultFolder, progress)
         : plateFiles ? await buildPlateFiles(planFor(plates), vaultFolder, progress)
         : await buildProject({ ...planFor(plates), printer: printer.id }, vaultFolder, progress);
-      const name = folders ? 'Vault prints.zip' : plateFiles ? 'Vault plates.zip' : 'Vault print plan.3mf';
+      const name = exportName(plates, folders || plateFiles ? '.zip' : '.3mf');
       const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: name });
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-      progress(1, folders || plateFiles ? `Saved ${name} (${(blob.size / 1e6).toFixed(0)} MB) to your downloads.${plateFiles ? ' Unzip it and open each plate in your slicer.' : ''}` : `Saved Vault print plan.3mf (${(blob.size / 1e6).toFixed(0)} MB) to your downloads. Open it in Bambu Studio.`);
+      progress(1, folders || plateFiles ? `Saved ${name} (${(blob.size / 1e6).toFixed(0)} MB) to your downloads.${plateFiles ? ' Unzip it and open each plate in your slicer.' : ''}` : `Saved ${name} (${(blob.size / 1e6).toFixed(0)} MB) to your downloads. Open it in Bambu Studio.`);
     } catch (e) {
       if (e.name === 'AbortError') { box.hidden = true; return; }
       vaultFolder = null; rememberedFolder = '';

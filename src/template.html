@@ -1956,6 +1956,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const scope = b.onlyExtras ? 'extras' : 'all';
     const { plates: allPlates, skipped, state: pst } = stablePlates(b.lines, scope);
     const plates = allPlates.filter(pl => !pl.done);
+    plateTotal = allPlates.length;
     const total = b.lines.reduce((a, l) => a + (l.fit.s === 'no' || l.fit.s === 'reorient' ? 0 : l.total), 0);
     const done = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0), 0);
     const gDone = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0) * gramsOf(l.file), 0);
@@ -2390,6 +2391,24 @@ details.termfold[open] > summary { color: var(--ink); }
     progress(1, 'Finishing\u2026');
     return outer.blob();
   }
+  // Download names say what's inside: the build, the printer, and which plates when some are already printed,
+  // e.g. "Vault - 9 units in 3 stacks - P1S - plates 4-12.3mf"
+  let plateTotal = 0;
+  function exportName(plates, ext) {
+    const b = computeBuild();
+    const units = b.onlyExtras ? [] : towers.flatMap(t => t.levels.flat());
+    const codes = units.map(u => unitCode(u).replace(' \u00b7 ', ' '));
+    const kinds = [...new Set(codes)];
+    let what = !units.length ? 'extra parts'
+      : kinds.length === 1 ? (codes.length > 1 ? codes.length + 'x ' : '') + kinds[0]
+      : plural(units.length, 'unit') + (towers.length > 1 ? ` in ${towers.length} stacks` : '');
+    if (units.length && b.extras) what += ' + extras';
+    const pr = printer.id === 'custom' ? (printer.from || `${printer.v[0]}x${printer.v[1]} bed`) : preset().name.replace(/^Bambu Lab /, '').replace(/ \(single nozzle\)$/, '').split(' / ')[0];
+    const ns = plates.map(p => p.n).sort((a, b) => a - b), runs = [];
+    ns.forEach(n => { const r = runs[runs.length - 1]; if (r && n === r[1] + 1) r[1] = n; else runs.push([n, n]); });
+    const which = ns.length >= plateTotal ? '' : runs.length > 3 ? ` - ${plural(ns.length, 'plate')} left` : ` - ${ns.length === 1 ? 'plate' : 'plates'} ${runs.map(([a, z]) => a === z ? a : a + '-' + z).join(', ')}`;
+    return `Vault - ${what} - ${pr}${which}${ext}`.replace(/[\\/:*?"<>|]/g, '-');
+  }
   async function makeDownload(plates, fresh) {
     const box = $('gProg'), btns = document.querySelectorAll('#gMake, #gPick');
     const progress = (f, msg) => { box.hidden = false; box.querySelector('i').style.width = Math.round(f * 100) + '%'; box.querySelector('span').textContent = msg; };
@@ -2400,10 +2419,10 @@ details.termfold[open] > summary { color: var(--ink); }
       const blob = folders ? await buildFolders(plates, vaultFolder, progress)
         : plateFiles ? await buildPlateFiles(planFor(plates), vaultFolder, progress)
         : await buildProject({ ...planFor(plates), printer: printer.id }, vaultFolder, progress);
-      const name = folders ? 'Vault prints.zip' : plateFiles ? 'Vault plates.zip' : 'Vault print plan.3mf';
+      const name = exportName(plates, folders || plateFiles ? '.zip' : '.3mf');
       const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: name });
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-      progress(1, folders || plateFiles ? `Saved ${name} (${(blob.size / 1e6).toFixed(0)} MB) to your downloads.${plateFiles ? ' Unzip it and open each plate in your slicer.' : ''}` : `Saved Vault print plan.3mf (${(blob.size / 1e6).toFixed(0)} MB) to your downloads. Open it in Bambu Studio.`);
+      progress(1, folders || plateFiles ? `Saved ${name} (${(blob.size / 1e6).toFixed(0)} MB) to your downloads.${plateFiles ? ' Unzip it and open each plate in your slicer.' : ''}` : `Saved ${name} (${(blob.size / 1e6).toFixed(0)} MB) to your downloads. Open it in Bambu Studio.`);
     } catch (e) {
       if (e.name === 'AbortError') { box.hidden = true; return; }
       vaultFolder = null; rememberedFolder = '';
