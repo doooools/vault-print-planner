@@ -66,6 +66,24 @@ if public:
     html = re.sub(r"const SRC_DEFAULT = '[^']*/", "const SRC_DEFAULT = '", html)
     # The VaultPrint helper and Terminal script only work on the author's Mac (the public template has them removed already)
     html = re.sub(r"  /\*MAC\*/.*?/\*END MAC\*/", "  const macPanel = () => '', bindMac = () => {};", html, flags=re.S)
+# What's new (footer): src/public/CHANGELOG.md, newest date shown, the rest folded
+def changelog_html():
+    import html as h
+    days, cur = [], None
+    for line in (here / "public" / "CHANGELOG.md").read_text().splitlines():
+        if line.startswith("## "):
+            cur = [line[3:].strip(), []]; days.append(cur)
+        elif line.startswith("- ") and cur:
+            t = h.escape(line[2:].strip(), quote=False)
+            t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
+            t = re.sub(r"\[(.+?)\]\((https?://[^)]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', t)
+            cur[1].append(f"<li>{t}</li>")
+    day = lambda d: f'<h3>{d[0]}</h3><ul>{"".join(d[1])}</ul>'
+    out = "".join(day(d) for d in days[:1])
+    if days[1:]:
+        out += f'<details><summary>Earlier changes</summary>{"".join(day(d) for d in days[1:])}</details>'
+    return out
+html = html.replace("<!--CHANGELOG-->", changelog_html())
 html = html.replace("/*CATALOG*/", catalog).replace("/*RULES*/", (here / "rules.js").read_text())
 pathlib.Path(out).write_text(html)
 print(f"{len(rows)} files -> {out} ({len(html) // 1024} KB)")

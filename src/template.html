@@ -228,6 +228,12 @@ footer.site { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr
 footer.site h2 { margin: 0 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--ink); }
 footer.site p { margin: 0; max-width: 75ch; text-wrap: pretty; }
 footer.site a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+footer.site .news { grid-column: 1 / -1; }
+footer.site .changes h3 { margin: 10px 0 4px; font-size: 12px; font-weight: 600; color: var(--ink); }
+footer.site .changes ul { margin: 0; padding-left: 18px; max-width: 90ch; }
+footer.site .changes li { margin: 2px 0; text-wrap: pretty; }
+footer.site .changes b { color: var(--ink); font-weight: 600; }
+footer.site .changes summary { cursor: pointer; margin-top: 10px; color: var(--ink); width: max-content; }
 @media (max-width: 760px) { footer.site { grid-template-columns: minmax(0, 1fr); } }
 /* ---- v3: tabs as top-level navigation, towers, plates, guide ---- */
 .nav { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
@@ -550,6 +556,10 @@ details.termfold[open] > summary { color: var(--ink); }
     <section>
       <h2>Where the numbers come from</h2>
       <p class="fnotes" id="footnote"></p>
+    </section>
+    <section class="news">
+      <h2>What's new</h2>
+      <div class="changes"><!--CHANGELOG--></div>
     </section>
   </footer>
 </div>
