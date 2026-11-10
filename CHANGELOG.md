@@ -5,7 +5,7 @@ Changes to the Vault Print Planner at [vault.romy.io](https://vault.romy.io), ne
 ## 2026-11-09
 - **XL units really fit the H2S now:** the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.
 - **Closer filament estimates:** checked against the weights USSA publishes per module, the planner was reading about 17% high. It's now within a few percent.
-- **1F cases are drawn at the right height:** about 5 mm shorter than before, matching USSA's size chart and the files.
+- **Stack heights with 1F cases:** the planner listed a 1F case as 71 mm tall instead of about 66, so stack drawings and overall heights came out a little tall. Only the numbers on the page were off; the parts and print files are unchanged.
 - **Assembly:** step 4 now also passes on USSA's advice to put a 2F module right under the roof when you use the base, backbones or handles.
 
 ## 2026-11-08
