@@ -23,7 +23,9 @@
   const WIDTH_MM = { S: 164.8, M: 254, L: 329.6, L2: 329.6, XL: 418.8, XL2: 418.8 };
   function exterior(type, w, d, h) {
     const depth = Math.round((156.1 + (d - 3) * 42) * 10) / 10;
-    const height = h === 1 ? (type === 'drawer' ? 51.5 : 71) : h === 2 ? 99.5 : 195.5;
+    // Height each unit adds to a stack. A 1F case is 34 mm shorter than a 2F one (USSA's Kickstarter size chart: 61 vs 95;
+    // the case body STLs: 50.8 vs 84.8), so 65.5 here, not the 71 USSA's own fit finder uses.
+    const height = h === 1 ? (type === 'drawer' ? 51.5 : 65.5) : h === 2 ? 99.5 : 195.5;
     return [WIDTH_MM[w], depth, height];
   }
   // Width family whose base/roof/backbone matches a total width in mm (S+S = L, S+M = XL)

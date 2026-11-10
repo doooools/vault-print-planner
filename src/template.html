@@ -590,7 +590,9 @@ details.termfold[open] > summary { color: var(--ink); }
   const SRC_DEFAULT = '261021_VAULT_USSA_S';
   // Filament estimate. Thin-walled parts print close to solid (0.78 g/cm³ of part volume, the median of USSA's published
   // weights across 99 parts). Chunky parts (base, feet, roofs) are mostly infill, so scale down by how solid the part is.
-  const gramsOf = f => { const s = Math.min(1, f.vol / (f.dims[0] * f.dims[1] * f.dims[2] || 1)); return f.vol / 1000 * 1.24 * Math.max(0.2, Math.min(0.68, 0.68 - 0.55 * s)); };
+  // Rough grams of PLA. The last factor (0.85) brings drawer totals in line with the weights USSA publishes per module
+  // (Kickstarter print-time chart, sliced on an H2S); without it we read about 17% high.
+  const gramsOf = f => { const s = Math.min(1, f.vol / (f.dims[0] * f.dims[1] * f.dims[2] || 1)); return f.vol / 1000 * 1.24 * Math.max(0.2, Math.min(0.68, 0.68 - 0.55 * s)) * 0.85; };
   const SPOOL_G = 1000;
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
@@ -2563,6 +2565,7 @@ details.termfold[open] > summary { color: var(--ink); }
       { t: 'Flip the base and bolt on the foot with M6 \u00d7 90 bolts.', p: /^Foot/, hw: /M6 \u00d7 90/, src: 'Modifications 6/15', when: b => b.lines.some(l => l.label === 'Foot') },
       { t: 'For casters instead of wheels: flip the base and fit four casters with M8 bolts.', hw: /Caster/, when: b => b.hardware.some(h => /Caster/.test(h.item)), src: 'Modifications: Casters Mode' },
       { t: 'Put the first module on the base. USSA strongly recommends a 2F module here.', p: /^Module shell|^Case body/, src: 'Modifications 7/15' },
+      { t: 'Make the top module, the one under the roof, a 2F as well. USSA strongly recommends a 2F at both ends of a stack that uses the base, backbones or handles.', p: /^Module shell|^Case body/, src: 'Modifications 11/15; Manual: Important Notes' },
     ] },
     { id: 'backbone', title: 'Backbones and handles', when: b => b.lines.some(l => /backbone|handle/i.test(l.label) && l.group !== 'Roof'), steps: [
       { t: '2F backbones come sealed. Hold one against the module, mark the three spots, and drill them through with a 4 mm bit.', p: /backbone/i, src: 'Modifications 7\u20138/15' },
