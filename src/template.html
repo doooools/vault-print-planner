@@ -250,8 +250,10 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-colors .croles { grid-template-columns: minmax(0, 1fr); }
 .v3-colors .bbl-line { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 .ucol > summary { cursor: pointer; font-size: 12.5px; color: var(--accent); font-weight: 600; margin-top: 2px; }
-.ucol .crole { font-size: 12.5px; }
-.ucol .csel select { max-width: 17ch; }
+.urole { display: grid; gap: 4px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 12.5px; }
+.urole .fmenu-btn { padding: 6px 8px; font-size: 13px; }
+.urole .fmenu-btn small { font-weight: 400; color: var(--muted); }
+.v3-side .fmenu-list { position: static; margin-top: 4px; max-height: 260px; box-shadow: none; }
 @media (max-width: 760px) { dialog#v3d[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } }
 .row.done { opacity: .45; }
 .row.done .pname { text-decoration: line-through; }
@@ -479,7 +481,10 @@ details.folded > summary .mini { min-width: 40px; }
 .bbl-sw button:hover { outline: 2px solid var(--ink); outline-offset: 1px; }
 .bbl-sw button.have { outline: 2px solid var(--accent); outline-offset: 1px; }
 .croles { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 18px; padding: 0 18px 14px; }
-.crole { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13.5px; padding: 4px 0; border-top: 1px solid var(--line); }
+.crole { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; gap: 10px; font-size: 13.5px; padding: 5px 0; border-top: 1px solid var(--line); }
+.crole .fmenu-btn { padding: 5px 8px; font-size: 13px; }
+.crole .fmenu-list { min-width: 240px; }
+.v3-colors .crole { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 .csel { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
 .csel select { max-width: 16ch; padding: 3px 6px; border: 1px solid var(--line); border-radius: 7px; background: var(--sheet); }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
@@ -1082,19 +1087,31 @@ details.termfold[open] > summary { color: var(--ink); }
     if (!l.file.sheet) return `<span class="thumb ${size} none"></span>`;
     return `<button type="button" class="thumb ${size}" data-view="${esc(l.file.path)}" style="${spriteStyle(l.file)}" aria-label="Preview ${esc(l.label)}"></button>`;
   }
-  // The filament choice for one part role, for the whole project: your colours, Bambu Lab's (PLA and PETG, plain and
-  // matte) and one of your own. Used as a drop-down in the part preview and as the bubble of the 3D view from step 1.
-  function filamentList(role) {
-    const cur = colorFor(role, null), curCode = (paletteOf(cur) || {}).code;
+  // The filament choice for one part role: your colours, Bambu Lab's (PLA and PETG, plain and matte) and one of your
+  // own. For the whole project (cfg null: the part preview, the bubble of step 1's 3D view), or for one unit of a stack
+  // (cfg: that unit's settings, from the 3D view of its stack), where the first choice goes back to the stack's colour.
+  function filamentList(role, cfg) {
+    const own = cfg && cfg.colors && paletteOf(cfg.colors[role]) ? cfg.colors[role] : null;
+    const cur = cfg ? own : colorFor(role, null), curCode = (paletteOf(cur) || {}).code;
     const row = (attr, hex, name, on, sub) => `<button type="button" role="option" aria-selected="${on}" ${attr} class="fm-row${on ? ' on' : ''}"><span class="swatch" style="background:${hex}"></span><span>${esc(name)}</span>${sub ? `<small>${esc(sub)}</small>` : ''}</button>`;
-    const lines = [...new Set(BAMBU_COLORS.map(c => c[0]))];
-    return `<div class="pop-sec">Your colors</div>${colorPrefs.palette.map(p => row(`data-fm-pal="${p.id}"`, p.hex, p.name, p.id === cur)).join('')}
-      ${lines.map(line => `<div class="pop-sec">Bambu Lab ${esc(line)}</div>${BAMBU_COLORS.map((c, i) => c[0] !== line ? '' : row(`data-fm-bbl="${i}"`, c[3], c[2], curCode === c[1], c[1])).join('')}`).join('')}
-      <div class="pop-sec">Your own</div><div class="pop-custom"><input type="color" value="${colorHex(cur)}" data-fm-hex aria-label="Pick a color"><button type="button" class="btn" data-fm-custom>Use this color</button></div>`;
+    const lines = [...new Set(BAMBU_COLORS.map(c => c[0]))], proj = colorFor(role, null);
+    return `${cfg ? row('data-fm-pal=""', colorHex(proj), `Same as the project (${colorName(proj)})`, !own) : ''}
+      <div class="pop-sec">Your colors</div>${colorPrefs.palette.map(p => row(`data-fm-pal="${p.id}"`, p.hex, p.name, p.id === cur)).join('')}
+      ${lines.map(line => `<div class="pop-sec">Bambu Lab ${esc(line)}</div>${BAMBU_COLORS.map((c, i) => c[0] !== line ? '' : row(`data-fm-bbl="${i}"`, c[3], c[2], !!curCode && curCode === c[1], c[1])).join('')}`).join('')}
+      <div class="pop-sec">Your own</div><div class="pop-custom"><input type="color" value="${colorHex(colorFor(role, cfg))}" data-fm-hex aria-label="Pick a color"><button type="button" class="btn" data-fm-custom>Use this color</button></div>`;
   }
-  // Wire a filament list: a choice sets the role's colour, then after() redraws whatever shows it
-  function bindFilamentList(root, role, after) {
-    const apply = id => { setRoleColor(role, id); after(); };
+  // Wire a filament list: a choice sets the role's colour (the project's, or the unit's when cfg is given), then
+  // after() redraws whatever shows it
+  function bindFilamentList(root, role, after, cfg) {
+    const apply = id => {
+      if (cfg) {
+        cfg.colors = { ...(cfg.colors || {}) };
+        if (id) cfg.colors[role] = id; else delete cfg.colors[role];
+        if (!Object.keys(cfg.colors).length) delete cfg.colors;
+        saveColors(); save();
+      } else setRoleColor(role, id);
+      after();
+    };
     root.querySelectorAll('[data-fm-pal]').forEach(x => x.onclick = () => apply(x.dataset.fmPal));
     root.querySelectorAll('[data-fm-bbl]').forEach(x => x.onclick = () => {
       const [line, code, name, hex] = BAMBU_COLORS[+x.dataset.fmBbl];
@@ -1103,23 +1120,26 @@ details.termfold[open] > summary { color: var(--ink); }
     const custom = root.querySelector('[data-fm-custom]');
     if (custom) custom.onclick = () => { const hex = root.querySelector('[data-fm-hex]').value; apply(addPaletteColor({ name: 'Custom ' + hex.toUpperCase(), hex })); };
   }
-  // The drop-down: a button showing the current colour, opening the list under it
-  function filamentMenu(role) {
-    const cur = colorFor(role, null);
-    return `<div class="fmenu" data-fmenu="${role}"><button type="button" class="fmenu-btn" aria-haspopup="listbox" aria-expanded="false">${swatch(cur)}<span>${esc(colorName(cur))}</span><span class="fmenu-caret" aria-hidden="true">▾</span></button>
-      <div class="fmenu-list" role="listbox" hidden>${filamentList(role)}</div></div>`;
+  // The drop-down: a button showing the current colour, opening the list under it. attrs: extra attributes, used to
+  // find which unit a menu is for.
+  function filamentMenu(role, cfg, attrs = '') {
+    const cur = colorFor(role, cfg), own = cfg && cfg.colors && paletteOf(cfg.colors[role]);
+    return `<div class="fmenu" data-fmenu="${role}" ${attrs}><button type="button" class="fmenu-btn" aria-haspopup="listbox" aria-expanded="false">${swatch(cur)}<span>${esc(colorName(cur))}${cfg && !own ? ' <small>(project)</small>' : ''}</span><span class="fmenu-caret" aria-hidden="true">▾</span></button>
+      <div class="fmenu-list" role="listbox" hidden>${filamentList(role, cfg)}</div></div>`;
   }
-  function bindFilamentMenu(root, after) {
-    const m = root.querySelector('[data-fmenu]'); if (!m) return;
-    const btn = m.querySelector('.fmenu-btn'), list = m.querySelector('.fmenu-list');
-    const show = on => {
-      list.hidden = !on; btn.setAttribute('aria-expanded', String(on));
-      if (on) { const sel = list.querySelector('.fm-row.on'); if (sel) sel.scrollIntoView({ block: 'center' }); }
-    };
-    btn.onclick = () => show(list.hidden);
-    // A click elsewhere in the dialog folds it
-    m.ownerDocument.addEventListener('pointerdown', function off(e) { if (!m.isConnected) { m.ownerDocument.removeEventListener('pointerdown', off, true); return; } if (!m.contains(e.target)) show(false); }, true);
-    bindFilamentList(list, m.dataset.fmenu, after);
+  // cfgOf(menu): the unit settings a menu is for, or nothing for the project's colours
+  function bindFilamentMenu(root, after, cfgOf) {
+    root.querySelectorAll('[data-fmenu]').forEach(m => {
+      const btn = m.querySelector('.fmenu-btn'), list = m.querySelector('.fmenu-list');
+      const show = on => {
+        list.hidden = !on; btn.setAttribute('aria-expanded', String(on));
+        if (on) { const sel = list.querySelector('.fm-row.on'); if (sel) sel.scrollIntoView({ block: 'nearest' }); }
+      };
+      btn.onclick = () => show(list.hidden);
+      // A click elsewhere folds it
+      m.ownerDocument.addEventListener('pointerdown', function off(e) { if (!m.isConnected) { m.ownerDocument.removeEventListener('pointerdown', off, true); return; } if (!m.contains(e.target)) show(false); }, true);
+      bindFilamentList(list, m.dataset.fmenu, after, cfgOf ? cfgOf(m) : null);
+    });
   }
   function openViewer(path, menuOpen) {
     const l = viewMap.get(path); if (!l) return;
@@ -1879,8 +1899,6 @@ details.termfold[open] > summary { color: var(--ink); }
         `<button type="button" data-bbl="${i}" class="${have.has(c[1]) ? 'have' : ''}" style="background:${c[3]}" title="${esc(c[2])} (${c[1]})${have.has(c[1]) ? ', in your colors' : ''}" aria-label="${esc(c[2] + ', ' + line)}"></button>`).join('')}</div></div>`).join('')}
       <p class="pnote">Bambu’s own color codes, for the colors on sale in their store. Click one to add it to your colors.</p></details>`;
   }
-  const colorOptions = (sel, first) => (first ? `<option value="">${esc(first)}</option>` : '') +
-    colorPrefs.palette.map(p => `<option value="${p.id}" ${p.id === sel ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
   // in3d: the version in the 3D view's side column (always open, no panel frame)
   function colorsPanel(in3d) {
     const P = colorPrefs.palette;
@@ -1894,7 +1912,7 @@ details.termfold[open] > summary { color: var(--ink); }
         <button type="button" class="btn" data-pal-add>+ Add a color</button></div>
       <div class="cbbl">${bambuPicker()}</div>
       ${preset().bambu && P.some(p => /^PETG/.test(p.line || '')) ? '<p class="pp">PETG colors: the Bambu Studio project gives every color PLA settings. In Bambu Studio, set the PETG filaments to a PETG profile.</p>' : ''}
-      <div class="croles">${R.ROLES.map(r => `<label class="crole"><span>${esc(r.label)}</span><span class="csel">${swatch(colorFor(r.id, null))}<select data-role="${r.id}">${colorOptions(colorFor(r.id, null))}</select></span></label>`).join('')}
+      <div class="croles">${R.ROLES.map(r => `<div class="crole"><span>${esc(r.label)}</span>${filamentMenu(r.id, null)}</div>`).join('')}
         <div class="crole"><span>Tires</span><span class="csel">${swatch('tpu')}TPU</span></div></div>
       ${colorsCustom() ? '<div class="actions"><button type="button" class="btn" data-colors-reset>Back to the render colors</button><span class="pnote" style="margin:0">Also clears the colors chosen for single units.</span></div>' : ''}
     ${in3d ? '</div>' : '</details>'}`;
@@ -1929,11 +1947,7 @@ details.termfold[open] > summary { color: var(--ink); }
       colorPrefs.palette.push({ id: 'c' + n, name: 'Color ' + (colorPrefs.palette.length + 1), hex: '#4f7fbf' });
       done();
     };
-    D.querySelectorAll('[data-role]').forEach(s => s.onchange = () => {
-      const r = ROLE_BY_ID.get(s.dataset.role);
-      if (s.value === r.def) delete colorPrefs.roles[r.id]; else colorPrefs.roles[r.id] = s.value;
-      done();
-    });
+    bindFilamentMenu(D, rerender);
     if (D.querySelector('[data-colors-reset]')) D.querySelector('[data-colors-reset]').onclick = () => {
       colorPrefs = { palette: PALETTE_DEFAULT.map(p => ({ ...p })), roles: {} };
       towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { delete u.colors; })));
@@ -2919,8 +2933,7 @@ details.termfold[open] > summary { color: var(--ink); }
     if (!roles.length) return '';
     const own = (u.cfg && u.cfg.colors) || {}, n = roles.filter(r => own[r]).length;
     return `<details class="ucol" data-ucol="${ui}" ${v3.colorsOpen.has(ui) ? 'open' : ''}><summary>Colors${n ? ` \u00b7 ${n} of its own` : ''}</summary>${roles.map(r => {
-      const def = colorName(colorFor(r, null));
-      return `<label class="crole"><span>${esc(ROLE_BY_ID.get(r).label)}</span><span class="csel">${swatch(colorFor(r, u.cfg))}<select data-unit="${ui}" data-urole="${r}">${colorOptions(own[r] && paletteOf(own[r]) ? own[r] : '', 'Stack\u2019s (' + def + ')')}</select></span></label>`;
+      return `<div class="urole"><span>${esc(ROLE_BY_ID.get(r).label)}</span>${filamentMenu(r, u.cfg, `data-unit="${ui}"`)}</div>`;
     }).join('')}</details>`;
   }
   // The project's colours, in the side column of a 3D view opened from step 1
@@ -2941,13 +2954,7 @@ details.termfold[open] > summary { color: var(--ink); }
       return `<li><b>${esc(u.name)}</b><small>${esc(st)}</small>${un}${v.global ? '' : unitColors(u, ui)}</li>`;
     }).join('');
     $('v3dList').querySelectorAll('details[data-ucol]').forEach(d => d.ontoggle = () => { d.open ? v.colorsOpen.add(+d.dataset.ucol) : v.colorsOpen.delete(+d.dataset.ucol); });
-    $('v3dList').querySelectorAll('select[data-urole]').forEach(sel => sel.onchange = () => {
-      const u = v.units[+sel.dataset.unit], cfg = u.cfg, role = sel.dataset.urole;
-      cfg.colors = { ...(cfg.colors || {}) };
-      if (sel.value) cfg.colors[role] = sel.value; else delete cfg.colors[role];
-      if (!Object.keys(cfg.colors).length) delete cfg.colors;
-      save(); v.recolor(); v3list(); renderAll();
-    });
+    bindFilamentMenu($('v3dList'), () => { v.recolor(); v3list(); renderAll(); }, m => v.units[+m.dataset.unit].cfg);
     $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder;
     $('v3dPick').textContent = vaultFolder ? 'Change folder' : 'Show the real parts…';
   }
