@@ -191,6 +191,18 @@ dialog#viewer::backdrop { background: rgba(10, 12, 12, .45); }
 .bedsvg.big { width: 72px; height: 72px; }
 .vclose { position: absolute; top: 10px; right: 12px; border: 0; background: transparent; font-size: 24px; line-height: 1; color: var(--muted); }
 dialog#viewer { position: fixed; }
+dialog#v3d { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 0; width: min(1180px, calc(100vw - 32px)); height: min(820px, calc(100vh - 32px)); position: fixed; overflow: hidden; }
+dialog#v3d[open] { display: grid; grid-template-columns: minmax(0, 1fr) 290px; }
+dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
+.v3-stage { min-width: 0; min-height: 0; position: relative; background: var(--sheet-2); }
+.v3-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.v3-side { display: grid; align-content: start; gap: 12px; padding: 18px 18px 16px; overflow-y: auto; border-left: 1px solid var(--line); }
+.v3-side h2 { margin: 0 28px 0 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
+.v3-status { margin: 0; font-size: 13px; color: var(--muted); }
+.v3-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13px; }
+.v3-list li { display: grid; gap: 2px; padding-top: 8px; border-top: 1px solid var(--line); }
+.v3-list small { color: var(--muted); }
+@media (max-width: 760px) { dialog#v3d[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } }
 .row.done { opacity: .45; }
 .row.done .pname { text-decoration: line-through; }
 .row input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--ok); }
@@ -573,6 +585,12 @@ details.termfold[open] > summary { color: var(--ink); }
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><!--CHANGELOG--></div></dialog>
 <dialog id="viewer" aria-label="Part preview"><button type="button" class="vclose" id="viewerClose" aria-label="Close preview">&times;</button><div id="viewerBody" class="vbody"></div></dialog>
+<dialog id="v3d" aria-labelledby="v3dTitle"><button type="button" class="vclose" id="v3dClose" aria-label="Close 3D view">&times;</button>
+  <div class="v3-stage" id="v3dCanvas"></div>
+  <div class="v3-side"><h2 id="v3dTitle">3D</h2><p class="v3-status" id="v3dStatus" role="status"></p>
+    <button type="button" class="btn" id="v3dPick" hidden>Show the real parts…</button>
+    <ul class="v3-list" id="v3dList"></ul>
+    <p class="pnote">Click a drawer to open or close it. Drag to turn, scroll to zoom, right-drag to move. Your part files are only read here: nothing is uploaded.</p></div></dialog>
 
 
 <script>
@@ -1666,7 +1684,7 @@ details.termfold[open] > summary { color: var(--ink); }
       const fam = a.fam;
       const bad = a.issues.some(x => x.k === 'bad');
       const head = `<div class="tower-head"><input class="tname" value="${esc(t.name)}" data-rename="${t.id}" aria-label="Stack name">
-          <span class="actions"><button class="btn primary" data-addunit="${t.id}">+ Add a unit</button><button class="btn" data-dup-tower="${t.id}">Duplicate</button><button class="btn" data-del-tower="${t.id}">Remove stack</button>${fold ? `<button class="iconbtn foldbtn" data-fold="${t.id}" aria-label="Fold ${esc(t.name)}" title="Fold">\u2212</button>` : ''}</span></div>`;
+          <span class="actions"><button class="btn primary" data-addunit="${t.id}">+ Add a unit</button>${t.levels.length ? `<button class="btn" data-view3d="${t.id}" title="Turn this stack around in 3D">3D</button>` : ''}<button class="btn" data-dup-tower="${t.id}">Duplicate</button><button class="btn" data-del-tower="${t.id}">Remove stack</button>${fold ? `<button class="iconbtn foldbtn" data-fold="${t.id}" aria-label="Fold ${esc(t.name)}" title="Fold">\u2212</button>` : ''}</span></div>`;
       const open = fold ? `<details class="panel tower folded" id="tower-${t.id}" data-tower="${t.id}" ${openTowers.has(t.id) ? 'open' : ''}>
         <summary>${t.levels.length ? miniTower(t, a, fpx) : ''}<span class="ft-name"><b>${esc(t.name)}</b><small class="num">${t.levels.length ? `${plural(t.levels.length, 'level')} · ${Math.round(a.height)} mm · ${plural(st.plates, 'plate')} · ≈ ${gramsStr(st.g)}` : 'no units yet'}</small></span>${bad ? '<span class="tag bad">Won\u2019t stack</span>' : ''}</summary>` : `<div class="panel tower" id="tower-${t.id}" data-tower="${t.id}">`;
       return `${open}
@@ -1701,6 +1719,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const V = $('view-build'), find = id => towers.find(t => t.id === +id);
     V.querySelectorAll('[data-rename]').forEach(i => i.onchange = () => { find(i.dataset.rename).name = i.value.trim() || 'Stack'; save(); renderTabs(); });
     V.querySelectorAll('[data-del-tower]').forEach(b => b.onclick = () => { towers = towers.filter(t => t.id !== +b.dataset.delTower); save(); renderAll(); });
+    V.querySelectorAll('[data-view3d]').forEach(b => b.onclick = () => open3d(find(b.dataset.view3d)));
     V.querySelectorAll('[data-dup-tower]').forEach(b => b.onclick = () => { const t = find(b.dataset.dupTower); towers.push({ ...JSON.parse(JSON.stringify(t)), id: seq++, name: t.name + ' copy' }); save(); renderAll(); });
     V.querySelectorAll('[data-move]').forEach(b => b.onclick = () => { const [tid, i, d] = b.dataset.move.split(':').map(Number); const L = find(tid).levels; [L[i], L[i + d]] = [L[i + d], L[i]]; save(); renderAll(); });
     V.querySelectorAll('[data-dup]').forEach(b => b.onclick = () => { const [tid, i] = b.dataset.dup.split(':').map(Number); const L = find(tid).levels; L.splice(i + 1, 0, JSON.parse(JSON.stringify(L[i]))); save(); renderAll(); });
@@ -2241,6 +2260,415 @@ details.termfold[open] > summary { color: var(--ink); }
     });
   }
   const fileBytes = async f => (f.getFile ? await f.getFile() : f).arrayBuffer();
+  // ---------- 3D stack view ----------
+  // Opened from a stack card. three.js and meshoptimizer's simplifier come from a pinned CDN version only when it opens,
+  // so the rest of the page never needs them. Units are boxes from R.exterior until the Vault folder is picked; then the
+  // units measured in src/stl-placements.json show their real parts, read from that folder, simplified in a worker and
+  // kept in this browser for next time. Parts without a measured place are listed, never guessed.
+  const PLACE = window.VAULT_PLACEMENTS || { units: {}, stack: { first: 52, per_level: 48 } };
+  const CDN_THREE = 'https://cdn.jsdelivr.net/npm/three@0.186.1/';
+  const CDN_SIMPLIFIER = 'https://cdn.jsdelivr.net/npm/meshoptimizer@1.3.0/meshopt_simplifier.js';
+  const SIMPLIFY_MM = 0.15; // how far a simplified surface may stray from the part's, in mm
+  const MESH_CACHE = 'mesh3d.1:'; // IndexedDB key prefix; bump when meshJob changes
+  // Colour per part role, in the planner's filament colours (USSA's renders) until colours can be picked
+  const ROLE_COLOR = { body: 'body', roof: 'body', facade: 'body', drawer: 'inner', mech: 'inner', insert: 'inner', accent: 'accent' };
+  let threeLib = null;
+  const loadThree = () => threeLib || (threeLib = Promise.all([import(CDN_THREE + '+esm'), import(CDN_THREE + 'examples/jsm/controls/OrbitControls.js/+esm')])
+    .then(([T, oc]) => ({ T, OrbitControls: oc.OrbitControls })).catch(e => { threeLib = null; throw e; }));
+
+  // Where each unit of a stack goes: mm, three.js axes (+X right seen from the front, +Y up, +Z towards the viewer), the
+  // floor at y = 0 and the middle of the units' front bottom edge at x = z = 0. Drawers stack by the rule measured on the
+  // parts (52 mm for a 1F, plus 48 per extra level). That is 0.5 mm more than USSA's 51.5 / 99.5 / 195.5 in R.exterior,
+  // and it is what lines the real parts up, so the boxes use it too. Cases stack by R.exterior.
+  function stackLayout(t) {
+    const L = t.levels, s = t.stack || STACK_DEFAULT, P = PLACE.stack, units = [], extra = [];
+    const rise = u => u.type === 'drawer' ? P.first + P.per_level * (u.h - 1) : unitExt(u)[2];
+    const linesOf = r => r.lines.filter(l => l.alt !== 'whole'); // the one-piece version of split parts
+    const bw = levelWidth(L[0]), bd = unitExt(L[0][0])[1], fam = R.familyForWidth(bw);
+    const base = s.base && fam, wheels = base && s.wheels, casters = base && !wheels && s.casters, feet = base && s.feet && !casters;
+    let y = 0;
+    // Base, feet and wheels: plain shapes at the sizes the 2D drawing uses (no measured placements for them yet)
+    if (base) {
+      const under = wheels || feet ? 60.5 : 0;
+      if (feet) for (const z of wheels ? [-20] : [-20, -bd + 20]) extra.push({ name: 'Foot', size: [bw - 10, under, 30], at: [0, under / 2, z], color: 'body' });
+      if (wheels) for (const x of [-1, 1]) extra.push({ name: 'Wheel', wheel: 80, at: [x * (bw / 2 + 12), 80, -bd + 70], color: 'inner' });
+      extra.push({ name: 'Base', size: [bw, 52.2, bd], at: [0, under + 26.1, -bd / 2], color: 'body' });
+      y = under + 52.2;
+    }
+    L.forEach((lv, i) => {
+      const top = i === L.length - 1, pair = lv.length > 1, W = levelWidth(lv);
+      let x = -W / 2;
+      lv.forEach(u => {
+        const k = clean(u);
+        if (!top || pair || k.type !== 'drawer') k.roof = 'none';
+        const [w, d] = unitExt(u), lines = linesOf(R.buildUnit(k, resolve));
+        const unit = { name: unitCode(u), key: `${u.type}|${u.w}|${u.d}|${u.h}`, level: i, x: x + w / 2, y, w, d, h: rise(u), drawer: u.type === 'drawer', lines: lines.filter(l => l.group !== 'Roof') };
+        units.push(unit);
+        if (k.roof !== 'none') units.push({ name: unitCode(u).split(' · ')[0] + ' · ' + R.ROOFS.find(r => r.id === k.roof).label, key: `roof|${u.w}|${u.d}|${k.roof}`, level: i + 1, roof: true,
+          x: unit.x, y: y + unit.h, w, d, h: 14.8, lines: lines.filter(l => l.group === 'Roof'), shared: unit.lines });
+        x += w;
+      });
+      if (pair && top && lv.every(u => u.type === 'drawer') && lv[0].roof !== 'none' && R.familyForWidth(W)) {
+        const rf = R.familyForWidth(W), lvUnits = units.filter(u => u.level === i);
+        units.push({ name: `${rf}${lv[0].d} · ` + R.ROOFS.find(r => r.id === lv[0].roof).label, key: `roof|${rf}|${lv[0].d}|${lv[0].roof}`, level: i + 1, roof: true,
+          x: 0, y: y + Math.max(...lv.map(rise)), w: W, d: unitExt(lv[0])[1], h: 14.8,
+          lines: linesOf(R.buildRoof(rf, lv[0].d, lv[0].roof, lv[0].topHandle, resolve)), shared: lvUnits.flatMap(u => u.lines) });
+      }
+      y += Math.max(...lv.map(rise));
+    });
+    return { units, extra, height: units.reduce((m, u) => Math.max(m, u.y + u.h), y), width: Math.max(...L.map(levelWidth)), depth: Math.max(...L.map(lv => unitExt(lv[0])[1])) };
+  }
+  // A unit's measured parts that its part list uses, matched by file. A file in the list gets every copy the assembly
+  // places (the list may count fewer, e.g. facade caps); placed files not in the list (another lock, no baseplate) are
+  // left out. A roof also takes the files its unit below lists (its latches). What the list has and the assembly doesn't
+  // place comes back in `unplaced`.
+  function placeParts(unit) {
+    const pl = PLACE.units[unit.key];
+    if (!pl) return null;
+    const has = new Set([...unit.lines, ...(unit.shared || [])].map(l => R.norm(l.file.path)));
+    const parts = pl.parts.filter(([p]) => has.has(R.norm(p))).map(([path, role, group, m]) => ({ path, role, group, m }));
+    const placed = new Set(pl.parts.map(([p]) => R.norm(p)));
+    const unplaced = unit.lines.filter(l => !placed.has(R.norm(l.file.path))).map(l => l.label + (l.qty > 1 ? ' ×' + l.qty : ''));
+    return { parts, unplaced };
+  }
+
+  // Read an STL, weld identical corners, drop triangles with no area (some exports carry 100k+ of them, which wreck a
+  // simplifier), then simplify to SIMPLIFY_MM. Self-contained: it also runs in a worker, from its source text.
+  function meshJob(buf, MS, tol) {
+    const dv = new DataView(buf), n = buf.byteLength >= 84 ? dv.getUint32(80, true) : 0, bin = 84 + n * 50 === buf.byteLength;
+    let raw = null;
+    if (!bin) {
+      const nums = new TextDecoder().decode(buf).match(/vertex\s+\S+\s+\S+\s+\S+/g) || [];
+      raw = new Float32Array(nums.length * 3);
+      nums.forEach((v, i) => v.split(/\s+/).slice(1).forEach((x, k) => { raw[i * 3 + k] = +x; }));
+    }
+    const rawBits = raw && new Uint32Array(raw.buffer), nv = bin ? n * 3 : raw.length / 3;
+    // Weld corners with the same coordinates, read straight from the file (the big ones are 200 MB). The table grows
+    // with the number of distinct corners, about a sixth of all corners in a closed mesh.
+    const hash = (a, b, c) => Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791);
+    let cap = 1 << 16, keys = new Int32Array(cap).fill(-1), pb = new Uint32Array(3 * (cap >> 1)), count = 0;
+    const idx = new Uint32Array(nv);
+    for (let v = 0; v < nv; v++) {
+      if (count >= cap >> 1) {
+        const nc = cap * 2, nk = new Int32Array(nc).fill(-1), np = new Uint32Array(3 * (nc >> 1));
+        np.set(pb.subarray(0, count * 3));
+        for (let j = 0; j < count; j++) { let h = hash(np[j * 3], np[j * 3 + 1], np[j * 3 + 2]) & (nc - 1); while (nk[h] >= 0) h = (h + 1) & (nc - 1); nk[h] = j; }
+        cap = nc; keys = nk; pb = np;
+      }
+      let a, b, c;
+      if (bin) { const o = 96 + ((v / 3) | 0) * 50 + (v % 3) * 12; a = dv.getUint32(o, true); b = dv.getUint32(o + 4, true); c = dv.getUint32(o + 8, true); }
+      else { a = rawBits[v * 3]; b = rawBits[v * 3 + 1]; c = rawBits[v * 3 + 2]; }
+      let h = hash(a, b, c) & (cap - 1);
+      for (;;) {
+        const j = keys[h];
+        if (j < 0) { keys[h] = count; pb[count * 3] = a; pb[count * 3 + 1] = b; pb[count * 3 + 2] = c; idx[v] = count++; break; }
+        if (pb[j * 3] === a && pb[j * 3 + 1] === b && pb[j * 3 + 2] === c) { idx[v] = j; break; }
+        h = (h + 1) & (cap - 1);
+      }
+    }
+    keys = null;
+    if (!count) throw new Error('no shape in it');
+    const pts = new Float32Array(pb.buffer, 0, count * 3);
+    // Keep triangles with three different corners and some area (some exports carry 100k+ with none, which wreck a
+    // simplifier), written back into idx, which only gets shorter
+    let nt = 0;
+    for (let t = 0; t < nv; t += 3) {
+      const p = idx[t], q = idx[t + 1], r = idx[t + 2];
+      if (p === q || q === r || p === r) continue;
+      const ux = pts[q * 3] - pts[p * 3], uy = pts[q * 3 + 1] - pts[p * 3 + 1], uz = pts[q * 3 + 2] - pts[p * 3 + 2];
+      const vx = pts[r * 3] - pts[p * 3], vy = pts[r * 3 + 1] - pts[p * 3 + 1], vz = pts[r * 3 + 2] - pts[p * 3 + 2];
+      const cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx;
+      if (cx * cx + cy * cy + cz * cz < 1e-12) continue; // under 0.5 µm² of area
+      idx[nt * 3] = p; idx[nt * 3 + 1] = q; idx[nt * 3 + 2] = r; nt++;
+    }
+    const kept = idx.subarray(0, nt * 3);
+    let e = tol, out;
+    for (let pass = 0; pass < 4; pass++, e *= 3) { // a tower can top 20M triangles: keep each part under 150k
+      out = MS.simplify(kept, pts, 3, Math.min(kept.length, 3 * 500), e, ['ErrorAbsolute', 'Prune'])[0];
+      if (out.length <= 3 * 150000) break;
+    }
+    const remap = new Int32Array(count).fill(-1), oidx = new Uint32Array(out.length);
+    let m = 0;
+    for (let i = 0; i < out.length; i++) { const v = out[i]; if (remap[v] < 0) remap[v] = m++; oidx[i] = remap[v]; }
+    const opos = new Float32Array(m * 3);
+    for (let v = 0; v < count; v++) if (remap[v] >= 0) opos.set(pts.subarray(v * 3, v * 3 + 3), remap[v] * 3);
+    return { pos: opos, idx: oidx, src: nv / 3, kept: nt, tris: out.length / 3, err: e };
+  }
+  // Flat triangles out of an indexed mesh, each corner's normal averaged over the faces around it that turn less than
+  // 30° from its own face: sharp CAD edges stay sharp, curved faces stay smooth
+  function creased(pos, idx) {
+    const nt = idx.length / 3, nv = pos.length / 3, fn = new Float32Array(nt * 3), un = new Float32Array(nt * 3);
+    for (let t = 0; t < nt; t++) {
+      const a = idx[t * 3] * 3, b = idx[t * 3 + 1] * 3, c = idx[t * 3 + 2] * 3;
+      const ux = pos[b] - pos[a], uy = pos[b + 1] - pos[a + 1], uz = pos[b + 2] - pos[a + 2], vx = pos[c] - pos[a], vy = pos[c + 1] - pos[a + 1], vz = pos[c + 2] - pos[a + 2];
+      const x = uy * vz - uz * vy, y = uz * vx - ux * vz, z = ux * vy - uy * vx, l = Math.hypot(x, y, z) || 1;
+      fn[t * 3] = x; fn[t * 3 + 1] = y; fn[t * 3 + 2] = z; un[t * 3] = x / l; un[t * 3 + 1] = y / l; un[t * 3 + 2] = z / l;
+    }
+    const start = new Uint32Array(nv + 1), list = new Uint32Array(idx.length);
+    for (let i = 0; i < idx.length; i++) start[idx[i] + 1]++;
+    for (let v = 0; v < nv; v++) start[v + 1] += start[v];
+    const fill = start.slice(0, nv);
+    for (let i = 0; i < idx.length; i++) list[fill[idx[i]]++] = (i / 3) | 0;
+    const P = new Float32Array(nt * 9), N = new Float32Array(nt * 9), cos = Math.cos(30 * Math.PI / 180);
+    for (let t = 0; t < nt; t++) for (let k = 0; k < 3; k++) {
+      const v = idx[t * 3 + k], o = t * 9 + k * 3;
+      let x = 0, y = 0, z = 0;
+      for (let j = start[v]; j < start[v + 1]; j++) {
+        const f = list[j];
+        if (un[f * 3] * un[t * 3] + un[f * 3 + 1] * un[t * 3 + 1] + un[f * 3 + 2] * un[t * 3 + 2] >= cos) { x += fn[f * 3]; y += fn[f * 3 + 1]; z += fn[f * 3 + 2]; }
+      }
+      const l = Math.hypot(x, y, z);
+      if (l) { N[o] = x / l; N[o + 1] = y / l; N[o + 2] = z / l; } else { N[o] = un[t * 3]; N[o + 1] = un[t * 3 + 1]; N[o + 2] = un[t * 3 + 2]; }
+      P[o] = pos[v * 3]; P[o + 1] = pos[v * 3 + 1]; P[o + 2] = pos[v * 3 + 2];
+    }
+    return { P, N };
+  }
+  // Up to two workers run meshJob, let go once idle so their memory goes with them. A job holds a whole file plus the
+  // simplifier's copy, all inside this tab, so big files go one at a time (about 300 MB of STL in flight at most), and
+  // a job that never answers (a worker out of memory) gives up after three minutes. If module workers can't load the
+  // simplifier here at all (an old browser, a file:// page), the same code runs on the page itself.
+  const MESH_BUDGET = 300e6, MESH_WORKERS = 2, MESH_TIMEOUT = 180000;
+  let meshPool = null;
+  function meshRunner() {
+    if (meshPool) return meshPool;
+    let url = null, broken = false, worked = false, local = null, inFlight = 0, running = 0, timer = null;
+    const idle = [], waiting = [];
+    const runLocal = async (buf, tol) => {
+      local = local || import(CDN_SIMPLIFIER).then(async m => { await m.MeshoptSimplifier.ready; return m.MeshoptSimplifier; });
+      return meshJob(buf, await local, tol);
+    };
+    const src = () => `import { MeshoptSimplifier as MS } from '${CDN_SIMPLIFIER}';\nconst meshJob = ${meshJob.toString()};\n` +
+      'onmessage = async e => { const { buf, tol } = e.data; try { await MS.ready; const r = meshJob(buf, MS, tol); postMessage({ r }, [r.pos.buffer, r.idx.buffer]); } catch (err) { postMessage({ error: String((err && err.message) || err) }); } };';
+    const letGo = () => { clearTimeout(timer); timer = setTimeout(() => { while (idle.length) idle.pop().terminate(); }, 15000); };
+    const onWorker = (buf, tol) => new Promise((res, rej) => {
+      let w = idle.pop();
+      try { url = url || URL.createObjectURL(new Blob([src()], { type: 'text/javascript' })); w = w || new Worker(url, { type: 'module' }); }
+      catch (e) { broken = true; rej(Object.assign(new Error('retry'), { retry: true })); return; }
+      const end = () => { clearTimeout(tm); w.onmessage = w.onerror = null; };
+      const tm = setTimeout(() => { end(); w.terminate(); rej(new Error('took too long')); }, MESH_TIMEOUT);
+      w.onmessage = e => { end(); worked = true; idle.push(w); letGo(); e.data.error ? rej(new Error(e.data.error)) : res(e.data.r); };
+      w.onerror = ev => {
+        ev.preventDefault(); end(); w.terminate();
+        // Before any worker has answered, an error means workers can't load the simplifier here: do it on the page
+        if (!worked) { broken = true; rej(Object.assign(new Error('retry'), { retry: true })); } else rej(new Error('ran out of memory'));
+      };
+      w.postMessage({ buf, tol }, [buf]);
+    });
+    meshPool = async (file, tol) => {
+      const size = file.size;
+      while (running >= MESH_WORKERS || (running && inFlight + size > MESH_BUDGET)) await new Promise(r => waiting.push(r));
+      running++; inFlight += size;
+      try {
+        if (broken) return await runLocal(await file.arrayBuffer(), tol);
+        try { return await onWorker(await file.arrayBuffer(), tol); }
+        catch (e) { if (e.retry) return await runLocal(await file.arrayBuffer(), tol); throw e; }
+      } finally { running--; inFlight -= size; waiting.splice(0).forEach(r => r()); }
+    };
+    return meshPool;
+  }
+  // Simplified meshes by file path, for as long as the page is open (and in IndexedDB across visits)
+  const meshMemo = new Map();
+  function partMesh(path) {
+    if (meshMemo.has(path)) return meshMemo.get(path);
+    const p = (async () => {
+      const h = findFile(vaultFolder.files, path);
+      if (!h) throw new Error('not in the folder');
+      const file = h.getFile ? await h.getFile() : h, key = `${MESH_CACHE}${path}|${file.size}|${file.lastModified}|${SIMPLIFY_MM}`;
+      let m = null;
+      try { m = await idb('readonly', s => s.get(key)); } catch (e) { /* no cache */ }
+      if (!m) {
+        m = await meshRunner()(file, SIMPLIFY_MM);
+        try { await idb('readwrite', s => s.put({ pos: m.pos, idx: m.idx, src: m.src, tris: m.tris }, key)); } catch (e) { /* keeping it is only a convenience */ }
+      }
+      return m;
+    })();
+    p.catch(() => meshMemo.delete(path));
+    meshMemo.set(path, p);
+    return p;
+  }
+
+  let v3 = null; // the open view: { t, T, renderer, scene, camera, controls, units: [...], token }
+  const v3status = msg => { $('v3dStatus').textContent = msg; };
+  async function open3d(t) {
+    const d = $('v3d');
+    $('v3dTitle').textContent = t.name;
+    $('v3dList').innerHTML = '';
+    v3status('Loading the 3D viewer…');
+    d.showModal();
+    let lib;
+    try { lib = await loadThree(); } catch (e) { v3status('Couldn’t load the 3D viewer (three.js, from cdn.jsdelivr.net). Check your connection and try again; the rest of the page works without it.'); return; }
+    if (!d.open) return;
+    close3d();
+    const { T, OrbitControls } = lib, box = $('v3dCanvas');
+    const renderer = new T.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    box.replaceChildren(renderer.domElement);
+    const scene = new T.Scene(), css = getComputedStyle(document.documentElement);
+    scene.background = new T.Color(css.getPropertyValue('--sheet-2').trim() || '#e9e9e4');
+    scene.add(new T.HemisphereLight(0xffffff, 0x6d6f6c, 1.6));
+    const sun = new T.DirectionalLight(0xffffff, 2.2); sun.position.set(0.6, 1, 0.9); scene.add(sun);
+    const fill = new T.DirectionalLight(0xffffff, 0.6); fill.position.set(-1, 0.4, -0.6); scene.add(fill);
+    const lay = stackLayout(t);
+    const size = Math.max(lay.width, lay.depth, lay.height);
+    const grid = new T.GridHelper(Math.ceil(size * 2.4 / 100) * 100, Math.ceil(size * 2.4 / 100) * 2, 0x9a9e9b, 0xc4c7c3);
+    grid.position.set(0, 0, -lay.depth / 2); grid.material.transparent = true; grid.material.opacity = 0.5; scene.add(grid);
+    const camera = new T.PerspectiveCamera(32, 1, 5, size * 40);
+    const target = new T.Vector3(0, lay.height / 2, -lay.depth / 2), radius = Math.hypot(lay.width, lay.height, lay.depth) / 2;
+    // Front, a little from the right and above, far enough back for the whole stack to fit the narrower side of the view
+    const frame = () => {
+      const half = Math.min(camera.fov / 2, Math.atan(Math.tan(camera.fov * Math.PI / 360) * camera.aspect) * 180 / Math.PI);
+      camera.position.copy(target).add(new T.Vector3(0.55, 0.42, 1).normalize().multiplyScalar(radius * 1.08 / Math.sin(half * Math.PI / 180)));
+    };
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.copy(target); controls.maxPolarAngle = Math.PI * 0.55; controls.update();
+    const mats = new Map(), mat = c => { if (!mats.has(c)) mats.set(c, new T.MeshStandardMaterial({ color: COLOR_FILL[c] || COLOR_FILL.all, roughness: 0.72, metalness: 0 })); return mats.get(c); };
+    const v = v3 = { t, T, renderer, scene, camera, controls, mat, mats, units: [], token: {} };
+    const render = () => renderer.render(scene, camera);
+    v.render = render;
+    controls.addEventListener('change', render);
+    let framed = false;
+    const resize = () => {
+      const w = box.clientWidth, h = box.clientHeight; if (!w || !h) return;
+      renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+      if (!framed) { framed = true; frame(); controls.update(); }
+      render();
+    };
+    v.ro = new ResizeObserver(resize); v.ro.observe(box);
+    for (const x of lay.extra) {
+      const g = x.wheel ? new T.CylinderGeometry(x.wheel, x.wheel, 40, 48).rotateZ(Math.PI / 2) : new T.BoxGeometry(...x.size);
+      const m = new T.Mesh(g, mat(x.color)); m.position.set(...x.at); scene.add(m);
+    }
+    // Each unit: a group at its place in the stack, its boxes, and a drawer group that slides out along +Z
+    for (const u of lay.units) {
+      const g = new T.Group(), drawer = new T.Group(), boxes = new T.Group();
+      g.position.set(u.x, u.y, 0); g.add(boxes, drawer); scene.add(g);
+      const shell = new T.Mesh(new T.BoxGeometry(u.w - 1, u.h - 1, u.d), mat('body'));
+      shell.position.set(0, u.h / 2, -u.d / 2); boxes.add(shell);
+      const front = u.drawer ? new T.Mesh(new T.BoxGeometry(u.w - 8, u.h - 8, 4), mat('inner')) : null;
+      if (front) { front.position.set(0, u.h / 2, 2); drawer.add(front); }
+      v.units.push({ ...u, g, drawer, boxes, front, place: placeParts(u), travel: u.drawer ? Math.round(u.d * 0.6) : 0 });
+    }
+    // Click a drawer (or anywhere on its unit) to open or close it; a drag turns the view instead
+    const el = renderer.domElement, ray = new T.Raycaster(), ndc = new T.Vector2();
+    const shown = o => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
+    const unitAt = ev => {
+      const r = el.getBoundingClientRect();
+      ndc.set((ev.clientX - r.left) / r.width * 2 - 1, -(ev.clientY - r.top) / r.height * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+      const hit = ray.intersectObjects(v.units.map(u => u.g), true).find(h => shown(h.object));
+      if (!hit) return null;
+      const u = v.units.find(x => { for (let o = hit.object; o; o = o.parent) if (o === x.g) return true; return false; });
+      return u && u.travel ? u : null;
+    };
+    // Drawers glide to where they should be, a few frames at a time
+    const glide = () => {
+      if (v3 !== v || v.gliding) return;
+      v.gliding = true;
+      const step = () => {
+        if (v3 !== v) return;
+        let moving = false;
+        for (const u of v.units) {
+          const to = u.open ? u.travel : 0, z = u.drawer.position.z;
+          if (z === to) continue;
+          u.drawer.position.z = Math.abs(to - z) < 0.5 ? to : z + (to - z) * 0.22;
+          moving = true;
+        }
+        render();
+        if (moving) requestAnimationFrame(step); else v.gliding = false;
+      };
+      requestAnimationFrame(step);
+    };
+    let down = null, hoverQueued = false;
+    el.addEventListener('pointerdown', ev => { down = { x: ev.clientX, y: ev.clientY, t: performance.now() }; });
+    el.addEventListener('pointerup', ev => {
+      if (!down || ev.button !== 0 || Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 5 || performance.now() - down.t > 500) { down = null; return; }
+      down = null;
+      const u = unitAt(ev);
+      if (u) { u.open = !u.open; glide(); }
+    });
+    el.addEventListener('pointermove', ev => {
+      if (ev.buttons || hoverQueued) return;
+      hoverQueued = true;
+      requestAnimationFrame(() => { hoverQueued = false; if (v3 === v) el.style.cursor = unitAt(ev) ? 'pointer' : ''; });
+    });
+    resize();
+    v3list();
+    if (vaultFolder) loadParts(v); else v3status(v.units.some(u => u.place) ? 'Boxes for now. Choose your Vault folder to see the real parts.' : 'Boxes from the published sizes.');
+  }
+  // What each unit shows: real parts, or a box and why
+  function v3list() {
+    const v = v3; if (!v) return;
+    $('v3dList').innerHTML = v.units.map(u => {
+      const st = !u.place ? 'Box: no measured placements for this unit yet'
+        : u.loading ? 'Loading parts…' + (u.loaded ? ` ${u.loaded} in` : '')
+        : u.loaded || u.failed ? `${plural(u.loaded, 'part')}${u.failed ? `, ${u.failed} couldn’t be shown` : ''}` : `Box until the folder is chosen (${plural(u.place.parts.length, 'part')} measured)`;
+      const un = u.place && u.place.unplaced.length ? `<small>Not placed yet: ${esc(u.place.unplaced.join(', '))}</small>` : '';
+      return `<li><b>${esc(u.name)}</b><small>${esc(st)}</small>${un}</li>`;
+    }).join('');
+    $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder;
+    $('v3dPick').textContent = vaultFolder ? 'Change folder' : 'Show the real parts…';
+  }
+  async function loadParts(v) {
+    const todo = v.units.filter(u => u.place && u.place.parts.length), token = v.token = {};
+    if (!todo.length) { v3status('No unit in this stack has measured placements yet, so they stay boxes.'); return; }
+    const { T } = v, live = () => v3 === v && v.token === token;
+    const paths = [...new Set(todo.flatMap(u => u.place.parts.map(p => p.path)))];
+    const missing = [], failed = [];
+    let done = 0, tris = 0, src = 0;
+    const say = () => v3status(`Reading and simplifying part files: ${done} of ${paths.length}… The big ones take a while the first time; after that this browser keeps them.`);
+    todo.forEach(u => {
+      u.loading = true; u.loaded = 0; u.failed = 0;
+      if (u.parts) u.g.remove(u.parts); // parts from a folder chosen before
+      u.parts = new T.Group(); u.g.add(u.parts);
+      u.drawer.clear(); if (u.front) u.drawer.add(u.front); u.boxes.visible = true;
+    });
+    say(); v3list();
+    // Each file's copies go in as soon as it's ready, and a unit's box goes with its first part
+    const put = (path, g) => {
+      for (const u of todo) for (const p of u.place.parts) {
+        if (p.path !== path) continue;
+        if (!u.loaded) { u.boxes.visible = false; if (u.front) u.drawer.remove(u.front); }
+        const mesh = new T.Mesh(g, v.mat(ROLE_COLOR[p.role] || 'body')), m = p.m;
+        mesh.matrixAutoUpdate = false;
+        mesh.matrix.set(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], 0, 0, 0, 1);
+        (p.group === 'drawer' ? u.drawer : u.parts).add(mesh);
+        u.loaded++;
+      }
+    };
+    await Promise.all(paths.map(p => partMesh(p).then(m => {
+      if (!live()) return;
+      const { P, N } = creased(m.pos, m.idx), g = new T.BufferGeometry();
+      g.setAttribute('position', new T.BufferAttribute(P, 3)); g.setAttribute('normal', new T.BufferAttribute(N, 3));
+      put(p, g); tris += m.tris; src += m.src; v.render();
+    }, e => {
+      (e.message === 'not in the folder' ? missing : failed).push([p, e.message]);
+      todo.forEach(u => { u.failed += u.place.parts.filter(x => x.path === p).length; });
+    }).finally(() => { done++; if (live()) { say(); v3list(); } })));
+    if (!live()) return;
+    todo.forEach(u => { u.loading = false; });
+    v3list(); v.render();
+    let msg = `${plural(todo.reduce((a, u) => a + u.loaded, 0), 'part')} shown, ${Math.round(tris / 1000)}k triangles (from ${(src / 1e6).toFixed(1)}M in the files).`;
+    if (missing.length) msg += ` Not found in ${vaultFolder.name}: ${missingList(missing.map(x => x[0]))}.`;
+    if (failed.length) msg += ` Couldn’t simplify ${missingList(failed.map(x => x[0]))} (${failed[0][1]}).`;
+    v3status(msg);
+  }
+  function close3d() {
+    const v = v3; if (!v) return;
+    v3 = null; v.token = null;
+    v.ro.disconnect(); v.controls.dispose(); v.renderer.dispose();
+    v.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+    v.mats.forEach(m => m.dispose());
+    $('v3dCanvas').replaceChildren();
+  }
+  $('v3d').addEventListener('close', close3d);
+  $('v3dClose').onclick = () => $('v3d').close();
+  $('v3dPick').onclick = async () => {
+    try {
+      vaultFolder = await pickVaultFolder(!!vaultFolder); rememberedFolder = '';
+      meshMemo.clear();
+      if (v3) loadParts(v3);
+    } catch (e) { if (e.name !== 'AbortError') v3status(e.message || String(e)); }
+  };
   const xmlEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   async function buildProject(plan, folder, progress) {
     const missing = [...new Set(plan.plates.flatMap(p => p.pieces.map(x => x.path)))].filter(p => !findFile(folder.files, p));

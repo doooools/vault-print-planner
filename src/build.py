@@ -62,6 +62,11 @@ catalog += "window.BAMBU_SETTINGS=" + json.dumps(bambu, ensure_ascii=False, sepa
 # Bed sizes for the "My printer isn't listed" lookup (src/printer-beds.tsv, from OrcaSlicer's profiles by src/orca-beds.py)
 beds = [l.split("\t") for l in (here / "printer-beds.tsv").read_text(encoding="utf-8").splitlines() if l and not l.startswith("#")]
 catalog += "window.PRINTER_BEDS=" + json.dumps([[b, m, int(w), int(d), int(h)] for b, m, w, d, h in beds], ensure_ascii=False, separators=(",", ":")) + ";"
+# Where each part goes in an assembled unit, for the 3D stack view (src/stl-placements.json, from tools/placements)
+pf = here / "stl-placements.json"
+if pf.exists():
+    pl = json.loads(pf.read_text(encoding="utf-8"))
+    catalog += "window.VAULT_PLACEMENTS=" + json.dumps({"stack": {k: pl["stack"][k] for k in ("first", "per_level")}, "units": {k: {"parts": u["parts"]} for k, u in pl["units"].items()}}, ensure_ascii=False, separators=(",", ":")) + ";"
 html = (here / "template.html").read_text(encoding="utf-8")
 if public:
     catalog += "window.VAULT_PUBLIC=true;"
