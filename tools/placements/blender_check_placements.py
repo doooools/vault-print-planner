@@ -1,0 +1,70 @@
+"""Rebuild a stack from src/stl-placements.json alone (as the page will) and render it.
+
+  blender -b --factory-startup --python blender_check_placements.py -- <placements.json> <stl_root> <out.png> <unit key> [<unit key> ...]
+
+Units go bottom to top, e.g.  drawer|L|7|4  drawer|L|7|2  roof|L|7|grid
+stl_root: the Vault download (or its decimated copy: same coordinates).
+Only reads the JSON and the STL files: this checks the exported matrices and the
+stacking rule independently of the .blend files they came from.
+"""
+import bpy, sys, os, json, math, mathutils
+
+argv = sys.argv[sys.argv.index("--") + 1:]
+pl_path, root, out, keys = argv[0], argv[1], argv[2], argv[3:]
+P = json.load(open(pl_path, encoding="utf-8"))
+bpy.ops.wm.read_factory_settings(use_empty=True)
+sc = bpy.context.scene
+COL = {"body": (0.85, 0.85, 0.83), "roof": (0.85, 0.85, 0.83), "facade": (0.95, 0.45, 0.1), "drawer": (0.1, 0.1, 0.12),
+       "accent": (0.95, 0.35, 0.08), "mech": (0.15, 0.15, 0.17), "insert": (0.6, 0.75, 0.9)}
+mats = {}
+for k, c in COL.items():
+    m = bpy.data.materials.new(k)
+    m.diffuse_color = (*c, 1)
+    mats[k] = m
+# three.js frame (Y up) -> Blender (Z up): rotate +90 deg about X
+Y2Z = mathutils.Matrix.Rotation(math.radians(90), 4, "X")
+cache = {}
+y = 0.0
+for key in keys:
+    u = P["units"][key]
+    for f, role, group, m in u["parts"]:
+        if f not in cache:
+            bpy.ops.wm.stl_import(filepath=os.path.join(root, f))
+            src = bpy.context.selected_objects[0]
+            cache[f] = src.data
+            bpy.data.objects.remove(src)
+        o = bpy.data.objects.new(os.path.basename(f), cache[f])
+        sc.collection.objects.link(o)
+        M = mathutils.Matrix((m[0:4], m[4:8], m[8:12], (0, 0, 0, 1)))
+        o.matrix_world = Y2Z @ mathutils.Matrix.Translation((0, y, 0)) @ M
+        o.material_slots and None
+        if not o.data.materials:
+            o.data.materials.append(mats.get(role, mats["body"]))
+        o.color = (*COL.get(role, COL["body"]), 1)
+    lv = int(key.split("|")[3]) if key.startswith("drawer") else 0
+    print("PLACED", key, "at", y)
+    if lv:
+        y += P["stack"]["first"] + P["stack"]["per_level"] * (lv - 1)
+
+sc.render.engine = "BLENDER_WORKBENCH"
+sc.display.shading.light = "STUDIO"
+sc.display.shading.color_type = "OBJECT"
+sc.display.shading.show_cavity = True
+sc.render.resolution_x, sc.render.resolution_y = 1000, 1200
+bpy.context.view_layer.update()
+pts = [o.matrix_world @ mathutils.Vector(c) for o in sc.objects if o.type == "MESH" for c in o.bound_box]
+mn = mathutils.Vector([min(p[i] for p in pts) for i in range(3)])
+mx = mathutils.Vector([max(p[i] for p in pts) for i in range(3)])
+ctr = (mn + mx) / 2
+cam = bpy.data.objects.new("cam", bpy.data.cameras.new("cam"))
+sc.collection.objects.link(cam)
+sc.camera = cam
+cam.data.type = "ORTHO"
+cam.data.clip_end = 100000
+d = mathutils.Vector((0.9, -1.4, 0.8)).normalized()   # front (-Y in Blender = +Z three) right, from above
+cam.location = ctr + d * 4000
+cam.rotation_euler = (-d).to_track_quat("-Z", "Y").to_euler()
+cam.data.ortho_scale = (mx - mn).length * 0.95
+sc.render.filepath = out
+bpy.ops.render.render(write_still=True)
+print("CHECKED", out)

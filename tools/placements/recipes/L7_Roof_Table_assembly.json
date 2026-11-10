@@ -1,0 +1,73 @@
+{
+ "name": "L7_Roof_Table",
+ "parts": [
+  {
+   "name": "L7_Roof_Table_Roof",
+   "file": "01. DRAWERS/03. L Families/L7/Roofs/L7 Table Roof.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    -90,
+    -45,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     3001.55
+    ],
+    "y": [
+     "max",
+     -145.6
+    ],
+    "z": [
+     "min",
+     -3.6
+    ]
+   }
+  },
+  {
+   "name": "L7_Roof_Table_Latch_L",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     2919.25
+    ],
+    "y": [
+     "max",
+     -396.14
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  },
+  {
+   "name": "L7_Roof_Table_Latch_R",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     3083.8500000000004
+    ],
+    "y": [
+     "max",
+     -396.14
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "L7_Roof_Table_Roof"
+ }
+}

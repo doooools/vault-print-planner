@@ -1,0 +1,357 @@
+{
+ "name": "S3_1F",
+ "parts": [
+  {
+   "name": "S3_1F_Module",
+   "file": "01. DRAWERS/01. S Families/S3/Modules/S3 Module 1F.stl",
+   "role": "body",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     9001.55
+    ],
+    "y": [
+     "center",
+     1781.35
+    ],
+    "z": [
+     "center",
+     24.9
+    ]
+   },
+   "group": "module"
+  },
+  {
+   "name": "S3_1F_Box",
+   "file": "01. DRAWERS/01. S Families/S3/Boxes/S3 Box 1F.stl",
+   "role": "drawer",
+   "group": "drawer"
+  },
+  {
+   "name": "S3_1F_Baseplate",
+   "file": "01. DRAWERS/01. S Families/S3/Gridfinity Baseplate/S3 Baseplate.stl",
+   "role": "insert",
+   "group": "drawer"
+  },
+  {
+   "name": "S3_1F_Facade",
+   "file": "01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).stl",
+   "role": "facade",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     9001.56
+    ],
+    "y": [
+     "min",
+     1854.34
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   },
+   "group": "drawer"
+  },
+  {
+   "name": "S3_1F_Key",
+   "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+   "role": "mech",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     9001.57
+    ],
+    "y": [
+     "center",
+     1862.5
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   },
+   "group": "drawer"
+  },
+  {
+   "name": "S3_1F_KeyCap",
+   "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+   "role": "facade",
+   "rot": [
+    90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     9001.57
+    ],
+    "y": [
+     "center",
+     1879.5
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   },
+   "group": "drawer"
+  },
+  {
+   "name": "S3_1F_Rail_bottom",
+   "file": "01. DRAWERS/07. Universal/Geared Rails/S Rails.stl",
+   "role": "accent",
+   "align": {
+    "x": [
+     "center",
+     9001.55
+    ],
+    "y": [
+     "center",
+     1846.96
+    ],
+    "z": [
+     "center",
+     15.02
+    ]
+   },
+   "group": "drawer"
+  },
+  {
+   "name": "S3_1F_Rail_top",
+   "file": "01. DRAWERS/07. Universal/Geared Rails/S Rails.stl",
+   "role": "accent",
+   "rot": [
+    0,
+    180,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     9001.55
+    ],
+    "y": [
+     "center",
+     1846.96
+    ],
+    "z": [
+     "center",
+     31.98
+    ]
+   },
+   "group": "drawer"
+  },
+  {
+   "name": "S3_1F_Slide_L",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Slide.stl",
+   "role": "mech",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "max",
+     8936.66
+    ],
+    "y": [
+     "max",
+     1854.34
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   },
+   "group": "drawer"
+  },
+  {
+   "name": "S3_1F_Slide_R",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Slide.stl",
+   "role": "mech",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     9066.45
+    ],
+    "y": [
+     "max",
+     1854.34
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   },
+   "group": "drawer"
+  },
+  {
+   "name": "S3_1F_Guide_L",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Guide.stl",
+   "role": "body",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     8922.73
+    ],
+    "y": [
+     "max",
+     1854.34
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   },
+   "group": "module"
+  },
+  {
+   "name": "S3_1F_Guide_R",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Guide.stl",
+   "role": "body",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "max",
+     9080.38
+    ],
+    "y": [
+     "max",
+     1854.34
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   },
+   "group": "module"
+  },
+  {
+   "name": "S3_1F_Stopper_R",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "role": "accent",
+   "group": "module"
+  },
+  {
+   "name": "S3_1F_Stopper_L",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "role": "accent",
+   "rot": [
+    0,
+    0,
+    180
+   ],
+   "align": {
+    "x": [
+     "min",
+     8919.15
+    ],
+    "y": [
+     "center",
+     1809.55
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   },
+   "group": "module"
+  },
+  {
+   "name": "S3_1F_Latch",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "move": [
+    0,
+    0,
+    1.2
+   ],
+   "group": "module"
+  },
+  {
+   "name": "S3_1F_Label",
+   "file": "01. DRAWERS/07. Universal/Label.stl",
+   "role": "insert",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     9034.2
+    ],
+    "y": [
+     "min",
+     1862.25
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   },
+   "group": "drawer"
+  },
+  {
+   "name": "S3_1F_FacadeCap",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "role": "facade",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     8950.14
+    ],
+    "y": [
+     "min",
+     1860.3
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   },
+   "group": "drawer"
+  }
+ ],
+ "finalize": {
+  "anchor": "S3_1F_Module"
+ }
+}
