@@ -50,6 +50,9 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   hex from Bambu's own `filaments_color_codes.json`, matched by colour code), made by `tools/bambu_colors.py`,
   embedded as `window.BAMBU_COLORS`, offered as a swatch grid in the Colors panel. PETG colours still get PLA
   settings in the Bambu project.
+- Choosing colours: the part preview (click a picture) has a Filament drop-down (`filamentMenu`: your colours,
+  Bambu Lab's, your own) that sets the part's role for the whole project. Step 1 has a "3D" button: the unit opens
+  with drawers out, a click on a part opens the same list as a bubble, and the side column shows the Colors panel.
 - Checked: `tools/placements/blender_check_placements.py` rebuilt an L7 4F + 2F + 1F + grid roof tower from the
   JSON alone, and an S3 1F from the **original** download files. The matrices apply to the user's files as they are.
 

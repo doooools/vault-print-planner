@@ -202,6 +202,37 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13px; }
 .v3-list li { display: grid; gap: 2px; padding-top: 8px; border-top: 1px solid var(--line); }
 .v3-list small { color: var(--muted); }
+.v3-pop { position: absolute; z-index: 2; display: grid; gap: 6px; max-height: calc(100% - 16px); overflow-y: auto; padding: 14px 14px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--sheet); color: var(--ink); box-shadow: 0 8px 28px rgba(0, 0, 0, .25); font-size: 13px; }
+.v3-pop[hidden] { display: none; }
+.v3-pop > b { padding-right: 24px; }
+.v3-pop .vclose { top: 6px; right: 8px; }
+.v3-pop .pop-sec { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-top: 4px; }
+.fm-scroll { max-height: 340px; overflow-y: auto; display: grid; gap: 1px; margin: 0 -6px; padding: 0 6px; }
+.fm-row { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; border-radius: 7px; background: none; padding: 4px 6px; text-align: left; font-size: 13px; cursor: pointer; }
+.fm-row:hover { background: var(--sheet-2); }
+.fm-row.on { background: var(--sheet-2); font-weight: 700; }
+.fm-row .swatch { width: 16px; height: 16px; border-radius: 4px; margin: 0; flex: none; }
+.fm-row small { margin-left: auto; color: var(--muted); font-size: 11px; }
+.vcolor { display: grid; gap: 6px; }
+.vcolor > span { font-weight: 600; font-size: 13.5px; display: grid; }
+.vcolor small { font-weight: 400; color: var(--muted); font-size: 12px; }
+.fmenu { position: relative; }
+.fmenu-btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--sheet-2); font-weight: 600; text-align: left; cursor: pointer; }
+.fmenu-btn:hover { border-color: var(--ink); }
+.fmenu-btn .swatch { width: 18px; height: 18px; border-radius: 5px; margin: 0; }
+.fmenu-caret { margin-left: auto; color: var(--muted); }
+.fmenu-list { position: absolute; z-index: 3; left: 0; right: 0; top: calc(100% + 4px); max-height: 320px; overflow-y: auto; display: grid; gap: 1px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet); box-shadow: 0 10px 30px rgba(0, 0, 0, .3); }
+.fmenu-list[hidden] { display: none; }
+.vinfo .fmenu-list { position: static; margin-top: 4px; max-height: 260px; box-shadow: none; } /* in the part preview it opens in place, inside the dialog */
+.fmenu-list .pop-sec, .fm-scroll .pop-sec { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 6px 6px 2px; }
+.pop-custom { display: flex; align-items: center; gap: 8px; }
+.pop-custom input[type=color] { width: 40px; height: 30px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); cursor: pointer; }
+.ut-side { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.v3-colors { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+.v3-colors h3 { margin: 0; font-size: 15px; }
+.v3-colors .pp, .v3-colors .cpal, .v3-colors .cbbl, .v3-colors .croles { padding-left: 0; padding-right: 0; }
+.v3-colors .croles { grid-template-columns: minmax(0, 1fr); }
+.v3-colors .bbl-line { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 .ucol > summary { cursor: pointer; font-size: 12.5px; color: var(--accent); font-weight: 600; margin-top: 2px; }
 .ucol .crole { font-size: 12.5px; }
 .ucol .csel select { max-width: 17ch; }
@@ -608,7 +639,8 @@ details.termfold[open] > summary { color: var(--ink); }
   <div class="v3-side"><h2 id="v3dTitle">3D</h2><p class="v3-status" id="v3dStatus" role="status"></p>
     <button type="button" class="btn" id="v3dPick" hidden>Show the real parts…</button>
     <ul class="v3-list" id="v3dList"></ul>
-    <p class="pnote">Click a drawer to open or close it. Drag to turn, scroll to zoom, right-drag to move. Your part files are only read here: nothing is uploaded.</p></div></dialog>
+    <div id="v3dColors"></div>
+    <p class="pnote" id="v3dHint">Click a drawer to open or close it. Drag to turn, scroll to zoom, right-drag to move. Your part files are only read here: nothing is uploaded.</p></div></dialog>
 
 
 <script>
@@ -1419,6 +1451,45 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (!l.file.sheet) return `<span class="thumb ${size} none"></span>`;
     return `<button type="button" class="thumb ${size}" data-view="${esc(l.file.path)}" style="${spriteStyle(l.file)}" aria-label="Preview ${esc(l.label)}"></button>`;
   }
+  // The filament choice for one part role, for the whole project: your colours, Bambu Lab's (PLA and PETG, plain and
+  // matte) and one of your own. Used as a drop-down in the part preview and as the bubble of the 3D view from step 1.
+  function filamentList(role) {
+    const cur = colorFor(role, null), curCode = (paletteOf(cur) || {}).code;
+    const row = (attr, hex, name, on, sub) => `<button type="button" role="option" aria-selected="${on}" ${attr} class="fm-row${on ? ' on' : ''}"><span class="swatch" style="background:${hex}"></span><span>${esc(name)}</span>${sub ? `<small>${esc(sub)}</small>` : ''}</button>`;
+    const lines = [...new Set(BAMBU_COLORS.map(c => c[0]))];
+    return `<div class="pop-sec">Your colors</div>${colorPrefs.palette.map(p => row(`data-fm-pal="${p.id}"`, p.hex, p.name, p.id === cur)).join('')}
+      ${lines.map(line => `<div class="pop-sec">Bambu Lab ${esc(line)}</div>${BAMBU_COLORS.map((c, i) => c[0] !== line ? '' : row(`data-fm-bbl="${i}"`, c[3], c[2], curCode === c[1], c[1])).join('')}`).join('')}
+      <div class="pop-sec">Your own</div><div class="pop-custom"><input type="color" value="${colorHex(cur)}" data-fm-hex aria-label="Pick a color"><button type="button" class="btn" data-fm-custom>Use this color</button></div>`;
+  }
+  // Wire a filament list: a choice sets the role's colour, then after() redraws whatever shows it
+  function bindFilamentList(root, role, after) {
+    const apply = id => { setRoleColor(role, id); after(); };
+    root.querySelectorAll('[data-fm-pal]').forEach(x => x.onclick = () => apply(x.dataset.fmPal));
+    root.querySelectorAll('[data-fm-bbl]').forEach(x => x.onclick = () => {
+      const [line, code, name, hex] = BAMBU_COLORS[+x.dataset.fmBbl];
+      apply(addPaletteColor({ name: `${name} · ${line}`, hex: hex.toLowerCase(), line, code }));
+    });
+    const custom = root.querySelector('[data-fm-custom]');
+    if (custom) custom.onclick = () => { const hex = root.querySelector('[data-fm-hex]').value; apply(addPaletteColor({ name: 'Custom ' + hex.toUpperCase(), hex })); };
+  }
+  // The drop-down: a button showing the current colour, opening the list under it
+  function filamentMenu(role) {
+    const cur = colorFor(role, null);
+    return `<div class="fmenu" data-fmenu="${role}"><button type="button" class="fmenu-btn" aria-haspopup="listbox" aria-expanded="false">${swatch(cur)}<span>${esc(colorName(cur))}</span><span class="fmenu-caret" aria-hidden="true">▾</span></button>
+      <div class="fmenu-list" role="listbox" hidden>${filamentList(role)}</div></div>`;
+  }
+  function bindFilamentMenu(root, after) {
+    const m = root.querySelector('[data-fmenu]'); if (!m) return;
+    const btn = m.querySelector('.fmenu-btn'), list = m.querySelector('.fmenu-list');
+    const show = on => {
+      list.hidden = !on; btn.setAttribute('aria-expanded', String(on));
+      if (on) { const sel = list.querySelector('.fm-row.on'); if (sel) sel.scrollIntoView({ block: 'center' }); }
+    };
+    btn.onclick = () => show(list.hidden);
+    // A click elsewhere in the dialog folds it
+    m.ownerDocument.addEventListener('pointerdown', function off(e) { if (!m.isConnected) { m.ownerDocument.removeEventListener('pointerdown', off, true); return; } if (!m.contains(e.target)) show(false); }, true);
+    bindFilamentList(list, m.dataset.fmenu, after);
+  }
   function openViewer(path) {
     const l = viewMap.get(path); if (!l) return;
     $('viewerBody').innerHTML = `
@@ -1428,6 +1499,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         ${l.total ? `<div class="qty" style="text-align:left">${l.total}<small>\u00d7 to print</small></div>` : ''}
         <div class="pfile mono">${esc(l.file.path)}</div>
         <div class="tags" style="justify-content:flex-start">${tagsFor(l).join('')}</div>
+        ${l.role && ROLE_BY_ID.has(l.role) ? `<div class="vcolor"><span>Filament<small>for ${esc(ROLE_BY_ID.get(l.role).label.toLowerCase())}, in the whole project</small></span>${filamentMenu(l.role)}</div>
+          ${l.color !== colorFor(l.role, null) && l.color !== 'tpu' ? `<p class="pnote" style="margin:0">${swatch(l.color)}This unit has its own color here, ${esc(colorName(l.color))} (from the 3D view of its stack).</p>` : ''}` : ''}
         <div class="mono num">${dimStr(l.file.dims)}</div>
         ${l.note ? `<div class="pnote">${esc(l.note)}</div>` : ''}
         ${l.inferred ? `<div class="pnote"><span class="badge inf">Inferred</span> ${esc(l.inferred)}</div>` : ''}
@@ -1435,7 +1508,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <p class="pnote">Shown standing the way the file is exported, which is how it goes on the plate.</p>
         <div class="actions"><button class="btn primary" data-addextra="${esc(l.file.path)}">Print this part on its own</button></div>
       </div>`;
-    const d = $('viewer'); if (d.showModal) d.showModal(); else d.setAttribute('open', '');
+    bindFilamentMenu($('viewerBody'), () => { renderAll(); openViewer(path); });
+    const d = $('viewer'); if (d.open) return; if (d.showModal) d.showModal(); else d.setAttribute('open', '');
   }
   document.addEventListener('click', e => {
     const t = e.target.closest('[data-view]'); if (t) openViewer(t.dataset.view);
@@ -1778,7 +1852,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     $('view-unit').innerHTML = `
       ${towers.length ? '' : presetsBlock(false)}
       <div class="panel unit-head">
-        <div class="unit-title"><h2>${esc(label)}</h2><span class="dims mono num">${ext.map(n => Math.round(n)).join(' \u00d7 ')} mm outside (W \u00d7 D \u00d7 H)</span></div>
+        <div class="unit-title"><h2>${esc(label)}</h2><span class="ut-side"><span class="dims mono num">${ext.map(n => Math.round(n)).join(' \u00d7 ')} mm outside (W \u00d7 D \u00d7 H)</span><button type="button" class="btn" id="unit3d" title="Turn this unit around in 3D and choose the project\u2019s colors">3D</button></span></div>
         ${heroStrip(res.lines)}
         ${statsBlock(s)}
         ${fitAlert(s)}
@@ -1800,6 +1874,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       </div>
       ${hwTable(res.hardware)}`;
     bindPresets($('view-unit'));
+    $('unit3d').onclick = () => open3d({ id: 'unit', name: label, levels: [[clean(c)]], stack: { ...STACK_DEFAULT } }, { global: true });
     if (!editing) {
       let n = 1;
       $('addDest').onchange = () => { destChoice = $('addDest').value; renderControls(); renderUnit(); };
@@ -2098,43 +2173,46 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if ($('xclear')) $('xclear').onclick = () => { extras = []; saveExtras(); renderTabs(); renderBuild(); };
   }
 
-  // ---------- colors (step 2) ----------
+  // ---------- colors (step 2, and the 3D view opened from step 1) ----------
   // The filaments you print with and which parts get which. Plates, filament totals and the Bambu Studio project
-  // follow them. One unit's own choices are made in the 3D view, where you see them.
+  // follow them. One unit's own choices are made in the 3D view of its stack, where you see them.
   let colorsOpen = false, bambuOpen = false;
   // Bambu Lab's own PLA and PETG colours (src/bambu-colors.tsv): [line, colour code, name, hex]
   const BAMBU_COLORS = window.BAMBU_COLORS || [];
   function bambuPicker() {
     if (!BAMBU_COLORS.length) return '';
     const lines = [...new Set(BAMBU_COLORS.map(c => c[0]))], have = new Set(colorPrefs.palette.map(p => p.code).filter(Boolean));
-    return `<details class="bbl" id="bambuPicker" ${bambuOpen ? 'open' : ''}><summary>Add a Bambu Lab color</summary>
+    return `<details class="bbl" data-bbl-picker ${bambuOpen ? 'open' : ''}><summary>Add a Bambu Lab color</summary>
       ${lines.map(line => `<div class="bbl-line"><b>${esc(line)}</b><div class="bbl-sw">${BAMBU_COLORS.map((c, i) => c[0] !== line ? '' :
         `<button type="button" data-bbl="${i}" class="${have.has(c[1]) ? 'have' : ''}" style="background:${c[3]}" title="${esc(c[2])} (${c[1]})${have.has(c[1]) ? ', in your colors' : ''}" aria-label="${esc(c[2] + ', ' + line)}"></button>`).join('')}</div></div>`).join('')}
       <p class="pnote">Bambu’s own color codes, for the colors on sale in their store. Click one to add it to your colors.</p></details>`;
   }
   const colorOptions = (sel, first) => (first ? `<option value="">${esc(first)}</option>` : '') +
     colorPrefs.palette.map(p => `<option value="${p.id}" ${p.id === sel ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
-  function colorsPanel() {
+  // in3d: the version in the 3D view's side column (always open, no panel frame)
+  function colorsPanel(in3d) {
     const P = colorPrefs.palette;
-    return `<details class="panel fold" id="colorsPanel" ${colorsOpen ? 'open' : ''}><summary>Colors <small>${P.map(p => swatch(p.id)).join('')}${plural(P.length, 'filament color')}</small></summary>
-      <p class="pp">The filament colors you print with, and which parts get which. Plates, filament totals and the Bambu Studio project follow them. To change one unit only, like one drawer’s front, open its stack in 3D.</p>
+    const intro = in3d ? 'For the whole project: every stack follows these, and plates, filament totals and the Bambu Studio project too. To change one unit only, open its stack in 3D from step 2.'
+      : 'The filament colors you print with, and which parts get which. Plates, filament totals and the Bambu Studio project follow them. To change one unit only, like one drawer’s front, open its stack in 3D.';
+    return `${in3d ? '<div class="v3-colors" data-colors-root><h3>Colors</h3>' : `<details class="panel fold" data-colors-root ${colorsOpen ? 'open' : ''}><summary>Colors <small>${P.map(p => swatch(p.id)).join('')}${plural(P.length, 'filament color')}</small></summary>`}
+      <p class="pp">${intro}</p>
       <div class="cpal">${P.map(p => `<div class="cpal-row"><input type="color" value="${p.hex}" data-pal-hex="${p.id}" aria-label="${esc(p.name)}: color">
         <input type="text" class="cpal-name" value="${esc(p.name)}" data-pal-name="${p.id}" maxlength="40" aria-label="Name of this color">
         ${P.length > 1 ? `<button type="button" class="iconbtn" data-pal-del="${p.id}" aria-label="Remove ${esc(p.name)}" title="Remove this color">✕</button>` : ''}</div>`).join('')}
-        <button type="button" class="btn" id="palAdd">+ Add a color</button></div>
+        <button type="button" class="btn" data-pal-add>+ Add a color</button></div>
       <div class="cbbl">${bambuPicker()}</div>
       ${preset().bambu && P.some(p => /^PETG/.test(p.line || '')) ? '<p class="pp">PETG colors: the Bambu Studio project gives every color PLA settings. In Bambu Studio, set the PETG filaments to a PETG profile.</p>' : ''}
       <div class="croles">${R.ROLES.map(r => `<label class="crole"><span>${esc(r.label)}</span><span class="csel">${swatch(colorFor(r.id, null))}<select data-role="${r.id}">${colorOptions(colorFor(r.id, null))}</select></span></label>`).join('')}
         <div class="crole"><span>Tires</span><span class="csel">${swatch('tpu')}TPU</span></div></div>
-      ${colorsCustom() ? '<div class="actions"><button type="button" class="btn" id="colorsReset">Back to the render colors</button><span class="pnote" style="margin:0">Also clears the colors chosen for single units.</span></div>' : ''}
-    </details>`;
+      ${colorsCustom() ? '<div class="actions"><button type="button" class="btn" data-colors-reset>Back to the render colors</button><span class="pnote" style="margin:0">Also clears the colors chosen for single units.</span></div>' : ''}
+    ${in3d ? '</div>' : '</details>'}`;
   }
-  function bindColors(rerender) {
-    const D = $('colorsPanel'); if (!D) return;
-    D.ontoggle = () => { colorsOpen = D.open; };
+  function bindColors(root, rerender) {
+    const D = root && root.querySelector('[data-colors-root]'); if (!D) return;
+    if (D.tagName === 'DETAILS') D.ontoggle = () => { colorsOpen = D.open; };
     const done = () => { saveColors(); rerender(); };
     D.querySelectorAll('[data-pal-hex]').forEach(i => i.onchange = () => { const p = paletteOf(i.dataset.palHex); p.hex = i.value; delete p.code; done(); }); // no longer Bambu's exact colour
-    const B = $('bambuPicker');
+    const B = D.querySelector('[data-bbl-picker]');
     if (B) {
       B.ontoggle = () => { bambuOpen = B.open; };
       B.querySelectorAll('[data-bbl]').forEach(b => b.onclick = () => {
@@ -2154,7 +2232,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { if (u.colors) for (const k of Object.keys(u.colors)) if (u.colors[k] === id) delete u.colors[k]; })));
       save(); done();
     });
-    $('palAdd').onclick = () => {
+    D.querySelector('[data-pal-add]').onclick = () => {
       let n = 1; while (paletteOf('c' + n)) n++;
       colorPrefs.palette.push({ id: 'c' + n, name: 'Color ' + (colorPrefs.palette.length + 1), hex: '#4f7fbf' });
       done();
@@ -2164,7 +2242,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       if (s.value === r.def) delete colorPrefs.roles[r.id]; else colorPrefs.roles[r.id] = s.value;
       done();
     });
-    if ($('colorsReset')) $('colorsReset').onclick = () => {
+    if (D.querySelector('[data-colors-reset]')) D.querySelector('[data-colors-reset]').onclick = () => {
       colorPrefs = { palette: PALETTE_DEFAULT.map(p => ({ ...p })), roles: {} };
       towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { delete u.colors; })));
       save(); done();
@@ -2216,7 +2294,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     }).join('');
     $('view-build').innerHTML = `${overviewPanel(info)}${colorsPanel()}${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
       <div class="actions"><button class="btn" id="newTower">New empty stack</button><button class="btn primary" id="toPrint">Next: print plates \u2192</button></div>`;
-    bindPresets($('view-build')); bindExtras(); bindColors(renderAll);
+    bindPresets($('view-build')); bindExtras(); bindColors($('view-build'), renderAll);
     const V = $('view-build'), find = id => towers.find(t => t.id === +id);
     V.querySelectorAll('[data-rename]').forEach(i => i.onchange = () => { find(i.dataset.rename).name = i.value.trim() || 'Stack'; save(); renderTabs(); });
     V.querySelectorAll('[data-del-tower]').forEach(b => b.onclick = () => { towers = towers.filter(t => t.id !== +b.dataset.delTower); save(); renderAll(); });
@@ -2991,7 +3069,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
 
   let v3 = null; // the open view: { t, T, renderer, scene, camera, controls, units: [...], token }
   const v3status = msg => { $('v3dStatus').textContent = msg; };
-  async function open3d(t) {
+  async function open3d(t, mode = {}) {
     const d = $('v3d');
     $('v3dTitle').textContent = t.name;
     $('v3dList').innerHTML = '';
@@ -3015,7 +3093,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const grid = new T.GridHelper(Math.ceil(size * 2.4 / 100) * 100, Math.ceil(size * 2.4 / 100) * 2, 0x9a9e9b, 0xc4c7c3);
     grid.position.set(0, 0, -lay.depth / 2); grid.material.transparent = true; grid.material.opacity = 0.5; scene.add(grid);
     const camera = new T.PerspectiveCamera(32, 1, 5, size * 40);
-    const target = new T.Vector3(0, lay.height / 2, -lay.depth / 2), radius = Math.hypot(lay.width, lay.height, lay.depth) / 2;
+    const out = mode.global ? Math.max(0, ...lay.units.map(u => u.drawer ? Math.round(u.d * 0.6) : 0)) : 0; // drawers open from the start
+    const target = new T.Vector3(0, lay.height / 2, (out - lay.depth) / 2), radius = Math.hypot(lay.width, lay.height, lay.depth + out) / 2;
     // Front, a little from the right and above, far enough back for the whole stack to fit the narrower side of the view
     const frame = () => {
       const half = Math.min(camera.fov / 2, Math.atan(Math.tan(camera.fov * Math.PI / 360) * camera.aspect) * 180 / Math.PI);
@@ -3025,7 +3104,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     controls.target.copy(target); controls.maxPolarAngle = Math.PI * 0.55; controls.update();
     const mats = new Map(), mat = (role, cfg) => { const hex = colorHex(colorFor(role, cfg)); if (!mats.has(hex)) mats.set(hex, new T.MeshStandardMaterial({ color: hex, roughness: 0.72, metalness: 0 })); return mats.get(hex); };
     const painted = (geo, role, cfg) => Object.assign(new T.Mesh(geo, mat(role, cfg)), { userData: { role, cfg } });
-    const v = v3 = { t, T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {} };
+    const v = v3 = { t, global: !!mode.global, extras: [], T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {} };
     v.recolor = () => { scene.traverse(o => { if (o.isMesh && o.userData.role) o.material = mat(o.userData.role, o.userData.cfg); }); render(); };
     const render = () => renderer.render(scene, camera);
     v.render = render;
@@ -3040,7 +3119,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     v.ro = new ResizeObserver(resize); v.ro.observe(box);
     for (const x of lay.extra) {
       const g = x.wheel ? new T.CylinderGeometry(x.wheel, x.wheel, 40, 48).rotateZ(Math.PI / 2) : new T.BoxGeometry(...x.size);
-      const m = painted(g, x.role, null); m.position.set(...x.at); scene.add(m);
+      const m = painted(g, x.role, null); m.position.set(...x.at); scene.add(m); v.extras.push(m);
     }
     // Each unit: a group at its place in the stack, its boxes, and a drawer group that slides out along +Z
     for (const u of lay.units) {
@@ -3050,20 +3129,24 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       shell.position.set(0, u.h / 2, -u.d / 2); boxes.add(shell);
       const front = u.drawer ? painted(new T.BoxGeometry(u.w - 8, u.h - 8, 4), 'facade', u.cfg) : null;
       if (front) { front.position.set(0, u.h / 2, 2); drawer.add(front); }
-      v.units.push({ ...u, g, drawer, boxes, front, place: placeParts(u), travel: u.drawer ? Math.round(u.d * 0.6) : 0 });
+      v.units.push({ ...u, g, drawer, boxes, front, place: placeParts(u), travel: u.drawer ? Math.round(u.d * 0.6) : 0, open: !!(mode.global && u.drawer) });
+      if (mode.global && u.drawer) drawer.position.z = Math.round(u.d * 0.6);
     }
     // Click a drawer (or anywhere on its unit) to open or close it; a drag turns the view instead
     const el = renderer.domElement, ray = new T.Raycaster(), ndc = new T.Vector2();
     const shown = o => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
-    const unitAt = ev => {
+    // The part under the pointer, and the unit it belongs to (none for the base shapes)
+    const hitAt = ev => {
       const r = el.getBoundingClientRect();
       ndc.set((ev.clientX - r.left) / r.width * 2 - 1, -(ev.clientY - r.top) / r.height * 2 + 1);
       ray.setFromCamera(ndc, camera);
-      const hit = ray.intersectObjects(v.units.map(u => u.g), true).find(h => shown(h.object));
+      const hit = ray.intersectObjects([...v.units.map(u => u.g), ...v.extras], true).find(h => shown(h.object));
       if (!hit) return null;
       const u = v.units.find(x => { for (let o = hit.object; o; o = o.parent) if (o === x.g) return true; return false; });
-      return u && u.travel ? u : null;
+      return { u, mesh: hit.object };
     };
+    const unitAt = ev => { const h = hitAt(ev); return h && h.u && h.u.travel ? h.u : null; };
+    v.glide = () => glide();
     // Drawers glide to where they should be, a few frames at a time
     const glide = () => {
       if (v3 !== v || v.gliding) return;
@@ -3087,19 +3170,57 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     el.addEventListener('pointerup', ev => {
       if (!down || ev.button !== 0 || Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 5 || performance.now() - down.t > 500) { down = null; return; }
       down = null;
+      // Opened from step 1: a click picks the colour of what was clicked, for the whole project
+      if (v.global) { const h = hitAt(ev); if (h && h.mesh.userData.role) rolePicker(v, ev, h.mesh.userData.role, h.u); else hidePicker(v); return; }
       const u = unitAt(ev);
       if (u) { u.open = !u.open; glide(); }
     });
     el.addEventListener('pointermove', ev => {
       if (ev.buttons || hoverQueued) return;
       hoverQueued = true;
-      requestAnimationFrame(() => { hoverQueued = false; if (v3 === v) el.style.cursor = unitAt(ev) ? 'pointer' : ''; });
+      requestAnimationFrame(() => { hoverQueued = false; if (v3 === v) el.style.cursor = (v.global ? (hitAt(ev) || {}).mesh : unitAt(ev)) ? 'pointer' : ''; });
     });
     resize();
-    v3list();
+    v3list(); v3colors();
+    $('v3dHint').firstChild.textContent = v.global ? 'Click a part to choose its color. Drag to turn, scroll to zoom, right-drag to move. Your part files are only read here: nothing is uploaded.' : 'Click a drawer to open or close it. Drag to turn, scroll to zoom, right-drag to move. Your part files are only read here: nothing is uploaded.';
     if (vaultFolder) loadParts(v); else v3status(v.units.some(u => u.place) ? 'Boxes for now. Choose your Vault folder to see the real parts.' : 'Boxes from the published sizes.');
   }
   // What each unit shows: real parts, or a box and why
+  // The colour bubble of the 3D view opened from step 1: what was clicked gets a colour for the whole project, from
+  // your colours, Bambu Lab's, or one of your own
+  function setRoleColor(role, id) {
+    const r = ROLE_BY_ID.get(role); if (!r) return;
+    if (id === r.def) delete colorPrefs.roles[role]; else colorPrefs.roles[role] = id;
+    saveColors();
+  }
+  function addPaletteColor(entry) {
+    const same = colorPrefs.palette.find(p => (entry.code && p.code === entry.code) || (!entry.code && p.hex.toLowerCase() === entry.hex.toLowerCase()));
+    if (same) return same.id;
+    let n = 1; while (paletteOf('c' + n)) n++;
+    colorPrefs.palette.push({ id: 'c' + n, ...entry });
+    return 'c' + n;
+  }
+  function hidePicker(v) { if (v.pop) v.pop.hidden = true; }
+  function rolePicker(v, ev, role, u) {
+    const box = $('v3dCanvas');
+    if (!v.pop || !v.pop.isConnected) { v.pop = document.createElement('div'); v.pop.className = 'v3-pop'; box.append(v.pop); }
+    const pop = v.pop, r = ROLE_BY_ID.get(role), cur = colorFor(role, null);
+    if (ev) v.popAt = [ev.clientX, ev.clientY];
+    pop.innerHTML = `<button type="button" class="vclose" data-pop-close aria-label="Close">&times;</button>
+      <b>${esc(r ? r.label : 'Tires')}</b><small>${swatch(cur)}${esc(colorName(cur))}${r ? ', for the whole project' : ''}</small>
+      ${u && u.travel ? `<button type="button" class="btn" data-pop-drawer>${u.open ? 'Close' : 'Open'} the drawer</button>` : ''}
+      ${!r ? '<p class="pnote">Tires print in TPU.</p>' : `<div class="fm-scroll" role="listbox">${filamentList(role)}</div>`}`;
+    pop.hidden = false;
+    const b = box.getBoundingClientRect(), w = Math.min(320, b.width - 16);
+    pop.style.width = w + 'px';
+    pop.style.left = Math.max(8, Math.min(v.popAt[0] - b.left + 14, b.width - w - 8)) + 'px';
+    pop.style.top = Math.max(8, Math.min(v.popAt[1] - b.top - 20, b.height - pop.offsetHeight - 8)) + 'px';
+    pop.querySelector('[data-pop-close]').onclick = () => hidePicker(v);
+    bindFilamentList(pop, role, () => { v.recolor(); v3list(); v3colors(); renderAll(); rolePicker(v, null, role, u); });
+    const on = pop.querySelector('.fm-row.on'); if (on && ev) on.scrollIntoView({ block: 'center' });
+    const dr = pop.querySelector('[data-pop-drawer]');
+    if (dr) dr.onclick = () => { u.open = !u.open; v.glide(); rolePicker(v, null, role, u); };
+  }
   // One unit's colours, role by role: its own choice or the stack's (step 2, Colors)
   function unitColors(u, ui) {
     const roles = [...new Set(u.lines.map(l => l.role))].filter(r => r !== 'tpu' && ROLE_BY_ID.has(r));
@@ -3110,6 +3231,13 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       return `<label class="crole"><span>${esc(ROLE_BY_ID.get(r).label)}</span><span class="csel">${swatch(colorFor(r, u.cfg))}<select data-unit="${ui}" data-urole="${r}">${colorOptions(own[r] && paletteOf(own[r]) ? own[r] : '', 'Stack\u2019s (' + def + ')')}</select></span></label>`;
     }).join('')}</details>`;
   }
+  // The project's colours, in the side column of a 3D view opened from step 1
+  function v3colors() {
+    const v = v3, box = $('v3dColors');
+    if (!v || !v.global) { box.replaceChildren(); return; }
+    box.innerHTML = colorsPanel(true);
+    bindColors(box, () => { if (v3 === v) { v.recolor(); v3list(); v3colors(); } renderAll(); });
+  }
   function v3list() {
     const v = v3; if (!v) return;
     v.colorsOpen = v.colorsOpen || new Set();
@@ -3118,7 +3246,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         : u.loading ? 'Loading parts…' + (u.loaded ? ` ${u.loaded} in` : '')
         : u.loaded || u.failed ? `${plural(u.loaded, 'part')}${u.failed ? `, ${u.failed} couldn’t be shown` : ''}` : `Box until the folder is chosen (${plural(u.place.parts.length, 'part')} measured)`;
       const un = u.place && u.place.unplaced.length ? `<small>Not placed yet: ${esc(u.place.unplaced.join(', '))}</small>` : '';
-      return `<li><b>${esc(u.name)}</b><small>${esc(st)}</small>${un}${unitColors(u, ui)}</li>`;
+      return `<li><b>${esc(u.name)}</b><small>${esc(st)}</small>${un}${v.global ? '' : unitColors(u, ui)}</li>`;
     }).join('');
     $('v3dList').querySelectorAll('details[data-ucol]').forEach(d => d.ontoggle = () => { d.open ? v.colorsOpen.add(+d.dataset.ucol) : v.colorsOpen.delete(+d.dataset.ucol); });
     $('v3dList').querySelectorAll('select[data-urole]').forEach(sel => sel.onchange = () => {
