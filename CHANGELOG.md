@@ -2,6 +2,9 @@
 
 Changes to the Vault Print Planner at [vault.romy.io](https://vault.romy.io), newest first.
 
+## 2026-11-09
+- **XL units really fit the H2S now:** the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.
+
 ## 2026-11-08
 - **Filament per color:** step 3 shows roughly how much of each color the whole build needs, so you can check your spools before you start.
 - **Labels get their own plate,** so you can add your text and print them in several colors without touching the other plates. Turn it off in step 3 to print them with the rest.

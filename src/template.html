@@ -585,7 +585,7 @@ details.termfold[open] > summary { color: var(--ink); }
 (function () {
   const R = window.VaultRules;
   // Row: path, true footprint a, b (smallest rectangle around the part seen from above), height z, volume mm³, export angle, sprite sheet, cell, Bambu says it needs supports
-  const FILES = window.VAULT_FILES.map(r => ({ path: r[0], dims: [r[1], r[2], r[3]], vol: r[4], angle: r[5], sheet: r[6], cell: r[7], needsSupport: !!r[8], supReach: r[9] == null || r[9] < 0 ? null : r[9] }));
+  const FILES = window.VAULT_FILES.map(r => ({ path: r[0], dims: [r[1], r[2], r[3]], vol: r[4], angle: r[5], sheet: r[6], cell: r[7], needsSupport: !!r[8], supReach: r[9] == null || r[9] < 0 ? null : r[9], ex: r[10] ? [r[10], r[11]] : null }));
   const resolve = R.makeResolver(FILES);
   const SRC_DEFAULT = '261021_VAULT_USSA_S';
   // Filament estimate. Thin-walled parts print close to solid (0.78 g/cm³ of part volume, the median of USSA's published
@@ -709,18 +709,22 @@ details.termfold[open] > summary { color: var(--ink); }
     for (let d = 1; d < 89.95; d += 0.1) if (room(d) >= -eps && (best === null || room(d) > room(best))) best = d;
     return best === null ? null : +best.toFixed(1);
   }
-  function fitOf(dims, V) {
+  // ex: the part's footprint exactly as USSA exported it. Some XL parts aren't plain bars: their outline leaves the
+  // corners of the bounding rectangle empty, and USSA turned them to the angle where they just fit a 340 x 320 bed
+  // (the H2S). Those are kept at USSA's angle ('asis') when nothing simpler fits.
+  function fitOf(dims, V, ex) {
     const [x, y, z] = dims, [X, Y, Z] = V;
     if (z <= Z + eps) {
       const p = rectInRect(x, y, X, Y);
       if (p === 'straight') { const xy = Math.max(Math.min(X - x, Y - y), Math.min(X - y, Y - x)); return { s: 'ok', tight: Math.min(xy, Z - z) < 2 }; }
       if (p === 'diagonal') return { s: 'diag' };
+      if (ex && ex[0] <= X + eps && ex[1] <= Y + eps) return { s: 'asis' };
     }
     for (const [a, b, h] of [[x, z, y], [y, z, x]]) if (h <= Z + eps && rectInRect(a, b, X, Y)) return { s: 'reorient' };
     return { s: 'no' };
   }
-  const FIT_TEXT = { ok: 'Fits', diag: 'Fits diagonally', reorient: 'Only fits tipped over', no: "Doesn't fit" };
-  const FIT_CLASS = { ok: 'fit-ok', diag: 'fit-warn', reorient: 'fit-bad', no: 'fit-bad' };
+  const FIT_TEXT = { ok: 'Fits', diag: 'Fits diagonally', asis: 'Fits at USSA\u2019s angle', reorient: 'Only fits tipped over', no: "Doesn't fit" };
+  const FIT_CLASS = { ok: 'fit-ok', diag: 'fit-warn', asis: 'fit-warn', reorient: 'fit-bad', no: 'fit-bad' };
   const printerName = () => printer.id === 'custom' ? (printer.from || 'your printer') : PRINTERS.find(p => p.id === printer.id).name;
 
   function bedSvg(dims, V, s, big) {
@@ -738,9 +742,9 @@ details.termfold[open] > summary { color: var(--ink); }
   // Fit-check each line and choose whole vs split versions (whole when it fits this printer)
   function finish(r) {
     const V = printer.v, notes = [];
-    let lines = r.lines.map(l => ({ ...l, fit: fitOf(l.file.dims, V), total: l.qty }));
+    let lines = r.lines.map(l => ({ ...l, fit: fitOf(l.file.dims, V, l.file.ex), total: l.qty }));
     for (const wl of lines.filter(l => l.alt === 'split')) {
-      const wholeOk = wl.fit.s === 'ok' || wl.fit.s === 'diag';
+      const wholeOk = wl.fit.s === 'ok' || wl.fit.s === 'diag' || wl.fit.s === 'asis';
       lines = lines.filter(l => l.group !== wl.group || !l.alt || (wholeOk ? l.alt === 'split' : l.alt === 'whole'));
       if (!wholeOk) notes.push(`The one-piece ${wl.group.toLowerCase()} is ${dimStr(wl.file.dims)} and won't fit, so the split version is listed.`);
     }
@@ -927,7 +931,7 @@ details.termfold[open] > summary { color: var(--ink); }
     return { group: 'Extra parts', label: niceName(path), file: f, qty, total: qty, key: 'extra:' + path,
       color: m.color || (/tpu/i.test(path) ? 'tpu' : 'body'), walls: m.walls, infill: m.infill, flex: m.flex,
       supports: m.supports || /turn on supports/i.test(path) || f.needsSupport, tpu: m.tpu || /tpu/i.test(path), aid: m.aid,
-      note: m.label ? m.label.replace(/ \((left|right|S side|M side)\)$/, '') : '', fit: fitOf(f.dims, printer.v) };
+      note: m.label ? m.label.replace(/ \((left|right|S side|M side)\)$/, '') : '', fit: fitOf(f.dims, printer.v, f.ex) };
   }
   const extraLines = () => extras.map(e => extraLine(e.path, e.qty)).filter(Boolean);
   function addExtra(path, n = 1) {
@@ -978,7 +982,7 @@ details.termfold[open] > summary { color: var(--ink); }
         <div class="mono num">${dimStr(l.file.dims)}</div>
         ${l.note ? `<div class="pnote">${esc(l.note)}</div>` : ''}
         ${l.inferred ? `<div class="pnote"><span class="badge inf">Inferred</span> ${esc(l.inferred)}</div>` : ''}
-        <div class="vbed">${bedSvg(l.file.dims, printer.v, (l.fit || fitOf(l.file.dims, printer.v)).s, true)}<span>Footprint on your ${printer.v[0]} \u00d7 ${printer.v[1]} mm plate. The thick edge is the front.</span></div>
+        <div class="vbed">${bedSvg(l.file.dims, printer.v, (l.fit || fitOf(l.file.dims, printer.v, l.file.ex)).s, true)}<span>Footprint on your ${printer.v[0]} \u00d7 ${printer.v[1]} mm plate. The thick edge is the front.</span></div>
         <p class="pnote">Shown standing the way the file is exported, which is how it goes on the plate.</p>
         <div class="actions"><button class="btn primary" data-addextra="${esc(l.file.path)}">Print this part on its own</button></div>
       </div>`;
@@ -996,7 +1000,7 @@ details.termfold[open] > summary { color: var(--ink); }
   $('news').addEventListener('click', e => { const r = $('news').getBoundingClientRect(); if (e.target === $('news') && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) $('news').close(); });
 
   function tagsFor(l) {
-    const tags = [], fit = l.fit || fitOf(l.file.dims, printer.v);
+    const tags = [], fit = l.fit || fitOf(l.file.dims, printer.v, l.file.ex);
     tags.push(`<span class="tag ${FIT_CLASS[fit.s]}">${FIT_TEXT[fit.s]}${fit.tight ? ', tight' : ''}</span>`);
     if (l.supports) tags.push(`<span class="tag sup" title="${l.supportsWhy === 'bambu' || (!/turn on supports/i.test(l.file.path) && l.file.needsSupport) ? 'Bambu Studio flags overhangs on this part when printed without supports, so the project turns them on' : 'USSA says to print this part with supports'}">Supports on</span>`);
     if (l.walls) tags.push(`<span class="tag wall" title="${l.infill ? 'Carries load: extra walls and infill' : 'Takes bolts or wear: one extra wall'}">${l.walls} walls${l.infill ? ' \u00b7 ' + l.infill + '% infill' : ''}</span>`);
@@ -1028,7 +1032,7 @@ details.termfold[open] > summary { color: var(--ink); }
   function summary(lines) {
     const prints = lines.reduce((a, l) => a + l.total, 0);
     const g = lines.reduce((a, l) => a + gramsOf(l.file) * l.total, 0);
-    const bad = lines.filter(l => l.fit.s === 'no' || l.fit.s === 'reorient'), warn = lines.filter(l => l.fit.s === 'diag');
+    const bad = lines.filter(l => l.fit.s === 'no' || l.fit.s === 'reorient'), warn = lines.filter(l => l.fit.s === 'diag' || l.fit.s === 'asis');
     return { prints, files: lines.length, g, bad, warn };
   }
   const gramsStr = g => g >= 1000 ? (g / 1000).toFixed(2) + ' kg' : Math.round(g / 10) * 10 + ' g';
@@ -1042,7 +1046,7 @@ details.termfold[open] > summary { color: var(--ink); }
     if (s.bad.length) return `<div class="alert bad"><strong>${plural(s.bad.length, 'file')} ${s.bad.length > 1 ? 'don\u2019t' : 'doesn\u2019t'} fit the ${esc(pn)}.</strong>
       <span>${s.bad.map(l => `${esc(l.label)} (${dimStr(l.file.dims)})`).join('; ')}. Pick a smaller width or depth, a different roof, or a printer with a bigger bed.</span></div>`;
     if (s.warn.length) return `<div class="alert warn"><strong>Everything fits, but ${plural(s.warn.length, 'file')} ${s.warn.length > 1 ? 'need' : 'needs'} care.</strong>
-      <span>${s.warn.map(l => `${esc(l.label)}: ${FIT_TEXT[l.fit.s].toLowerCase()}`).join('; ')}. The project places ${s.warn.length > 1 ? 'them' : 'it'} diagonally for you, the way USSA exported ${s.warn.length > 1 ? 'them' : 'it'}.</span></div>`;
+      <span>${s.warn.map(l => `${esc(l.label)}: ${FIT_TEXT[l.fit.s].replace(/^F/, 'f')}`).join('; ')}. The project places ${s.warn.length > 1 ? 'them' : 'it'} diagonally for you, the way USSA exported ${s.warn.length > 1 ? 'them' : 'it'}.</span></div>`;
     return `<div class="alert ok"><strong>Every file fits the ${esc(pn)} as exported.</strong></div>`;
   }
   function statsBlock(s, label) {
@@ -1812,6 +1816,12 @@ details.termfold[open] > summary { color: var(--ink); }
           plates.push({ group: g, care: true, shelves: [], items: [{ p, diag: d, x: (V[0] - w) / 2, y: (V[1] - h) / 2, w, h }] });
           continue;
         }
+        if (p.care && p.l.fit.s === 'asis') {
+          // Kept exactly as USSA exported it (already turned to fit), alone and centred on the bed, with no brim
+          const [w, h] = p.l.file.ex; p.pad = 0;
+          plates.push({ group: g, care: true, shelves: [], items: [{ p, asis: true, x: (V[0] - w) / 2, y: (V[1] - h) / 2, w, h }] });
+          continue;
+        }
         if (p.care) { plates.push({ group: g, care: true, shelves: [], items: [{ p, x: ex ? KX : MARGIN, y: MARGIN, w: p.a, h: p.b }] }); continue; }
         let placed = false;
         const pg = gramsOfPiece(p);
@@ -1894,6 +1904,12 @@ details.termfold[open] > summary { color: var(--ink); }
       const f = COLOR_FILL[pl.color] || COLOR_FILL.all;
       const label = pl.lines.findIndex(x => x.l === it.p.l) + 1;
       const pad = it.p.pad || 0, fy = V[1] - it.y - it.h;
+      if (it.asis) { // kept at USSA's angle: drawn as its bar at that angle, ends trimmed to the box it really takes
+        const t = it.p.l.file.angle * Math.PI / 180, rh = it.p.b, cx = it.x + it.w / 2, cy = fy + it.h / 2;
+        const rw = Math.min(it.p.a, (it.w - rh * Math.sin(t)) / Math.cos(t), (it.h - rh * Math.cos(t)) / Math.sin(t));
+        return `<rect x="${cx - rw / 2}" y="${cy - rh / 2}" width="${rw}" height="${rh}" rx="2" transform="rotate(${it.p.l.file.angle} ${cx} ${cy})" fill="${f}" fill-opacity=".9" stroke="var(--ink)" stroke-opacity=".35" stroke-width="1"/>` +
+          `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="11" font-weight="700" fill="${LIGHT_FILL(pl.color) ? '#222' : '#fff'}">${label}</text>`;
+      }
       if (it.diag) { // drawn turned (45 degrees, or along a bed's diagonal): back-left to front-right in this top view
         const cx = it.x + it.w / 2, cy = fy + it.h / 2, rw = it.p.a - 2 * pad, rh = it.p.b - 2 * pad;
         return `<rect x="${cx - rw / 2}" y="${cy - rh / 2}" width="${rw}" height="${rh}" rx="2" transform="rotate(${it.diag} ${cx} ${cy})" fill="${f}" fill-opacity=".9" stroke="var(--ink)" stroke-opacity=".35" stroke-width="1"/>` +
@@ -2004,7 +2020,7 @@ details.termfold[open] > summary { color: var(--ink); }
       ${plates.length ? `<div class="plates">${allPlates.map(pl => pl.done ? `<div class="panel plate done"><div class="plate-head"><b>Plate ${pl.n}</b><span><span class="swatch sw-${pl.color}"></span>${COLOR_NAME[pl.color]} \u00b7 ${plural(pl.items.length, 'part')}</span></div><div class="donerow"><span class="ok">${ICON_OK}Printed</span><button class="btn" data-undoplate="${pl.n}">Undo</button></div></div>` : `<div class="panel plate">
         <div class="plate-head"><b>Plate ${pl.n}</b><span><span class="swatch sw-${pl.color}"></span>${COLOR_NAME[pl.color]}${pl.supports ? ' \u00b7 supports on' : pl.someSup ? ` \u00b7 supports on ${pl.someSup === pl.items.length ? 'all' : pl.someSup} ${pl.someSup === 1 ? 'part' : 'parts'}` : ''}${pl.color === 'tpu' ? ' \u00b7 TPU settings' : ''}<br>${plural(pl.items.length, 'part')} \u00b7 \u2248 ${gramsStr(pl.grams)} \u00b7 ${Math.round(pl.tallest)} mm tall</span></div>
         ${plateSvg(pl)}
-        ${pl.care ? `<div class="alert ${pl.items[0].diag ? 'ok' : 'warn'}" style="font-size:13px">${pl.items[0].diag ? 'Too long to lie straight, so it\u2019s placed diagonally, the way USSA exported it.' : 'Lay this part on a different face than exported to fit; check supports.'}</div>` : ''}
+        ${pl.care ? `<div class="alert ${pl.items[0].diag || pl.items[0].asis ? 'ok' : 'warn'}" style="font-size:13px">${pl.items[0].asis ? 'Kept at the angle USSA exported it, where it just fits this bed. Check it in the slicer before printing.' : pl.items[0].diag ? 'Too long to lie straight, so it\u2019s placed diagonally, the way USSA exported it.' : 'Lay this part on a different face than exported to fit; check supports.'}</div>` : ''}
         <div class="pitems">${pl.lines.map((x, i) => `<div class="pitem">${thumb(x.l, 'sm')}<span class="q">${x.count}\u00d7</span><span class="lbl"><b>${i + 1}</b> \u00b7 ${esc(x.l.label)}${x.l.walls ? ` <span class="tag wall">${x.l.walls} walls${x.l.infill ? ' \u00b7 ' + x.l.infill + '%' : ''}</span>` : ''}<small class="mono">${esc(fileName(x.l.file.path))}</small></span></div>`).join('')}</div>
         <div class="actions"><button class="btn primary" data-plate="${pl.n}">Printed</button></div>
       </div>`).join('')}</div>` : `<div class="panel empty">${total ? 'Everything is printed. Head to step 4 to assemble.' : 'Nothing to print yet.'}</div>`}
@@ -2057,7 +2073,7 @@ details.termfold[open] > summary { color: var(--ink); }
   // The plate plan the project builder reads: each part's file, position on its plate, and per-part print settings
   function planFor(plates) {
     return { bed: [printer.v[0], printer.v[1]], ...(preset().plate ? { plate: preset().plate } : {}), bambu: preset().bambu || null, plates: plates.map(pl => ({ name: plateFolder(pl),
-      pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, spin: +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + (it.p.pad || 0)).toFixed(2), y: +(it.y + (it.p.pad || 0)).toFixed(2), w: +(it.w - 2 * (it.p.pad || 0)).toFixed(2), h: +(it.h - 2 * (it.p.pad || 0)).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: it.diag === 45 ? true : it.diag } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: true, ...(needsBrim(it.p.l.file) ? { standing: true } : {}) } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
+      pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, spin: it.asis ? 0 : +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + (it.p.pad || 0)).toFixed(2), y: +(it.y + (it.p.pad || 0)).toFixed(2), w: +(it.w - 2 * (it.p.pad || 0)).toFixed(2), h: +(it.h - 2 * (it.p.pad || 0)).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: it.diag === 45 ? true : it.diag } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: true, ...(needsBrim(it.p.l.file) ? { standing: true } : {}) } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
   }
   // ---------- Bambu Studio project, built right here in the browser ----------
   // Reads the STLs from the Vault folder the user picks (nothing is uploaded) and writes the same .3mf layout

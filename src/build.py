@@ -50,7 +50,7 @@ for line in pathlib.Path(foot).read_text().strip().split("\n"):
     # Round parts (keys, knobs, disks): turning them doesn't shrink their footprint, so keep them as exported
     if float(bx) * float(by) <= float(fa) * float(fb) * 1.03:
         a, b, ang = *sorted((float(bx), float(by)), reverse=True), "0"
-    rows.append([p, a, b, float(bz), int(float(vol)), float(ang)] + thumbs.get(p, [0, 0]) + [1 if p in needs else 0, reach.get(p, -1)])
+    rows.append([p, a, b, float(bz), int(float(vol)), float(ang)] + thumbs.get(p, [0, 0]) + [1 if p in needs else 0, reach.get(p, -1), float(bx), float(by)])
 
 catalog = "window.VAULT_FILES=" + json.dumps(rows, ensure_ascii=False, separators=(",", ":")) + ";"
 # Bambu Studio's own project settings per printer (src/bambu-settings/<printer id>.json, each saved by Bambu Studio itself).
