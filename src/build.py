@@ -18,7 +18,7 @@ if public:
 foot, out = sys.argv[1], sys.argv[2]
 thumbs = {}
 if len(sys.argv) > 3:
-    for line in pathlib.Path(sys.argv[3]).read_text().strip().split("\n"):
+    for line in pathlib.Path(sys.argv[3]).read_text(encoding="utf-8").strip().split("\n"):
         path, sheet, cell = line.split("\t")
         thumbs[path] = [int(sheet), int(cell)]
 
@@ -27,7 +27,7 @@ if len(sys.argv) > 3:
 needs = set()
 audit = here / "bambu-support-audit.tsv"
 if audit.exists():
-    for line in audit.read_text().strip().split("\n"):
+    for line in audit.read_text(encoding="utf-8").strip().split("\n"):
         path, _, msg = line.partition("\t")
         if "enable support" in msg:
             needs.add(path)
@@ -38,13 +38,13 @@ if audit.exists():
 reach = {}
 rf = here / "bambu-reach.tsv"
 if rf.exists():
-    for line in rf.read_text().strip().split("\n"):
+    for line in rf.read_text(encoding="utf-8").strip().split("\n"):
         c = line.split("\t")
-        if len(c) > 2 and c[2]:
+        if len(c) > 2 and c[2] and not line.startswith("#"):
             reach[c[0]] = round(float(c[2]), 1)
 
 rows = []
-for line in pathlib.Path(foot).read_text().strip().split("\n"):
+for line in pathlib.Path(foot).read_text(encoding="utf-8").strip().split("\n"):
     p, bx, by, bz, vol, fa, fb, ang = line.split("\t")
     a, b = sorted((float(fa), float(fb)), reverse=True)
     # Round parts (keys, knobs, disks): turning them doesn't shrink their footprint, so keep them as exported
@@ -55,14 +55,14 @@ for line in pathlib.Path(foot).read_text().strip().split("\n"):
 catalog = "window.VAULT_FILES=" + json.dumps(rows, ensure_ascii=False, separators=(",", ":")) + ";"
 # Bambu Studio's own project settings per printer (src/bambu-settings/<printer id>.json, each saved by Bambu Studio itself).
 # Keys every printer shares are stored once.
-sets = {f.stem: json.loads(f.read_text()) for f in sorted((here / "bambu-settings").glob("*.json"))}
+sets = {f.stem: json.loads(f.read_text(encoding="utf-8")) for f in sorted((here / "bambu-settings").glob("*.json"))}
 base = {k: v for k, v in next(iter(sets.values()), {}).items() if all(k in d and d[k] == v for d in sets.values())}
 bambu = {"base": base, "per": {i: {k: v for k, v in d.items() if k not in base} for i, d in sets.items()}}
 catalog += "window.BAMBU_SETTINGS=" + json.dumps(bambu, ensure_ascii=False, separators=(",", ":")) + ";"
 # Bed sizes for the "My printer isn't listed" lookup (src/printer-beds.tsv, from OrcaSlicer's profiles by src/orca-beds.py)
-beds = [l.split("\t") for l in (here / "printer-beds.tsv").read_text().splitlines() if l and not l.startswith("#")]
+beds = [l.split("\t") for l in (here / "printer-beds.tsv").read_text(encoding="utf-8").splitlines() if l and not l.startswith("#")]
 catalog += "window.PRINTER_BEDS=" + json.dumps([[b, m, int(w), int(d), int(h)] for b, m, w, d, h in beds], ensure_ascii=False, separators=(",", ":")) + ";"
-html = (here / "template.html").read_text()
+html = (here / "template.html").read_text(encoding="utf-8")
 if public:
     catalog += "window.VAULT_PUBLIC=true;"
     html = re.sub(r'<script type="text/plain" id="py3mf">.*?</script>\n', "", html, flags=re.S)
@@ -73,7 +73,10 @@ if public:
 def changelog_html():
     import html as h
     days, cur = [], None
-    for line in (here / "public" / "CHANGELOG.md").read_text().splitlines():
+    # the public repo keeps the changelog at its root, the author's tree in src/public/
+    log = here / "public" / "CHANGELOG.md"
+    log = log if log.exists() else here.parent / "CHANGELOG.md"
+    for line in log.read_text(encoding="utf-8").splitlines():
         if line.startswith("## "):
             cur = [line[3:].strip(), []]; days.append(cur)
         elif line.startswith("- ") and cur:
@@ -84,6 +87,6 @@ def changelog_html():
     day = lambda d: f'<h3>{d[0]}</h3><ul>{"".join(d[1])}</ul>'
     return "".join(day(d) for d in days)
 html = html.replace("<!--CHANGELOG-->", changelog_html())
-html = html.replace("/*CATALOG*/", catalog).replace("/*RULES*/", (here / "rules.js").read_text())
-pathlib.Path(out).write_text(html)
+html = html.replace("/*CATALOG*/", catalog).replace("/*RULES*/", (here / "rules.js").read_text(encoding="utf-8"))
+pathlib.Path(out).write_text(html, encoding="utf-8", newline="\n")
 print(f"{len(rows)} files -> {out} ({len(html) // 1024} KB)")

@@ -1,0 +1,387 @@
+# brand	model	bed x	bed y	max height (mm). Recovered from the published index.html (the generator, src/orca-beds.py, is not in the public repo)
+Afinia	Afinia H+1(HS)	207	255	230
+Anker	Anker M5	235	235	250
+Anker	Anker M5 All-Metal Hot End	235	235	250
+Anker	Anker M5C	220	220	250
+Anycubic	Anycubic 4Max Pro	270	205	200
+Anycubic	Anycubic 4Max Pro 2	270	210	190
+Anycubic	Anycubic Chiron	400	400	450
+Anycubic	Anycubic i3 Mega S	210	210	205
+Anycubic	Anycubic Kobra	220	220	250
+Anycubic	Anycubic Kobra 2	220	220	250
+Anycubic	Anycubic Kobra 2 Max	420	420	500
+Anycubic	Anycubic Kobra 2 Neo	220	220	250
+Anycubic	Anycubic Kobra 2 Plus	320	320	400
+Anycubic	Anycubic Kobra 2 Pro	220	220	250
+Anycubic	Anycubic Kobra 3 V2	255	255	260
+Anycubic	Anycubic Kobra Max	400	400	450
+Anycubic	Anycubic Kobra Neo	220	220	250
+Anycubic	Anycubic Kobra Plus	300	300	350
+Anycubic	Anycubic Kobra S1	250	250	250
+Anycubic	Anycubic Kobra S1 Max	350	350	350
+Anycubic	Anycubic Kobra X	260	260	260
+Anycubic	Anycubic Vyper	250	255	265
+Artillery	Artillery Genius	220	220	250
+Artillery	Artillery Genius Pro	220	220	250
+Artillery	Artillery Hornet	230	230	250
+Artillery	Artillery M1 Pro	260	260	260
+Artillery	Artillery Sidewinder X1	300	300	400
+Artillery	Artillery Sidewinder X2	300	300	400
+Artillery	Artillery Sidewinder X3 Plus	300	305	400
+Artillery	Artillery Sidewinder X3 Pro	240	245	260
+Artillery	Artillery Sidewinder X4 Plus	300	310	400
+Artillery	Artillery Sidewinder X4 Pro	240	250	260
+BenFab	BenFab 450	426	426	480
+BIQU	BIQU B1	235	235	270
+BIQU	BIQU BX	250	250	250
+BIQU	BIQU Hurakan	220	220	270
+Blocks	BLOCKS Pro S100	1000	1000	900
+Blocks	BLOCKS RD50 V2	500	500	500
+Blocks	BLOCKS RF50	500	500	500
+Chuanying	Chuanying X1	220	220	220
+Co Print	Co Print ChromaSet	180	173	250
+CoLiDo	CoLiDo 160 V2	160	160	180
+CoLiDo	CoLiDo DIY 4.0	225	220	230
+CoLiDo	CoLiDo DIY 4.0 V2	230	230	255
+CoLiDo	CoLiDo SR1	220	220	251
+CoLiDo	CoLiDo X16	160	160	180
+Comgrow	Comgrow T300	300	300	350
+Comgrow	Comgrow T500	500	500	500
+CONSTRUCT3D	Construct 1	225	260	180
+CONSTRUCT3D	Construct 1 XL	325	370	400
+Creality	Creality CR-10	300	300	400
+Creality	Creality CR-10 Max	450	450	470
+Creality	Creality CR-10 SE	220	220	265
+Creality	Creality CR-10 Smart	300	300	400
+Creality	Creality CR-10 Smart Pro	300	300	400
+Creality	Creality CR-10 V2	300	300	400
+Creality	Creality CR-10 V3	300	300	400
+Creality	Creality CR-10S Pro V2	300	300	400
+Creality	Creality CR-20 Pro	220	220	250
+Creality	Creality CR-6 Max	390	390	400
+Creality	Creality CR-6 SE	225	235	250
+Creality	Creality CR-M4	450	450	470
+Creality	Creality CR-M4 SE	420	420	420
+Creality	Creality Ender-2 Pro	165	165	180
+Creality	Creality Ender-3	220	220	250
+Creality	Creality Ender-3 Max	300	300	340
+Creality	Creality Ender-3 Max Neo	300	300	320
+Creality	Creality Ender-3 Neo	220	220	250
+Creality	Creality Ender-3 Pro	220	220	250
+Creality	Creality Ender-3 S1	220	220	270
+Creality	Creality Ender-3 S1 Plus	300	300	300
+Creality	Creality Ender-3 S1 Pro	220	220	270
+Creality	Creality Ender-3 S1 Sonic	230	230	270
+Creality	Creality Ender-3 V2	220	220	250
+Creality	Creality Ender-3 V2 Neo	220	220	250
+Creality	Creality Ender-3 V3	220	220	250
+Creality	Creality Ender-3 V3 KE	220	220	245
+Creality	Creality Ender-3 V3 Plus	300	300	330
+Creality	Creality Ender-3 V3 SE	220	220	250
+Creality	Creality Ender-3 V4	220	220	235
+Creality	Creality Ender-5	220	220	300
+Creality	Creality Ender-5 Max	400	400	400
+Creality	Creality Ender-5 Plus	350	350	400
+Creality	Creality Ender-5 Pro (2019)	220	220	300
+Creality	Creality Ender-5 S1	220	220	300
+Creality	Creality Ender-5 S1 Sonic	220	220	280
+Creality	Creality Ender-5S	220	220	300
+Creality	Creality Ender-6	250	250	400
+Creality	Creality Hi	260	260	300
+Creality	Creality K1	220	220	250
+Creality	Creality K1 Max	300	300	300
+Creality	Creality K1 Max_CFS-C	300	300	300
+Creality	Creality K1 SE	220	220	250
+Creality	Creality K1 SE_CFS-C	220	220	250
+Creality	Creality K1_CFS-C	220	220	250
+Creality	Creality K1C	220	220	250
+Creality	Creality K1C_CFS-C	220	220	250
+Creality	Creality K2	260	260	260
+Creality	Creality K2 Plus	350	350	350
+Creality	Creality K2 Pro	300	300	300
+Creality	Creality K2 SE	220	215	245
+Creality	Creality Sermoon D3	300	250	300
+Creality	Creality Sermoon D3 Pro	290	220	300
+Creality	Creality Sermoon M300	300	300	200
+Creality	Creality Sermoon V1	175	175	165
+Creality	Creality Sermoon V1 Pro	175	175	165
+Creality	Creality SPARKX i7	260	260	255
+Cubicon	Cubicon xCeler-I	250	250	290
+Cubicon	Cubicon xCeler-Mini	150	150	150
+Cubicon	Cubicon xCeler-Plus	310	310	310
+Dremel	Dremel 3D20	230	150	140
+Dremel	Dremel 3D40	225	155	170
+Dremel	Dremel 3D45	225	155	170
+Eryone	Thinker X400	400	400	400
+FELIX Printers	FELIX Food Double	250	195	150
+FELIX Printers	FELIX Food Single	250	195	150
+FELIX Printers	FELIX Food Switch	250	195	150
+FELIX Printers	FELIX Pro 3	235	244	235
+FELIX Printers	FELIX Pro L 3.0	300	400	400
+FELIX Printers	FELIX Pro XL 3.0	600	400	600
+FELIX Printers	FELIX Tec 4	205	255	255
+Flashforge	Flashforge AD5X	220	220	220
+Flashforge	Flashforge Adventurer 3 Series	150	150	150
+Flashforge	Flashforge Adventurer 4 Series	220	200	250
+Flashforge	Flashforge Adventurer 5M	220	220	220
+Flashforge	Flashforge Adventurer 5M Pro	220	220	220
+Flashforge	Flashforge Adventurer A5	220	220	220
+Flashforge	Flashforge Artemis	190	195	200
+Flashforge	Flashforge Creator 5	256	256	256
+Flashforge	Flashforge Creator 5 Pro	256	256	256
+Flashforge	Flashforge Guider 2s	280	250	300
+Flashforge	Flashforge Guider 3 Ultra	300	330	600
+Flashforge	Flashforge Guider4	300	300	300
+Flashforge	Flashforge Guider4 Pro	300	300	300
+FlyingBear	FlyingBear Ghost 6	255	210	210
+FlyingBear	FlyingBear Reborn3	300	300	350
+Folgertech	Folgertech FT-5	300	300	400
+Folgertech	Folgertech FT-6	700	350	400
+Folgertech	Folgertech i3	200	200	175
+Geeetech	Geeetech A10 M	220	220	260
+Geeetech	Geeetech A10 Pro	220	220	260
+Geeetech	Geeetech A10 T	220	220	260
+Geeetech	Geeetech A20	250	250	260
+Geeetech	Geeetech A20 M	250	250	260
+Geeetech	Geeetech A20 T	250	250	260
+Geeetech	Geeetech A30 M	320	320	420
+Geeetech	Geeetech A30 Pro	320	320	420
+Geeetech	Geeetech A30 T	320	320	420
+Geeetech	Geeetech M1	105	105	95
+Geeetech	Geeetech Mizar	220	220	260
+Geeetech	Geeetech Mizar M	255	255	260
+Geeetech	Geeetech Mizar Max	320	320	400
+Geeetech	Geeetech Mizar Pro	220	220	260
+Geeetech	Geeetech Mizar S	255	255	260
+Geeetech	Geeetech Thunder	250	250	260
+Ginger Additive	Ginger G1	1000	1000	1000
+Goofoo	Goofoo GP1	250	250	250
+Goofoo	Goofoo TurboM	230	200	200
+Goofoo	Goofoo Velo+	600	500	600
+Goofoo	Goofoo Velo+ Tool	300	300	600
+IdeaFormer	IdeaFormer IR3 V2	250	2000	250
+InfiMech	InfiMech TX	220	220	250
+iQ	TiQ2	330	330	300
+iQ	TiQ8	500	400	450
+Kingroon	Kingroon KLP1	230	230	210
+Kingroon	Kingroon KP3S 3.0	180	180	180
+Kingroon	Kingroon KP3S PRO S1	200	200	200
+Kingroon	Kingroon KP3S PRO V2	205	205	200
+Kingroon	Kingroon KP3S V1	180	180	180
+LH	LH Stinger	200	200	180
+LH	LH Stinger MMU	200	200	180
+LONGER	LONGER LK10	225	225	265
+LONGER	LONGER LK10 Plus	320	320	400
+Lulzbot	Lulzbot Mini 1	154	154	158
+Lulzbot	Lulzbot Taz 4 or 5	280	280	250
+Lulzbot	Lulzbot Taz 6	280	280	250
+Lulzbot	Lulzbot Taz Pro Dual	280	280	280
+Lulzbot	Lulzbot Taz Pro S	280	280	280
+M3D	M3D Enabler D7500	150	150	150
+M3D	M3D Enabler D8500	210	150	150
+MagicMaker	MM BoneKing	310	306	300
+MagicMaker	MM hj SK	220	210	300
+MagicMaker	MM hqs hj	220	210	300
+MagicMaker	MM hqs SF	220	210	300
+MagicMaker	MM slb	125	125	160
+Mellow	M1	106	106	100
+Meltingplot	Meltingplot CHX 350	880	422	943
+Meltingplot	Meltingplot MBL 133	835	405	394
+Meltingplot	Meltingplot MBL 136	850	405	396
+Meltingplot	Meltingplot MBL 308	850	405	896
+Meltingplot	Meltingplot MBL 480	850	405	1396
+OpenEYE	OpenEYE Peacock V2	234	228	200
+Peopoly	Peopoly Magneto X	300	400	300
+Phrozen	Phrozen Arco	300	300	300
+Positron3D	The Positron	180	180	165
+Pragostroj	KINARB 1HB	600	460	500
+Pragostroj	KINARB 2HB	540	450	500
+Printcepts	BabyBelt Pro	95	500	100
+Prusa	Prusa CORE One	250	220	270
+Prusa	Prusa CORE One HF	250	220	270
+Prusa	Prusa CORE One INDX 4T	248	205	270
+Prusa	Prusa CORE One INDX 8T	248	205	270
+Prusa	Prusa CORE One L	300	300	331
+Prusa	Prusa CORE One L HF	300	300	331
+Prusa	Prusa CORE One MMU3	250	220	270
+Prusa	Prusa MINI	180	180	180
+Prusa	Prusa MINI IS	180	180	180
+Prusa	Prusa MK3.5	250	210	210
+Prusa	Prusa MK3S	250	210	210
+Prusa	Prusa MK4	250	210	220
+Prusa	Prusa MK4 MMU3	250	210	220
+Prusa	Prusa MK4 MMU3 HF	250	210	220
+Prusa	Prusa MK4S	250	210	220
+Prusa	Prusa MK4S HF	250	210	220
+Prusa	Prusa XL	360	360	360
+Prusa	Prusa XL 5T	360	360	360
+Qidi	Qidi Q1 Pro	245	240	240
+Qidi	Qidi Q2	270	270	256
+Qidi	Qidi Q2C	270	270	256
+Qidi	Qidi X-CF Pro	300	250	300
+Qidi	Qidi X-Max	300	250	300
+Qidi	Qidi X-Max 3	325	325	315
+Qidi	Qidi X-Max 4	390	390	340
+Qidi	Qidi X-Plus	270	200	200
+Qidi	Qidi X-Plus 3	280	280	270
+Qidi	Qidi X-Smart 3	175	180	170
+Qidi	Qidi X-Smart 5	168	180	180
+Raise3D	Raise3D Pro3	255	300	300
+Raise3D	Raise3D Pro3 Plus	255	300	605
+Ratrig	RatRig V-Cast	300	300	250
+Ratrig	RatRig V-Core 3 200	200	200	200
+Ratrig	RatRig V-Core 3 300	300	300	300
+Ratrig	RatRig V-Core 3 400	400	400	400
+Ratrig	RatRig V-Core 3 500	500	500	500
+Ratrig	RatRig V-Core 4 300	300	300	300
+Ratrig	RatRig V-Core 4 400	400	400	300
+Ratrig	RatRig V-Core 4 500	500	500	300
+Ratrig	RatRig V-Core 4 HYBRID 300	300	300	300
+Ratrig	RatRig V-Core 4 HYBRID 400	400	400	400
+Ratrig	RatRig V-Core 4 HYBRID 500	500	500	500
+Ratrig	RatRig V-Core 4 IDEX 300	300	300	300
+Ratrig	RatRig V-Core 4 IDEX 300 COPY MODE	150	300	300
+Ratrig	RatRig V-Core 4 IDEX 300 MIRROR MODE	120	300	300
+Ratrig	RatRig V-Core 4 IDEX 400	400	400	400
+Ratrig	RatRig V-Core 4 IDEX 400 COPY MODE	200	400	400
+Ratrig	RatRig V-Core 4 IDEX 400 MIRROR MODE	170	400	400
+Ratrig	RatRig V-Core 4 IDEX 500	500	500	500
+Ratrig	RatRig V-Core 4 IDEX 500 COPY MODE	250	500	500
+Ratrig	RatRig V-Core 4 IDEX 500 MIRROR MODE	220	500	500
+Ratrig	RatRig V-Minion	180	180	180
+re3D	re3D Gigabot 4	590	600	600
+re3D	re3D Gigabot 4 XLT	590	760	900
+re3D	re3D GigabotX 2	552	593	470
+re3D	re3D GigabotX 2 XLT	552	740	470
+re3D	re3D Terabot 4	915	915	1000
+re3D	re3D TerabotX 2	892	908	870
+RH3D	E3NG v1.2S	232	232	245
+RH3D	VIRTU E3	230	232	232
+RolohaunDesign	Rook MK1 LDO	110	110	111
+SecKit	Seckit Go3	300	300	275
+SecKit	SecKit SK-Tank	350	350	400
+Snapmaker	Snapmaker A250	230	250	230
+Snapmaker	Snapmaker A250 BKit	230	238	224
+Snapmaker	Snapmaker A250 Dual	230	240	190
+Snapmaker	Snapmaker A250 Dual BKit	230	228	184
+Snapmaker	Snapmaker A250 Dual QS+B Kit	230	213	169
+Snapmaker	Snapmaker A250 Dual QSKit	230	225	175
+Snapmaker	Snapmaker A250 QS+B Kit	230	223	209
+Snapmaker	Snapmaker A250 QSKit	230	235	215
+Snapmaker	Snapmaker A350	320	350	325
+Snapmaker	Snapmaker A350 BKit	320	338	319
+Snapmaker	Snapmaker A350 Dual	320	330	285
+Snapmaker	Snapmaker A350 Dual BKit	320	318	279
+Snapmaker	Snapmaker A350 Dual QS+B Kit	320	303	264
+Snapmaker	Snapmaker A350 Dual QSKit	320	315	270
+Snapmaker	Snapmaker A350 QS+B Kit	320	323	304
+Snapmaker	Snapmaker A350 QSKit	320	335	310
+Snapmaker	Snapmaker Artisan	400	400	400
+Snapmaker	Snapmaker J1	312	200	200
+Snapmaker	Snapmaker U1	270	270	270
+Sovol	Sovol SV01	280	240	300
+Sovol	Sovol SV01 Pro	280	240	300
+Sovol	Sovol SV02	280	240	300
+Sovol	Sovol SV05	220	220	300
+Sovol	Sovol SV06	220	220	250
+Sovol	Sovol SV06 ACE	220	220	250
+Sovol	Sovol SV06 Plus	300	300	340
+Sovol	Sovol SV06 Plus ACE	300	300	350
+Sovol	Sovol SV07	220	220	250
+Sovol	Sovol SV07 Plus	300	300	350
+Sovol	Sovol SV08	350	350	345
+Sovol	Sovol SV08 MAX	500	500	500
+Sovol	Sovol Zero	152	152	152
+Tiertime	Tiertime UP300 HS	207	255	230
+Tiertime	Tiertime UP310 Pro	300	300	300
+Tiertime	Tiertime UP400 Pro	400	350	380
+Tiertime	Tiertime UP600 HS	500	400	600
+Tronxy	Tronxy X5SA 400 Marlin Firmware	400	400	400
+TwoTrees	TwoTrees SK1	256	256	256
+TwoTrees	TwoTrees SP-5 Klipper	310	310	350
+UltiMaker	UltiMaker 2	223	223	205
+UltiMaker	UltiMaker 2 extended+	223	223	305
+UltiMaker	UltiMaker 2+	223	223	205
+UltiMaker	UltiMaker S5	330	240	300
+Vivedino	Troodon 2.0 - Klipper	350	350	330
+Vivedino	Troodon 2.0 - RRF	350	350	330
+Vivedino	Xplorer Dual Gantry	400	342	401
+Vivedino	Xplorer IDEX	400	400	401
+Vivedino	Xplorer IQEX	400	342	401
+Vivedino	Xplorer Single	400	400	401
+Volumic	EXO42	420	420	420
+Volumic	EXO42 IDRE	189	420	400
+Volumic	EXO42 Performance	420	420	420
+Volumic	EXO42 Stage 2	420	420	420
+Volumic	EXO65	650	650	650
+Volumic	EXO65 IDRE	304	650	630
+Volumic	EXO65 Performance	650	650	650
+Volumic	EXO65 Stage 2	650	650	650
+Volumic	SH65	650	300	300
+Volumic	SH65 IDRE	304	300	280
+Volumic	SH65 Performance	650	300	300
+Volumic	SH65 Stage 2	650	300	300
+Volumic	VS20MK2	200	200	220
+Volumic	VS30MK2	300	200	300
+Volumic	VS30MK3	300	200	300
+Volumic	VS30MK3 Stage 2	300	200	300
+Volumic	VS30SC	300	200	300
+Volumic	VS30SC2	300	200	310
+Volumic	VS30SC2 Performance	300	200	310
+Volumic	VS30SC2 Stage 2	300	200	310
+Volumic	VS30ULTRA	290	200	300
+Voron	Voron 0.1	120	120	120
+Voron	Voron 2.4 250	250	250	225
+Voron	Voron 2.4 300	300	300	275
+Voron	Voron 2.4 350	350	350	325
+Voron	Voron Switchwire 250	250	210	240
+Voron	Voron Trident 250	250	250	250
+Voron	Voron Trident 300	300	300	250
+Voron	Voron Trident 350	350	350	250
+Voxelab	Voxelab Aquila X2	220	220	250
+Vzbot	Vzbot 235 AWD	235	235	200
+Vzbot	Vzbot 330 AWD	330	330	400
+Wanhao	Wanhao D12-300	300	300	400
+Wanhao	Wanhao D9-300 MK1	300	300	400
+Wanhao	Wanhao D9-300 MK1 BLTouch kit	300	300	400
+Wanhao	Wanhao D9-300 MK2	300	300	400
+Wanhao	Wanhao D9-300 MK3	300	300	400
+Wanhao	Wanhao D9-400 MK1	400	400	400
+Wanhao	Wanhao D9-400 MK1 BLTouch kit	400	400	400
+Wanhao	Wanhao D9-400 MK2	400	400	400
+Wanhao	Wanhao D9-400 MK3	400	400	400
+Wanhao	Wanhao D9-500 MK1	500	500	500
+Wanhao	Wanhao D9-500 MK1 BLTouch kit	500	500	500
+Wanhao	Wanhao D9-500 MK2	500	500	500
+Wanhao	Wanhao D9-500 MK3	500	500	500
+Wanhao France	D12 230 PRO M2 DIRECT	230	230	240
+Wanhao France	D12 230 PRO M2 MONO DUAL	230	230	240
+Wanhao France	D12 230 PRO M2 MONO DUAL PoopTool	230	230	240
+Wanhao France	D12 230 PRO SMARTPAD DIRECT	230	230	240
+Wanhao France	D12 230 PRO SMARTPAD MONO DUAL	230	230	240
+Wanhao France	D12 230 PRO SMARTPAD MONO DUAL PoopTool	230	230	240
+Wanhao France	D12 300 PRO M2 DIRECT	300	300	400
+Wanhao France	D12 300 PRO M2 MONO DUAL	300	300	400
+Wanhao France	D12 300 PRO M2 MONO DUAL PoopTool	310	310	400
+Wanhao France	D12 300 PRO SMARTPAD DIRECT	300	300	400
+Wanhao France	D12 300 PRO SMARTPAD MONO DUAL	300	300	400
+Wanhao France	D12 300 PRO SMARTPAD MONO DUAL PoopTool	310	310	400
+Wanhao France	D12 500 PRO M2 MONO DUAL	500	500	500
+Wanhao France	D12 500 PRO M2 MONO DUAL PoopTool	510	510	500
+Wanhao France	D12 500 PRO SMARTPAD DIRECT	500	500	500
+Wanhao France	D12 500 PRO SMARTPAD MONO DUAL	500	500	500
+Wanhao France	D12 500 PRO SMARTPAD MONO DUAL PoopTool	510	510	500
+WEMAKE3D	WEMAKE3D PhoenixProV1	300	300	400
+WEMAKE3D	WEMAKE3D TinyBotV1	210	210	400
+WonderMaker	WonderMaker ZR	282	300	300
+WonderMaker	WonderMaker ZR Ultra	300	270	290
+WonderMaker	WonderMaker ZR Ultra S	300	270	290
+Z-Bolt	Z-Bolt S1000	1000	1000	1000
+Z-Bolt	Z-Bolt S1000 Dual	1000	1000	1000
+Z-Bolt	Z-Bolt S300	300	300	350
+Z-Bolt	Z-Bolt S300 Dual	300	300	350
+Z-Bolt	Z-Bolt S400	400	400	700
+Z-Bolt	Z-Bolt S400 Dual	400	400	700
+Z-Bolt	Z-Bolt S600	600	600	900
+Z-Bolt	Z-Bolt S600 Dual	600	600	900
+Z-Bolt	Z-Bolt S800 Dual	802	802	802
