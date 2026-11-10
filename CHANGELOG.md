@@ -2,6 +2,9 @@
 
 Changes to the Vault Print Planner at [vault.romy.io](https://vault.romy.io), newest first.
 
+## 2026-11-10
+- **No more supports in drawer boxes:** the planner was turning slicer supports on for most drawer boxes, and they filled the narrow channel the bottom geared rail slides into, where they can't be cleared. Drawer boxes now print with supports off, as USSA designed them: the thin strip in the box's front window is USSA's own break-away support (Drawer Assembly, step 4). Bambu Studio may still warn about a "floating cantilever" on them; that's the strip, which USSA designed to print that way.
+
 ## 2026-11-09
 - **XL units really fit the H2S now:** the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.
 - **Closer filament estimates:** checked against the weights USSA publishes per module, the planner was reading about 17% high. It's now within a few percent.
