@@ -177,8 +177,24 @@ details.more > div { display: grid; gap: 14px; margin-top: 14px; }
 .thumb.lg { width: min(300px, 100%); aspect-ratio: 1; max-width: 100%; cursor: default; }
 .thumb.none { cursor: default; }
 .thumb:hover:not(.none):not(.lg) { outline: 1px solid var(--muted); }
-.hero { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-.hero figure { margin: 0; display: grid; gap: 4px; }
+.hero { display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 10px; }
+.hero figure { margin: 0; display: grid; gap: 4px; position: relative; }
+.hero-sw { position: absolute; top: 7px; right: 7px; width: 20px; height: 20px; padding: 0; border-radius: 5px; border: 2px solid var(--sheet); box-shadow: 0 0 0 1px var(--line), 0 1px 4px rgba(0, 0, 0, .3); cursor: pointer; }
+.hero-sw:hover { transform: scale(1.15); }
+#folderHero:empty { display: none; }
+.fhero { max-width: 720px; margin: 4px auto 18px; padding: 34px 32px 26px; display: grid; justify-items: center; gap: 12px; text-align: center; border: 2px solid var(--accent); }
+.fhero-icon { color: var(--accent); }
+.fhero h2 { margin: 0; font-family: var(--f-display); font-stretch: 112%; font-size: 28px; }
+.fhero p { margin: 0; max-width: 60ch; color: var(--muted); font-size: 15px; text-wrap: pretty; }
+.fhero-last, .fhero-err { display: inline-flex; align-items: center; gap: 8px; color: var(--ink) !important; }
+.fhero-last svg { color: var(--ok); } .fhero-err svg { color: var(--accent); }
+.fhero-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+.fhero-go { font-size: 17px; padding: 14px 26px; }
+.fhero-skip { margin: 0 auto; }
+@media (max-width: 560px) { .fhero { padding: 24px 18px 20px; } .fhero h2 { font-size: 22px; } }
+.vfolder { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet-2); }
+.vfolder > span { flex: 1 1 260px; min-width: 0; }
+.vfolder.ok svg { color: var(--ok); } .vfolder.bad svg { color: var(--accent); }
 .hero figcaption { font-size: 12px; color: var(--muted); text-align: center; }
 @media (max-width: 560px) { .hero { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 dialog#viewer { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px; width: min(680px, calc(100vw - 32px)); max-height: calc(100vh - 32px); }
@@ -584,6 +600,7 @@ details.termfold[open] > summary { color: var(--ink); }
     </div>
   </nav>
 
+  <div id="folderHero"></div>
   <div class="main" id="main">
     <aside class="panel config" id="config" aria-label="Unit configuration">
       <div id="editingBox"></div>
@@ -777,6 +794,9 @@ details.termfold[open] > summary { color: var(--ink); }
     towers = (store.get('build', []) || []).map(b => ({ id: seq++, name: 'Stack ' + (seq - 1), levels: [[clean(b.cfg)]], stack: { ...STACK_DEFAULT } }));
   }
   const save = () => { store.set('towers', towers); store.set('seq', seq); };
+  // The 'mech' colour role (runner slides, keys, hinges and locks) became three: carry a choice made before over
+  const splitMech = o => { if (o && o.mech) { for (const k of ['runners', 'lock', 'hinge']) if (!o[k]) o[k] = o.mech; delete o.mech; } };
+  splitMech(colorPrefs.roles); splitMech(c.colors); towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => splitMech(u.colors))));
   let extras = store.get('extras', []);               // [{ path, qty }]: single parts printed on their own, outside any tower
   let printScope = store.get('printScope', 'all');    // 'all' = towers + extras, 'extras' = only the extra parts
   let xq = '';                                        // current part search
@@ -1101,7 +1121,7 @@ details.termfold[open] > summary { color: var(--ink); }
     m.ownerDocument.addEventListener('pointerdown', function off(e) { if (!m.isConnected) { m.ownerDocument.removeEventListener('pointerdown', off, true); return; } if (!m.contains(e.target)) show(false); }, true);
     bindFilamentList(list, m.dataset.fmenu, after);
   }
-  function openViewer(path) {
+  function openViewer(path, menuOpen) {
     const l = viewMap.get(path); if (!l) return;
     $('viewerBody').innerHTML = `
       <div class="thumb lg" style="${spriteStyle(l.file)}" role="img" aria-label="${esc(l.label)}"></div>
@@ -1120,10 +1140,13 @@ details.termfold[open] > summary { color: var(--ink); }
         <div class="actions"><button class="btn primary" data-addextra="${esc(l.file.path)}">Print this part on its own</button></div>
       </div>`;
     bindFilamentMenu($('viewerBody'), () => { renderAll(); openViewer(path); });
-    const d = $('viewer'); if (d.open) return; if (d.showModal) d.showModal(); else d.setAttribute('open', '');
+    const d = $('viewer');
+    if (!d.open) { if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
+    if (menuOpen && $('viewerBody').querySelector('.fmenu-btn')) $('viewerBody').querySelector('.fmenu-btn').click();
   }
   document.addEventListener('click', e => {
     const t = e.target.closest('[data-view]'); if (t) openViewer(t.dataset.view);
+    const sw = e.target.closest('[data-view-color]'); if (sw) openViewer(sw.dataset.viewColor, true);
     const a = e.target.closest('[data-addextra]'); if (a) { addExtra(a.dataset.addextra, 1); if (view === 'build') renderBuild(); }
   });
   $('viewerClose').onclick = () => $('viewer').close ? $('viewer').close() : $('viewer').removeAttribute('open');
@@ -1437,15 +1460,71 @@ details.termfold[open] > summary { color: var(--ink); }
   // ---------- 1 · unit view ----------
   function heroStrip(lines) {
     if (!HAS_PREVIEWS) return '';
-    const pick = [];
-    for (const g of ['Module', 'Drawer', 'Lid', 'Roof']) {
-      const l = lines.find(x => x.group === g && !x.aid && x.file.sheet && !/part 2|connector/i.test(x.label));
-      if (l) pick.push(l);
-      if (g === 'Drawer') { const f = lines.find(x => x.group === 'Drawer' && /front/i.test(x.label)); if (f && f !== l) pick.push(f); }
-    }
-    return `<div class="hero">${pick.slice(0, 4).map(l => `<figure>${thumb(l, 'md')}<figcaption>${esc(l.label.replace(/ \(.*\)$/, ''))}</figcaption></figure>`).join('')}</div>`;
+    const ok = x => !x.aid && x.file.sheet && !/part 2|connector/i.test(x.label);
+    const find = (g, re) => lines.find(x => x.group === g && ok(x) && (!re || re.test(x.label)));
+    // Drawer: shell, box, front, the key lock's turning knob, roof. Case: body, front, lid, hinge.
+    const pick = [find('Module', /module shell|case body|^(?!.*front)/i), find('Drawer', /box/i), find('Drawer', /front/i) || find('Module', /front/i),
+      find('Lock', /^key lock|^hidden key/i), find('Lid'), find('Roof', /roof/i), find('Hinges & locks', /^hinge$/i)].filter(Boolean);
+    const tiles = [...new Set(pick)];
+    return `<div class="hero" style="--n:${Math.max(4, tiles.length)}">${tiles.map(l => `<figure>${thumb(l, 'md')}
+      ${l.role && ROLE_BY_ID.has(l.role) ? `<button type="button" class="hero-sw" data-view-color="${esc(l.file.path)}" style="background:${colorHex(l.color)}" title="Filament: ${esc(colorName(l.color))}. Click to change it." aria-label="${esc(l.label)} filament: ${esc(colorName(l.color))}. Change it"></button>` : ''}
+      <figcaption>${esc(l.label.replace(/ \(.*\)$/, ''))}</figcaption></figure>`).join('')}</div>`;
   }
 
+  // The first thing to do on step 1: open the Vault folder. A big card in the middle until it is open (or put off for
+  // this visit); after that, step 1 keeps a one-line status.
+  let folderHeroSkipped = false, folderHeroError = '';
+  const folderHeroShown = () => view === 'unit' && canMake && !vaultFolder && !folderHeroSkipped;
+  const ICON_FOLDER = '<svg viewBox="0 0 48 40" width="56" height="46" aria-hidden="true"><path d="M3 7a4 4 0 0 1 4-4h11l5 5h18a4 4 0 0 1 4 4v21a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="currentColor" opacity=".18"/><path d="M3 13h42v20a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="currentColor"/></svg>';
+  async function openFolder(fresh) {
+    folderHeroError = '';
+    try {
+      vaultFolder = await pickVaultFolder(fresh); rememberedFolder = ''; meshMemo.clear();
+      toast(`${vaultFolder.name}: ${plural(vaultFolder.files.size, 'part file')} found`);
+    } catch (e) { if (e.name !== 'AbortError') folderHeroError = e.message || String(e); }
+    renderAll();
+  }
+  function renderFolderHero() {
+    const box = $('folderHero');
+    if (!folderHeroShown()) { box.replaceChildren(); return; }
+    const last = rememberedFolder, name = esc(SRC_DEFAULT.split('/').pop());
+    box.innerHTML = `<section class="panel fhero" aria-labelledby="fheroTitle">
+      <div class="fhero-icon">${ICON_FOLDER}</div>
+      <h2 id="fheroTitle">Start with your Vault folder</h2>
+      <p>Choose the unzipped <code>${name}</code> folder you downloaded from USSA. The planner reads the part files in it to show your units in 3D, in your colors, and to make your print files. Nothing is uploaded: the files stay on this computer, and the page only reads them.</p>
+      ${last ? `<p class="fhero-last">${ICON_OK}<span>Last time you used <b>${esc(last)}</b>. Your browser asks you to allow reading it again.</span></p>` : ''}
+      ${folderHeroError ? `<p class="fhero-err">${ICON_BAD}<span>${esc(folderHeroError)}</span></p>` : ''}
+      <div class="fhero-actions"><button type="button" class="btn primary fhero-go" data-fhero="open">${last ? `Open ${esc(last)}` : 'Choose your Vault folder\u2026'}</button>
+        ${last ? '<button type="button" class="btn" data-fhero="other">Choose another folder</button>' : ''}</div>
+      <button type="button" class="linkbtn fhero-skip" data-fhero="skip">Not now: plan without the files</button>
+    </section>`;
+    box.querySelector('[data-fhero="open"]').onclick = () => openFolder(false);
+    if (box.querySelector('[data-fhero="other"]')) box.querySelector('[data-fhero="other"]').onclick = () => openFolder(true);
+    box.querySelector('[data-fhero="skip"]').onclick = () => { folderHeroSkipped = true; renderAll(); };
+    // Chrome and Edge remember the folder: offer it by name
+    if ('showDirectoryPicker' in window && !last)
+      idb('readonly', st => st.get('folder')).then(h => { if (h && h.name && !vaultFolder && !rememberedFolder) { rememberedFolder = h.name; renderFolderHero(); } }).catch(() => {});
+  }
+  // Step 1's line about the Vault folder: which one, whether this unit's parts are in it, and a button to choose it
+  function unitFolderBar(lines) {
+    if (!canPickFolder || folderHeroShown()) return '';
+    const need = [...new Set(lines.map(l => l.file.path))];
+    if (vaultFolder) {
+      const gone = need.filter(p => !findFile(vaultFolder.files, p));
+      return `<div class="vfolder ${gone.length ? 'bad' : 'ok'}">${gone.length ? ICON_BAD : ICON_OK}<span><b>${esc(vaultFolder.name)}</b>${gone.length ? ` is missing ${gone.length} of this unit\u2019s ${need.length} parts: ${esc(missingList(gone))}.` : `: all ${need.length} parts of this unit found. The 3D views show the real parts.`}</span><button type="button" class="btn" data-folder-pick>Change folder</button></div>`;
+    }
+    if (rememberedFolder) return `<div class="vfolder ok">${ICON_OK}<span><b>${esc(rememberedFolder)}</b>, the folder you used last time. Your browser asks to read it again when it\u2019s needed.</span><button type="button" class="btn" data-folder-pick>Open it</button></div>`;
+    return `<div class="vfolder"><span><b>Your Vault folder</b>: choose the unzipped <code>${esc(SRC_DEFAULT.split('/').pop())}</code> folder to see the real parts in 3D and make the print files. The page only reads it; nothing is uploaded.</span><button type="button" class="btn primary" data-folder-pick>Choose folder\u2026</button></div>`;
+  }
+  function bindUnitFolder(lines) {
+    const box = $('unitFolder'); if (!box) return;
+    const redraw = () => { if ($('unitFolder')) { $('unitFolder').innerHTML = unitFolderBar(lines); bindUnitFolder(lines); } };
+    const b = box.querySelector('[data-folder-pick]');
+    if (b) b.onclick = () => openFolder(!!vaultFolder);
+    // Chrome and Edge remember the folder: show it as chosen (it is read again, with permission, when needed)
+    if ('showDirectoryPicker' in window && !vaultFolder && !rememberedFolder)
+      idb('readonly', st => st.get('folder')).then(h => { if (h && h.name && !vaultFolder) { rememberedFolder = h.name; redraw(); } }).catch(() => {});
+  }
   function renderUnit() {
     const res = withSpares(computeUnit(c)), s = summary(res.lines);
     const ext = unitExt(c);
@@ -1465,6 +1544,7 @@ details.termfold[open] > summary { color: var(--ink); }
       <div class="panel unit-head">
         <div class="unit-title"><h2>${esc(label)}</h2><span class="ut-side"><span class="dims mono num">${ext.map(n => Math.round(n)).join(' \u00d7 ')} mm outside (W \u00d7 D \u00d7 H)</span><button type="button" class="btn" id="unit3d" title="Turn this unit around in 3D and choose the project\u2019s colors">3D</button></span></div>
         ${heroStrip(res.lines)}
+        <div id="unitFolder">${unitFolderBar(res.lines)}</div>
         ${statsBlock(s)}
         ${fitAlert(s)}
         ${res.notes.map(n => `<div class="alert warn">${esc(n)}</div>`).join('')}
@@ -1485,6 +1565,7 @@ details.termfold[open] > summary { color: var(--ink); }
       </div>
       ${hwTable(res.hardware)}`;
     bindPresets($('view-unit'));
+    bindUnitFolder(res.lines);
     $('unit3d').onclick = () => open3d({ id: 'unit', name: label, levels: [[clean(c)]], stack: { ...STACK_DEFAULT } }, { global: true });
     if (!editing) {
       let n = 1;
@@ -3339,6 +3420,7 @@ details.termfold[open] > summary { color: var(--ink); }
   document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { view = b.dataset.tab; renderAll(); });
 
   function renderAll() {
+    renderFolderHero();
     renderPrinter();
     if (view === 'unit') renderControls();
     renderTabs();

@@ -50,7 +50,9 @@
     { id: 'facade', label: 'Drawer and case fronts', def: 'body' },
     { id: 'box', label: 'Drawer boxes', def: 'inner' },
     { id: 'roof', label: 'Roofs and lids', def: 'body' },
-    { id: 'mech', label: 'Runner slides, keys, hinges and locks', def: 'inner' },
+    { id: 'runners', label: 'Runner slides', def: 'inner' },
+    { id: 'lock', label: 'Key locks and case locks', def: 'inner' },
+    { id: 'hinge', label: 'Hinges', def: 'inner' },
     { id: 'accent', label: 'Latches, springs, rails and stoppers', def: 'accent' },
     { id: 'interior', label: 'Gridfinity baseplates and grid dividers', def: 'body' },
     { id: 'dividers', label: 'Dividers', def: 'inner' },
@@ -66,7 +68,9 @@
     if (/label/i.test(label)) return 'label';
     if (/front \(facade\)|^drawer front|^case front|facade cap|key cap/i.test(label)) return 'facade';
     if (/drawer box|back panel/i.test(label)) return 'box';
-    if (/runner slide|key lock|hidden key|^hinge|^lock (holder|inner|outer|pin)/i.test(label)) return 'mech';
+    if (/runner slide/i.test(label)) return 'runners';
+    if (/^hinge/i.test(label)) return 'hinge';
+    if (/key lock|hidden key|^lock (holder|inner|outer|pin)/i.test(label)) return 'lock';
     if (/^divider$|depth divider|width divider|seal divider/i.test(label)) return 'dividers';
     if (/gridfinity baseplate|grid divider|divider edge|divider pin/i.test(label)) return 'interior';
     if (/backbone|handle lock|knob|^foot$|top handle|heavyweight roof handle|second part/i.test(label)) return 'fittings';
