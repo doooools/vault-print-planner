@@ -46,6 +46,10 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   (edited in the 3D view's side list). `paintLines` recolours lines; a non-default colour gets its own line key
   (`path#colour`), so plates and progress keep it apart. The Bambu project gets one filament per plate colour
   (slot 1, TPU in 2, others from 3) — **not yet checked in Bambu Studio**.
+- Bambu Lab colours: `src/bambu-colors.tsv` (PLA Basic/Matte, PETG Basic/Matte on sale in the EU store, with the
+  hex from Bambu's own `filaments_color_codes.json`, matched by colour code), made by `tools/bambu_colors.py`,
+  embedded as `window.BAMBU_COLORS`, offered as a swatch grid in the Colors panel. PETG colours still get PLA
+  settings in the Bambu project.
 - Checked: `tools/placements/blender_check_placements.py` rebuilt an L7 4F + 2F + 1F + grid roof tower from the
   JSON alone, and an S3 1F from the **original** download files. The matrices apply to the user's files as they are.
 

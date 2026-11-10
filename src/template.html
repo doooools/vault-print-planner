@@ -423,7 +423,14 @@ details.folded > summary .mini { min-width: 40px; }
 .cpal { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 0 18px 12px; }
 .cpal-row { display: flex; align-items: center; gap: 6px; }
 .cpal-row input[type=color] { width: 34px; height: 30px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); cursor: pointer; }
-.cpal-name { width: 12ch; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); }
+.cpal-name { width: 19ch; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); }
+.cbbl { padding: 0 18px 12px; }
+.bbl > summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--accent); }
+.bbl-line { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: start; padding-top: 10px; font-size: 13px; }
+.bbl-sw { display: flex; flex-wrap: wrap; gap: 6px; }
+.bbl-sw button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); padding: 0; cursor: pointer; }
+.bbl-sw button:hover { outline: 2px solid var(--ink); outline-offset: 1px; }
+.bbl-sw button.have { outline: 2px solid var(--accent); outline-offset: 1px; }
 .croles { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 18px; padding: 0 18px 14px; }
 .crole { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13.5px; padding: 4px 0; border-top: 1px solid var(--line); }
 .csel { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
@@ -1705,7 +1712,17 @@ details.termfold[open] > summary { color: var(--ink); }
   // ---------- colors (step 2) ----------
   // The filaments you print with and which parts get which. Plates, filament totals and the Bambu Studio project
   // follow them. One unit's own choices are made in the 3D view, where you see them.
-  let colorsOpen = false;
+  let colorsOpen = false, bambuOpen = false;
+  // Bambu Lab's own PLA and PETG colours (src/bambu-colors.tsv): [line, colour code, name, hex]
+  const BAMBU_COLORS = window.BAMBU_COLORS || [];
+  function bambuPicker() {
+    if (!BAMBU_COLORS.length) return '';
+    const lines = [...new Set(BAMBU_COLORS.map(c => c[0]))], have = new Set(colorPrefs.palette.map(p => p.code).filter(Boolean));
+    return `<details class="bbl" id="bambuPicker" ${bambuOpen ? 'open' : ''}><summary>Add a Bambu Lab color</summary>
+      ${lines.map(line => `<div class="bbl-line"><b>${esc(line)}</b><div class="bbl-sw">${BAMBU_COLORS.map((c, i) => c[0] !== line ? '' :
+        `<button type="button" data-bbl="${i}" class="${have.has(c[1]) ? 'have' : ''}" style="background:${c[3]}" title="${esc(c[2])} (${c[1]})${have.has(c[1]) ? ', in your colors' : ''}" aria-label="${esc(c[2] + ', ' + line)}"></button>`).join('')}</div></div>`).join('')}
+      <p class="pnote">Bambu’s own color codes, for the colors on sale in their store. Click one to add it to your colors.</p></details>`;
+  }
   const colorOptions = (sel, first) => (first ? `<option value="">${esc(first)}</option>` : '') +
     colorPrefs.palette.map(p => `<option value="${p.id}" ${p.id === sel ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
   function colorsPanel() {
@@ -1716,6 +1733,8 @@ details.termfold[open] > summary { color: var(--ink); }
         <input type="text" class="cpal-name" value="${esc(p.name)}" data-pal-name="${p.id}" maxlength="40" aria-label="Name of this color">
         ${P.length > 1 ? `<button type="button" class="iconbtn" data-pal-del="${p.id}" aria-label="Remove ${esc(p.name)}" title="Remove this color">✕</button>` : ''}</div>`).join('')}
         <button type="button" class="btn" id="palAdd">+ Add a color</button></div>
+      <div class="cbbl">${bambuPicker()}</div>
+      ${preset().bambu && P.some(p => /^PETG/.test(p.line || '')) ? '<p class="pp">PETG colors: the Bambu Studio project gives every color PLA settings. In Bambu Studio, set the PETG filaments to a PETG profile.</p>' : ''}
       <div class="croles">${R.ROLES.map(r => `<label class="crole"><span>${esc(r.label)}</span><span class="csel">${swatch(colorFor(r.id, null))}<select data-role="${r.id}">${colorOptions(colorFor(r.id, null))}</select></span></label>`).join('')}
         <div class="crole"><span>Tires</span><span class="csel">${swatch('tpu')}TPU</span></div></div>
       ${colorsCustom() ? '<div class="actions"><button type="button" class="btn" id="colorsReset">Back to the render colors</button><span class="pnote" style="margin:0">Also clears the colors chosen for single units.</span></div>' : ''}
@@ -1725,7 +1744,18 @@ details.termfold[open] > summary { color: var(--ink); }
     const D = $('colorsPanel'); if (!D) return;
     D.ontoggle = () => { colorsOpen = D.open; };
     const done = () => { saveColors(); rerender(); };
-    D.querySelectorAll('[data-pal-hex]').forEach(i => i.onchange = () => { paletteOf(i.dataset.palHex).hex = i.value; done(); });
+    D.querySelectorAll('[data-pal-hex]').forEach(i => i.onchange = () => { const p = paletteOf(i.dataset.palHex); p.hex = i.value; delete p.code; done(); }); // no longer Bambu's exact colour
+    const B = $('bambuPicker');
+    if (B) {
+      B.ontoggle = () => { bambuOpen = B.open; };
+      B.querySelectorAll('[data-bbl]').forEach(b => b.onclick = () => {
+        const [line, code, name, hex] = BAMBU_COLORS[+b.dataset.bbl];
+        if (colorPrefs.palette.some(p => p.code === code)) { toast(`${name} (${line}) is already in your colors.`); return; }
+        let n = 1; while (paletteOf('c' + n)) n++;
+        colorPrefs.palette.push({ id: 'c' + n, name: `${name} · ${line}`, hex: hex.toLowerCase(), line, code });
+        done();
+      });
+    }
     D.querySelectorAll('[data-pal-name]').forEach(i => i.onchange = () => { paletteOf(i.dataset.palName).name = i.value.trim() || 'Color'; done(); });
     D.querySelectorAll('[data-pal-del]').forEach(b => b.onclick = () => {
       const id = b.dataset.palDel;

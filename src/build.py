@@ -67,6 +67,11 @@ pf = here / "stl-placements.json"
 if pf.exists():
     pl = json.loads(pf.read_text(encoding="utf-8"))
     catalog += "window.VAULT_PLACEMENTS=" + json.dumps({"stack": {k: pl["stack"][k] for k in ("first", "per_level")}, "units": {k: {"parts": u["parts"]} for k, u in pl["units"].items()}}, ensure_ascii=False, separators=(",", ":")) + ";"
+# Bambu Lab's PLA and PETG colours (src/bambu-colors.tsv, from tools/bambu_colors.py): line, code, name, hex
+bc = here / "bambu-colors.tsv"
+if bc.exists():
+    cols = [l.split("	") for l in bc.read_text(encoding="utf-8").splitlines() if l and not l.startswith("#")]
+    catalog += "window.BAMBU_COLORS=" + json.dumps([[c[0], c[1], c[2], c[3].split(",")[0]] for c in cols], ensure_ascii=False, separators=(",", ":")) + ";"
 html = (here / "template.html").read_text(encoding="utf-8")
 if public:
     catalog += "window.VAULT_PUBLIC=true;"

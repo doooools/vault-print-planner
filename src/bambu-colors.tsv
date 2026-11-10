@@ -1,0 +1,79 @@
+# Bambu Lab PLA and PETG colours on sale (eu.store.bambulab.com), with the hex codes from Bambu's own table
+# (BambuStudio filaments_color_codes.json), matched by colour code. Made by tools/bambu_colors.py.
+# line	code	name	hex (several for multicolour filament)
+PLA Basic	10100	Jade White	#FFFFFF
+PLA Basic	10201	Beige	#F7E6DE
+PLA Basic	10104	Light Gray	#D1D3D5
+PLA Basic	10400	Yellow	#F4EE2A
+PLA Basic	10402	Sunflower Yellow	#FEC600
+PLA Basic	10401	Gold	#E4BD68
+PLA Basic	10301	Pumpkin Orange	#FF9016
+PLA Basic	10300	Orange	#FF6A13
+PLA Basic	10503	Bright Green	#BECF00
+PLA Basic	10501	Bambu Green	#00AE42
+PLA Basic	10502	Mistletoe Green	#3F8E43
+PLA Basic	10203	Pink	#F55A74
+PLA Basic	10204	Hot Pink	#F5547C
+PLA Basic	10202	Magenta	#EC008C
+PLA Basic	10200	Red	#C12E1F
+PLA Basic	10205	Maroon Red	#9D2235
+PLA Basic	10700	Purple	#5E43B7
+PLA Basic	10701	Indigo Purple	#482960
+PLA Basic	10605	Turquoise	#00B1B7
+PLA Basic	10603	Cyan	#0086D6
+PLA Basic	10604	Cobalt Blue	#0056B8
+PLA Basic	10601	Blue	#0A2989
+PLA Basic	10800	Brown	#9D432C
+PLA Basic	10802	Cocoa Brown	#6F5034
+PLA Basic	10801	Bronze	#847D48
+PLA Basic	10103	Gray	#8E9089
+PLA Basic	10102	Silver	#A6A9AA
+PLA Basic	10602	Blue Grey	#5B6579
+PLA Basic	10105	Dark Gray	#545454
+PLA Basic	10101	Black	#000000
+PLA Matte	11100	Ivory White	#FFFFFF
+PLA Matte	11103	Bone White	#CBC6B8
+PLA Matte	11400	Lemon Yellow	#F7D959
+PLA Matte	11300	Mandarin Orange	#F99963
+PLA Matte	11201	Sakura Pink	#E8AFCF
+PLA Matte	11700	Lilac purple	#AE96D4
+PLA Matte	11200	Scarlet Red	#DE4343
+PLA Matte	11202	Dark Red	#BB3D43
+PLA Matte	11502	Apple Green	#C2E189
+PLA Matte	11500	Grass Green	#61C680
+PLA Matte	11501	Dark Green	#68724D
+PLA Matte	11601	Ice Blue	#A3D8E1
+PLA Matte	11603	Sky Blue	#56B7E6
+PLA Matte	11600	Marine Blue	#0078BF
+PLA Matte	11602	Dark Blue	#042F56
+PLA Matte	11401	Desert Tan	#E8DBB7
+PLA Matte	11800	Latte Brown	#D3B7A7
+PLA Matte	11803	Caramel	#AE835B
+PLA Matte	11203	Terracotta	#B15533
+PLA Matte	11801	Dark Brown	#7D6556
+PLA Matte	11802	Dark Chocolate	#4D3324
+PLA Matte	11102	Ash Gray	#9B9EA0
+PLA Matte	11104	Nardo Gray	#757575
+PLA Matte	11101	Charcoal	#000000
+PLA Matte	11204	Plum	#950051
+PETG Basic	30201	Red	#D6001C
+PETG Basic	30402	Yellow	#FCE300
+PETG Basic	30502	Green	#009639
+PETG Basic	30604	Navy Blue	#0086D6
+PETG Basic	30603	Reflex Blue	#001489
+PETG Basic	30403	Dark Beige	#DBC8B6
+PETG Basic	30106	White	#FFFFFF
+PETG Basic	30105	Black	#000000
+PETG Basic	30800	Dark Brown	#4F2C1D
+PETG Basic	30107	Gray	#7F7E83
+PETG Basic	30108	Misty Blue	#688197
+PETG Basic	30503	Pine Green	#034638
+PETG Basic	30301	Orange	#FF671F
+PETG Matte	35101	Black	#000000
+PETG Matte	35100	White	#FFFFFF
+PETG Matte	35102	Gray	#7F7E83
+PETG Matte	35700	Pink	#FABBCB
+PETG Matte	35702	Violet	#A7A4E0
+PETG Matte	35600	Baby Blue	#B9D9EB
+PETG Matte	35501	Avocado Green	#BCE194
+PETG Matte	35500	Lime	#C0DF16
