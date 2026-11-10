@@ -192,7 +192,7 @@ dialog#viewer::backdrop { background: rgba(10, 12, 12, .45); }
 .vclose { position: absolute; top: 10px; right: 12px; border: 0; background: transparent; font-size: 24px; line-height: 1; color: var(--muted); }
 dialog#viewer { position: fixed; }
 dialog#v3d { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 0; width: min(1180px, calc(100vw - 32px)); height: min(820px, calc(100vh - 32px)); position: fixed; overflow: hidden; }
-dialog#v3d[open] { display: grid; grid-template-columns: minmax(0, 1fr) 290px; }
+dialog#v3d[open] { display: grid; grid-template-columns: minmax(0, 1fr) 330px; }
 dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-stage { min-width: 0; min-height: 0; position: relative; background: var(--sheet-2); }
 .v3-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
@@ -202,6 +202,9 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13px; }
 .v3-list li { display: grid; gap: 2px; padding-top: 8px; border-top: 1px solid var(--line); }
 .v3-list small { color: var(--muted); }
+.ucol > summary { cursor: pointer; font-size: 12.5px; color: var(--accent); font-weight: 600; margin-top: 2px; }
+.ucol .crole { font-size: 12.5px; }
+.ucol .csel select { max-width: 17ch; }
 @media (max-width: 760px) { dialog#v3d[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } }
 .row.done { opacity: .45; }
 .row.done .pname { text-decoration: line-through; }
@@ -417,6 +420,14 @@ details.folded > summary .mini { min-width: 40px; }
 .plate.done .donerow .ok { display: inline-flex; align-items: center; gap: 6px; color: var(--ok); }
 .plate.done .donerow svg { width: 16px; height: 16px; }
 .platesvg { width: 100%; height: auto; max-width: 100%; display: block; }
+.cpal { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 0 18px 12px; }
+.cpal-row { display: flex; align-items: center; gap: 6px; }
+.cpal-row input[type=color] { width: 34px; height: 30px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); cursor: pointer; }
+.cpal-name { width: 12ch; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); }
+.croles { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 18px; padding: 0 18px 14px; }
+.crole { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13.5px; padding: 4px 0; border-top: 1px solid var(--line); }
+.csel { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
+.csel select { max-width: 16ch; padding: 3px 6px; border: 1px solid var(--line); border-radius: 7px; background: var(--sheet); }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
 .sw-body { background: #d4d6d3; } .sw-inner { background: #3a3d3f; } .sw-accent { background: #e8742f; } .sw-tpu { background: #222; } .sw-big { background: #d4d6d3; } .sw-small { background: #3a3d3f; } .sw-labels { background: linear-gradient(90deg, #f4f1ea 34%, #3a3d3f 34% 67%, #e8742f 67%); } .sw-all { background: linear-gradient(90deg, #d4d6d3 50%, #3a3d3f 50%); }
 .pitems { display: grid; gap: 6px; }
@@ -685,6 +696,27 @@ details.termfold[open] > summary { color: var(--ink); }
   // How plates are split by filament: 'renders' = USSA's three colours, 'size' = big parts in one colour and small
   // parts in another, 'one' = a single colour. Older saves only had the on/off byColor switch.
   let plateColors = store.get('plateColors', store.get('byColor', true) ? 'renders' : 'one');
+  // Filament colours: a palette (USSA's three render colours to start with), a colour per part role (R.ROLES), and
+  // per-unit choices kept in the unit's own settings (cfg.colors, so they travel with duplicates and edits). A part
+  // with no choice keeps its role's default, which is what colorOf has always given it.
+  const PALETTE_DEFAULT = [{ id: 'body', name: 'Light grey', hex: '#d4d6d3' }, { id: 'inner', name: 'Charcoal', hex: '#3a3d3f' }, { id: 'accent', name: 'Orange', hex: '#e8742f' }];
+  let colorPrefs = store.get('colors', null) || { palette: PALETTE_DEFAULT.map(p => ({ ...p })), roles: {} };
+  const saveColors = () => store.set('colors', colorPrefs);
+  const ROLE_BY_ID = new Map(R.ROLES.map(r => [r.id, r]));
+  const paletteOf = id => colorPrefs.palette.find(p => p.id === id);
+  // The colour a part of this role gets in this unit (cfg null: a stack part or an extra part)
+  function colorFor(role, cfg) {
+    if (role === 'tpu') return 'tpu';
+    const def = (ROLE_BY_ID.get(role) || { def: 'body' }).def;
+    const pick = (cfg && cfg.colors && cfg.colors[role]) || colorPrefs.roles[role];
+    return pick && paletteOf(pick) ? pick : paletteOf(def) ? def : colorPrefs.palette[0].id;
+  }
+  // Lines in their chosen colours. A part in another colour than its default is a different print, so it gets its
+  // own key: two units with different fronts list two lines, and plates and progress keep them apart.
+  // Whether anything differs from USSA's render colours (the palette, a role, or a unit of a stack)
+  const colorsCustom = () => Object.keys(colorPrefs.roles).length > 0 || JSON.stringify(colorPrefs.palette) !== JSON.stringify(PALETTE_DEFAULT)
+    || towers.some(t => t.levels.some(lv => lv.some(u => u.colors && Object.keys(u.colors).length)));
+  const paintLines = (res, cfg) => ({ ...res, lines: res.lines.map(l => { const c = colorFor(l.role, cfg); return c === l.color ? l : { ...l, color: c, key: l.file.path + '#' + c }; }) });
   let labelsApart = store.get('labelsApart', true); // labels on a plate of their own
   let mixSupports = store.get('mixSupports', false); // parts that need supports share plates with the rest
   let gatherMode = store.get('gatherMode', 'project'); // 'project' = one Bambu Studio .3mf with every plate, 'folders' = STLs per plate
@@ -712,6 +744,7 @@ details.termfold[open] > summary { color: var(--ink); }
   const saveExtras = () => store.set('extras', extras);
   // Progress key: extras are tracked apart from the same file used in a tower
   const pkey = l => l.key || l.file.path;
+  const isExtra = l => !!l.key && l.key.startsWith('extra:');
 
   // ---------- printer fit ----------
   const eps = 1e-6;
@@ -770,7 +803,7 @@ details.termfold[open] > summary { color: var(--ink); }
     }
     return { lines, hardware: r.hardware.map(h => ({ ...h, total: h.qty })), notes };
   }
-  const computeUnit = cfg => finish(R.buildUnit(cfg, resolve));
+  const computeUnit = cfg => paintLines(finish(R.buildUnit(cfg, resolve)), cfg);
 
   function unitCode(cfg) {
     const wname = cfg.w === 'L2' ? 'L' : cfg.w === 'XL2' ? 'XL' : cfg.w;
@@ -863,7 +896,7 @@ details.termfold[open] > summary { color: var(--ink); }
         if (!R.familyForWidth(levelWidth(lv))) issues.push({ k: 'bad', m: `Level ${i + 1}: ${lv.map(u => u.w).join(' + ')} side by side isn't a Vault width. Pairs that work: S + S (as wide as L) and S + M (as wide as XL).` });
         if (top && lv.every(u => u.type === 'drawer')) {
           const fam = R.familyForWidth(levelWidth(lv)), kind = lv[0].roof;
-          if (fam && kind !== 'none') parts.push(finish(R.buildRoof(fam, d0, kind, lv[0].topHandle, resolve)));
+          if (fam && kind !== 'none') parts.push(paintLines(finish(R.buildRoof(fam, d0, kind, lv[0].topHandle, resolve)), lv[0]));
         }
       }
       if (i > 0) {
@@ -878,7 +911,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const usesStack = s.base || s.stationaryHandle || s.pullHandle;
     if (usesStack) {
       if (!fam) issues.push({ k: 'bad', m: 'The bottom level isn\u2019t a standard Vault width, so no base or handle fits it.' });
-      else parts.push(finish(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)));
+      else parts.push(paintLines(finish(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)), null));
       if (L[0].some(u => u.h !== 2)) issues.push({ k: 'info', m: 'USSA recommends a 2F unit directly on the base when you use a base, wheels or handles.' });
       if (L.length > 1 && topLv.some(u => u.h !== 2)) issues.push({ k: 'info', m: 'USSA also recommends a 2F unit at the top, just under the roof.' });
     }
@@ -949,7 +982,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const f = FILE_BY_PATH.get(path); if (!f) return null;
     const m = partMeta(path) || {};
     return { group: 'Extra parts', label: niceName(path), file: f, qty, total: qty, key: 'extra:' + path,
-      color: m.color || (/tpu/i.test(path) ? 'tpu' : 'body'), walls: m.walls, infill: m.infill, flex: m.flex,
+      color: m.role ? colorFor(m.role, null) : m.color || (/tpu/i.test(path) ? 'tpu' : 'body'), role: m.role, walls: m.walls, infill: m.infill, flex: m.flex,
       supports: m.supports || /turn on supports/i.test(path) || f.needsSupport, tpu: m.tpu || /tpu/i.test(path), aid: m.aid,
       note: m.label ? m.label.replace(/ \((left|right|S side|M side)\)$/, '') : '', fit: fitOf(f.dims, printer.v, f.ex) };
   }
@@ -1044,7 +1077,7 @@ details.termfold[open] > summary { color: var(--ink); }
             <div class="pfile mono" title="${esc(l.file.path)}">${esc(fileName(l.file.path))} <span style="opacity:.7">\u2014 ${esc(folder(l.file.path))}</span></div>
             ${l.note ? `<div class="pnote">${esc(l.note)}</div>` : ''}
             ${l.inferred ? `<div class="pnote">Inferred: ${esc(l.inferred)}</div>` : ''}</div>
-          <div class="right"><div class="tags">${tagsFor(l).join('')}</div><div class="dimtxt mono num">${dimStr(l.file.dims)}</div>${l.key ? '' : `<button class="linkbtn" data-addextra="${esc(l.file.path)}">Print on its own</button>`}</div>
+          <div class="right"><div class="tags">${tagsFor(l).join('')}</div><div class="dimtxt mono num">${dimStr(l.file.dims)}</div>${isExtra(l) ? '' : `<button class="linkbtn" data-addextra="${esc(l.file.path)}">Print on its own</button>`}</div>
           <div class="bedcell">${bedSvg(l.file.dims, printer.v, l.fit.s)}</div>
         </div>`).join('')}</div>`).join('');
   }
@@ -1669,6 +1702,55 @@ details.termfold[open] > summary { color: var(--ink); }
     if ($('xclear')) $('xclear').onclick = () => { extras = []; saveExtras(); renderTabs(); renderBuild(); };
   }
 
+  // ---------- colors (step 2) ----------
+  // The filaments you print with and which parts get which. Plates, filament totals and the Bambu Studio project
+  // follow them. One unit's own choices are made in the 3D view, where you see them.
+  let colorsOpen = false;
+  const colorOptions = (sel, first) => (first ? `<option value="">${esc(first)}</option>` : '') +
+    colorPrefs.palette.map(p => `<option value="${p.id}" ${p.id === sel ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
+  function colorsPanel() {
+    const P = colorPrefs.palette;
+    return `<details class="panel fold" id="colorsPanel" ${colorsOpen ? 'open' : ''}><summary>Colors <small>${P.map(p => swatch(p.id)).join('')}${plural(P.length, 'filament color')}</small></summary>
+      <p class="pp">The filament colors you print with, and which parts get which. Plates, filament totals and the Bambu Studio project follow them. To change one unit only, like one drawer’s front, open its stack in 3D.</p>
+      <div class="cpal">${P.map(p => `<div class="cpal-row"><input type="color" value="${p.hex}" data-pal-hex="${p.id}" aria-label="${esc(p.name)}: color">
+        <input type="text" class="cpal-name" value="${esc(p.name)}" data-pal-name="${p.id}" maxlength="40" aria-label="Name of this color">
+        ${P.length > 1 ? `<button type="button" class="iconbtn" data-pal-del="${p.id}" aria-label="Remove ${esc(p.name)}" title="Remove this color">✕</button>` : ''}</div>`).join('')}
+        <button type="button" class="btn" id="palAdd">+ Add a color</button></div>
+      <div class="croles">${R.ROLES.map(r => `<label class="crole"><span>${esc(r.label)}</span><span class="csel">${swatch(colorFor(r.id, null))}<select data-role="${r.id}">${colorOptions(colorFor(r.id, null))}</select></span></label>`).join('')}
+        <div class="crole"><span>Tires</span><span class="csel">${swatch('tpu')}TPU</span></div></div>
+      ${colorsCustom() ? '<div class="actions"><button type="button" class="btn" id="colorsReset">Back to the render colors</button><span class="pnote" style="margin:0">Also clears the colors chosen for single units.</span></div>' : ''}
+    </details>`;
+  }
+  function bindColors(rerender) {
+    const D = $('colorsPanel'); if (!D) return;
+    D.ontoggle = () => { colorsOpen = D.open; };
+    const done = () => { saveColors(); rerender(); };
+    D.querySelectorAll('[data-pal-hex]').forEach(i => i.onchange = () => { paletteOf(i.dataset.palHex).hex = i.value; done(); });
+    D.querySelectorAll('[data-pal-name]').forEach(i => i.onchange = () => { paletteOf(i.dataset.palName).name = i.value.trim() || 'Color'; done(); });
+    D.querySelectorAll('[data-pal-del]').forEach(b => b.onclick = () => {
+      const id = b.dataset.palDel;
+      colorPrefs.palette = colorPrefs.palette.filter(p => p.id !== id);
+      for (const k of Object.keys(colorPrefs.roles)) if (colorPrefs.roles[k] === id) delete colorPrefs.roles[k];
+      // Parts that used it go back to their role's color; a default it was falls back to the first color left
+      towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { if (u.colors) for (const k of Object.keys(u.colors)) if (u.colors[k] === id) delete u.colors[k]; })));
+      save(); done();
+    });
+    $('palAdd').onclick = () => {
+      let n = 1; while (paletteOf('c' + n)) n++;
+      colorPrefs.palette.push({ id: 'c' + n, name: 'Color ' + (colorPrefs.palette.length + 1), hex: '#4f7fbf' });
+      done();
+    };
+    D.querySelectorAll('[data-role]').forEach(s => s.onchange = () => {
+      const r = ROLE_BY_ID.get(s.dataset.role);
+      if (s.value === r.def) delete colorPrefs.roles[r.id]; else colorPrefs.roles[r.id] = s.value;
+      done();
+    });
+    if ($('colorsReset')) $('colorsReset').onclick = () => {
+      colorPrefs = { palette: PALETTE_DEFAULT.map(p => ({ ...p })), roles: {} };
+      towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { delete u.colors; })));
+      save(); done();
+    };
+  }
   function renderBuild() {
     if (!towers.length) {
       $('view-build').innerHTML = `${presetsBlock(!extras.length)}${extrasPanel()}<div class="panel empty">No stacks yet. Pick a starting point above, or design a unit in step 1 and press <b>Add</b>.${stackExplainer()}</div>`;
@@ -1713,9 +1795,9 @@ details.termfold[open] > summary { color: var(--ink); }
           </div>
         </div>${fold ? '</details>' : '</div>'}`;
     }).join('');
-    $('view-build').innerHTML = `${overviewPanel(info)}${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
+    $('view-build').innerHTML = `${overviewPanel(info)}${colorsPanel()}${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
       <div class="actions"><button class="btn" id="newTower">New empty stack</button><button class="btn primary" id="toPrint">Next: print plates \u2192</button></div>`;
-    bindPresets($('view-build')); bindExtras();
+    bindPresets($('view-build')); bindExtras(); bindColors(renderAll);
     const V = $('view-build'), find = id => towers.find(t => t.id === +id);
     V.querySelectorAll('[data-rename]').forEach(i => i.onchange = () => { find(i.dataset.rename).name = i.value.trim() || 'Stack'; save(); renderTabs(); });
     V.querySelectorAll('[data-del-tower]').forEach(b => b.onclick = () => { towers = towers.filter(t => t.id !== +b.dataset.delTower); save(); renderAll(); });
@@ -1735,7 +1817,7 @@ details.termfold[open] > summary { color: var(--ink); }
     V.querySelectorAll('[data-addunit]').forEach(b => b.onclick = () => {
       const t = find(b.dataset.addunit), top = t.levels[t.levels.length - 1];
       addTo = t.id; editing = null;
-      if (top) c = clean(top[0]); // start from the unit below so it stacks
+      if (top) { c = clean(top[0]); delete c.colors; } // start from the unit below so it stacks (its own colours stay its own)
       view = 'unit'; renderAll(); window.scrollTo(0, 0);
     });
     $('toPrint').onclick = () => { view = 'print'; renderAll(); window.scrollTo(0, 0); };
@@ -1753,10 +1835,13 @@ details.termfold[open] > summary { color: var(--ink); }
   }
 
   // ---------- 3 · print view: plate planner ----------
-  const COLOR_NAME = { body: 'Light grey', inner: 'Charcoal', accent: 'Orange', tpu: 'TPU', all: 'Any PLA', big: 'Big parts', small: 'Small parts', labels: 'Labels' };
-  const COLOR_FILL = { body: '#d4d6d3', inner: '#3a3d3f', accent: '#e8742f', tpu: '#1f1f1f', all: '#9fa3a1', big: '#d4d6d3', small: '#3a3d3f', labels: '#f4f1ea' };
-  const LIGHT_FILL = c => c === 'body' || c === 'big' || c === 'labels';
-  const COLOR_ORDER = ['body', 'big', 'inner', 'small', 'accent', 'all', 'labels', 'tpu'];
+  // Plate colours: the palette's (see colorPrefs), plus the groups the other plate modes use
+  const FIXED_COLOR = { tpu: ['TPU', '#1f1f1f'], all: ['Any PLA', '#9fa3a1'], big: ['Big parts', '#d4d6d3'], small: ['Small parts', '#3a3d3f'], labels: ['Labels', '#f4f1ea'] };
+  const colorName = k => (paletteOf(k) || {}).name || (FIXED_COLOR[k] || FIXED_COLOR.all)[0];
+  const colorHex = k => (paletteOf(k) || {}).hex || (FIXED_COLOR[k] || FIXED_COLOR.all)[1];
+  const LIGHT_FILL = k => { const n = parseInt(colorHex(k).slice(1), 16); return (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255 > 0.65; };
+  const colorOrder = k => { const i = colorPrefs.palette.findIndex(p => p.id === k); return i >= 0 ? i : colorPrefs.palette.length + ['big', 'small', 'all', 'labels', 'tpu'].indexOf(k); };
+  const swatch = k => `<span class="swatch" style="background:${colorHex(k)}"></span>`;
   // Big = the shell you see: bodies, boxes, fronts, roofs, base plates (over 40 cm³ and over 4 cm on its two longest
   // sides). Small = runners, rails, latches, springs, keys, dividers: long-and-thin or little parts.
   const sizeOf = f => { const d = [...f.dims].sort((x, y) => y - x); return f.vol >= 40000 && d[1] >= 40 ? 'big' : 'small'; };
@@ -1820,7 +1905,7 @@ details.termfold[open] > summary { color: var(--ink); }
     });
     const gramsOfPiece = p => gramsOf(p.l.file) + (p.mate ? gramsOf(p.mate.s.l.file) : 0);
     const plates = [];
-    const groups = [...new Set(pieces.map(p => p.group))].sort((x, y) => COLOR_ORDER.indexOf(x.split('|')[0]) - COLOR_ORDER.indexOf(y.split('|')[0]) || x.localeCompare(y));
+    const groups = [...new Set(pieces.map(p => p.group))].sort((x, y) => colorOrder(x.split('|')[0]) - colorOrder(y.split('|')[0]) || x.localeCompare(y));
     for (const g of groups) {
       const gp = pieces.filter(p => p.group === g).sort((p, q) => q.a - p.a || q.b - p.b);
       const open = [];
@@ -1922,7 +2007,7 @@ details.termfold[open] > summary { color: var(--ink); }
   function plateSvg(pl) {
     const V = printer.v;
     const items = pl.items.map((it, k) => {
-      const f = COLOR_FILL[pl.color] || COLOR_FILL.all;
+      const f = colorHex(pl.color);
       const label = pl.lines.findIndex(x => x.l === it.p.l) + 1;
       const pad = it.p.pad || 0, fy = V[1] - it.y - it.h;
       if (it.asis) { // kept at USSA's angle: drawn as its bar at that angle, ends trimmed to the box it really takes
@@ -2010,7 +2095,7 @@ details.termfold[open] > summary { color: var(--ink); }
     // Filament per colour for the whole build, in the same colours the plates use
     const byColor = {};
     b.lines.forEach(l => { if (l.fit.s === 'no' || l.fit.s === 'reorient') return; const k = colorKey(l); byColor[k] = (byColor[k] || 0) + gramsOf(l.file) * l.total; });
-    const colorTotals = Object.entries(byColor).sort((x, y) => COLOR_ORDER.indexOf(x[0]) - COLOR_ORDER.indexOf(y[0]));
+    const colorTotals = Object.entries(byColor).sort((x, y) => colorOrder(x[0]) - colorOrder(y[0]));
     $('view-print').innerHTML = `
       ${b.extras && towers.length ? `<div class="seg scope" role="group" aria-label="What to print">
         <button type="button" data-scope="all" aria-pressed="${!b.onlyExtras}">Whole build<small>stacks and extra parts</small></button>
@@ -2020,7 +2105,7 @@ details.termfold[open] > summary { color: var(--ink); }
         <div class="unit-title"><h2>${pct}% printed</h2><span class="dims num">${plural(plates.length, 'plate')} left on the ${esc(printerName())}</span></div>
         <div class="bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
         <div class="progress-nums"><span><b>${done}</b> of <b>${total}</b> parts</span><span><b>\u2248 ${gramsStr(gDone)}</b> of \u2248 ${gramsStr(s.g)} filament</span>${b.list.length ? `<span><b>${b.list.length}</b> ${b.list.length === 1 ? 'stack' : 'stacks'}</span>` : ''}${b.extras ? `<span><b>${b.extras}</b> extra ${b.extras === 1 ? 'part' : 'parts'}</span>` : ''}</div>
-        ${colorTotals.length > 1 ? `<div class="progress-nums colortotals" aria-label="Filament by color">${colorTotals.map(([k, g]) => `<span><span class="swatch sw-${k}"></span>${COLOR_NAME[k]} <b>\u2248 ${gramsStr(g)}</b></span>`).join('')}${byColor.labels ? '<span class="pnote" style="margin:0">Labels: in the colors you pick for the text</span>' : ''}</div>` : ''}
+        ${colorTotals.length > 1 ? `<div class="progress-nums colortotals" aria-label="Filament by color">${colorTotals.map(([k, g]) => `<span>${swatch(k)}${esc(colorName(k))} <b>\u2248 ${gramsStr(g)}</b></span>`).join('')}${byColor.labels ? '<span class="pnote" style="margin:0">Labels: in the colors you pick for the text</span>' : ''}</div>` : ''}
         ${b.empty ? '' : `<div class="actions" style="align-items:center"><button class="btn" id="clearPlates">${b.onlyExtras ? 'Clear extra parts' : 'Clear all plates'}</button><span class="pnote" style="margin:0">${b.onlyExtras ? 'Removes the extra parts and their progress. Your stacks stay.' : 'Starting over? Removes every stack, extra part and printed mark.'}</span></div>`}
       </div>
       ${unbraced.length ? `<div class="alert warn"><strong>${plural(unbraced.length, 'manual support')} left out.</strong><span>A manual support only helps standing against the end of a roof of the same depth while both print, and this build has no roof free for ${unbraced.length === 1 ? 'it' : 'these'}: ${Object.entries(unbraced.reduce((m, l) => { const k = fileName(l.file.path).replace(/\.stl$/i, ''); m[k] = (m[k] || 0) + 1; return m; }, {})).map(([k, n]) => n + '\u00d7 ' + k).join(', ')}.</span></div>` : ''}
@@ -2028,7 +2113,7 @@ details.termfold[open] > summary { color: var(--ink); }
       <div class="panel">
         <div class="printopts" style="padding-top:14px">
           <div class="seg" role="group" aria-label="Plate colors">
-            <button type="button" data-colors="renders" aria-pressed="${plateColors === 'renders'}">Like the renders<small>Grey body, charcoal parts, orange accents</small></button>
+            <button type="button" data-colors="renders" aria-pressed="${plateColors === 'renders'}">${colorsCustom() ? 'Your colors<small>As chosen in step 2, Colors</small>' : 'Like the renders<small>Grey body, charcoal parts, orange accents</small>'}</button>
             <button type="button" data-colors="size" aria-pressed="${plateColors === 'size'}">Big &amp; small<small>Shell in one color, small parts in another</small></button>
             <button type="button" data-colors="one" aria-pressed="${plateColors === 'one'}">One color<small>Fewest plates</small></button>
           </div>
@@ -2038,15 +2123,15 @@ details.termfold[open] > summary { color: var(--ink); }
         <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Press <b>Printed</b> when a plate comes off. Plate numbers stay the same, so they keep matching your Bambu Studio project. Small parts that are easy to lose come with 10% spares. ${labelsApart ? 'Labels get a plate of their own, so you can add your text and colors in the slicer without touching the other plates. Turn that off to print them with the rest.' : 'Labels print with the rest, in their usual color.'} Plates are packed for a ${printer.v[0]} \u00d7 ${printer.v[1]} mm bed with 5 mm edges, and kept under one 1 kg spool each. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread (measured by slicing each part alone). Tall parts printed on an edge get straight supports instead of tree supports, which would fan out about 40 mm into the part next door. Wall counts are set per part, so they can share a plate. Plates are drawn like Bambu Studio\u2019s top view: front at the bottom, with the printer\u2019s no-print corner hatched in red.</p></details>
       </div>
       ${plates.length ? gatherPanel(plates) : ''}
-      ${plates.length ? `<div class="plates">${allPlates.map(pl => pl.done ? `<div class="panel plate done"><div class="plate-head"><b>Plate ${pl.n}</b><span><span class="swatch sw-${pl.color}"></span>${COLOR_NAME[pl.color]} \u00b7 ${plural(pl.items.length, 'part')}</span></div><div class="donerow"><span class="ok">${ICON_OK}Printed</span><button class="btn" data-undoplate="${pl.n}">Undo</button></div></div>` : `<div class="panel plate">
-        <div class="plate-head"><b>Plate ${pl.n}</b><span><span class="swatch sw-${pl.color}"></span>${COLOR_NAME[pl.color]}${pl.supports ? ' \u00b7 supports on' : pl.someSup ? ` \u00b7 supports on ${pl.someSup === pl.items.length ? 'all' : pl.someSup} ${pl.someSup === 1 ? 'part' : 'parts'}` : ''}${pl.color === 'tpu' ? ' \u00b7 TPU settings' : ''}<br>${plural(pl.items.length, 'part')} \u00b7 \u2248 ${gramsStr(pl.grams)} \u00b7 ${Math.round(pl.tallest)} mm tall</span></div>
+      ${plates.length ? `<div class="plates">${allPlates.map(pl => pl.done ? `<div class="panel plate done"><div class="plate-head"><b>Plate ${pl.n}</b><span>${swatch(pl.color)}${esc(colorName(pl.color))} \u00b7 ${plural(pl.items.length, 'part')}</span></div><div class="donerow"><span class="ok">${ICON_OK}Printed</span><button class="btn" data-undoplate="${pl.n}">Undo</button></div></div>` : `<div class="panel plate">
+        <div class="plate-head"><b>Plate ${pl.n}</b><span>${swatch(pl.color)}${esc(colorName(pl.color))}${pl.supports ? ' \u00b7 supports on' : pl.someSup ? ` \u00b7 supports on ${pl.someSup === pl.items.length ? 'all' : pl.someSup} ${pl.someSup === 1 ? 'part' : 'parts'}` : ''}${pl.color === 'tpu' ? ' \u00b7 TPU settings' : ''}<br>${plural(pl.items.length, 'part')} \u00b7 \u2248 ${gramsStr(pl.grams)} \u00b7 ${Math.round(pl.tallest)} mm tall</span></div>
         ${plateSvg(pl)}
         ${pl.care ? `<div class="alert ${pl.items[0].diag || pl.items[0].asis ? 'ok' : 'warn'}" style="font-size:13px">${pl.items[0].asis ? 'Kept at the angle USSA exported it, where it just fits this bed. Check it in the slicer before printing.' : pl.items[0].diag ? 'Too long to lie straight, so it\u2019s placed diagonally, the way USSA exported it.' : 'Lay this part on a different face than exported to fit; check supports.'}</div>` : ''}
         <div class="pitems">${pl.lines.map((x, i) => `<div class="pitem">${thumb(x.l, 'sm')}<span class="q">${x.count}\u00d7</span><span class="lbl"><b>${i + 1}</b> \u00b7 ${esc(x.l.label)}${x.l.walls ? ` <span class="tag wall">${x.l.walls} walls${x.l.infill ? ' \u00b7 ' + x.l.infill + '%' : ''}</span>` : ''}<small class="mono">${esc(fileName(x.l.file.path))}</small></span></div>`).join('')}</div>
         <div class="actions"><button class="btn primary" data-plate="${pl.n}">Printed</button></div>
       </div>`).join('')}</div>` : `<div class="panel empty">${total ? 'Everything is printed. Head to step 4 to assemble.' : 'Nothing to print yet.'}</div>`}
       ${printedLines.length ? `<details class="panel fold"><summary>Already printed <small>${plural(done, 'part')}</small></summary>
-        <div class="donelist">${printedLines.map(l => `<div class="doneitem"><span>${esc(l.label)}${l.key ? ' <span class="tag">extra</span>' : ''} <small class="mono" style="color:var(--muted)">${esc(fileName(l.file.path))}</small></span><span class="num">${Math.min(printed[pkey(l)], l.total)} / ${l.total}</span><button class="iconbtn" data-unprint="${esc(pkey(l))}" aria-label="Take one back">\u22121</button></div>`).join('')}
+        <div class="donelist">${printedLines.map(l => `<div class="doneitem"><span>${esc(l.label)}${isExtra(l) ? ' <span class="tag">extra</span>' : ''} <small class="mono" style="color:var(--muted)">${esc(fileName(l.file.path))}</small></span><span class="num">${Math.min(printed[pkey(l)], l.total)} / ${l.total}</span><button class="iconbtn" data-unprint="${esc(pkey(l))}" aria-label="Take one back">\u22121</button></div>`).join('')}
         <div class="actions" style="padding-top:8px"><button class="btn" id="resetPrinted">Reset all progress</button></div></div></details>` : ''}
       ${hwTable(b.hardware, 'Shopping list', 'Hardware for the whole build. Not printed.' + (spares ? ' Includes spares.' : ''))}
       <details class="panel fold"><summary>All parts in this build <small>${s.prints} parts \u00b7 ${s.files} files</small></summary>
@@ -2090,10 +2175,10 @@ details.termfold[open] > summary { color: var(--ink); }
   }
 
   // ---------- gather script: one folder per plate, optional .3mf per plate ----------
-  function plateFolder(pl) { return `Plate ${String(pl.n).padStart(2, '0')} - ${COLOR_NAME[pl.color]}${pl.supports ? ' - supports' : ''}`; }
+  function plateFolder(pl) { return `Plate ${String(pl.n).padStart(2, '0')} - ${colorName(pl.color).replace(/[\\/:*?"<>|]/g, '-')}${pl.supports ? ' - supports' : ''}`; }
   // The plate plan the project builder reads: each part's file, position on its plate, and per-part print settings
   function planFor(plates) {
-    return { bed: [printer.v[0], printer.v[1]], ...(preset().plate ? { plate: preset().plate } : {}), bambu: preset().bambu || null, plates: plates.map(pl => ({ name: plateFolder(pl),
+    return { bed: [printer.v[0], printer.v[1]], ...(preset().plate ? { plate: preset().plate } : {}), bambu: preset().bambu || null, plates: plates.map(pl => ({ name: plateFolder(pl), color: pl.color, hex: colorHex(pl.color),
       pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, spin: it.asis ? 0 : +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + (it.p.pad || 0)).toFixed(2), y: +(it.y + (it.p.pad || 0)).toFixed(2), w: +(it.w - 2 * (it.p.pad || 0)).toFixed(2), h: +(it.h - 2 * (it.p.pad || 0)).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: it.diag === 45 ? true : it.diag } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: true, ...(needsBrim(it.p.l.file) ? { standing: true } : {}) } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
   }
   // ---------- Bambu Studio project, built right here in the browser ----------
@@ -2270,8 +2355,6 @@ details.termfold[open] > summary { color: var(--ink); }
   const CDN_SIMPLIFIER = 'https://cdn.jsdelivr.net/npm/meshoptimizer@1.3.0/meshopt_simplifier.js';
   const SIMPLIFY_MM = 0.15; // how far a simplified surface may stray from the part's, in mm
   const MESH_CACHE = 'mesh3d.1:'; // IndexedDB key prefix; bump when meshJob changes
-  // Colour per part role, in the planner's filament colours (USSA's renders) until colours can be picked
-  const ROLE_COLOR = { body: 'body', roof: 'body', facade: 'body', drawer: 'inner', mech: 'inner', insert: 'inner', accent: 'accent' };
   let threeLib = null;
   const loadThree = () => threeLib || (threeLib = Promise.all([import(CDN_THREE + '+esm'), import(CDN_THREE + 'examples/jsm/controls/OrbitControls.js/+esm')])
     .then(([T, oc]) => ({ T, OrbitControls: oc.OrbitControls })).catch(e => { threeLib = null; throw e; }));
@@ -2290,9 +2373,9 @@ details.termfold[open] > summary { color: var(--ink); }
     // Base, feet and wheels: plain shapes at the sizes the 2D drawing uses (no measured placements for them yet)
     if (base) {
       const under = wheels || feet ? 60.5 : 0;
-      if (feet) for (const z of wheels ? [-20] : [-20, -bd + 20]) extra.push({ name: 'Foot', size: [bw - 10, under, 30], at: [0, under / 2, z], color: 'body' });
-      if (wheels) for (const x of [-1, 1]) extra.push({ name: 'Wheel', wheel: 80, at: [x * (bw / 2 + 12), 80, -bd + 70], color: 'inner' });
-      extra.push({ name: 'Base', size: [bw, 52.2, bd], at: [0, under + 26.1, -bd / 2], color: 'body' });
+      if (feet) for (const z of wheels ? [-20] : [-20, -bd + 20]) extra.push({ name: 'Foot', size: [bw - 10, under, 30], at: [0, under / 2, z], role: 'fittings' });
+      if (wheels) for (const x of [-1, 1]) extra.push({ name: 'Wheel', wheel: 80, at: [x * (bw / 2 + 12), 80, -bd + 70], role: 'tpu' });
+      extra.push({ name: 'Base', size: [bw, 52.2, bd], at: [0, under + 26.1, -bd / 2], role: 'base' });
       y = under + 52.2;
     }
     L.forEach((lv, i) => {
@@ -2301,18 +2384,18 @@ details.termfold[open] > summary { color: var(--ink); }
       lv.forEach(u => {
         const k = clean(u);
         if (!top || pair || k.type !== 'drawer') k.roof = 'none';
-        const [w, d] = unitExt(u), lines = linesOf(R.buildUnit(k, resolve));
-        const unit = { name: unitCode(u), key: `${u.type}|${u.w}|${u.d}|${u.h}`, level: i, x: x + w / 2, y, w, d, h: rise(u), drawer: u.type === 'drawer', lines: lines.filter(l => l.group !== 'Roof') };
+        const [w, d] = unitExt(u), lines = linesOf(R.buildUnit(k, resolve)).map(l => ({ ...l, cfg: u }));
+        const unit = { cfg: u, name: unitCode(u), key: `${u.type}|${u.w}|${u.d}|${u.h}`, level: i, x: x + w / 2, y, w, d, h: rise(u), drawer: u.type === 'drawer', lines: lines.filter(l => l.group !== 'Roof') };
         units.push(unit);
-        if (k.roof !== 'none') units.push({ name: unitCode(u).split(' · ')[0] + ' · ' + R.ROOFS.find(r => r.id === k.roof).label, key: `roof|${u.w}|${u.d}|${k.roof}`, level: i + 1, roof: true,
+        if (k.roof !== 'none') units.push({ cfg: u, name: unitCode(u).split(' · ')[0] + ' · ' + R.ROOFS.find(r => r.id === k.roof).label, key: `roof|${u.w}|${u.d}|${k.roof}`, level: i + 1, roof: true,
           x: unit.x, y: y + unit.h, w, d, h: 14.8, lines: lines.filter(l => l.group === 'Roof'), shared: unit.lines });
         x += w;
       });
       if (pair && top && lv.every(u => u.type === 'drawer') && lv[0].roof !== 'none' && R.familyForWidth(W)) {
         const rf = R.familyForWidth(W), lvUnits = units.filter(u => u.level === i);
-        units.push({ name: `${rf}${lv[0].d} · ` + R.ROOFS.find(r => r.id === lv[0].roof).label, key: `roof|${rf}|${lv[0].d}|${lv[0].roof}`, level: i + 1, roof: true,
+        units.push({ cfg: lv[0], name: `${rf}${lv[0].d} · ` + R.ROOFS.find(r => r.id === lv[0].roof).label, key: `roof|${rf}|${lv[0].d}|${lv[0].roof}`, level: i + 1, roof: true,
           x: 0, y: y + Math.max(...lv.map(rise)), w: W, d: unitExt(lv[0])[1], h: 14.8,
-          lines: linesOf(R.buildRoof(rf, lv[0].d, lv[0].roof, lv[0].topHandle, resolve)), shared: lvUnits.flatMap(u => u.lines) });
+          lines: linesOf(R.buildRoof(rf, lv[0].d, lv[0].roof, lv[0].topHandle, resolve)).map(l => ({ ...l, cfg: lv[0] })), shared: lvUnits.flatMap(u => u.lines) });
       }
       y += Math.max(...lv.map(rise));
     });
@@ -2325,8 +2408,8 @@ details.termfold[open] > summary { color: var(--ink); }
   function placeParts(unit) {
     const pl = PLACE.units[unit.key];
     if (!pl) return null;
-    const has = new Set([...unit.lines, ...(unit.shared || [])].map(l => R.norm(l.file.path)));
-    const parts = pl.parts.filter(([p]) => has.has(R.norm(p))).map(([path, role, group, m]) => ({ path, role, group, m }));
+    const has = new Map([...(unit.shared || []), ...unit.lines].map(l => [R.norm(l.file.path), l]));
+    const parts = pl.parts.filter(([p]) => has.has(R.norm(p))).map(([path, , group, m]) => { const l = has.get(R.norm(path)); return { path, group, m, role: l.role, cfg: l.cfg }; });
     const placed = new Set(pl.parts.map(([p]) => R.norm(p)));
     const unplaced = unit.lines.filter(l => !placed.has(R.norm(l.file.path))).map(l => l.label + (l.qty > 1 ? ' ×' + l.qty : ''));
     return { parts, unplaced };
@@ -2521,8 +2604,10 @@ details.termfold[open] > summary { color: var(--ink); }
     };
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.copy(target); controls.maxPolarAngle = Math.PI * 0.55; controls.update();
-    const mats = new Map(), mat = c => { if (!mats.has(c)) mats.set(c, new T.MeshStandardMaterial({ color: COLOR_FILL[c] || COLOR_FILL.all, roughness: 0.72, metalness: 0 })); return mats.get(c); };
-    const v = v3 = { t, T, renderer, scene, camera, controls, mat, mats, units: [], token: {} };
+    const mats = new Map(), mat = (role, cfg) => { const hex = colorHex(colorFor(role, cfg)); if (!mats.has(hex)) mats.set(hex, new T.MeshStandardMaterial({ color: hex, roughness: 0.72, metalness: 0 })); return mats.get(hex); };
+    const painted = (geo, role, cfg) => Object.assign(new T.Mesh(geo, mat(role, cfg)), { userData: { role, cfg } });
+    const v = v3 = { t, T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {} };
+    v.recolor = () => { scene.traverse(o => { if (o.isMesh && o.userData.role) o.material = mat(o.userData.role, o.userData.cfg); }); render(); };
     const render = () => renderer.render(scene, camera);
     v.render = render;
     controls.addEventListener('change', render);
@@ -2536,15 +2621,15 @@ details.termfold[open] > summary { color: var(--ink); }
     v.ro = new ResizeObserver(resize); v.ro.observe(box);
     for (const x of lay.extra) {
       const g = x.wheel ? new T.CylinderGeometry(x.wheel, x.wheel, 40, 48).rotateZ(Math.PI / 2) : new T.BoxGeometry(...x.size);
-      const m = new T.Mesh(g, mat(x.color)); m.position.set(...x.at); scene.add(m);
+      const m = painted(g, x.role, null); m.position.set(...x.at); scene.add(m);
     }
     // Each unit: a group at its place in the stack, its boxes, and a drawer group that slides out along +Z
     for (const u of lay.units) {
       const g = new T.Group(), drawer = new T.Group(), boxes = new T.Group();
       g.position.set(u.x, u.y, 0); g.add(boxes, drawer); scene.add(g);
-      const shell = new T.Mesh(new T.BoxGeometry(u.w - 1, u.h - 1, u.d), mat('body'));
+      const shell = painted(new T.BoxGeometry(u.w - 1, u.h - 1, u.d), u.roof ? 'roof' : 'shell', u.cfg);
       shell.position.set(0, u.h / 2, -u.d / 2); boxes.add(shell);
-      const front = u.drawer ? new T.Mesh(new T.BoxGeometry(u.w - 8, u.h - 8, 4), mat('inner')) : null;
+      const front = u.drawer ? painted(new T.BoxGeometry(u.w - 8, u.h - 8, 4), 'facade', u.cfg) : null;
       if (front) { front.position.set(0, u.h / 2, 2); drawer.add(front); }
       v.units.push({ ...u, g, drawer, boxes, front, place: placeParts(u), travel: u.drawer ? Math.round(u.d * 0.6) : 0 });
     }
@@ -2596,15 +2681,34 @@ details.termfold[open] > summary { color: var(--ink); }
     if (vaultFolder) loadParts(v); else v3status(v.units.some(u => u.place) ? 'Boxes for now. Choose your Vault folder to see the real parts.' : 'Boxes from the published sizes.');
   }
   // What each unit shows: real parts, or a box and why
+  // One unit's colours, role by role: its own choice or the stack's (step 2, Colors)
+  function unitColors(u, ui) {
+    const roles = [...new Set(u.lines.map(l => l.role))].filter(r => r !== 'tpu' && ROLE_BY_ID.has(r));
+    if (!roles.length) return '';
+    const own = (u.cfg && u.cfg.colors) || {}, n = roles.filter(r => own[r]).length;
+    return `<details class="ucol" data-ucol="${ui}" ${v3.colorsOpen.has(ui) ? 'open' : ''}><summary>Colors${n ? ` \u00b7 ${n} of its own` : ''}</summary>${roles.map(r => {
+      const def = colorName(colorFor(r, null));
+      return `<label class="crole"><span>${esc(ROLE_BY_ID.get(r).label)}</span><span class="csel">${swatch(colorFor(r, u.cfg))}<select data-unit="${ui}" data-urole="${r}">${colorOptions(own[r] && paletteOf(own[r]) ? own[r] : '', 'Stack\u2019s (' + def + ')')}</select></span></label>`;
+    }).join('')}</details>`;
+  }
   function v3list() {
     const v = v3; if (!v) return;
-    $('v3dList').innerHTML = v.units.map(u => {
+    v.colorsOpen = v.colorsOpen || new Set();
+    $('v3dList').innerHTML = v.units.map((u, ui) => {
       const st = !u.place ? 'Box: no measured placements for this unit yet'
         : u.loading ? 'Loading parts…' + (u.loaded ? ` ${u.loaded} in` : '')
         : u.loaded || u.failed ? `${plural(u.loaded, 'part')}${u.failed ? `, ${u.failed} couldn’t be shown` : ''}` : `Box until the folder is chosen (${plural(u.place.parts.length, 'part')} measured)`;
       const un = u.place && u.place.unplaced.length ? `<small>Not placed yet: ${esc(u.place.unplaced.join(', '))}</small>` : '';
-      return `<li><b>${esc(u.name)}</b><small>${esc(st)}</small>${un}</li>`;
+      return `<li><b>${esc(u.name)}</b><small>${esc(st)}</small>${un}${unitColors(u, ui)}</li>`;
     }).join('');
+    $('v3dList').querySelectorAll('details[data-ucol]').forEach(d => d.ontoggle = () => { d.open ? v.colorsOpen.add(+d.dataset.ucol) : v.colorsOpen.delete(+d.dataset.ucol); });
+    $('v3dList').querySelectorAll('select[data-urole]').forEach(sel => sel.onchange = () => {
+      const u = v.units[+sel.dataset.unit], cfg = u.cfg, role = sel.dataset.urole;
+      cfg.colors = { ...(cfg.colors || {}) };
+      if (sel.value) cfg.colors[role] = sel.value; else delete cfg.colors[role];
+      if (!Object.keys(cfg.colors).length) delete cfg.colors;
+      save(); v.recolor(); v3list(); renderAll();
+    });
     $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder;
     $('v3dPick').textContent = vaultFolder ? 'Change folder' : 'Show the real parts…';
   }
@@ -2628,7 +2732,7 @@ details.termfold[open] > summary { color: var(--ink); }
       for (const u of todo) for (const p of u.place.parts) {
         if (p.path !== path) continue;
         if (!u.loaded) { u.boxes.visible = false; if (u.front) u.drawer.remove(u.front); }
-        const mesh = new T.Mesh(g, v.mat(ROLE_COLOR[p.role] || 'body')), m = p.m;
+        const mesh = v.painted(g, p.role, p.cfg), m = p.m;
         mesh.matrixAutoUpdate = false;
         mesh.matrix.set(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], 0, 0, 0, 1);
         (p.group === 'drawer' ? u.drawer : u.parts).add(mesh);
@@ -2674,6 +2778,20 @@ details.termfold[open] > summary { color: var(--ink); }
     const missing = [...new Set(plan.plates.flatMap(p => p.pieces.map(x => x.path)))].filter(p => !findFile(folder.files, p));
     if (missing.length) throw new Error(`${plural(missing.length, 'part')} not found in \u201c${folder.name}\u201d: ${missingList(missing)}. Pick the Vault download folder (${SRC_DEFAULT.split('/').pop()}).`);
     const ps = plan.printer && BAMBU.per[plan.printer] ? { ...BAMBU.base, ...BAMBU.per[plan.printer] } : null;
+    // One filament per plate colour, in its colour: the first in slot 1, TPU staying in slot 2 as in Bambu Studio's
+    // own projects, the others from slot 3 on. Bambu Studio fills the per-filament settings a project lists fewer of
+    // from the first filament's, so the extra colours get slot 1's PLA settings.
+    const tpuSlot = ps && ps.filament_settings_id.length > 1 ? 2 : 1;
+    const pla = [...new Map(plan.plates.filter(pl => pl.color !== 'tpu').map(pl => [pl.color, pl.hex])).entries()];
+    const slotOf = new Map(pla.map(([c], i) => [c, i === 0 ? 1 : i + tpuSlot]));
+    if (ps && pla.length) {
+      const ids = ps.filament_settings_id, n = Math.max(ids.length, pla.length + (tpuSlot === 2 ? 1 : 0));
+      const colours = Array.from({ length: n }, (_, i) => (ps.filament_colour || [])[Math.min(i, (ps.filament_colour || ['#00AE42']).length - 1)] || '#00AE42');
+      const sids = Array.from({ length: n }, (_, i) => i === tpuSlot - 1 && tpuSlot === 2 ? ids[1] : ids[0]);
+      if (tpuSlot === 2) colours[1] = '#1F1F1F';
+      pla.forEach(([c, hex]) => { colours[slotOf.get(c) - 1] = hex.toUpperCase(); });
+      ps.filament_settings_id = sids; ps.filament_colour = colours;
+    }
     const ver = (ps && ps.version) || '02.09.01.70';
     // Bambu Studio spaces plates by the whole bed, wider than one nozzle's reach on dual-nozzle printers
     const [BED_W, BED_D] = plan.plate || plan.bed, count = plan.plates.length;
@@ -2719,7 +2837,7 @@ details.termfold[open] > summary { color: var(--ink); }
         if (p.walls) extra += `    <metadata key="wall_loops" value="${p.walls}"/>\n`;
         if (p.infill) extra += `    <metadata key="sparse_infill_density" value="${p.infill}%"/>\n`;
         if (p.brim) extra += `    <metadata key="brim_type" value="outer_only"/>\n    <metadata key="brim_width" value="${p.brim === true ? 5 : p.brim}"/>\n`;
-        settings.push(`  <object id="${objId}">\n    <metadata key="name" value="${xmlEsc(p.name)}"/>\n    <metadata key="extruder" value="${p.tpu && ps && ps.filament_settings_id.length > 1 ? 2 : 1}"/>\n${extra}    <part id="${meshId}" subtype="normal_part">\n      <metadata key="name" value="${xmlEsc(p.name)}"/>\n      <metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>\n    </part>\n  </object>\n`);
+        settings.push(`  <object id="${objId}">\n    <metadata key="name" value="${xmlEsc(p.name)}"/>\n    <metadata key="extruder" value="${p.tpu ? tpuSlot : slotOf.get(plate.color) || 1}"/>\n${extra}    <part id="${meshId}" subtype="normal_part">\n      <metadata key="name" value="${xmlEsc(p.name)}"/>\n      <metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>\n    </part>\n  </object>\n`);
         inst.push(`    <model_instance>\n      <metadata key="object_id" value="${objId}"/>\n      <metadata key="instance_id" value="0"/>\n      <metadata key="identify_id" value="${objId}"/>\n    </model_instance>\n`);
         cut.push(` <object id="${cut.length + 1}">\n  <cut_id id="0" check_sum="1" connectors_cnt="0"/>\n </object>\n`);
         done++;

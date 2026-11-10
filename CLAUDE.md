@@ -40,6 +40,12 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   card): three.js 0.186.1 and meshoptimizer 1.3.0 from jsDelivr, loaded on open; boxes before the folder is picked,
   then real parts simplified in workers (0.15 mm, cached in IndexedDB); click a drawer to open or close it.
   Checked in Chrome: L7 4F + 2F + 1F + grid roof, 16.4M → 151k triangles. `build.py` embeds `window.VAULT_PLACEMENTS`.
+- Colours: `R.ROLES` / `roleOf` (rules.js) give every part a colour role whose default is its old `colorOf` colour
+  (`validate.js` checks), so a build with no choices plans exactly as before. Palette + role choices in
+  `colorPrefs` (localStorage `vpp.colors`, panel "Colors" in step 2); per-unit choices in the unit's own `cfg.colors`
+  (edited in the 3D view's side list). `paintLines` recolours lines; a non-default colour gets its own line key
+  (`path#colour`), so plates and progress keep it apart. The Bambu project gets one filament per plate colour
+  (slot 1, TPU in 2, others from 3) — **not yet checked in Bambu Studio**.
 - Checked: `tools/placements/blender_check_placements.py` rebuilt an L7 4F + 2F + 1F + grid roof tower from the
   JSON alone, and an S3 1F from the **original** download files. The matrices apply to the user's files as they are.
 

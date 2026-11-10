@@ -43,6 +43,40 @@
     return 'body';
   }
 
+  // What a part is, for choosing its colour. Each role has one default colour, the one colorOf gives all its parts
+  // (validate.js checks), so a build with no colour choices plans exactly as before.
+  const ROLES = [
+    { id: 'shell', label: 'Module shells and case bodies', def: 'body' },
+    { id: 'facade', label: 'Drawer and case fronts', def: 'body' },
+    { id: 'box', label: 'Drawer boxes', def: 'inner' },
+    { id: 'roof', label: 'Roofs and lids', def: 'body' },
+    { id: 'mech', label: 'Runner slides, keys, hinges and locks', def: 'inner' },
+    { id: 'accent', label: 'Latches, springs, rails and stoppers', def: 'accent' },
+    { id: 'interior', label: 'Gridfinity baseplates and grid dividers', def: 'body' },
+    { id: 'dividers', label: 'Dividers', def: 'inner' },
+    { id: 'label', label: 'Labels', def: 'body' },
+    { id: 'base', label: 'Base, wheels, handles, mounts', def: 'body' },
+    { id: 'fittings', label: 'Backbones, feet, knobs, handle locks', def: 'inner' },
+    { id: 'aids', label: 'Print aids (manual supports, jigs)', def: 'body' },
+  ];
+  function roleOf(label, group) {
+    if (/tire|tyre/i.test(label)) return 'tpu';
+    if (/^springs|^latch|geared rail|runner stopper|hinge rods/i.test(label)) return 'accent';
+    if (/manual support|jig/i.test(label)) return 'aids';
+    if (/label/i.test(label)) return 'label';
+    if (/front \(facade\)|^drawer front|^case front|facade cap|key cap/i.test(label)) return 'facade';
+    if (/drawer box|back panel/i.test(label)) return 'box';
+    if (/runner slide|key lock|hidden key|^hinge|^lock (holder|inner|outer|pin)/i.test(label)) return 'mech';
+    if (/^divider$|depth divider|width divider|seal divider/i.test(label)) return 'dividers';
+    if (/gridfinity baseplate|grid divider|divider edge|divider pin/i.test(label)) return 'interior';
+    if (/backbone|handle lock|knob|^foot$|top handle|heavyweight roof handle|second part/i.test(label)) return 'fittings';
+    if (group === 'Roof' || group === 'Lid') return 'roof';
+    if (/module shell|case body|accessory|runner guide/i.test(label)) return 'shell';
+    if (/^base|wheel|bushing|stationary handle|pull-out handle|pegboard|wall mount plate/i.test(label)) return 'base';
+    const c = colorOf(label, group);
+    return c === 'inner' ? 'fittings' : c === 'accent' ? 'accent' : 'shell';
+  }
+
   // Print strength per part. The design is tuned for the profile default (2 walls, 15% infill), so most parts stay there;
   // more walls on big thin parts only adds shrink stress (warping, tight drawers). Extra walls go where bolts or wear are,
   // and extra walls + infill where the part carries the tower or takes force. Flexing parts must stay default.
@@ -322,7 +356,7 @@
     const add = (group, label, path, qty, extra = {}) => {
       const f = resolve(path) || (extra.fallback && resolve(extra.fallback));
       if (!f) { missing.push(path); return; }
-      const l = { group, label, file: f, qty, color: colorOf(label, group), ...strengthOf(label), ...extra };
+      const l = { group, label, file: f, qty, color: colorOf(label, group), role: roleOf(label, group), ...strengthOf(label), ...extra };
       // Bambu Studio's own check says this part has overhangs that need supports (see src/bambu-support-audit.tsv)
       if (f.needsSupport && !l.aid) { l.supports = true; if (!extra.supports) l.supportsWhy = 'bambu'; }
       lines.push(l);
@@ -350,6 +384,6 @@
     return { lines: k.lines, missing: k.missing, hardware: kind === 'grid' && topHandle ? [{ item: 'M6 × 50 mm countersunk bolt', qty: 2, why: 'Roof top handle' }] : [] };
   }
 
-  const api = { buildUnit, buildStack, buildRoof, makeResolver, exterior, familyForWidth, HEIGHTS, DEPTHS, ROOFS, WIDTH_MM, norm };
+  const api = { buildUnit, buildStack, buildRoof, makeResolver, exterior, familyForWidth, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, norm };
   if (typeof module !== 'undefined') module.exports = api; else root.VaultRules = api;
 })(this);
