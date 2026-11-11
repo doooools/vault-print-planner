@@ -59,8 +59,13 @@ for path in blends:
         M = C @ inv @ o.matrix_world @ mathutils.Matrix.Translation(-centre[f])
         rows = [[round(M[i][j], 6) for j in range(3)] + [round(M[i][3], 3)] for i in range(3)]
         entry = [canonical(f), o["vault_role"], o["vault_group"], [v for r in rows for v in r]]
+        extra = {}
         if "vault_piece" in o:   # one connected piece of a file that holds several (blender_pieces.py)
-            entry.append({"piece": [round(v, 3) for v in o["vault_piece"]]})
+            extra["piece"] = [round(v, 3) for v in o["vault_piece"]]
+        if "vault_joint" in o:   # the part moves with this joint of the unit's "motion"
+            extra["joint"] = o["vault_joint"]
+        if extra:
+            entry.append(extra)
         parts.append(entry)
         # unit bounds from the real vertices
         mw = C @ inv @ o.matrix_world
@@ -73,6 +78,8 @@ for path in blends:
     units[key] = {"name": name, "bbox": [[round(x, 1) for x in lo], [round(x, 1) for x in hi]], "parts": parts}
     if root.get("vault_hinge"):
         units[key]["hinge"] = json.loads(root["vault_hinge"])
+    if root.get("vault_motion"):
+        units[key]["motion"] = json.loads(root["vault_motion"])
     print("EXPORTED", key, len(parts), "parts")
 
 # A single L² or XL² unit on top of a stack gets the L or XL roof (rules.js), keyed by its own width
@@ -90,7 +97,9 @@ data.update({
              "group 'drawer' parts slide out along +Z when the drawer opens; group 'lid' parts (a case's lid and "
              "hinge tops) turn about the unit's 'hinge' axis (origin, axis, right-handed, 0 to open_deg degrees). "
              "A 5th element {\"piece\": [x, y, z]} means: only the connected piece of the file (vertices welded) "
-             "whose bounding-box centre is nearest to that point, in the file's own coordinates.",
+             "whose bounding-box centre is nearest to that point, in the file's own coordinates; {\"joint\": id} "
+             "means the part moves with that joint of the unit's 'motion' (key locks, racks, case latches: "
+             "tools/placements/README.md, 'Motion').",
     "stack": {"note": "a module's underside rests on the top face of the one below: the next unit starts "
                       "first + per_level * (levels - 1) above the bottom of the one below (measured on L7)",
               "first": 52.0, "per_level": 48.0,

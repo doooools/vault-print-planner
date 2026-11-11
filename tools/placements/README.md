@@ -7,7 +7,7 @@ from the user's own Vault files. It holds numbers only, no geometry, like `src/s
 
 ```
 units["drawer|L|7|2"] = { name, bbox, parts: [[path, role, group, m], [path, role, group, m, {piece}], ...] }
-units["case|S|3|1"]  = { ..., hinge: { origin: [0, 50.8, -153.59], axis: [-1, 0, 0], open_deg: 105 } }
+units["case|S|3|1"]  = { ..., hinge: { origin: [0, 50.8, -153.59], axis: [-1, 0, 0], open_deg: 105 }, motion: {...} }
 units["roof|L|7|grid"] = ...
 stack = { first: 52, per_level: 48 }
 ```
@@ -37,6 +37,9 @@ stack = { first: 52, per_level: 48 }
   with the body's top, 7.49 mm behind its back face. `open_deg` is 105, the manual's open view (p. 17).
   Swept in steps on the exported parts, nothing meets the body, the leaves or the rods before 180°.
 - **m**: a 3×4 row-major matrix that takes the file's own coordinates (as downloaded) to the unit frame. The unit frame uses three.js axes: +X right seen from the front, +Y up, +Z towards the viewer, in mm. Its origin is the middle of the module's front bottom edge.
+- **joint** (in the 5th element, `{"joint": "key"}`, with or without `piece`): the part moves with that joint of
+  the unit's `motion` (a latch's two bodies: `"latch_1.link"`, `"latch_1.lever"`).
+- **motion** (every drawer and case): see "Motion" below.
 - **stack**: a unit starts `first + per_level × (levels − 1)` mm above the bottom of the unit below it (52 / 100 / 196 for 1F / 2F / 4F). Roofs sit like a module.
 
   `stack.case.rise` gives the same for a case: body height + 15.6 (66.4 / 100.4 / 196.4).
@@ -44,6 +47,82 @@ stack = { first: 52, per_level: 48 }
 Done: every drawer (S, M, L, L², XL, XL², all depths and heights), every roof, every case. Not yet: bases,
 wheels, feet, handles, the mounts on the back of a unit and a few small or optional parts.
 `COVERAGE.md` lists every unit the planner can build, its status and the files left out, with the reason.
+
+## Motion
+
+`units[key].motion = { joints: {...}, open: [steps] }`, in the unit frame, with the drawer closed and the lid down.
+Each joint goes from 0 (the part as placed) to 1:
+
+- `{"turn": {"origin": [x, y, z], "axis": [x, y, z], "deg": d}}`: turns by d degrees, right-handed about the axis
+  through the origin (a key);
+- `{"slide": [dx, dy, dz]}`: moves by that much (a rack);
+- `{"latch": {"axis", "A", "B", "C", "slide", "out", "phi", "theta", "split"}}`: a case's toggle latch, two bodies
+  (parts `<id>.link` and `<id>.lever`). In the plane normal to `axis` (here −X; u = z, v = y, angles right-handed
+  about the axis): the link turns about A by φ and carries the pin B, on which the lever hangs. For s ≤ `split`
+  (phase 1) φ goes from 0 to φ1 and the lever's tooth C slides along `slide` (an inverted slider-crank: C stays at
+  |BC| from B on its line), φ1 being where C has slid `out` mm; the lever's turn θ is the turn of the segment BC.
+  For s > `split` (phase 2), φ goes on to `phi` and θ to `theta`, linearly. The lever's pose is "turn by θ about B
+  as placed, then move B to where the link has it". The same lines are in `kinematics.py` (`Latch`) and in the
+  page (`latchSetup`, `latchPose`).
+
+`drawer` (the drawer's slide, group `drawer`, along +Z; the page pulls it out by 0.6 × its depth) and `lid` (the
+case's `hinge`, 0 to `open_deg`) are the unit's own joints. `open` lists the steps, in order: each moves its
+`joints` from `from` to `to`, together, eased, in a share `s` of the time (the page runs the whole in 0.6–1 s). A
+closed unit is at the start of the steps, an open one at the end; closing runs them backwards.
+- Drawer: `[{joints: [key, rack_lo, rack_hi], from: 1, to: 0, s: 0.35}, {joints: [drawer], from: 0, to: 1, s: 0.55}]`
+  (L² and XL²: `key_left`/`key_right`, `key_S`/`key_M`, … all in the first step). Closed, the drawer is locked.
+- Case: `[{joints: [latch_1(, latch_2)], from: 0, to: 1, s: 0.45}, {joints: [lid], from: 0, to: 1, s: 0.6}]`.
+
+What it is (measured with sections of the user's files, `kinematics.py`, and the manual):
+
+- **Key lock** (every drawer; the hidden key and its removable key are the same joint). The key is a 20-tooth
+  pinion (4 mm pitch, tips at r 14.08) between the two racks, on an axis normal to the facade, 28.3 mm above the
+  module's bottom, at the drawer's middle. As placed it is open: knob across, its dot towards the open padlock
+  engraved right of it on the facade (manual "Drawer Assembly" 6/8: "insert lock in this open mode"). Locked: a
+  quarter turn anticlockwise seen from the front (dot to the tick above), `deg` 90. Each rack then moves 5 teeth,
+  20.0 mm: the bottom one to the right, the top one to the left; their 2.7 mm tabs go into the module's side
+  pockets (3.0 mm high, their rounded ends 0.7 mm further on). The key's back is a lens-shaped cam, 45.0 mm tip to
+  tip: locked, its lobes fill two notches in the module's front frame (5.8 and 50.8 mm up), so the key locks the
+  drawer even without the racks (they are optional: "extra locking force"). Swept in 1° steps, the pinion and the
+  racks stay in mesh (sections overlap ≤ 0.01 mm² at 20.0 mm per quarter turn; 21 mm drifts to 3 mm²).
+- **Drawer height** (found with the lock): the box sits 9.8 mm above the module's bottom (`MODULE_UNDER_BOX`, was
+  8.6 from L7). Locked, the cam and the tabs only fit 1.20 mm higher than the old placement put them, the same on
+  every drawer family (S, M, L, L², XL, XL², 1F to 4F: the notches are always 5.8 / 50.8 mm up). The 1.2 mm also
+  centres the runner guides in the module's recesses (they stuck 0.7 mm into their floor), the stoppers in the
+  module's side holes (28.3 mm up), and makes the facade flush with the module's front frame (4.8 and 51.8 mm).
+  Every part of a drawer moved up 1.2 mm in the JSON but the module and its latches.
+- **Toggle latch** (every case; a "double throw" latch, manual p. 17), the same on every size and height relative
+  to the holder's pin A (T − 9.01 mm on 1F, T − 15.01 on 2F/4F, 10.2 mm in front of the panel; T the body height):
+  - the link's two holes are 15 mm apart; one end is a fork (15.3 mm gap) and goes on the holder's lug (30 mm wide)
+    on pin A, the other, solid, goes between the lever's ears on pin B. (The JSON had it the other way up, its solid
+    end through the lug: it is now turned end for end.) B is 15.0 mm under A and 0.99 mm in front of it (the lever's
+    ears rest on the panel's seat), so the link leans 3.8° forward;
+  - the lever's tooth C (its lowest point, 30.19 mm above B and 10.30 mm behind it; 36.19 above on the 2-4F lever,
+    6 mm longer below the same hook) sits in the lid's front groove;
+  - the toggle's dead centre (A between B and C, the tooth lowest) is about 30° forward of the closed link: closed,
+    the latch is past it, held by the ears on the panel. Opening goes back through it: the tooth bites 0.9 mm more
+    into the groove's ramp on the way (the latch's draw, taken by the parts' flex; rigid copies overlap there, up to
+    8.5 mm² of section, and closed they already overlap 4.8 mm², 0.8 mm deep: the preload). Phase 1 ends at
+    φ1 = 80.4°, the tooth 4 mm up, clear of the lid's lip; phase 2 brings the link back to 30° and swings the lever
+    forward to −40°: open, the latch hangs leaning 40° out in front of the panel, its hook clear of the lid. The link
+    can only turn 0–80° against the lever (beyond, it hits the lever's pocket): 30 − (−40) = 70, and it stays in
+    that range all the way (49 at the end of phase 1). With the link under 20° the lever's foot would touch the panel.
+
+Checked (`python -I kinematics.py check src/stl-placements.json <download> <keys>`, 31 steps; key frames from
+`blender_motion.py`): drawers S3 1F, M6 4F, L7 4F, L²3, XL3, XL7, XL²5 (key, and S3 / XL7 with the hidden key):
+nothing new on the way but a lobe of the cam grazing the notch's edge (≤ 0.9 mm² of section). Cases S3 1F, M5 2F,
+L7 2F, XL7 1F, S7 4F: the tooth's squeeze through the dead centre (4.8 mm² closed, 6.2 on 2-4F levers and 8.5 on
+1F at most) and the lid grazing a holder by 0.1 mm² as it starts; nothing touches the open latch while the lid turns.
+
+Left as found:
+- **XL racks** (XL3–XL7): locked, each rack's full-height part reaches 3.7 mm under the lower (upper) lip of the XL
+  runner guide, 1.6 mm deep (6 mm² of section); on S, M, L its shoulder stops 0.4 mm short of the guide. The XL
+  guide has no notch there and the key's cam fits its notches at 90° on XL as everywhere, so one of the XL parts is
+  probably a few mm off; not changed.
+- The key's flange overlaps the racks' top edge by 0.24 mm (2–5 mm² of section) as placed, and a lobe of the cam
+  grazes the notch's edge on the way in (≤ 0.9 mm²).
+- A drawer's runner slides overlap the box's grooves (57–141 mm² of section along the slide) and the M5/S5
+  baseplates their boxes: the placements, not the motion.
 
 ## How it is measured
 
@@ -63,6 +142,8 @@ The files are exported in print orientation (some at 45° to fit the bed) and sc
 | `blender_assemble.py` | Builds a unit from a recipe, renders check views (including sections) and saves a `.blend` with the root and drawer empties. |
 | `blender_export_placements.py` | `.blend` files → `src/stl-placements.json`. |
 | `blender_check_placements.py` | Rebuilds a stack from the JSON alone, as the page will, and renders it. |
+| `kinematics.py` | The units' motion as the page runs it (every part's pose at t, 0 closed … 1 open), and a check that no part goes through another on the way (sections across the motion, shapely). |
+| `blender_motion.py` | Key frames of a unit opening, from the JSON alone with kinematics.py's pose: views and sections. |
 | `blender_tower.py`, `blender_showcase.py`, `blender_render.py`, `blender_check_views.py` | Towers, side-by-side scenes, Cycles renders, section views. |
 
 ## Running it
@@ -93,7 +174,7 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
 ## Rules measured on L7 (CAD frame: X across, +Y to the front, Z up)
 
 - Every height is a stack of 48 mm levels. Level k is at z = 23.5 + 48k. Each level has its runner slides (box groove, 2.2 mm deep), runner guides (on the module wall, + 3.58 mm) and stoppers (module side hole, 128.56 mm behind the front).
-- Module: Rx −90°, plus Ry −45° for the 1F, which is printed diagonally. Centred on the box, front at the box front + 0.06, bottom at z −3.6.
+- Module: Rx −90°, plus Ry −45° for the 1F, which is printed diagonally. Centred on the box, front at the box front + 0.06, bottom at z −4.8 (box bottom − 9.8: see "Motion", drawer height; it was −3.6).
 - Facade: Rx −90°. Its back is on the box front, its bottom at z 0, and its bolt holes line up with the box's.
 - Key: Rx −90°, centre at facade back + 8.16. Key cap: Rx +90°, centre at facade back + 25.16. Both on the bottom level.
 - Geared rails: see "Geared rails" below (the first session's rule, both racks of the file at z 15.02 / 31.98
@@ -174,7 +255,8 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
   - the holder (the "UP" plate) lies across behind the panel, bolted into the 4 blind holes beside the notch
     (61.4 × 9 mm apart, their centre 11.7 mm under the top on 1F, 17.7 mm on 2-4F); its lug goes forward
     through the notch; "UP" reads upright from inside, as in the manual;
-  - the link (LOCK INNER PART, holes 15 mm apart) hangs from the lug's pin, inside the lever's back pocket;
+  - the link (LOCK INNER PART, holes 15 mm apart): its fork on the lug's pin, its solid end on the lever's pin,
+    inside the lever's back pocket (see "Motion");
   - the lever (LOCK OUTER PART; the 2-4F one is 6 mm longer, matching the holes 6 mm lower) is pinned to the
     link's lower hole and lies in the panel's seat recess; its hook comes over the lid's front edge, its top at
     body top + 15.0 mm on every height.
