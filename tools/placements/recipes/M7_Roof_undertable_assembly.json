@@ -1,0 +1,57 @@
+{
+ "name": "M7_Roof_undertable",
+ "key": "roof|M|7|undertable",
+ "notes": [
+  "1 latch(es)"
+ ],
+ "parts": [
+  {
+   "name": "M7_Roof_undertable_Roof",
+   "file": "01. DRAWERS/02. M Families/M7/Roofs/M7 Under Table Mount Roof.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -45.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     0.06
+    ],
+    "z": [
+     "min",
+     -3.6
+    ]
+   }
+  },
+  {
+   "name": "M7_Roof_undertable_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     -0.05
+    ],
+    "y": [
+     "max",
+     -250.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "M7_Roof_undertable_Roof"
+ }
+}

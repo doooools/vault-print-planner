@@ -1,0 +1,82 @@
+{
+ "name": "S7_Roof_grid",
+ "key": "roof|S|7|grid",
+ "notes": [
+  "1 latch(es)"
+ ],
+ "parts": [
+  {
+   "name": "S7_Roof_grid_Roof",
+   "file": "01. DRAWERS/01. S Families/S7/Roofs/S7 Grid Roof.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -45.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     0.06
+    ],
+    "z": [
+     "min",
+     -3.6
+    ]
+   }
+  },
+  {
+   "name": "S7_Roof_grid_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     0.025
+    ],
+    "y": [
+     "max",
+     -250.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  },
+  {
+   "name": "S7_Roof_grid_TopHandle",
+   "file": "01. DRAWERS/07. Universal/Top Handle (Turn On Supports).stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    90,
+    0,
+    90
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "center",
+     -156.925
+    ],
+    "z": [
+     "min",
+     11.15
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "S7_Roof_grid_Roof"
+ }
+}

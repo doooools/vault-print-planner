@@ -1,0 +1,102 @@
+{
+ "name": "XL7_Roof_heavy",
+ "key": "roof|XL|7|heavy",
+ "notes": [
+  "2 latch(es)"
+ ],
+ "parts": [
+  {
+   "name": "XL7_Roof_heavy_Roof",
+   "file": "01. DRAWERS/05. XL Families/XL7/Roofs/XL7 Heawyweight Roof.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -42.8,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     0.06
+    ],
+    "z": [
+     "min",
+     -3.6
+    ]
+   }
+  },
+  {
+   "name": "XL7_Roof_heavy_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     126.925
+    ],
+    "y": [
+     "max",
+     -250.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  },
+  {
+   "name": "XL7_Roof_heavy_Latch_2",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     -82.325
+    ],
+    "y": [
+     "max",
+     -250.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  },
+  {
+   "name": "XL7_Roof_heavy_Handle",
+   "file": "01. DRAWERS/07. Universal/Heawyweight Roof Handle.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    0,
+    0,
+    90
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "center",
+     -156.926
+    ],
+    "z": [
+     "center",
+     41.4
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "XL7_Roof_heavy_Roof"
+ }
+}

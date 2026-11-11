@@ -1,0 +1,57 @@
+{
+ "name": "S3_Roof_table",
+ "key": "roof|S|3|table",
+ "notes": [
+  "1 latch(es)"
+ ],
+ "parts": [
+  {
+   "name": "S3_Roof_table_Roof",
+   "file": "01. DRAWERS/01. S Families/S3/Roofs/S3 Table Roof.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -45.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     0.06
+    ],
+    "z": [
+     "min",
+     -3.6
+    ]
+   }
+  },
+  {
+   "name": "S3_Roof_table_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     0.035
+    ],
+    "y": [
+     "max",
+     -82.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "S3_Roof_table_Roof"
+ }
+}

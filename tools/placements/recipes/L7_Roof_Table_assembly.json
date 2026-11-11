@@ -1,24 +1,28 @@
 {
- "name": "L7_Roof_Table",
+ "name": "L7_Roof_table",
+ "key": "roof|L|7|table",
+ "notes": [
+  "2 latch(es)"
+ ],
  "parts": [
   {
-   "name": "L7_Roof_Table_Roof",
+   "name": "L7_Roof_table_Roof",
    "file": "01. DRAWERS/03. L Families/L7/Roofs/L7 Table Roof.stl",
    "role": "roof",
    "group": "module",
    "rot": [
-    -90,
-    -45,
-    0
+    -90.0,
+    -45.0,
+    0.0
    ],
    "align": {
     "x": [
      "center",
-     3001.55
+     0.0
     ],
     "y": [
      "max",
-     -145.6
+     0.06
     ],
     "z": [
      "min",
@@ -27,18 +31,18 @@
    }
   },
   {
-   "name": "L7_Roof_Table_Latch_L",
+   "name": "L7_Roof_table_Latch_1",
    "file": "01. DRAWERS/07. Universal/Latch.stl",
    "role": "accent",
    "group": "module",
    "align": {
     "x": [
      "center",
-     2919.25
+     82.425
     ],
     "y": [
      "max",
-     -396.14
+     -250.35
     ],
     "z": [
      "min",
@@ -47,18 +51,18 @@
    }
   },
   {
-   "name": "L7_Roof_Table_Latch_R",
+   "name": "L7_Roof_table_Latch_2",
    "file": "01. DRAWERS/07. Universal/Latch.stl",
    "role": "accent",
    "group": "module",
    "align": {
     "x": [
      "center",
-     3083.8500000000004
+     -82.325
     ],
     "y": [
      "max",
-     -396.14
+     -250.35
     ],
     "z": [
      "min",
@@ -68,6 +72,6 @@
   }
  ],
  "finalize": {
-  "anchor": "L7_Roof_Table_Roof"
+  "anchor": "L7_Roof_table_Roof"
  }
 }
