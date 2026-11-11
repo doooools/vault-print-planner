@@ -70,10 +70,11 @@ KEY_TURN = 90.0
 RACK_TRAVEL = 20.0                   # 5 teeth: a quarter of 20 teeth of 4 mm
 
 
-def key_lock(r, t, ux):
-    """A drawer's key and racks as joints, in the unit frame (ux: the key's x). Each joint goes from 0 (as placed,
-    unlocked) to 1 (locked). A closed drawer is locked: opening turns the key back, then pulls the drawer."""
-    r.joints[f"key{t}"] = {"turn": {"origin": [round(ux, 3), KEY_UP, 0.0], "axis": [0, 0, 1], "deg": KEY_TURN}}
+def key_lock(r, t, ux, up=0.0):
+    """A drawer's key and racks as joints, in the unit frame (ux: the key's x; up: the drawer's height above the
+    module's first level). Each joint goes from 0 (as placed, unlocked) to 1 (locked). A closed drawer is locked:
+    opening turns the key back, then pulls the drawer."""
+    r.joints[f"key{t}"] = {"turn": {"origin": [round(ux, 3), round(KEY_UP + up, 3), 0.0], "axis": [0, 0, 1], "deg": KEY_TURN}}
     r.joints[f"rack_lo{t}"] = {"slide": [RACK_TRAVEL, 0.0, 0.0]}
     r.joints[f"rack_hi{t}"] = {"slide": [-RACK_TRAVEL, 0.0, 0.0]}
     lock = [j for j in r.joints if j.startswith(("key", "rack_"))]
@@ -148,11 +149,14 @@ class Recipe:
     def __init__(self, name, key):
         self.name, self.key, self.parts, self.notes, self.hinge = name, key, [], [], None
         self.joints, self.steps = {}, None
+        self.layout, self.tags = None, None   # a layout recipe: its id and drawers; tags put on the parts made now
 
     def part(self, nm, file, role, group, rot=None, align=None, move=None, pick=None, joint=None):
         d = {"name": f"{self.name}_{nm}", "file": file, "role": role, "group": group}
         if joint:
             d["joint"] = joint
+        if self.tags:
+            d["tags"] = dict(self.tags)
         if rot and any(rot):
             d["rot"] = rot
         if align:
@@ -182,6 +186,8 @@ class Recipe:
             out["hinge"] = self.hinge
         if self.joints:
             out["motion"] = {"joints": self.joints, "open": self.steps}
+        if self.layout:
+            out["layout"] = self.layout
         return out
 
 
@@ -274,9 +280,12 @@ def slide_front(rel):
     return FEAT[key]
 
 
-def insert_sml(r, w, d, h, box, cx, yf, zb, mod_rot, mod_file, tag="", box_rel=None, ux=0.0):
+def insert_sml(r, w, d, h, box, cx, yf, zb, mod_rot, mod_file, tag="", box_rel=None, ux=0.0, up=0.0, module_parts=True):
     """Box, facade, lock, runners, stoppers, latches, caps and label of one S/M/L drawer, relative to
-    its box (cx, yf, zb). mod_file/mod_rot: the module whose holes and frames we read."""
+    its box (cx, yf, zb). mod_file/mod_rot: the module whose holes and frames we read.
+    up: the box's height above the module's first level (48 mm a level, LEVEL_PITCH), already in zb; the key's
+    joint needs it in the unit frame. module_parts=False leaves out the runner guides and stoppers (a layout
+    recipe places the shell's own, on every level)."""
     W = WIDTH[w]
     bmn, bmx = bbox(box)
     mxmin, mxmax = cx - W / 2, cx + W / 2
@@ -290,8 +299,11 @@ def insert_sml(r, w, d, h, box, cx, yf, zb, mod_rot, mod_file, tag="", box_rel=N
     for bp in sorted(k for k in IDX.rows if k.startswith(fam + f"{w}{d}/Gridfinity Baseplate/")):
         pmn, _ = bbox(bp)
         nm = "Baseplate" + ("_H" + re.search(r"With (\d)", bp).group(1) if "With" in bp else "")
+        # (a layout puts a box of another height at the shell box's front yf: M3's 2F and 4F boxes are 0.5 mm
+        # further forward in the CAD file than its 1F box, so keep the baseplate where it is in its own box)
+        dyb = yf - bmx[1] if r.layout else 0.0
         r.part(f"{nm}{t}", bp, "insert", "drawer", None,
-               {"x": ["center", cx], "y": ["min", bmn[1] + (pmn[1] - b1mn[1])], "z": ["min", zb + pmn[2] - 5.0]})
+               {"x": ["center", cx], "y": ["min", bmn[1] + dyb + (pmn[1] - b1mn[1])], "z": ["min", zb + pmn[2] - 5.0]})
     fac = need(fam + f"Facades/{w}{h}F (Turn On Supports).stl")
     r.part(f"Facade{t}", fac, "facade", "drawer", [-90, 0, 0], {"x": ["center", cx], "y": ["min", yf], "z": ["min", zb - 5]})
     z0 = zb + 18.5
@@ -299,7 +311,7 @@ def insert_sml(r, w, d, h, box, cx, yf, zb, mod_rot, mod_file, tag="", box_rel=N
            {"x": ["center", cx], "y": ["center", yf + 8.16], "z": ["center", z0]}, joint=f"key{t}")
     r.part(f"KeyCap{t}", U + "Key Cap.stl", "facade", "drawer", [90, 0, 0],
            {"x": ["center", cx], "y": ["center", yf + 25.16], "z": ["center", z0]}, joint=f"key{t}")
-    key_lock(r, t, ux)
+    key_lock(r, t, ux, up)
     hidden_key(r, cx, yf, z0, t)
     rails(r, w, cx, yf, zb, t)
     side = feat("side", mod_file, mod_rot)
@@ -313,6 +325,8 @@ def insert_sml(r, w, d, h, box, cx, yf, zb, mod_rot, mod_file, tag="", box_rel=N
         z = z0 + 48 * k
         r.part(f"Slide_L{k+1}{t}", runner + "Slide.stl", "mech", "drawer", [0, 90, 0], {"x": ["max", cx - bw / 2 + 2.2], "y": ["max", yf], "z": ["center", z]})
         r.part(f"Slide_R{k+1}{t}", runner + "Slide.stl", "mech", "drawer", [0, -90, 0], {"x": ["min", cx + bw / 2 - 2.2], "y": ["max", yf], "z": ["center", z]})
+        if not module_parts:
+            continue
         r.part(f"Guide_L{k+1}{t}", runner + "Guide.stl", "body", "module", [0, 90, 0], {"x": ["min", mxmin + 3.58], "y": ["max", yf], "z": ["center", z]})
         r.part(f"Guide_R{k+1}{t}", runner + "Guide.stl", "body", "module", [0, -90, 0], {"x": ["max", mxmax - 3.58], "y": ["max", yf], "z": ["center", z]})
         ys = yf + 0.06 + hole_w - 0.29
@@ -391,6 +405,102 @@ def drawer_l2(d, h):
     r.notes.append(f"{nl} latch frame(s) found under the module")
     r.notes.append("L² accessories (x%d Accessory 1st/2nd) not placed: their place is not shown in the manual or the CAD file" % d)
     return r.json()
+
+
+# Several drawers in one 2F or 4F module (Drawer Assembly 4/8; rules.js LAYOUTS): a 2F shell takes two 1F boxes,
+# a 4F shell 2F + 2F, four 1F, or a 2F and two 1F in any order. Each box rides on the runners of the levels it
+# spans and locks with its racks in the side pockets of its lowest level. measure_levels.py cut every 2F and 4F
+# shell (S, M, L, L², all depths) through the racks' channels and slid the 1F shell's cut over each level: the
+# pockets are at 48 k + 0.00 mm on every level of every shell (residual 6-29 mm² of section, 65-115 mm² a mm off).
+# So a box on level k is placed as in its own 1F/2F module, 48 k mm higher. The shell's front frame is only at its
+# bottom and top (4.8-7.8 mm and the top 3 mm): a key's cam finds its notches on the lowest and the top drawer only,
+# the racks lock every drawer (the manual: use the geared rails with more than one box in a 2F/4F module).
+LEVEL_PITCH = 48.0
+LAYOUTS = {2: [[1, 1]], 4: [[2, 2], [1, 1, 1, 1], [2, 1, 1], [1, 2, 1], [1, 1, 2]]}   # heights, top to bottom
+
+
+def layout_insert(r, w, d, h, lay, cx, yf, zb, mrot, mod, sides=(("", 0.0),)):
+    """The drawers of a layout (heights top to bottom) in a shell of height h; sides: (tag, dx) per column of
+    drawers (one, or the two halves of an L²). Sets r.layout: per drawer its index (top to bottom), side,
+    height, lowest level and opening steps (its own key and racks, then its slide)."""
+    fam = D + FAM[w] + f"/{w}{d}/"
+    drawers = []
+    for side, dx in sides:
+        level = h
+        for i, dh in enumerate(lay):
+            level -= dh
+            up = LEVEL_PITCH * level
+            t = f"{side}_d{i}"
+            r.tags = {"drawer": i, **({"side": side.strip("_")} if side else {})}
+            insert_sml(r, w, d, dh, need(fam + f"Boxes/{w}{d} Box {dh}F.stl"), cx + dx, yf, zb + up, mrot, mod, t,
+                       ux=-dx, up=up, module_parts=False)
+            r.tags = None
+            drawers.append({"drawer": i, **({"side": side.strip("_")} if side else {}), "h": dh, "level": level,
+                            "open": [{"joints": [f"key{t}", f"rack_lo{t}", f"rack_hi{t}"], "from": 1, "to": 0, "s": 0.35},
+                                     {"joints": ["drawer"], "from": 0, "to": 1, "s": 0.55}]})
+    if level != 0:
+        raise ValueError(f"layout {lay} doesn't fill a {h}F shell")
+    r.steps = None
+    r.layout = {"id": ",".join(map(str, lay)), "drawers": drawers}
+
+
+def shell_runners(r, w, d, h, box, cx, yf, zb, mrot, mod, sides=(("", 0.0),)):
+    """The shell's own runner guides and stoppers (every level), as its single-drawer recipe has them."""
+    keep = len(r.parts)
+    for side, dx in sides:
+        insert_sml(r, w, d, h, box, cx + dx, yf, zb, mrot, mod, side, ux=-dx)
+    mine = r.parts[keep:]
+    r.parts[keep:] = [p for p in mine if re.search(r"_(Guide|Stopper)_", p["name"])]
+    r.joints, r.steps = {}, None
+
+
+def layout_sml(w, d, h, lay):
+    fam = D + FAM[w] + f"/{w}{d}/"
+    box = need(fam + f"Boxes/{w}{d} Box {h}F.stl")
+    bmn, bmx = bbox(box)
+    cx, yf, zb = round((bmn[0] + bmx[0]) / 2, 3), bmx[1], 5.0
+    mod = need(fam + f"Modules/{w}{d} Module {h}F.stl")
+    r = Recipe(f"{w}{d}_{h}F_lay{''.join(map(str, lay))}", f"drawer|{w}|{d}|{h}")
+    mrot, why = rot_checked(mod, frames_at_back(mod, 146.1 + 42 * (d - 3)), "module")
+    if why:
+        r.notes.append(why)
+    r.part("Module", mod, "body", "module", mrot, {"x": ["center", cx], "y": ["max", yf + 0.06], "z": ["min", zb - MODULE_UNDER_BOX]})
+    shell_runners(r, w, d, h, box, cx, yf, zb, mrot, mod)
+    r.layout = True      # (insert_sml reads it)
+    layout_insert(r, w, d, h, lay, cx, yf, zb, mrot, mod)
+    nl = latches(r, mod, mrot, cx, yf, zb, depth=146.1 + 42 * (d - 3), below=MODULE_UNDER_BOX)
+    r.notes.append(f"layout {lay} (top to bottom), {nl} latch frame(s); levels 48 mm apart (measure_levels.py)")
+    return r.json()
+
+
+def layout_l2(d, h, lay):
+    fam = D + FAM["L2"] + f"/L{d}²/"
+    mod = need(fam + f"L{d}² Module {h}F.stl")
+    box = need(D + FAM["S"] + f"/S{d}/Boxes/S{d} Box {h}F.stl")
+    bmn, bmx = bbox(box)
+    cx, yf, zb = 0.0, bmx[1], 5.0
+    r = Recipe(f"L2-{d}_{h}F_lay{''.join(map(str, lay))}", f"drawer|L2|{d}|{h}")
+    mrot, why = rot_checked(mod, frames_at_back(mod, 146.1 + 42 * (d - 3)), "module")
+    if why:
+        r.notes.append(why)
+    r.part("Module", mod, "body", "module", mrot, {"x": ["center", cx], "y": ["max", yf + 0.06], "z": ["min", zb - MODULE_UNDER_BOX]})
+    sides = (("_left", 82.4), ("_right", -82.4))   # CAD +x is the viewer's left
+    shell_runners(r, "S", d, h, box, cx, yf, zb, mrot, mod, sides)
+    r.layout = True
+    layout_insert(r, "S", d, h, lay, cx, yf, zb, mrot, mod, sides)
+    nl = latches(r, mod, mrot, cx, yf, zb, depth=146.1 + 42 * (d - 3), below=MODULE_UNDER_BOX)
+    r.notes.append(f"layout {lay} (top to bottom) on both sides, {nl} latch frame(s); levels 48 mm apart (measure_levels.py)")
+    return r.json()
+
+
+def family_layouts():
+    out = []
+    for w in ("S", "M", "L", "L2"):
+        for d in range(3, 8):
+            for h, lays in LAYOUTS.items():
+                for lay in lays:
+                    out.append(layout_l2(d, h, lay) if w == "L2" else layout_sml(w, d, h, lay))
+    return out
 
 
 def roof_sml(w, d, kind, ref_mod=None):
@@ -813,7 +923,7 @@ def family_sml(w):
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")  # paths hold ² (python -I ignores PYTHONIOENCODING)
     out = sys.argv[1]
-    fams = sys.argv[2:] or ["S", "M", "L", "L2", "XL", "XL2", "CS", "CM", "CL", "CXL"]
+    fams = sys.argv[2:] or ["S", "M", "L", "L2", "XL", "XL2", "CS", "CM", "CL", "CXL", "LAY"]
     os.makedirs(out, exist_ok=True)
     for w in fams:
         if w in ("S", "M", "L"):
@@ -828,6 +938,8 @@ if __name__ == "__main__":
                 mod1 = need(D + FAM["XL"] + f"/XL{d}/Modules/XL{d} Module 1F.stl")
                 ref = (mod1, rot_checked(mod1, frames_at_back(mod1, 146.1 + 42 * (d - 3)), "module")[0])
                 recs += [rc for kind in ROOFS for rc in [roof_sml("XL", d, kind, ref)] if rc]
+        elif w == "LAY":          # several drawers in one 2F/4F module (S, M, L, L²)
+            recs = family_layouts()
         elif w.startswith("C"):   # cases: CS CM CL CXL
             cw = w[1:]
             recs = [case(cw, d, h) for d in range(3, 8) for h in ((1,) if cw == "XL" else (1, 2, 4))]

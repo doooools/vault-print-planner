@@ -10,6 +10,8 @@ _checks.json : what was looked at, per unit key or family prefix ("drawer|S|" co
 recipes_dir  : the recipes' "notes" (orientation fallbacks, latch counts) are copied into the report.
 hardware_report.json (from hardware.py): adds the "Hardware" section, the bolts placed per family and why the
 rest of the planner's hardware isn't.
+layout_checks.json (from check_layouts.py, optional 8th argument; the 7th may be "-"): adds the "Several drawers
+in one module" section's motion check.
 A unit is "missing" when it has no placement, "doubtful" when its check or its recipe says so, or when
 one of its files is neither placed nor explained, and "verified" otherwise.
 """
@@ -17,7 +19,8 @@ import collections, json, os, re, sys
 sys.stdout.reconfigure(encoding="utf-8")
 
 units_path, pl_path, checks_path, recipes_dir, out = sys.argv[1:6]
-HW_REPORT = json.load(open(sys.argv[6], encoding="utf-8")) if len(sys.argv) > 6 else None
+HW_REPORT = json.load(open(sys.argv[6], encoding="utf-8")) if len(sys.argv) > 6 and sys.argv[6] != "-" else None
+LAY_CHECKS = json.load(open(sys.argv[7], encoding="utf-8")) if len(sys.argv) > 7 else None
 UNITS = json.load(open(units_path, encoding="utf-8"))
 PL = json.load(open(pl_path, encoding="utf-8"))["units"]
 CHECKS = json.load(open(checks_path, encoding="utf-8")) if os.path.exists(checks_path) else {}
@@ -25,7 +28,7 @@ NOTES = {}
 for f in os.listdir(recipes_dir):
     if f.endswith("_assembly.json"):
         r = json.load(open(os.path.join(recipes_dir, f), encoding="utf-8"))
-        if r.get("key"):
+        if r.get("key") and not r.get("layout"):   # (layouts have their own section)
             NOTES.setdefault(r["key"], []).extend(n for n in r.get("notes", []) if not re.match(r"^\d+ latch", n))
 
 # Files that are not placed on purpose
@@ -113,6 +116,8 @@ if HW_REPORT:
         room[b["rule"]].append(b["room"])
     for k, c in HW_REPORT["counts"].items():
         t, w, d, h = k.split("|")
+        if "#" in h:
+            continue   # layouts: their own section
         by[(t, w, h)][tuple(sorted((r, n) for r, n in c.items()))] += 1
     L += ["## Hardware (bolts)", "",
           "`hardware.py` finds, on every assembled unit, the holes each kind of bolt goes in and writes `hardware` into",
@@ -149,6 +154,45 @@ if HW_REPORT:
           "hinge tops' bolts turn with the lid (group `lid`). The case locks' bolts are in the holder, which doesn't move;",
           "if an animation moves a part on its own (a key, a latch, a lock lever), its bolts should get the same motion",
           "through `part`. No bolt is in a moving lock part today.", ""]
+# Several drawers in one 2F/4F module (README "Layouts")
+lays = collections.defaultdict(lambda: collections.defaultdict(list))
+for key, u in PL.items():
+    for lid, lay in (u.get("layouts") or {}).items():
+        t, w, d, h = key.split("|")
+        lays[(w, h)][lid].append((d, len(lay["parts"]), len(lay.get("hardware", [])), len(lay["drawers"])))
+if lays:
+    L += ["## Several drawers in one module", "",
+          "`layouts` of the 2F and 4F drawers (README \"Layouts\"): the drawers' parts at their levels, 48 mm apart as",
+          "`measure_levels.py` measured on every 2F/4F shell. Per family, height and layout: the depths placed, the parts",
+          "(all drawers, every variant) and the drawer-front bolts per unit.", "",
+          "| Unit | Layout | Depths | Drawers | Parts | Bolts |", "|---|---|---|---|---|---|"]
+    for (w, h), by_lay in sorted(lays.items()):
+        for lid, rows_ in sorted(by_lay.items()):
+            ds = ",".join(sorted(r[0] for r in rows_))
+            ps = sorted(set(r[1] for r in rows_))
+            bs = sorted(set(r[2] for r in rows_))
+            L.append(f"| `drawer|{w}|*|{h}` | `{lid}` | {ds} | {rows_[0][3]} | {'/'.join(map(str, ps))} | {'/'.join(map(str, bs))} |")
+    if LAY_CHECKS:
+        tag = lambda n: (re.search(r"<(\w+)>", n) or [None, None])[1]
+        between = [(k, r) for k, v in LAY_CHECKS.items() for r in v
+                   if tag(r["pair"][0]) and tag(r["pair"][1]) and tag(r["pair"][0]) != tag(r["pair"][1])]
+        kinds = collections.defaultdict(list)
+        plain = lambda n: re.sub(r"\s*(\[.*?\]|<.*?>)", "", n)
+        for k, v in LAY_CHECKS.items():
+            for r in v:
+                if r["new"]:
+                    a, b = (re.sub(r"^\S+ (Module \d[Ff])", r"\1", plain(x)) for x in r["pair"])
+                    kinds[(a, b)].append(r)
+        units_ = sorted(set(k.split("#")[0] for k in LAY_CHECKS))
+        L += ["", f"Motion check (`check_layouts.py`, each drawer unlocked and pulled out with the others shut and locked in "
+              f"place, 21 steps): {len(LAY_CHECKS)} drawers of " + ", ".join(f"`{u}`" for u in units_) + ". "
+              f"Overlaps between parts of two different drawers: {len(between)}. Overlaps that grow on the way:", "",
+              "| Parts | Drawers | Largest (mm² of section) |", "|---|---|---|"]
+        for (a, b), rs in sorted(kinds.items(), key=lambda kv: -len(kv[1])):
+            L.append(f"| {a} / {b} | {len(rs)} | {max(r['max'] for r in rs):.2f} |")
+        L += ["", "The key's cam grazing the module's front notch as it turns is the same as in a single drawer (README \"Motion\");",
+              "it only happens on the bottom and top drawers, the ones whose key finds the frame's notches."]
+    L.append("")
 L += ["", "## Units", ""]
 for key, status, pl, unplaced, explained, ck, notes in rows:
     head = f"- `{key}` **{status}**"

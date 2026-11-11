@@ -42,6 +42,7 @@ hardware_sizes = { button: { M4: { d, dk, k, s, t }, ... }, countersunk: {...}, 
 - **joint** (in the 5th element, `{"joint": "key"}`, with or without `piece`): the part moves with that joint of
   the unit's `motion` (a latch's two bodies: `"latch_1.link"`, `"latch_1.lever"`).
 - **motion** (every drawer and case): see "Motion" below.
+- **layouts** (2F and 4F drawers of S, M, L, L²): several drawers in the unit's module, see "Layouts" below.
 - **hardware** (written by `hardware.py`, after the export): the unit's bolts. `spec` reads `<thread>x<length> <kind>`,
   e.g. `"M4x14 button"`, `"M6x50 countersunk"` (kinds: `button` ISO 7380-1, `countersunk` ISO 10642, `socket` ISO 4762,
   `hex` ISO 4017; `nut` ISO 4032 and `rod` are understood too, none placed yet). `m` maps the bolt's own frame to the
@@ -104,7 +105,8 @@ What it is (measured with sections of the user's files, `kinematics.py`, and the
   every drawer family (S, M, L, L², XL, XL², 1F to 4F: the notches are always 5.8 / 50.8 mm up). The 1.2 mm also
   centres the runner guides in the module's recesses (they stuck 0.7 mm into their floor), the stoppers in the
   module's side holes (28.3 mm up), and makes the facade flush with the module's front frame (4.8 and 51.8 mm).
-  Every part of a drawer moved up 1.2 mm in the JSON but the module and its latches.
+  Every part of a drawer moved up 1.2 mm in the JSON but the module and its latches. (The drawer fronts' bolts
+  were measured before that and stayed 1.2 mm low until `hardware.py` was run again with the layouts.)
 - **Toggle latch** (every case; a "double throw" latch, manual p. 17), the same on every size and height relative
   to the holder's pin A (T − 9.01 mm on 1F, T − 15.01 on 2F/4F, 10.2 mm in front of the panel; T the body height):
   - the link's two holes are 15 mm apart; one end is a fork (15.3 mm gap) and goes on the holder's lug (30 mm wide)
@@ -138,6 +140,61 @@ Left as found:
 - A drawer's runner slides overlap the box's grooves (57–141 mm² of section along the slide) and the M5/S5
   baseplates their boxes: the placements, not the motion.
 
+## Layouts
+
+Several drawers in one 2F or 4F module (manual "Drawer Assembly" 4/8; `R.LAYOUTS` in rules.js): a 2F shell takes
+two 1F boxes; a 4F shell 2F + 2F, four 1F, or a 2F and two 1F in any order.
+
+```
+units["drawer|S|4|4"].layouts["2,1,1"] = {
+  name,
+  drawers: [ { drawer: 0, h: 2, level: 2, open: [steps] }, { drawer: 1, h: 1, level: 1, open }, { drawer: 2, h: 1, level: 0, open } ],
+  parts:    [ [path, role, "drawer", m, { drawer: 0, joint?, piece? }], ... ],
+  motion:   { joints: { key_d0, rack_lo_d0, rack_hi_d0, key_d1, ... } },
+  hardware: [ [spec, "drawer", m, { part, drawer: 0, why }], ... ]
+}
+```
+
+- The id is the drawers' heights top to bottom, as in `R.LAYOUTS` (`"1,1"`, `"2,2"`, `"1,1,1,1"`, `"2,1,1"`,
+  `"1,2,1"`, `"1,1,2"`). A 4F module with one 4F drawer, or a 2F with one 2F, is the unit itself (no layout).
+- **drawers**: one per drawer, top to bottom: `drawer` its index (0 = top), `h` its height in levels, `level` the
+  lowest level it rides on (0 = the module's bottom level, 48 mm a level), `open` its opening steps (its key and
+  racks, then `drawer`: that drawer's own slide). An L² has two columns: each drawer is there twice, with
+  `side: "left"` / `"right"` (the same index on both sides).
+- **parts**: only the drawers' parts, all group `drawer`, each tagged with its `drawer` (and `side`): box and front
+  of its height, key and key cap, hidden key and its part 2, both racks, label, facade caps, the baseplates, and
+  the runner slides of the levels it spans. Draw them with the unit's own parts whose group isn't `drawer` (the
+  shell, runner guides and stoppers on every level, latches): the unit's drawer-group parts are its single drawer
+  and are replaced by the layout's. The variants work as in a unit (the part list names the lock and baseplate).
+- **motion.joints**: each drawer's key and racks, named `key<t>`, `rack_lo<t>`, `rack_hi<t>` with `t` = `_d<i>`
+  (`_left_d<i>`, `_right_d<i>` on an L²). Parts carry them as `joint`, as in a unit.
+- **hardware**: the drawer fronts' bolts, `part` the index in the layout's `parts`, with the part's `drawer`
+  (and `side`).
+
+How it is measured (`measure_levels.py`): a box locks with its racks' tabs in two pockets of the module's side walls
+(README "Motion"). Every 2F and 4F shell (S, M, L, L², all depths: 40 shells, 140 levels) was cut through the racks'
+channels (z = -2.0, -3.2, -4.4) and the 1F shell's cut of the same width and depth was slid up over each level
+k by 48 k + dy, dy from -3 to +3 mm: the walls' cuts agree best at dy = 0.00 on every level of every shell
+(6 to 29 mm² of difference over both walls, 65 to 115 mm² a millimetre either way). So the levels are exactly
+48 mm apart, and a box on level k sits as in its own 1F or 2F module, 48 k higher, on that level's runners. The
+recipes (`make_recipes.py LAY`: `layout_sml`, `layout_l2`) place it that way, with the shell's own runners, and
+`blender_assemble.py` builds each layout like any unit (views: iso, front, section).
+
+The shell's front frame is only at its bottom and top (at the key's x: 4.8–7.8 mm and the top 3 mm): the key's cam
+finds its notches on the drawers at the bottom and the top of the module only; the racks lock every drawer (the
+manual: use the geared rails when a 2F/4F module holds more than one box).
+
+Checked:
+- every layout drawer's parts are its own 1F/2F unit's drawer parts moved up 48 × `level` (6960 parts, within
+  0.01 mm), so the exported Blender assemblies are what the measure says;
+- `check_layouts.py` on 53 drawers (S3, M6, L7, L²3 4F; S5, M3, L3, L²7 2F; 21 steps, each drawer unlocked and
+  pulled out with the others shut and locked): no part of one drawer overlaps a part of another, and nothing new
+  touches the shell but the key's cam grazing the front notch as it turns (≤ 0.46 mm² of section), on the bottom
+  and top drawers only, as in a single drawer;
+- `hardware.py`: the fronts' bolts, Σ of each front's holes (S 2 / 4, M and L 4 / 6 per 1F / 2F front, both
+  columns on an L²), 0.50–0.61 mm of room at the tip like the single drawers;
+- renders: `<name>_lay<heights>_{iso,front,secx}.png` next to each unit's.
+
 ## How it is measured
 
 The files are exported in print orientation (some at 45° to fit the bed) and scattered around one big CAD scene. Some parts are already in their assembled place relative to each other: the box, the baseplate, the stopper and the latch (X/Y). The rest is found by measurement in Blender:
@@ -159,6 +216,8 @@ The files are exported in print orientation (some at 45° to fit the bed) and sc
 | `hw_shapes.py` | A bolt's shape from its standard sizes (plain Python, as the page makes it): for the Blender check. |
 | `hw_check.py` | Sections through the bolts' axes (parts in colour, the bolt's outline in black) and a clash test of every head against the parts. |
 | `blender_check_placements.py` | Rebuilds a stack from the JSON alone, as the page will, and renders it. |
+| `measure_levels.py` | Where each level of a 2F/4F shell is: its cut through the racks' channels against the 1F shell's, slid level by level (README "Layouts"). |
+| `check_layouts.py` | The layouts' motion, one drawer at a time with the others in place (kinematics.py's check). |
 | `kinematics.py` | The units' motion as the page runs it (every part's pose at t, 0 closed … 1 open), and a check that no part goes through another on the way (sections across the motion, shapely). |
 | `blender_motion.py` | Key frames of a unit opening, from the JSON alone with kinematics.py's pose: views and sections. |
 | `blender_tower.py`, `blender_showcase.py`, `blender_render.py`, `blender_check_views.py` | Towers, side-by-side scenes, Cycles renders, section views. |
@@ -175,13 +234,15 @@ python tools/placements/run_decimate.py "/path/to/261021_VAULT_USSA_S" "$VAULT_R
 export VAULT_ASSEMBLY="/path/to/VAULT_ASSEMBLY"   # index, orientations, features, recipes, .blend, renders
 python -I tools/placements/stl_index.py "/path/to/261021_VAULT_USSA_S" "$VAULT_ASSEMBLY/_stl_index.jsonl"
 python -I tools/placements/orient.py jobs.json "$VAULT_ASSEMBLY/_orient.json"   # jobs: target, reference, its matrix
-python -I tools/placements/make_recipes.py "$VAULT_ASSEMBLY/recipes"              # S M L L2 XL XL2 CS CM CL CXL
+python -I tools/placements/measure_levels.py src/stl-placements.json "$VAULT_ASSEMBLY/_levels.json"   # the 2F/4F shells' levels
+python -I tools/placements/make_recipes.py "$VAULT_ASSEMBLY/recipes"              # S M L L2 XL XL2 CS CM CL CXL LAY
 python -I tools/placements/run_assemble.py "$VAULT_ASSEMBLY" "$VAULT_ASSEMBLY"/recipes/*_assembly.json --jobs 4
 blender -b --factory-startup --python tools/placements/blender_export_placements.py -- \
   src/stl-placements.json "$VAULT_RENDER/_decimate_log.jsonl" $(ls "$VAULT_ASSEMBLY"/*/*.blend | grep -v /towers/)
 # (the tower files are not units: given to the export, they stop it before it writes)
 # the bolts: after every export (the export rewrites a unit without its `hardware`)
 python -I tools/placements/hardware.py src/stl-placements.json "$VAULT_ASSEMBLY/_hardware/hardware_report.json"
+python -I tools/placements/check_layouts.py src/stl-placements.json "/path/to/261021_VAULT_USSA_S" "$VAULT_ASSEMBLY/_layout_checks.json"
 python -I tools/placements/hw_check.py src/stl-placements.json "$VAULT_ASSEMBLY/_hardware/check" "case|L|7|4" "drawer|S|3|1"
 blender -b --factory-startup --python tools/placements/blender_check_placements.py -- \
   src/stl-placements.json "/path/to/261021_VAULT_USSA_S" check.png "drawer|L|7|4" "drawer|L|7|2" "roof|L|7|grid"
