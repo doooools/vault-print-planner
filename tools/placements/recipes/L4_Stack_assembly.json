@@ -285,10 +285,70 @@
  "finalize": {
   "anchor": "L4_Stack_Module"
  },
- "floor": {
-  "base": -52.208,
-  "wheels": -112.21,
-  "foot": -112.71,
-  "note": "y of the floor under the base alone, under the wheels (tire bottom) and under the foot, in the first module's frame"
+ "unit_data": {
+  "floor": {
+   "base": -52.208,
+   "wheels": -112.21,
+   "foot": -112.71,
+   "note": "y of the floor under the base alone, under the wheels (tire bottom) and under the foot, in the first module's frame"
+  },
+  "casters": [
+   {
+    "at": [
+     -134.8,
+     -52.21,
+     -10.0
+    ],
+    "axis": [
+     0,
+     1,
+     0
+    ],
+    "d": 7.2,
+    "depth": 45.0
+   },
+   {
+    "at": [
+     134.81,
+     -52.21,
+     -9.98
+    ],
+    "axis": [
+     0,
+     1,
+     0
+    ],
+    "d": 7.2,
+    "depth": 45.0
+   },
+   {
+    "at": [
+     -134.8,
+     -52.21,
+     -171.1
+    ],
+    "axis": [
+     0,
+     1,
+     0
+    ],
+    "d": 7.2,
+    "depth": 45.0
+   },
+   {
+    "at": [
+     134.8,
+     -52.21,
+     -171.1
+    ],
+    "axis": [
+     0,
+     1,
+     0
+    ],
+    "d": 7.2,
+    "depth": 45.0
+   }
+  ]
  }
 }

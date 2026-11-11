@@ -206,8 +206,8 @@ if fin:
         root["vault_motion"] = json.dumps(cfg["motion"])
     if cfg.get("layout"):
         root["vault_layout"] = json.dumps(cfg["layout"])
-    if cfg.get("floor"):
-        root["vault_floor"] = json.dumps(cfg["floor"])
+    if cfg.get("unit_data"):   # extra keys for the unit's entry (a stack's floor and caster holes)
+        root["vault_unit_data"] = json.dumps(cfg["unit_data"])
     coll_root.objects.link(root)
     drawer = bpy.data.objects.new(cfg.get("name", "Assembly") + "_Drawer", None)
     drawer.empty_display_type = "SINGLE_ARROW"

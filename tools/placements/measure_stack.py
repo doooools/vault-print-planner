@@ -141,6 +141,26 @@ def _features(items):
             "bottom": round(float(P[:, 1].min()), 3)}
 
 
+# Casters ("Casters Mode", the last page of the Modifications manual): the base turned over, 4 bought casters with M8
+# threaded stems in the 4 blind holes near its corners (the other two holes under it are the foot's M6). Each hole:
+# its mouth's centre on the underside, its axis (up, into the base), its diameter and depth (a ray up its axis to the
+# hole's bottom).
+def caster_holes(st):
+    items = st["base_parts"] or [st["base"]]
+    T = np.concatenate([hg.file_tris(b["file"]) @ np.array(b["m"]).reshape(3, 4)[:, :3].T + np.array(b["m"]).reshape(3, 4)[:, 3] for b in items])
+    bot = st["features"]["bottom"]
+    out = []
+    for x, z, r in st["features"]["under"]:
+        if r < 3.2:
+            continue                                   # the foot's M6 holes
+        hits = sorted(s for s, f in hg.ray_hits(T, np.array([x, bot - 10.0, z]), np.array([0, 1.0, 0])))
+        out.append({"at": [round(x, 2), round(bot, 2), round(z, 2)], "axis": [0, 1, 0], "d": round(2 * r, 1),
+                    "depth": round(bot - 10.0 + hits[0] - bot, 1)})
+    if len(out) != 4:
+        raise RuntimeError(f"{len(out)} caster holes")
+    return sorted(out, key=lambda h: (-round(h["at"][2]), h["at"][0]))   # front left, front right, back left, back right
+
+
 # Wheels (Modifications Assembly 2-7/15): an M16 rod through the base's hole, cut to 248 / 338 / 414 / 504 mm (S, M, L,
 # XL) and centred; on each end a printed bushing pushed on with the jig so that 10 mm of rod stays out (a 10 mm thick
 # SCSAW collar goes there), a 6205ZZ bearing (25 x 52 x 15) on the bushing's 15 mm seat against its shoulder, the
@@ -305,6 +325,7 @@ if __name__ == "__main__":
             fp, fn = foot(w, feats)
             out[f"stack|{w}|{d}"] = {"base": base, "base_parts": parts, "features": feats, "wheels": wp, "wheel_notes": wn,
                                      "foot": fp, "foot_notes": fn}
+            out[f"stack|{w}|{d}"]["casters"] = caster_holes(out[f"stack|{w}|{d}"])
             print("   ", feats["rod"], wn, fn, flush=True)
             print(w, d, "front %.2f back %.2f (module back %.1f) tilt %s score %.0f next %s" % (b["front"], b["back"], b["module_back"], b["tilt"], b["score"], b["next"]),
                   [p["box_diff"] for p in parts], flush=True)

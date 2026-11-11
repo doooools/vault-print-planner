@@ -335,10 +335,70 @@
  "finalize": {
   "anchor": "S7_Stack_Module"
  },
- "floor": {
-  "base": -52.207,
-  "wheels": -112.21,
-  "foot": -112.71,
-  "note": "y of the floor under the base alone, under the wheels (tire bottom) and under the foot, in the first module's frame"
+ "unit_data": {
+  "floor": {
+   "base": -52.207,
+   "wheels": -112.21,
+   "foot": -112.71,
+   "note": "y of the floor under the base alone, under the wheels (tire bottom) and under the foot, in the first module's frame"
+  },
+  "casters": [
+   {
+    "at": [
+     -52.4,
+     -52.21,
+     -10.0
+    ],
+    "axis": [
+     0,
+     1,
+     0
+    ],
+    "d": 7.2,
+    "depth": 45.0
+   },
+   {
+    "at": [
+     52.39,
+     -52.21,
+     -9.99
+    ],
+    "axis": [
+     0,
+     1,
+     0
+    ],
+    "d": 7.2,
+    "depth": 45.0
+   },
+   {
+    "at": [
+     -52.4,
+     -52.21,
+     -297.1
+    ],
+    "axis": [
+     0,
+     1,
+     0
+    ],
+    "d": 7.2,
+    "depth": 45.0
+   },
+   {
+    "at": [
+     52.41,
+     -52.21,
+     -297.1
+    ],
+    "axis": [
+     0,
+     1,
+     0
+    ],
+    "d": 7.2,
+    "depth": 45.0
+   }
+  ]
  }
 }

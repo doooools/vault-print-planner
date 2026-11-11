@@ -190,8 +190,8 @@ class Recipe:
             out["motion"] = {"joints": self.joints, "open": self.steps}
         if self.layout:
             out["layout"] = self.layout
-        if getattr(self, "floor", None):
-            out["floor"] = self.floor
+        if getattr(self, "unit_data", None):
+            out["unit_data"] = self.unit_data
         return out
 
 
@@ -530,8 +530,9 @@ def stack_unit(w, d):
         put(f"Wheel_{wp['side']}_{os.path.splitext(os.path.basename(wp['file']))[0].split(' ')[0]}", wp["file"], wp["role"], wp["m"])
     put("Foot", st["foot"]["file"], st["foot"]["role"], st["foot"]["m"])
     wn, fn, fe = st["wheel_notes"], st["foot_notes"], st["features"]
-    r.floor = {"base": fe["bottom"], "wheels": wn["wheel_bottom"], "foot": fn["foot_bottom"],
-               "note": "y of the floor under the base alone, under the wheels (tire bottom) and under the foot, in the first module's frame"}
+    r.unit_data = {"floor": {"base": fe["bottom"], "wheels": wn["wheel_bottom"], "foot": fn["foot_bottom"],
+                             "note": "y of the floor under the base alone, under the wheels (tire bottom) and under the foot, in the first module's frame"},
+                   "casters": st["casters"]}
     r.notes.append("base: top on the module's underside, back flush, 10 mm proud at the front; rod at y %.1f z %.1f; "
                    "wheels %.2f mm clear of the base, rod %.1f mm beyond the bushings; foot on the base's M6 holes (%.2f mm), "
                    "its floor %.2f mm under the tires'" % (fe["rod"][0], fe["rod"][1], wn["clear_of_base"], wn["rod_beyond_bushing"],

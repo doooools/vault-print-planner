@@ -199,7 +199,7 @@ Checked:
 
 ## Stacks
 
-`units["stack|L|7"] = { name, bbox, parts, floor: { base: -52.2, wheels: -112.21, foot: -112.71 } }`: the base (and the
+`units["stack|L|7"] = { name, bbox, parts, floor: { base: -52.2, wheels: -112.21, foot: -112.71 }, casters: [4 holes] }`: the base (and the
 two halves of a split one, 6 and 7 deep), both wheels (bushing, disk, cover, tire each) and the foot, in the unit
 frame of the tower's first module: draw them with the first level at y = 0 and lift the whole tower by `-floor.wheels`
 (or `-floor.foot`, `-floor.base`). The variants work as in a unit (the stack's part list names the base or its halves,
@@ -226,10 +226,17 @@ the wheels, the foot). Measured by `measure_stack.py` on the files (Modification
 - Floor: the tires reach y −112.21, the foot −112.71: the tower stands level within 0.5 mm. Without wheels there is
   no foot: the base's underside is flat (one plane over 82-95 % of its footprint), so it stands at `floor.base`.
 
+- Casters ("Casters Mode", the Modifications manual's last page: the base turned over, 4 bought casters with M8
+  stems): `casters` lists the 4 blind holes near the base's corners, front left, front right, back left, back right,
+  each `{ at: [x, y, z], axis: [0, 1, 0], d: 7.2, depth: 45.0 }` in the stack's frame: `at` the centre of the hole's
+  mouth on the underside (y = `floor.base`), `axis` up into the base, `d` its diameter (mm), `depth` from the mouth to
+  its bottom (a ray up the axis). On every base: 30 mm in from the sides (x ±52.4 S, ±97.0 M, ±134.8 L, ±179.4 XL),
+  z −10.0 at the front and 17.0 mm in from the back; 45.0 deep (45.8 at the XL's back holes). The caster itself is
+  bought: the page draws it from these. The other two holes under the base are the foot's (M6, 5.4 mm, 36 deep).
+
 Not placed yet: the handles (stationary and pull-out, with the pull-out handle's lock and knobs) bolt to the
 backbones on the back of the modules (Modifications Assembly 12-14/15), which are not placed either; the base
 connector of a split base (its place isn't shown); the bought parts (rod, bearings, collars, casters, bolts).
-The underside has 4 more blind holes (M8, x ±52.4, at z −10 and 22 mm in front of the back) for the casters.
 
 ## How it is measured
 
