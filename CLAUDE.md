@@ -51,14 +51,21 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   (after a Bambu Studio update made at the same time).
 - Bambu Lab colours: `src/bambu-colors.tsv` (PLA Basic/Matte, PETG Basic/Matte on sale in the EU store, with the
   hex from Bambu's own `filaments_color_codes.json`, matched by colour code), made by `tools/bambu_colors.py`,
-  embedded as `window.BAMBU_COLORS`, offered as a swatch grid in the Colors panel. PETG colours still get PLA
+  embedded as `window.BAMBU_COLORS`, offered as a swatch grid in the filament picker. PETG colours still get PLA
   settings in the Bambu project.
 - Choosing colours: one filament picker everywhere (`filamentPicker`, step 1 of `docs/colors-3d-redesign.md`): header
   (role, where it was opened), "Whole project" / "Only this <unit>" when a unit is known (writes `colorPrefs.roles` or
   the unit's `cfg.colors`; step 1's unit is `c`, via `editorUnit`), your tray, Bambu Lab's colours (search, line
   filters, grid by shade), and a footer button "Use it" / "Add as slot N" (a new colour joins the palette only then).
   `fpButton` + `bindPickers` show a role's colour as a button that opens it: in place inside dialogs, as a popover
-  elsewhere. Used by the part preview, the Colors panel, the 3D bubble (`rolePicker`) and the 3D list (`unitColors`).
+  elsewhere. Used by the part preview, the 3D bubble (`rolePicker`) and the 3D list (`unitColors`); the Colors
+  panel's "Add a filament" opens it with `role: null` (adds to the tray only).
+- Colors panel (`colorsPanel`, step 2 of the redesign): the filament tray, one card per palette colour with its slot
+  and use, TPU fixed in slot 2; "Start from" presets (`applyColorPreset`: USSA render = the old reset, Two-tone, One
+  color); a colour map of roles × tray colours (`ROLE_GROUPS`), tagged "N units" when units have their own colour.
+  Slots come from `trayUse()`: one per colour in use, in tray order (1, then 3…), like `buildProject`; labels on their
+  own plate (`labelsApart`) don't count. With step 3's plates by size or in one colour, the panel says the plates
+  don't follow it.
   Step 1 has a "3D" button: the unit opens with drawers out, a click on a part opens the picker as a bubble, and the
   side column shows the Colors panel. Step 1's tiles (shell, box, front, key lock, roof; case: body, front, lid, hinge)
   each carry a colour square that opens the preview with the picker open. Opening the Vault folder is step 1's first thing: a big card in the middle

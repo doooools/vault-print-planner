@@ -272,9 +272,56 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .ut-side { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
 .v3-colors { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
 .v3-colors h3 { margin: 0; font-size: 15px; }
-.v3-colors .pp, .v3-colors .cpal, .v3-colors .cbbl, .v3-colors .croles { padding-left: 0; padding-right: 0; }
-.v3-colors .croles { grid-template-columns: minmax(0, 1fr); }
-.v3-colors .bbl-line { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.v3-colors .pp, .v3-colors .chead .pp, .v3-colors > p.pp { padding-left: 0; padding-right: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* Colors: the filament tray, then the colour map (colorsPanel) */
+.chead { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 24px; padding-right: 18px; }
+.chead .pp, [data-colors-root] > p.pp { flex: 1 1 360px; margin: 0; padding: 0 0 0 18px; color: var(--muted); font-size: 13.5px; }
+[data-colors-root] > p.pp { padding: 0 18px 12px; }
+.cstart { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-left: 18px; font-size: 13px; color: var(--muted); }
+.cstart .chip { border: 1px solid var(--line); border-radius: 999px; background: var(--sheet-2); color: var(--ink); padding: 6px 12px; font-size: 13px; cursor: pointer; }
+.cstart .chip:hover { border-color: var(--ink); }
+.ctray { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 10px; padding: 14px 18px; }
+.ctray-card { display: grid; gap: 4px; align-content: start; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--sheet-2); min-width: 0; }
+.ctray-card.unused { opacity: .7; }
+.ctray-card.tpu { border-style: dashed; background: transparent; }
+.ctray-card.tpu .ctray-sw { background: repeating-linear-gradient(45deg, #2c2f31 0 8px, #3a3d3f 8px 16px); cursor: default; }
+.ctray-card small { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ctray-top { display: flex; justify-content: space-between; align-items: center; min-height: 26px; font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.ctray-top .iconbtn { min-width: 26px; height: 26px; padding: 0 6px; font-size: 12px; }
+.ctray-sw { position: relative; display: block; height: 46px; border-radius: 8px; border: 1px solid rgba(0, 0, 0, .15); cursor: pointer; margin: 2px 0 4px; }
+.ctray-sw input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+.ctray-name { width: 100%; box-sizing: border-box; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; padding: 2px 4px; margin: 0 -4px; }
+.ctray-name:hover, .ctray-name:focus { border-color: var(--line); background: var(--sheet); }
+.ctray-card.tpu b { font-size: 14px; }
+.ctray-add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 140px; border: 1px dashed var(--line); border-radius: 12px; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; }
+.ctray-add:hover, .ctray-add[aria-expanded=true] { border-color: var(--ink); color: var(--ink); }
+.ctray > .fp-host { grid-column: 1 / -1; }
+.cmap-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 12px; padding: 0 18px 14px; align-items: start; }
+.cmap-box { border: 1px solid var(--line); border-radius: 12px; overflow-x: auto; }
+.cmap { border-collapse: collapse; width: 100%; font-size: 13px; }
+.cmap th, .cmap td { padding: 4px 6px; border-top: 1px solid var(--line); }
+.cmap thead th { border-top: 0; background: var(--sheet-2); font-weight: 600; color: var(--muted); }
+.cmap td { text-align: center; width: 44px; }
+.cmap tbody th { text-align: left; font-weight: 400; }
+.cmap-h { display: inline-flex; align-items: center; gap: 4px; font-family: var(--f-mono); font-size: 12px; }
+.cmap-h .swatch { width: 12px; height: 12px; border-radius: 3px; margin: 0; }
+.cmap-sec th { padding-top: 10px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600 !important; border-top: 0; }
+.cmap-role { display: flex; align-items: center; gap: 8px; }
+.cmap-bar { width: 8px; height: 22px; border-radius: 3px; border: 1px solid var(--line); flex: none; }
+.cmap-own { font-size: 11px; padding: 2px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); white-space: nowrap; }
+.cmap-fixed { text-align: left !important; color: var(--muted); }
+.cmap-note { font-size: 11px; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.cdot { width: 22px; height: 22px; border-radius: 50%; padding: 0; border: 1.5px solid var(--line); background: var(--sheet); cursor: pointer; }
+.cdot:hover { border-color: var(--ink); }
+.cdot.on { border: 2px solid var(--ink); box-shadow: inset 0 0 0 3px var(--sheet); }
+.v3-colors .chead, .v3-colors .ctray, .v3-colors .cmap-wrap, .v3-colors .cstart { padding-left: 0; padding-right: 0; margin-left: 0; margin-right: 0; }
+.v3-colors .cmap-wrap { grid-template-columns: minmax(0, 1fr); }
+.v3-colors .ctray { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 4px; }
+.v3-colors .cmap td { width: 32px; padding: 3px 2px; }
+.v3-colors[data-colors-root] > p.pp { padding: 0 0 8px; }
+.v3-colors .ctray-sw { height: 28px; }
+.v3-colors .ctray-add { grid-column: 1 / -1; min-height: 0; flex-direction: row; padding: 10px; }
 .ucol > summary { cursor: pointer; font-size: 12.5px; color: var(--accent); font-weight: 600; margin-top: 2px; }
 .urole { display: grid; gap: 4px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 12.5px; }
 .urole .fmenu-btn { padding: 6px 8px; font-size: 13px; }
@@ -494,23 +541,6 @@ details.folded > summary .mini { min-width: 40px; }
 .plate.done .donerow .ok { display: inline-flex; align-items: center; gap: 6px; color: var(--ok); }
 .plate.done .donerow svg { width: 16px; height: 16px; }
 .platesvg { width: 100%; height: auto; max-width: 100%; display: block; }
-.cpal { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 0 18px 12px; }
-.cpal-row { display: flex; align-items: center; gap: 6px; }
-.cpal-row input[type=color] { width: 34px; height: 30px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); cursor: pointer; }
-.cpal-name { width: 19ch; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); }
-.cbbl { padding: 0 18px 12px; }
-.bbl > summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--accent); }
-.bbl-line { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: start; padding-top: 10px; font-size: 13px; }
-.bbl-sw { display: flex; flex-wrap: wrap; gap: 6px; }
-.bbl-sw button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); padding: 0; cursor: pointer; }
-.bbl-sw button:hover { outline: 2px solid var(--ink); outline-offset: 1px; }
-.bbl-sw button.have { outline: 2px solid var(--accent); outline-offset: 1px; }
-.croles { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 18px; padding: 0 18px 14px; }
-.crole { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; gap: 10px; font-size: 13.5px; padding: 5px 0; border-top: 1px solid var(--line); }
-.crole .fmenu-btn { padding: 5px 8px; font-size: 13px; }
-.v3-colors .crole { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-.csel { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
-.csel select { max-width: 16ch; padding: 3px 6px; border: 1px solid var(--line); border-radius: 7px; background: var(--sheet); }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
 .sw-body { background: #d4d6d3; } .sw-inner { background: #3a3d3f; } .sw-accent { background: #e8742f; } .sw-tpu { background: #222; } .sw-big { background: #d4d6d3; } .sw-small { background: #3a3d3f; } .sw-labels { background: linear-gradient(90deg, #f4f1ea 34%, #3a3d3f 34% 67%, #e8742f 67%); } .sw-all { background: linear-gradient(90deg, #d4d6d3 50%, #3a3d3f 50%); }
 .pitems { display: grid; gap: 6px; }
@@ -1118,9 +1148,10 @@ details.termfold[open] > summary { color: var(--ink); }
   // One picker wherever a part role's filament is chosen: the part preview, the Colors panel, the 3D views. It sets
   // the colour for the whole project (colorPrefs.roles) or, when a unit is known, for that unit only (its cfg.colors).
   // A colour from Bambu Lab's list or one of your own is a new filament: the button says so before it is added.
-  // o: { role, from (where it was opened, for the header), unit?: { cfg, name, save() }, scope?: 'project'|'unit',
-  //      after() (redraws whatever shows the colour), close?() (adds a close button) }
-  const fpSlot = i => i === 0 ? 1 : i + 2; // palette order → Bambu Studio filament slot (TPU keeps slot 2)
+  // o: { role (null: only adds a filament to the tray), from (where it was opened, for the header),
+  //      unit?: { cfg, name, save() }, scope?: 'project'|'unit', after() (redraws whatever shows the colour),
+  //      close?() (adds a close button) }
+  const fpSlot = i => i === 0 ? 1 : i + 2; // the i-th colour in use → its Bambu Studio filament slot (TPU keeps slot 2)
   const fpHsl = hex => {
     const n = parseInt(hex.slice(1, 7), 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
     const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
@@ -1135,11 +1166,19 @@ details.termfold[open] > summary { color: var(--ink); }
   }).sort((a, b) => a[0] - b[0]).map(x => x[1]));
   const FP_SEARCH = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>';
   function filamentPicker(host, o) {
-    const role = o.role, r = ROLE_BY_ID.get(role) || { label: role }, unit = o.unit;
+    const role = o.role, r = !role ? { label: 'Add a filament' } : ROLE_BY_ID.get(role) || { label: role }, unit = role ? o.unit : null;
     const own = () => unit && unit.cfg.colors && paletteOf(unit.cfg.colors[role]) ? unit.cfg.colors[role] : null;
     const st = { scope: unit ? (o.scope || (own() ? 'unit' : 'project')) : 'project', line: 'All', q: '' };
-    const cur = () => st.scope === 'unit' ? colorFor(role, unit.cfg) : colorFor(role, null);
-    st.sel = { pal: cur() };
+    const cur = () => !role ? null : st.scope === 'unit' ? colorFor(role, unit.cfg) : colorFor(role, null);
+    st.sel = role ? { pal: cur() } : {};
+    // The slot a new colour would get once this part prints in it (tried on the tray, then put back)
+    const newSlot = () => {
+      const P = colorPrefs.palette, tmp = { id: ' new', name: '', hex: '#000000' }, was = st.scope === 'unit' ? unit.cfg.colors : colorPrefs.roles;
+      P.push(tmp);
+      if (st.scope === 'unit') unit.cfg.colors = { ...(was || {}), [role]: tmp.id }; else colorPrefs.roles = { ...was, [role]: tmp.id };
+      try { return trayUse().slot.get(tmp.id); }
+      finally { P.pop(); if (st.scope === 'unit') { if (was) unit.cfg.colors = was; else delete unit.cfg.colors; } else colorPrefs.roles = was; }
+    };
     // What is selected, as a palette id when it is already in the tray
     const selPal = () => st.sel.pal || (st.sel.bbl != null ? (colorPrefs.palette.find(p => p.code && p.code === BAMBU_COLORS[st.sel.bbl][1]) || {}).id : null);
     const grid = () => {
@@ -1150,17 +1189,24 @@ details.termfold[open] > summary { color: var(--ink); }
         return `<button type="button" data-fp-bbl="${i}" class="${have.has(code) ? 'have' : ''}" style="background:${hex}" title="${esc(t)}" aria-label="${esc(t)}" aria-pressed="${!!selCode && selCode === code}"></button>`; }).join('') || '<p>No Bambu Lab color matches.</p>' };
     };
     const draw = () => {
-      const P = colorPrefs.palette, sp = selPal(), now = cur(), g = grid(), next = fpSlot(P.length);
-      let big, name, sub, act, note;
+      const P = colorPrefs.palette, sp = selPal(), now = cur(), g = grid(), use = trayUse();
+      const slotTxt = id => use.slot.has(id) ? 'Slot ' + use.slot.get(id) : 'No slot yet';
+      let big, name, sub, act, note, off = false;
       if (sp) {
-        const p = paletteOf(sp), i = P.indexOf(p);
-        big = p.hex; name = p.line && p.name.endsWith(' · ' + p.line) ? p.name.slice(0, -p.line.length - 3) : p.name; sub = `Slot ${fpSlot(i)} · ${p.code ? `${p.line} ${p.code}` : p.hex.toUpperCase()}`;
-        act = sp === now ? 'In use' : 'Use it';
-        note = sp === now ? (st.scope === 'unit' && own() ? `This ${unit.name} has it as its own color.` : `What ${r.label.toLowerCase()} print in now.`) : 'Already in your tray: no new filament.';
+        const p = paletteOf(sp);
+        big = p.hex; name = p.line && p.name.endsWith(' · ' + p.line) ? p.name.slice(0, -p.line.length - 3) : p.name; sub = `${slotTxt(sp)} · ${p.code ? `${p.line} ${p.code}` : p.hex.toUpperCase()}`;
+        if (!role) { act = 'In your tray'; off = true; note = 'Already in your tray.'; }
+        else {
+          act = sp === now ? 'In use' : 'Use it'; off = sp === now;
+          note = sp === now ? (st.scope === 'unit' && own() ? `This ${unit.name} has it as its own color.` : `What ${r.label.toLowerCase()} print in now.`) : 'Already in your tray: no new filament.';
+        }
+      } else if (st.sel.bbl == null && !st.sel.hex) {
+        big = 'transparent'; name = 'Pick a color'; sub = 'Bambu Lab’s, or your own'; act = 'Add to the tray'; off = true; note = 'Each filament gets its own slot and plates.';
       } else {
-        const b = st.sel.bbl != null ? BAMBU_COLORS[st.sel.bbl] : null;
+        const b = st.sel.bbl != null ? BAMBU_COLORS[st.sel.bbl] : null, n = role ? newSlot() : null;
         big = b ? b[3] : st.sel.hex; name = b ? b[2] : 'Your own color'; sub = b ? `${b[0]} · ${b[1]}` : st.sel.hex.toUpperCase();
-        act = `Add as slot ${next}`; note = 'A new filament: one more slot and its own plates.';
+        act = n ? `Add as slot ${n}` : 'Add to the tray';
+        note = n ? 'A new filament: one more slot and its own plates.' : 'It gets a slot in the Bambu Studio project once a part prints in it.';
       }
       if (st.scope === 'project' && own()) note += ` This ${unit.name} keeps its own, ${colorName(own())}.`;
       const lines = ['All', ...new Set(BAMBU_COLORS.map(c => c[0]))];
@@ -1168,14 +1214,14 @@ details.termfold[open] > summary { color: var(--ink); }
         <div class="fp-head"><div><b>${esc(r.label)}</b><small>${esc(o.from || '')}</small></div>${o.close ? '<button type="button" class="vclose" data-fp-close aria-label="Close">&times;</button>' : ''}</div>
         ${unit ? `<div class="fp-scope" role="group" aria-label="Where this color applies">${[['project', 'Whole project'], ['unit', `Only this ${unit.name}`]].map(([id, t]) => `<button type="button" data-fp-scope="${id}" aria-pressed="${st.scope === id}" title="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}
         <div class="fp-sec">In your tray</div>
-        <div class="fp-tray">${P.map((p, i) => `<button type="button" class="fp-chip" data-fp-pal="${p.id}" aria-pressed="${p.id === sp}" title="Slot ${fpSlot(i)}${p.id === now ? ', in use here' : ''}">${swatch(p.id)}<span>${esc(p.name)}</span></button>`).join('')}</div>
+        <div class="fp-tray">${P.map(p => `<button type="button" class="fp-chip" data-fp-pal="${p.id}" aria-pressed="${p.id === sp}" title="${slotTxt(p.id)}${p.id === now ? ', in use here' : ''}">${swatch(p.id)}<span>${esc(p.name)}</span></button>`).join('')}</div>
         ${BAMBU_COLORS.length ? `<div class="fp-sec">Bambu Lab <small data-fp-count>${plural(g.n, 'color')}, by shade</small></div>
         <label class="fp-search">${FP_SEARCH}<input type="search" data-fp-q value="${esc(st.q)}" placeholder="Name or code, e.g. blue, 11600" aria-label="Search Bambu Lab colors by name or code"></label>
         <div class="fp-lines">${lines.map(l => `<button type="button" data-fp-line="${esc(l)}" aria-pressed="${st.line === l}">${esc(l)}</button>`).join('')}</div>
         <div class="fp-grid" data-fp-grid>${g.html}</div>` : ''}
         <div class="fp-foot"><span class="fp-big" style="background:${big}"></span><div><b>${esc(name)}</b><small>${esc(sub)}</small></div>
-          <button type="button" class="btn primary" data-fp-use ${act === 'In use' ? 'disabled' : ''}>${act}</button></div>
-        <div class="fp-note"><span>${esc(note)}</span><span>${st.scope === 'unit' && own() ? `<button type="button" class="linkbtn" data-fp-back>Back to the project color</button> · ` : ''}<label class="linkbtn fp-own">Your own color…<input type="color" data-fp-hex value="${colorHex(now)}"></label></span></div>
+          <button type="button" class="btn primary" data-fp-use ${off ? 'disabled' : ''}>${act}</button></div>
+        <div class="fp-note"><span>${esc(note)}</span><span>${st.scope === 'unit' && own() ? `<button type="button" class="linkbtn" data-fp-back>Back to the project color</button> · ` : ''}<label class="linkbtn fp-own">Your own color…<input type="color" data-fp-hex value="${now ? colorHex(now) : st.sel.hex || '#4f7fbf'}"></label></span></div>
       </div>`;
       bind();
     };
@@ -1190,7 +1236,8 @@ details.termfold[open] > summary { color: var(--ink); }
         const b = st.sel.bbl != null ? BAMBU_COLORS[st.sel.bbl] : null;
         id = addPaletteColor(b ? { name: `${b[2]} · ${b[0]}`, hex: b[3].toLowerCase(), line: b[0], code: b[1] } : { name: 'Custom ' + st.sel.hex.toUpperCase(), hex: st.sel.hex.toLowerCase() });
       }
-      if (st.scope === 'unit') { unit.cfg.colors = { ...(unit.cfg.colors || {}), [role]: id }; unit.save(); saveColors(); }
+      if (!role) saveColors();
+      else if (st.scope === 'unit') { unit.cfg.colors = { ...(unit.cfg.colors || {}), [role]: id }; unit.save(); saveColors(); }
       else setRoleColor(role, id);
       st.sel = { pal: id };
       o.after();
@@ -2033,53 +2080,86 @@ details.termfold[open] > summary { color: var(--ink); }
   }
 
   // ---------- colors (step 2, and the 3D view opened from step 1) ----------
-  // The filaments you print with and which parts get which. Plates, filament totals and the Bambu Studio project
-  // follow them. One unit's own choices are made in the 3D view of its stack, where you see them.
-  let colorsOpen = false, bambuOpen = false;
+  // The filament tray (the palette, numbered like the Bambu Studio project's filament slots) and a map of which parts
+  // get which. Plates, filament totals and the Bambu Studio project follow them. One unit's own choices are made in
+  // the 3D views or the part preview, with the picker's "Only this unit".
+  let colorsOpen = false;
   // Bambu Lab's own PLA and PETG colours (src/bambu-colors.tsv): [line, colour code, name, hex]
   const BAMBU_COLORS = window.BAMBU_COLORS || [];
-  function bambuPicker() {
-    if (!BAMBU_COLORS.length) return '';
-    const lines = [...new Set(BAMBU_COLORS.map(c => c[0]))], have = new Set(colorPrefs.palette.map(p => p.code).filter(Boolean));
-    return `<details class="bbl" data-bbl-picker ${bambuOpen ? 'open' : ''}><summary>Add a Bambu Lab color</summary>
-      ${lines.map(line => `<div class="bbl-line"><b>${esc(line)}</b><div class="bbl-sw">${BAMBU_COLORS.map((c, i) => c[0] !== line ? '' :
-        `<button type="button" data-bbl="${i}" class="${have.has(c[1]) ? 'have' : ''}" style="background:${c[3]}" title="${esc(c[2])} (${c[1]})${have.has(c[1]) ? ', in your colors' : ''}" aria-label="${esc(c[2] + ', ' + line)}"></button>`).join('')}</div></div>`).join('')}
-      <p class="pnote">Bambu’s own color codes, for the colors on sale in their store. Click one to add it to your colors.</p></details>`;
+  // How the project uses each tray colour: roles of the project, units of the stacks with it as their own, and the
+  // filament slot it gets. The Bambu Studio project makes one filament per colour in use, in tray order: the first in
+  // slot 1, TPU in 2, the others from 3 (see buildProject). An unused colour gets no slot, and neither do labels on a
+  // plate of their own (step 3), which get a filament of their own after the others.
+  function trayUse() {
+    const roles = new Map(), units = new Map(), owned = new Map(); // owned: role -> units with their own colour for it
+    const slotted = new Map(), count = (m, id) => m.set(id, (m.get(id) || 0) + 1), apart = r => r === 'label' && labelsApart;
+    for (const r of R.ROLES) { const id = colorFor(r.id, null); count(roles, id); if (!apart(r.id)) count(slotted, id); }
+    towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => {
+      if (!u.colors) return;
+      const ids = new Set();
+      for (const [role, id] of Object.entries(u.colors)) if (paletteOf(id) && ROLE_BY_ID.has(role)) { ids.add(id); count(owned, role); if (!apart(role)) count(slotted, id); }
+      ids.forEach(id => count(units, id));
+    })));
+    const slot = new Map(); let k = 0;
+    colorPrefs.palette.forEach(p => { if (slotted.get(p.id)) slot.set(p.id, fpSlot(k++)); });
+    return { roles, units, owned, slot, next: fpSlot(k) };
+  }
+  // The colour map's rows, grouped
+  const ROLE_GROUPS = [['Outside', ['shell', 'facade', 'roof', 'base']], ['Inside', ['box', 'interior', 'dividers', 'label']],
+    ['Mechanics', ['runners', 'lock', 'hinge', 'accent', 'fittings']], ['Other', ['aids']]];
+  // "Start from": USSA's render colours (and no unit colours), or the tray's first two colours / first colour on
+  // every part. Two-tone: what is light in USSA's renders gets the first, the rest the second.
+  const COLOR_PRESETS = [['render', 'USSA render', 'USSA’s three render colors, and no unit with colors of its own'],
+    ['two', 'Two-tone', 'The first filament outside, the second inside and on the mechanics'], ['one', 'One color', 'The first filament on every part']];
+  function applyColorPreset(id) {
+    if (id === 'render') {
+      colorPrefs = { palette: PALETTE_DEFAULT.map(p => ({ ...p })), roles: {} };
+      towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { delete u.colors; })));
+      save(); saveColors(); return;
+    }
+    const P = colorPrefs.palette;
+    if (id === 'two' && P.length < 2) addPaletteColor({ name: 'Charcoal', hex: '#3a3d3f' });
+    const a = P[0].id, b = (P[1] || P[0]).id;
+    colorPrefs.roles = {};
+    for (const r of R.ROLES) setRoleColor(r.id, id === 'one' || r.def === 'body' ? a : b);
+    saveColors();
   }
   // in3d: the version in the 3D view's side column (always open, no panel frame)
   function colorsPanel(in3d) {
-    const P = colorPrefs.palette;
-    const intro = in3d ? 'For the whole project: every stack follows these, and plates, filament totals and the Bambu Studio project too. To give this unit a color of its own, click the part and choose “Only this unit”.'
-      : 'The filament colors you print with, and which parts get which. Plates, filament totals and the Bambu Studio project follow them. To change one unit only, like one drawer’s front, open its stack in 3D.';
-    return `${in3d ? '<div class="v3-colors" data-colors-root><h3>Colors</h3>' : `<details class="panel fold" data-colors-root ${colorsOpen ? 'open' : ''}><summary>Colors <small>${P.map(p => swatch(p.id)).join('')}${plural(P.length, 'filament color')}</small></summary>`}
-      <p class="pp">${intro}</p>
-      <div class="cpal">${P.map(p => `<div class="cpal-row"><input type="color" value="${p.hex}" data-pal-hex="${p.id}" aria-label="${esc(p.name)}: color">
-        <input type="text" class="cpal-name" value="${esc(p.name)}" data-pal-name="${p.id}" maxlength="40" aria-label="Name of this color">
-        ${P.length > 1 ? `<button type="button" class="iconbtn" data-pal-del="${p.id}" aria-label="Remove ${esc(p.name)}" title="Remove this color">✕</button>` : ''}</div>`).join('')}
-        <button type="button" class="btn" data-pal-add>+ Add a color</button></div>
-      <div class="cbbl">${bambuPicker()}</div>
+    const P = colorPrefs.palette, use = trayUse();
+    const intro = in3d ? 'Your filament tray and which parts get which, for the whole project: plates, filament totals and the Bambu Studio project follow it. To give this unit a color of its own, click the part and choose “Only this unit”.'
+      : 'Your filament tray, then which parts get which. Plates, filament totals and the Bambu Studio project follow it. To give one unit its own color, like one drawer’s front, click the part in its stack’s 3D view.';
+    const usedTxt = p => { const r = use.roles.get(p.id) || 0, u = use.units.get(p.id) || 0; return r || u ? [r && plural(r, 'part type'), u && plural(u, 'unit')].filter(Boolean).join(' · ') : 'unused'; };
+    const card = p => `<div class="ctray-card${use.slot.has(p.id) ? '' : ' unused'}">
+        <div class="ctray-top"><span>${use.slot.has(p.id) ? 'Slot ' + use.slot.get(p.id) : 'No slot'}</span>${P.length > 1 ? `<button type="button" class="iconbtn" data-pal-del="${p.id}" aria-label="Remove ${esc(p.name)} from the tray" title="Remove from the tray">✕</button>` : ''}</div>
+        <label class="ctray-sw" style="background:${p.hex}" title="Change this color"><input type="color" value="${p.hex}" data-pal-hex="${p.id}" aria-label="${esc(p.name)}: color"></label>
+        <input type="text" class="ctray-name" value="${esc(p.name)}" data-pal-name="${p.id}" maxlength="40" aria-label="Name of this filament">
+        <small>${esc(p.code ? `${p.line} ${p.code}` : p.hex.toUpperCase())}</small><small>${usedTxt(p)}</small></div>`;
+    const cell = (role, p, on) => `<td><button type="button" class="cdot${on ? ' on' : ''}" ${on ? `style="background:${p.hex}"` : ''} data-cmap="${role}" data-cmap-pal="${p.id}" aria-pressed="${on}" aria-label="${esc(ROLE_BY_ID.get(role).label)}: ${esc(p.name)}" title="${esc(p.name)}"></button></td>`;
+    const head = `<tr><th scope="col"><span class="sr">Parts</span></th>${P.map(p => `<th scope="col" title="${esc(p.name)}"><span class="cmap-h">${swatch(p.id)}${use.slot.get(p.id) || '–'}</span></th>`).join('')}</tr>`;
+    const section = ([title, ids]) => `<tbody><tr class="cmap-sec"><th colspan="${P.length + 1}" scope="rowgroup">${title}</th></tr>${ids.map(id => {
+      const r = ROLE_BY_ID.get(id), cur = colorFor(id, null), n = use.owned.get(id) || 0;
+      return `<tr><th scope="row"><span class="cmap-role"><span class="cmap-bar" style="background:${colorHex(cur)}"></span><span>${esc(r.label)}</span>${id === 'label' && labelsApart ? '<span class="cmap-note" title="Step 3 puts labels on a plate of their own, in a filament of their own">own plate</span>' : ''}${n ? `<span class="cmap-own" title="${plural(n, 'unit')} of your stacks ${n > 1 ? 'have' : 'has'} a color of ${n > 1 ? 'their' : 'its'} own here">${plural(n, 'unit')}</span>` : ''}</span></th>${P.map(p => cell(id, p, p.id === cur)).join('')}</tr>`;
+    }).join('')}${title === 'Other' ? `<tr><th scope="row"><span class="cmap-role"><span class="cmap-bar" style="background:${colorHex('tpu')}"></span><span>Tires</span></span></th><td colspan="${P.length}" class="cmap-fixed">TPU, slot 2</td></tr>` : ''}</tbody>`;
+    // Two tables side by side when there is room: outside and inside, mechanics and the rest
+    const table = groups => `<div class="cmap-box"><table class="cmap"><caption class="sr">Which filament each kind of part prints in</caption><thead>${head}</thead>${groups.map(section).join('')}</table></div>`;
+    return `${in3d ? '<div class="v3-colors" data-colors-root><h3>Colors</h3>' : `<details class="panel fold" data-colors-root ${colorsOpen ? 'open' : ''}><summary>Colors <small>${P.map(p => swatch(p.id)).join('')}${plural(P.length, 'filament')}</small></summary>`}
+      <div class="chead"><p class="pp">${intro}</p>
+        <div class="cstart" role="group" aria-label="Start from"><span>Start from</span>${COLOR_PRESETS.map(([id, t, why]) => `<button type="button" class="chip" data-cpreset="${id}" title="${esc(why)}">${t}</button>`).join('')}</div></div>
+      <div class="ctray" data-fp-row>${P.map(card).join('')}
+        <div class="ctray-card tpu"><div class="ctray-top"><span>Slot 2 · fixed</span></div><span class="ctray-sw"></span><b>TPU</b><small>Tires only</small></div>
+        <button type="button" class="ctray-add" data-fp-add>${'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'}Add a filament</button></div>
       ${preset().bambu && P.some(p => /^PETG/.test(p.line || '')) ? '<p class="pp">PETG colors: the Bambu Studio project gives every color PLA settings. In Bambu Studio, set the PETG filaments to a PETG profile.</p>' : ''}
-      <div class="croles">${R.ROLES.map(r => `<div class="crole" data-fp-row><span>${esc(r.label)}</span>${fpButton(r.id, null)}</div>`).join('')}
-        <div class="crole"><span>Tires</span><span class="csel">${swatch('tpu')}TPU</span></div></div>
-      ${colorsCustom() ? '<div class="actions"><button type="button" class="btn" data-colors-reset>Back to the render colors</button><span class="pnote" style="margin:0">Also clears the colors chosen for single units.</span></div>' : ''}
+      <div class="cmap-wrap">${table(ROLE_GROUPS.slice(0, 2))}${table(ROLE_GROUPS.slice(2))}</div>
+      ${plateColors !== 'renders' ? `<p class="pp">Step 3 ${plateColors === 'size' ? 'splits plates by part size' : 'puts every part in one color'}, so plates and the Bambu Studio project don’t follow these colors (the 3D views do). Choose “Your colors” there to print in them.</p>`
+        : P.some(p => !use.slot.has(p.id)) ? '<p class="pp">A filament no part uses gets no slot in the Bambu Studio project.</p>' : ''}
     ${in3d ? '</div>' : '</details>'}`;
   }
   function bindColors(root, rerender) {
     const D = root && root.querySelector('[data-colors-root]'); if (!D) return;
     if (D.tagName === 'DETAILS') D.ontoggle = () => { colorsOpen = D.open; };
     const done = () => { saveColors(); rerender(); };
-    D.querySelectorAll('[data-pal-hex]').forEach(i => i.onchange = () => { const p = paletteOf(i.dataset.palHex); p.hex = i.value; delete p.code; done(); }); // no longer Bambu's exact colour
-    const B = D.querySelector('[data-bbl-picker]');
-    if (B) {
-      B.ontoggle = () => { bambuOpen = B.open; };
-      B.querySelectorAll('[data-bbl]').forEach(b => b.onclick = () => {
-        const [line, code, name, hex] = BAMBU_COLORS[+b.dataset.bbl];
-        if (colorPrefs.palette.some(p => p.code === code)) { toast(`${name} (${line}) is already in your colors.`); return; }
-        let n = 1; while (paletteOf('c' + n)) n++;
-        colorPrefs.palette.push({ id: 'c' + n, name: `${name} · ${line}`, hex: hex.toLowerCase(), line, code });
-        done();
-      });
-    }
+    D.querySelectorAll('[data-pal-hex]').forEach(i => i.onchange = () => { const p = paletteOf(i.dataset.palHex); p.hex = i.value; delete p.code; delete p.line; done(); }); // no longer Bambu's exact colour
     D.querySelectorAll('[data-pal-name]').forEach(i => i.onchange = () => { paletteOf(i.dataset.palName).name = i.value.trim() || 'Color'; done(); });
     D.querySelectorAll('[data-pal-del]').forEach(b => b.onclick = () => {
       const id = b.dataset.palDel;
@@ -2089,17 +2169,13 @@ details.termfold[open] > summary { color: var(--ink); }
       towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { if (u.colors) for (const k of Object.keys(u.colors)) if (u.colors[k] === id) delete u.colors[k]; })));
       save(); done();
     });
-    D.querySelector('[data-pal-add]').onclick = () => {
-      let n = 1; while (paletteOf('c' + n)) n++;
-      colorPrefs.palette.push({ id: 'c' + n, name: 'Color ' + (colorPrefs.palette.length + 1), hex: '#4f7fbf' });
-      done();
-    };
-    bindPickers(D, () => ({ from: 'Colors, for the whole project', after: rerender }));
-    if (D.querySelector('[data-colors-reset]')) D.querySelector('[data-colors-reset]').onclick = () => {
-      colorPrefs = { palette: PALETTE_DEFAULT.map(p => ({ ...p })), roles: {} };
-      towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { delete u.colors; })));
-      save(); done();
-    };
+    D.querySelectorAll('[data-cmap]').forEach(b => b.onclick = () => { setRoleColor(b.dataset.cmap, b.dataset.cmapPal); rerender(); });
+    D.querySelectorAll('[data-cpreset]').forEach(b => b.onclick = () => {
+      if (b.dataset.cpreset === 'render' && colorsCustom() && !confirm('Go back to USSA’s render colors? This removes the filaments you added and the colors chosen for single units.')) return;
+      applyColorPreset(b.dataset.cpreset); rerender();
+    });
+    const add = D.querySelector('[data-fp-add]');
+    add.onclick = () => togglePicker(add, { role: null, from: 'Your filament tray', after: rerender });
   }
   function renderBuild() {
     if (!towers.length) {
