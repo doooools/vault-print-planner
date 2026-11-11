@@ -267,6 +267,11 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .bsw[aria-pressed=true] { border: 2px solid var(--ink); padding: 3px 5px; color: var(--ink); }
 .bsw.more { justify-content: center; border-style: dashed; padding: 0 10px; font-size: 12.5px; }
 .v3-brush-hint { flex: 1 1 200px; color: var(--muted); font-size: 12.5px; }
+.v3-hintbar.tip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; left: 50%; right: auto; bottom: 16px; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); padding: 12px 12px 12px 18px; border: 2px solid var(--accent-btn); background: var(--sheet); color: var(--ink); font-size: 15px; box-shadow: 0 6px 24px rgba(0,0,0,.25); animation: v3tip 1.6s ease-in-out 3; }
+.v3-hintbar.tip kbd { font-size: 13px; }
+.v3-hintbar.tip .btn { min-height: 36px; }
+@keyframes v3tip { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent-btn) 35%, transparent), 0 6px 24px rgba(0,0,0,.25); } }
+@media (prefers-reduced-motion: reduce) { .v3-hintbar.tip { animation: none; } }
 .v3-hintbar { position: absolute; left: 12px; bottom: 12px; max-width: calc(100% - 24px); padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet); color: var(--muted); font-size: 12.5px; }
 .v3-morepop { position: absolute; left: 12px; z-index: 3; width: min(400px, calc(100% - 24px)); max-height: calc(100% - 200px); overflow-y: auto; box-sizing: border-box; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); box-shadow: 0 10px 30px rgba(0, 0, 0, .28); }
 /* The side column: the selected part, then the units */
@@ -499,6 +504,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .main.single { grid-template-columns: minmax(0, 1fr); }
 .badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; white-space: nowrap; }
 .badge.inf { background: var(--warn-soft); color: var(--warn); cursor: help; }
+.badge.no { background: var(--bad-soft); color: var(--bad); }
 .editing { background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
 
 /* Starting points */
@@ -652,11 +658,24 @@ details.folded > summary .mini { min-width: 40px; }
 .dstack { position: relative; display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 12px 8px 8px; text-align: left; background: var(--sheet); border: 2px solid var(--line); border-radius: 10px; }
 .dstack[aria-pressed=true] { border-color: var(--ink); background: var(--raised); }
 .dstack:hover { border-color: var(--muted); }
-.dstack .dot { position: absolute; top: 8px; right: 8px; background: var(--warn); }
+.dstack .dot { position: absolute; top: 8px; right: 40px; background: var(--warn); }
+.dstackw { position: relative; display: grid; }
+.dstackw .dstack { padding-right: 44px; }
+.dsdel { position: absolute; right: 6px; top: 50%; width: 32px; height: 32px; margin-top: -16px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; color: var(--muted); touch-action: none; }
+.dsdel:hover, .dsdel:focus-visible { color: var(--bad); background: var(--bad-soft); }
+.dsdel::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(var(--bad) 0turn, transparent 0turn); -webkit-mask: radial-gradient(circle, transparent 12px, #000 13px); mask: radial-gradient(circle, transparent 12px, #000 13px); opacity: 0; }
+.dsdel.holding { color: var(--bad); background: var(--bad-soft); }
+.dsdel.holding::after { opacity: 1; animation: dshold .9s linear forwards; }
+@property --hold { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes dshold { from { --hold: 0deg; } to { --hold: 360deg; } }
+.dsdel.holding::after { background: conic-gradient(var(--bad) var(--hold), transparent var(--hold)); }
 .dbadge { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; background: var(--ink); color: var(--sheet); font-weight: 800; font-stretch: 112%; font-size: 16px; }
 .dst { display: grid; min-width: 0; line-height: 1.25; }
 .dst b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dst small { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.dfile { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-top: 4px; }
+.dfile .v3-sec { grid-column: 1 / -1; padding: 0 2px; }
+.dfile .btn { min-height: 40px; }
 .drail > .btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .dloose { display: grid; gap: 4px; margin-top: 8px; padding: 12px; text-align: left; background: transparent; border: 1px dashed var(--edge); border-radius: 10px; font-size: 13px; color: var(--muted); }
 .dloose[aria-pressed=true] { border: 2px solid var(--ink); background: var(--raised); color: var(--ink); }
@@ -679,19 +698,16 @@ details.folded > summary .mini { min-width: 40px; }
 .design .v3-side { max-height: none; overflow: visible; border-left: 0; border-top: 1px solid var(--line); padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
 .design .v3-side > :not(#v3dStatus):not(#v3dPick) { display: none; }
 .design .v3-side .v3-status { flex: 1 1 300px; font-size: 12.5px; }
+.pscope { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+.pscope .pnote { flex-basis: 100%; margin: 0; }
+.pchip { display: grid; gap: 1px; min-height: 44px; padding: 6px 14px 6px 34px; position: relative; text-align: left; border: 2px solid var(--line); border-radius: 10px; background: var(--sheet); }
+.pchip::before { content: ''; position: absolute; left: 10px; top: 50%; width: 16px; height: 16px; margin-top: -8px; border: 2px solid var(--edge); border-radius: 4px; }
+.pchip[aria-pressed=true] { border-color: var(--ink); background: var(--raised); }
+.pchip[aria-pressed=true]::before { background: var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.3l3 3 6-6.6' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat; border-color: var(--ink); }
+.pchip b { font-size: 14px; } .pchip small { font-size: 11.5px; color: var(--muted); }
 .v3-hintbar kbd, .dhint kbd { display: inline-block; padding: 0 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 11.5px var(--f-mono); color: var(--ink); background: var(--sheet); }
 .dempty { display: grid; justify-items: center; align-content: center; gap: 12px; min-height: 360px; padding: 24px; color: var(--muted); background: var(--sheet-2); }
 .dempty .btn { display: inline-flex; align-items: center; gap: 6px; }
-.dcolors { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 16px; }
-.dcolors .v3-sec { margin-right: 4px; }
-.dchip { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 12px 4px 6px; border: 1px solid var(--line); border-radius: 22px; background: var(--sheet); text-align: left; }
-.dchip:hover { border-color: var(--ink); }
-.dchip .dot2.big { width: 30px; height: 30px; }
-.dchip > span:last-child { display: grid; line-height: 1.15; }
-.dchip b { font-size: 12.5px; }
-.dchip small { font-size: 11.5px; color: var(--muted); }
-.dcolors .linkbtn { display: inline; margin: 0; padding: 0; font-size: 13px; }
-.dcount { margin-left: auto; font-size: 12px; color: var(--muted); }
 .dinsp { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
 .ihead { display: grid; gap: 2px; padding: 14px 16px 12px; border-bottom: 1px solid var(--line); }
 .ihead h2 { margin: 6px 0 2px; font-family: var(--f-display); font-size: 22px; font-weight: 800; font-stretch: 112%; line-height: 1.15; }
@@ -702,8 +718,9 @@ details.folded > summary .mini { min-width: 40px; }
 .iacts { display: flex; gap: 4px; }
 .iacts .iconbtn.sq { width: 40px; height: 40px; }
 .ipair { margin: 12px 16px 0; }
-.seg.lays { grid-auto-columns: minmax(0, 1fr); }
-.seg.lays button { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; }
+.seg.lays { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.seg.lays button { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; min-width: 0; }
+.seg.lays button small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 0; }
 .seg.lays button svg { color: var(--muted); } .seg.lays button[aria-pressed=true] svg { color: inherit; }
 .seg.across button { display: grid; justify-items: center; gap: 2px; padding: 8px 4px; }
 .seg.across button svg { color: var(--muted); }
@@ -712,11 +729,19 @@ details.folded > summary .mini { min-width: 40px; }
 .dinsp > .alert { margin: 12px 16px 0; }
 .ibody { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 14px 16px 18px; }
 .imore .ibody { padding: 12px 0 4px; }
+.ipaint { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px; background: var(--sheet-2); border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
 .imore { border-top: 1px solid var(--line); padding-top: 10px; }
 .imore > summary { cursor: pointer; font-weight: 700; font-size: 14px; min-height: 32px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .imore > summary .mono { color: var(--muted); font-size: 12px; font-weight: 400; }
-.iparts .parts { margin: 8px -16px 0; }
-.iparts .hw { margin-top: 8px; border-radius: 8px; }
+.ilist { display: grid; gap: 6px; margin-top: 8px; }
+.ilist h3 { display: flex; justify-content: space-between; gap: 8px; margin: 6px 0 0; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ilist h3 .mono { text-transform: none; letter-spacing: 0; }
+.ilist ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.ilist li { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; font-size: 13px; line-height: 1.3; }
+.ilist li .q { color: var(--muted); font-size: 12px; text-align: right; }
+.ilist li .n { overflow-wrap: anywhere; }
+.ilist li small { color: var(--muted); font-size: 11.5px; }
+.ilist .linkbtn { justify-self: start; margin: 4px 0 0; padding: 0; font-size: 13px; }
 .ifp { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
 .ifp > span { display: grid; gap: 2px; }
 .ialerts { display: grid; gap: 6px; }
@@ -984,7 +1009,7 @@ details.termfold[open] > summary { color: var(--ink); }
     <button type="button" class="hbtn" id="printerBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="printerBox"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg><b id="printerName"></b><span class="mono" id="printerBed"></span></button>
     <button type="button" class="hbtn" id="folderBtn"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path class="ok" d="M9 13l2 2 4-4"/></svg><b>Vault folder</b><span class="mono" id="folderState"></span></button>
   </div>
-  <p class="credit">A fork of <a href="https://vault.romy.io" target="_blank" rel="noopener">Romy’s Vault Print Planner</a> · <button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog">What’s new</button></p>
+  <p class="credit">A <a href="https://github.com/doooools" target="_blank" rel="noopener">Dols</a> fork of <a href="https://vault.romy.io" target="_blank" rel="noopener">Romy’s Vault Print Planner</a> · <button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog">What’s new</button></p>
   <div class="printer pop" id="printerBox" hidden role="dialog" aria-label="Printer">
       <label for="printer">Printer</label>
       <select id="printer"></select>
@@ -1134,17 +1159,25 @@ details.termfold[open] > summary { color: var(--ink); }
   const saveColors = () => store.set('colors', colorPrefs);
   const ROLE_BY_ID = new Map(R.ROLES.map(r => [r.id, r]));
   const paletteOf = id => colorPrefs.palette.find(p => p.id === id);
-  // The colour a part of this role gets in this unit (cfg null: a stack part or an extra part)
-  function colorFor(role, cfg) {
+  // Each stack has its own part colours (t.roles): painting one stack leaves the others as they are. colorPrefs.roles
+  // is what loose parts use (and a stack has from before stacks had their own).
+  let colorStack = null; // the stack analyzeTower is planning: its parts take its colours
+  const towerOf = cfg => cfg ? towers.find(t => t.levels.some(lv => lv.includes(cfg))) || null : null;
+  const stackNow = () => { try { return curTower() || null; } catch (e) { return null; } };
+  // The colour a part of this role gets in this unit (cfg null: a stack part or an extra part), in stack st (left
+  // out: the stack being planned, the unit's, or the one shown; null: no stack, the loose parts' colours)
+  function colorFor(role, cfg, st) {
     if (role === 'tpu') return 'tpu';
     const def = (ROLE_BY_ID.get(role) || { def: 'body' }).def;
-    const pick = (cfg && cfg.colors && cfg.colors[role]) || colorPrefs.roles[role];
+    const t = st === undefined ? colorStack || towerOf(cfg) || stackNow() : st;
+    const pick = (cfg && cfg.colors && cfg.colors[role]) || (t && t.roles && t.roles[role]) || colorPrefs.roles[role];
     return pick && paletteOf(pick) ? pick : paletteOf(def) ? def : colorPrefs.palette[0].id;
   }
   // Lines in their chosen colours. A part in another colour than its default is a different print, so it gets its
   // own key: two units with different fronts list two lines, and plates and progress keep them apart.
   // Whether anything differs from USSA's render colours (the palette, a role, or a unit of a stack)
   const colorsCustom = () => Object.keys(colorPrefs.roles).length > 0 || JSON.stringify(colorPrefs.palette) !== JSON.stringify(PALETTE_DEFAULT)
+    || towers.some(t => t.roles && Object.entries(t.roles).some(([k, id]) => id !== (ROLE_BY_ID.get(k) || {}).def))
     || towers.some(t => t.levels.some(lv => lv.some(u => u.colors && Object.keys(u.colors).length)));
   const paintLines = (res, cfg) => ({ ...res, lines: res.lines.map(l => { const c = colorFor(l.role, cfg); return c === l.color ? l : { ...l, color: c, key: l.file.path + '#' + c }; }) });
   let labelsApart = store.get('labelsApart', true); // labels on a plate of their own
@@ -1164,11 +1197,17 @@ details.termfold[open] > summary { color: var(--ink); }
     towers = (store.get('build', []) || []).map(b => ({ id: seq++, name: 'Stack ' + (seq - 1), levels: [[clean(b.cfg)]], stack: { ...STACK_DEFAULT } }));
   }
   const save = () => { store.set('towers', towers); store.set('seq', seq); };
+  // A stack id no stack has (seq can lag behind ids that came from elsewhere)
+  const newId = () => { seq = Math.max(seq, ...towers.map(t => t.id + 1)); return seq++; };
   // The 'mech' colour role (runner slides, keys, hinges and locks) became three: carry a choice made before over
   const splitMech = o => { if (o && o.mech) { for (const k of ['runners', 'lock', 'hinge']) if (!o[k]) o[k] = o.mech; delete o.mech; } };
   splitMech(colorPrefs.roles); splitMech(c.colors); towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => splitMech(u.colors))));
+  // Stacks saved before they had colours of their own start from the project's
+  towers.forEach(t => { if (!t.roles) t.roles = { ...colorPrefs.roles }; splitMech(t.roles); });
   let extras = store.get('extras', []);               // [{ path, qty }]: single parts printed on their own, outside any tower
-  let printScope = store.get('printScope', 'all');    // 'all' = towers + extras, 'extras' = only the extra parts
+  // What Print plans: every stack and the loose parts, but those left out here (stack ids, 'loose'). New stacks are in.
+  let printSkip = store.get('printSkip', store.get('printScope', 'all') === 'extras' ? null : []);
+  const savePrintSkip = () => store.set('printSkip', printSkip);
   let xq = '';                                        // current part search
   const saveExtras = () => store.set('extras', extras);
   // Progress key: extras are tracked apart from the same file used in a tower
@@ -1269,7 +1308,8 @@ details.termfold[open] > summary { color: var(--ink); }
   const roofOf = lv => lv.find(u => u.type === 'drawer' && u.roof && u.roof !== 'none') || lv[0];
   const WNAME = { S: 'S', M: 'M', L: 'L', L2: 'L\u00b2', XL: 'XL', XL2: 'XL\u00b2' };
   const levelHeight = lv => Math.max(...lv.map(u => unitExt(u)[2]));
-  function analyzeTower(t) {
+  function analyzeTower(t) { const was = colorStack; colorStack = t; try { return analyzeStack(t); } finally { colorStack = was; } }
+  function analyzeStack(t) {
     const issues = [], parts = [], L = t.levels;
     if (!L.length) return { issues: [{ k: 'info', m: 'This stack is empty. Press + Add a unit to start it.' }], parts, height: 0 };
     L.forEach((lv, i) => {
@@ -1373,7 +1413,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const f = FILE_BY_PATH.get(path); if (!f) return null;
     const m = partMeta(path) || {};
     return { group: 'Extra parts', label: niceName(path), file: f, qty, total: qty, key: 'extra:' + path,
-      color: m.role ? colorFor(m.role, null) : m.color || (/tpu/i.test(path) ? 'tpu' : 'body'), role: m.role, walls: m.walls, infill: m.infill, flex: m.flex,
+      color: m.role ? colorFor(m.role, null, null) : m.color || (/tpu/i.test(path) ? 'tpu' : 'body'), role: m.role, walls: m.walls, infill: m.infill, flex: m.flex,
       supports: m.supports || /turn on supports/i.test(path) || f.needsSupport, tpu: m.tpu || /tpu/i.test(path), aid: m.aid,
       note: m.label ? m.label.replace(/ \((left|right|S side|M side)\)$/, '') : '', fit: fitOf(f.dims, printer.v, f.ex) };
   }
@@ -1386,16 +1426,21 @@ details.termfold[open] > summary { color: var(--ink); }
     toast(`${niceName(path)}: ${q} in loose parts`);
   }
 
-  function computeBuild() {
+  // The whole build (Hardware, Assemble), or what Print plans (forPrint: the stacks and loose parts picked there)
+  function computeBuild(forPrint) {
     const xl = extraLines();
-    const onlyExtras = printScope === 'extras' && xl.length > 0;
     // Nothing in the build: steps 3 and 4 stay empty rather than planning the unit open in step 1 unasked
     const empty = !towers.length && !xl.length;
-    const list = onlyExtras ? [] : towers;
+    if (forPrint && printSkip === null) printSkip = towers.map(t => t.id); // "only the loose parts", from before
+    const skip = new Set(forPrint ? printSkip : []);
+    let list = towers.filter(t => !skip.has(t.id)), withX = xl.length > 0 && !skip.has('loose');
+    if (!list.length && !withX) { list = towers; withX = xl.length > 0; } // nothing left picked: everything
+    const onlyExtras = !list.length && withX, whole = list.length === towers.length && withX === xl.length > 0;
     const all = [], issues = [];
     list.forEach(t => { const a = analyzeTower(t); all.push(...a.parts); a.issues.filter(i => i.k === 'bad').forEach(i => issues.push(t.name + ': ' + i.m)); });
-    if (xl.length) all.push({ lines: xl, hardware: [] });
-    return { ...withSpares(merge(all)), towerIssues: issues, empty, list, extras: xl.length, onlyExtras };
+    if (withX) all.push({ lines: xl, hardware: [] });
+    const scope = whole ? 'all' : onlyExtras ? 'extras' : 'pick:' + [...list.map(t => t.id), ...(withX ? ['loose'] : [])].join(',');
+    return { ...withSpares(merge(all)), towerIssues: issues, empty, list, extras: withX ? xl.length : 0, onlyExtras, whole, scope };
   }
 
   // ---------- part previews ----------
@@ -1416,7 +1461,7 @@ details.termfold[open] > summary { color: var(--ink); }
   }
   // ---------- the filament picker ----------
   // One picker wherever a part role's filament is chosen: the part preview, the Colors panel, the 3D views. It sets
-  // the colour for the whole project (colorPrefs.roles) or, when a unit is known, for that unit only (its cfg.colors).
+  // the colour for the whole stack shown (its roles) or, when a unit is known, for that unit only (its cfg.colors).
   // A colour from Bambu Lab's list or one of your own is a new filament: the button says so before it is added.
   // o: { role (null: only adds a filament to the tray), from (where it was opened, for the header),
   //      unit?: { cfg, name, save() }, scope?: 'project'|'unit', after(id) (redraws whatever shows the colour),
@@ -1443,11 +1488,11 @@ details.termfold[open] > summary { color: var(--ink); }
     st.sel = role ? { pal: cur() } : {};
     // The slot a new colour would get once this part prints in it (tried on the tray, then put back)
     const newSlot = () => {
-      const P = colorPrefs.palette, tmp = { id: ' new', name: '', hex: '#000000' }, was = st.scope === 'unit' ? unit.cfg.colors : colorPrefs.roles;
+      const P = colorPrefs.palette, tmp = { id: ' new', name: '', hex: '#000000' }, home = stackNow(), was = st.scope === 'unit' ? unit.cfg.colors : home ? home.roles || {} : colorPrefs.roles;
       P.push(tmp);
-      if (st.scope === 'unit') unit.cfg.colors = { ...(was || {}), [role]: tmp.id }; else colorPrefs.roles = { ...was, [role]: tmp.id };
+      if (st.scope === 'unit') unit.cfg.colors = { ...(was || {}), [role]: tmp.id }; else if (home) home.roles = { ...was, [role]: tmp.id }; else colorPrefs.roles = { ...was, [role]: tmp.id };
       try { return trayUse().slot.get(tmp.id); }
-      finally { P.pop(); if (st.scope === 'unit') { if (was) unit.cfg.colors = was; else delete unit.cfg.colors; } else colorPrefs.roles = was; }
+      finally { P.pop(); if (st.scope === 'unit') { if (was) unit.cfg.colors = was; else delete unit.cfg.colors; } else if (home) home.roles = was; else colorPrefs.roles = was; }
     };
     // What is selected, as a palette id when it is already in the tray
     const selPal = () => st.sel.pal || (st.sel.bbl != null ? (colorPrefs.palette.find(p => p.code && p.code === BAMBU_COLORS[st.sel.bbl][1]) || {}).id : null);
@@ -1482,7 +1527,7 @@ details.termfold[open] > summary { color: var(--ink); }
       const lines = ['All', ...new Set(BAMBU_COLORS.map(c => c[0]))];
       host.innerHTML = `<div class="fp" role="group" aria-label="Filament for ${esc(r.label.toLowerCase())}">
         <div class="fp-head"><div><b>${esc(r.label)}</b><small>${esc(o.from || '')}</small></div>${o.close ? '<button type="button" class="vclose" data-fp-close aria-label="Close">&times;</button>' : ''}</div>
-        ${unit ? `<div class="fp-scope" role="group" aria-label="Where this color applies">${[['project', 'Whole project'], ['unit', `Only this ${unit.name}`]].map(([id, t]) => `<button type="button" data-fp-scope="${id}" aria-pressed="${st.scope === id}" title="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}
+        ${unit ? `<div class="fp-scope" role="group" aria-label="Where this color applies">${[['project', stackNow() ? 'Whole stack' : 'Whole project'], ['unit', `Only this ${unit.name}`]].map(([id, t]) => `<button type="button" data-fp-scope="${id}" aria-pressed="${st.scope === id}" title="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}
         <div class="fp-sec">In your tray</div>
         <div class="fp-tray">${P.map(p => `<button type="button" class="fp-chip" data-fp-pal="${p.id}" aria-pressed="${p.id === sp}" title="${slotTxt(p.id)}${p.id === now ? ', in use here' : ''}">${swatch(p.id)}<span>${esc(p.name)}</span></button>`).join('')}</div>
         ${BAMBU_COLORS.length ? `<div class="fp-sec">Bambu Lab <small data-fp-count>${plural(g.n, 'color')}, by shade</small></div>
@@ -1491,7 +1536,7 @@ details.termfold[open] > summary { color: var(--ink); }
         <div class="fp-grid" data-fp-grid>${g.html}</div>` : ''}
         <div class="fp-foot"><span class="fp-big" style="background:${big}"></span><div><b>${esc(name)}</b><small>${esc(sub)}</small></div>
           <button type="button" class="btn primary" data-fp-use ${off ? 'disabled' : ''}>${act}</button></div>
-        <div class="fp-note"><span>${esc(note)}</span><span>${st.scope === 'unit' && own() ? `<button type="button" class="linkbtn" data-fp-back>Back to the project color</button> · ` : ''}<label class="linkbtn fp-own">Your own color…<input type="color" data-fp-hex value="${now ? colorHex(now) : st.sel.hex || '#4f7fbf'}"></label></span></div>
+        <div class="fp-note"><span>${esc(note)}</span><span>${st.scope === 'unit' && own() ? `<button type="button" class="linkbtn" data-fp-back>Back to the stack color</button> · ` : ''}<label class="linkbtn fp-own">Your own color…<input type="color" data-fp-hex value="${now ? colorHex(now) : st.sel.hex || '#4f7fbf'}"></label></span></div>
       </div>`;
       bind();
     };
@@ -1607,7 +1652,7 @@ details.termfold[open] > summary { color: var(--ink); }
         ${l.total ? `<div class="qty" style="text-align:left">${l.total}<small>\u00d7 to print</small></div>` : ''}
         <div class="pfile mono">${esc(l.file.path)}</div>
         <div class="tags" style="justify-content:flex-start">${tagsFor(l).join('')}</div>
-        ${l.role && ROLE_BY_ID.has(l.role) ? `<div class="vcolor" data-fp-row><span>Filament<small>for ${esc(ROLE_BY_ID.get(l.role).label.toLowerCase())}${inUnit ? '' : ', in the whole project'}</small></span>${fpButton(l.role, inUnit ? c : null)}</div>
+        ${l.role && ROLE_BY_ID.has(l.role) ? `<div class="vcolor" data-fp-row><span>Filament<small>for ${esc(ROLE_BY_ID.get(l.role).label.toLowerCase())}${inUnit ? '' : stackNow() ? ', in the whole stack' : ', in the whole project'}</small></span>${fpButton(l.role, inUnit ? c : null)}</div>
           ${!inUnit && l.color !== colorFor(l.role, null) && l.color !== 'tpu' ? `<p class="pnote" style="margin:0">${swatch(l.color)}This unit has its own color here, ${esc(colorName(l.color))} (from the 3D view of its stack).</p>` : ''}` : ''}
         <div class="mono num">${dimStr(l.file.dims)}</div>
         ${l.note ? `<div class="pnote">${esc(l.note)}</div>` : ''}
@@ -1664,6 +1709,17 @@ details.termfold[open] > summary { color: var(--ink); }
         </div>`).join('')}</div>`).join('');
   }
 
+  // A level's parts and bolts in the inspector's narrow column: how many of each, grouped; what doesn't fit is marked.
+  // The full table (files, sizes, beds) is the Print step's.
+  function levelParts(lines, hw) {
+    const groups = [];
+    lines.forEach(l => { let g = groups.find(g => g.name === l.group); if (!g) groups.push(g = { name: l.group, items: [] }); g.items.push(l); });
+    const bad = l => l.fit.s === 'no' || l.fit.s === 'reorient';
+    return `<div class="ilist">${groups.map(g => `<h3><span>${esc(g.name)}</span><span class="mono">${plural(g.items.reduce((a, l) => a + l.total, 0), 'print')}</span></h3>
+        <ul>${g.items.map(l => `<li><span class="q mono">${l.total}\u00d7</span><span class="n" title="${esc(l.file.path)}">${esc(l.label)}${l.spareN ? ` <small>incl. ${l.spareN} spare</small>` : ''}${l.inferred ? ' <small>inferred</small>' : ''}</span>${bad(l) ? '<span class="badge no">Too big</span>' : ''}</li>`).join('')}</ul>`).join('')}
+      ${hw.length ? `<h3><span>Bolts and hardware</span><span class="mono">not printed</span></h3><ul>${hw.map(h => `<li><span class="q mono">${h.total}\u00d7</span><span class="n">${esc(h.item)}</span></li>`).join('')}</ul>` : ''}
+      <button type="button" class="linkbtn" data-go="print">Files, sizes and plates in Print</button></div>`;
+  }
   function summary(lines) {
     const prints = lines.reduce((a, l) => a + l.total, 0);
     const g = lines.reduce((a, l) => a + gramsOf(l.file) * l.total, 0);
@@ -1877,7 +1933,7 @@ details.termfold[open] > summary { color: var(--ink); }
       e.qty += +b.dataset.d; if (e.qty <= 0) extras = extras.filter(x => x !== e);
       saveExtras(); renderTabs(); renderBuild();
     });
-    if ($('xprint')) $('xprint').onclick = () => { printScope = 'extras'; store.set('printScope', printScope); view = 'print'; renderAll(); window.scrollTo(0, 0); };
+    if ($('xprint')) $('xprint').onclick = () => { printSkip = towers.map(t => t.id); savePrintSkip(); view = 'print'; renderAll(); window.scrollTo(0, 0); };
     if ($('xclear')) $('xclear').onclick = () => { extras = []; saveExtras(); renderTabs(); renderBuild(); };
   }
 
@@ -1890,7 +1946,8 @@ details.termfold[open] > summary { color: var(--ink); }
   function trayUse() {
     const roles = new Map(), units = new Map(), owned = new Map(); // owned: role -> units with their own colour for it
     const slotted = new Map(), count = (m, id) => m.set(id, (m.get(id) || 0) + 1), apart = r => r === 'label' && labelsApart;
-    for (const r of R.ROLES) { const id = colorFor(r.id, null); count(roles, id); if (!apart(r.id)) count(slotted, id); }
+    for (const r of R.ROLES) count(roles, colorFor(r.id, null));
+    for (const t of towers.length ? [...towers, ...(extras.length ? [null] : [])] : [null]) for (const r of R.ROLES) if (!apart(r.id)) count(slotted, colorFor(r.id, null, t));
     towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => {
       if (!u.colors) return;
       const ids = new Set();
@@ -1901,23 +1958,27 @@ details.termfold[open] > summary { color: var(--ink); }
     colorPrefs.palette.forEach(p => { if (slotted.get(p.id)) slot.set(p.id, fpSlot(k++)); });
     return { roles, units, owned, slot, next: fpSlot(k) };
   }
-  // The colour map's rows, grouped
-  const ROLE_GROUPS = [['Outside', ['shell', 'facade', 'roof', 'base']], ['Inside', ['box', 'interior', 'dividers', 'label']],
+  // The colour map's rows, grouped. A label sits on the front, so it is an outside part.
+  const ROLE_GROUPS = [['Outside', ['shell', 'facade', 'roof', 'base', 'label']], ['Inside', ['box', 'interior', 'dividers']],
     ['Mechanics', ['runners', 'lock', 'hinge', 'accent', 'fittings']], ['Other', ['aids']]];
   // "Start from": USSA's render colours (and no unit colours), or the tray's first two colours / first colour on
   // every part. Two-tone: what is light in USSA's renders gets the first, the rest the second.
   const COLOR_PRESETS = [['render', 'USSA render', 'USSA’s three render colors, and no unit with colors of its own'],
     ['two', 'Two-tone', 'The first filament outside, the second inside and on the mechanics'], ['one', 'One color', 'The first filament on every part']];
   function applyColorPreset(id) {
+    const t = stackNow();
     if (id === 'render') {
-      colorPrefs = { palette: PALETTE_DEFAULT.map(p => ({ ...p })), roles: {} };
-      towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { delete u.colors; })));
+      if (!t) { colorPrefs = { palette: PALETTE_DEFAULT.map(p => ({ ...p })), roles: {} }; saveColors(); return; }
+      // This stack only: USSA's three colours back in the tray if they were taken out, every part type on its default
+      for (const d of PALETTE_DEFAULT) if (!paletteOf(d.id)) colorPrefs.palette.push({ ...d });
+      t.roles = Object.fromEntries(R.ROLES.map(r => [r.id, r.def]));
+      t.levels.forEach(lv => lv.forEach(u => { delete u.colors; }));
       save(); saveColors(); return;
     }
     const P = colorPrefs.palette;
     if (id === 'two' && P.length < 2) addPaletteColor({ name: 'Charcoal', hex: '#3a3d3f' });
     const a = P[0].id, b = (P[1] || P[0]).id;
-    colorPrefs.roles = {};
+    if (t) t.roles = {}; else colorPrefs.roles = {};
     for (const r of R.ROLES) setRoleColor(r.id, id === 'one' || r.def === 'body' ? a : b);
     saveColors();
   }
@@ -1929,17 +1990,18 @@ details.termfold[open] > summary { color: var(--ink); }
   const brushId = () => { const id = (v3 && v3.brush) || v3ui.brush; return paletteOf(id) ? id : colorPrefs.palette[0].id; };
   function setBrush(id) { v3ui.brush = id; if (v3) { v3.brush = id; v3tools(); } renderInspector(); }
   const painting = () => view === 'build' && !!v3 && v3.tool === 'paint';
+  let inspPaint = true; // with Paint on: the colours (true) or the settings asked for (Stack settings, a stack, a level)
   function paintRole(role, id) {
     setRoleColor(role, id);
-    towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => {
+    (stackNow() ? [stackNow()] : towers).forEach(t => t.levels.forEach(lv => lv.forEach(u => {
       if (u.colors && u.colors[role]) { const x = { ...u.colors }; delete x[role]; if (Object.keys(x).length) u.colors = x; else delete u.colors; }
     })));
     save(); saveColors();
   }
-  // Every module colour that differs from the project's, for the exceptions list
+  // Every module colour of the stack shown that differs from the stack's, for the exceptions list
   function ownColors() {
     const out = [];
-    towers.forEach(t => t.levels.forEach((lv, i) => lv.forEach((u, j) => {
+    (stackNow() ? [stackNow()] : towers).forEach(t => t.levels.forEach((lv, i) => lv.forEach((u, j) => {
       if (!u.colors) return;
       for (const [role, id] of Object.entries(u.colors)) if (paletteOf(id) && ROLE_BY_ID.has(role))
         out.push({ t, u, role, id, where: `${t.name}, level ${i + 1}${lv.length > 1 ? (j ? ' right' : ' left') : ''} (${unitCode(u)})` });
@@ -1961,7 +2023,7 @@ details.termfold[open] > summary { color: var(--ink); }
             <button type="button" class="btn padd" data-padd aria-expanded="${fpAdding}">${icon('plus')} Add a filament</button></div></div>
         ${ROLE_GROUPS.map(([title, ids]) => `<div class="pgrp"><div class="pgrp-h"><h3>${esc(title)}</h3><button type="button" class="linkbtn" data-pall="${ids.join(',')}">Paint all</button></div>
           ${ids.map(roleRow).join('')}${title === 'Other' ? `<div class="prole fixed"><span class="dot2 big" style="background:${colorHex('tpu')}"></span><span><b>Tires</b><small>TPU, fixed</small></span></div>` : ''}</div>`).join('')}
-        ${own.length ? `<div class="pgrp"><div class="pgrp-h"><h3>Modules with their own color</h3></div>${own.map((x, k) => `<div class="pown"><span class="dot2" style="background:${colorHex(x.id)}"></span><span><b>${esc(ROLE_BY_ID.get(x.role).label)}</b> in ${esc(x.where)}</span><button type="button" class="linkbtn" data-pown="${k}">Back to the project color</button></div>`).join('')}</div>` : ''}
+        ${own.length ? `<div class="pgrp"><div class="pgrp-h"><h3>Modules with their own color</h3></div>${own.map((x, k) => `<div class="pown"><span class="dot2" style="background:${colorHex(x.id)}"></span><span><b>${esc(ROLE_BY_ID.get(x.role).label)}</b> in ${esc(x.where)}</span><button type="button" class="linkbtn" data-pown="${k}">Back to the stack color</button></div>`).join('')}</div>` : ''}
         ${preset().bambu && P.some(p => /^PETG/.test(p.line || '')) ? '<p class="pnote" style="margin:0">PETG colors: the Bambu Studio project gives every color PLA settings. In Bambu Studio, set the PETG filaments to a PETG profile.</p>' : ''}
         <p class="pnote" style="margin:0">Each filament prints on its own plates. Fewer filaments, fewer plates. <button type="button" class="linkbtn" data-go="print" style="display:inline;margin:0;padding:0">See the plates</button></p>
       </div>`;
@@ -1978,12 +2040,13 @@ details.termfold[open] > summary { color: var(--ink); }
       const id = b.dataset.palDel;
       colorPrefs.palette = colorPrefs.palette.filter(p => p.id !== id);
       for (const k of Object.keys(colorPrefs.roles)) if (colorPrefs.roles[k] === id) delete colorPrefs.roles[k];
+      towers.forEach(t => { if (t.roles) for (const k of Object.keys(t.roles)) if (t.roles[k] === id) delete t.roles[k]; });
       // Parts that used it go back to their role's colour; module colours using it are dropped
       towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { if (u.colors) { for (const k of Object.keys(u.colors)) if (u.colors[k] === id) delete u.colors[k]; if (!Object.keys(u.colors).length) delete u.colors; } })));
       save(); done();
     });
     box.querySelectorAll('[data-cpreset]').forEach(b => b.onclick = () => {
-      if (b.dataset.cpreset === 'render' && colorsCustom() && !confirm('Go back to USSA’s render colors? This removes the filaments you added and the colors chosen for single modules.')) return;
+      if (b.dataset.cpreset === 'render' && colorsCustom() && !confirm(stackNow() ? `Go back to USSA’s render colors on ${stackNow().name}? This also removes the colors chosen for its single modules. Other stacks keep theirs.` : 'Go back to USSA’s render colors? This removes the filaments you added.')) return;
       applyColorPreset(b.dataset.cpreset); renderAll();
     });
     box.querySelector('[data-padd]').onclick = () => { fpAdding = !fpAdding; renderAll(); const c = $('dCat'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
@@ -2087,13 +2150,13 @@ details.termfold[open] > summary { color: var(--ink); }
   function newStack(fp) {
     fp = fp || (curTower() ? fpOf(curTower()) : null) || { w: 'S', d: 3 };
     if (!sizeFits(fp.w, fp.d)) fp = { w: 'S', d: 3 };
-    const t = { id: seq++, name: 'Stack ' + (towers.length + 1), fp: { ...fp }, levels: [], stack: { ...STACK_DEFAULT } };
+    const t = { id: newId(), name: 'Stack ' + (towers.length + 1), fp: { ...fp }, levels: [], stack: { ...STACK_DEFAULT }, roles: { ...((stackNow() || {}).roles || colorPrefs.roles) } };
     const u = newUnit(t); u.roof = 'grid'; t.levels.push([u]);
     towers.push(t); dsel = { t: t.id, l: 0, u: 0 }; saveSel(); save();
     return t;
   }
   function addPreset(p) {
-    const t = { id: seq++, name: p.name, levels: p.levels.map(lv => lv.map(u => clean(u))), stack: { ...STACK_DEFAULT, ...(p.stack || {}) } };
+    const t = { id: newId(), name: p.name, levels: p.levels.map(lv => lv.map(u => clean(u))), stack: { ...STACK_DEFAULT, ...(p.stack || {}) }, roles: { ...((stackNow() || {}).roles || colorPrefs.roles) } };
     t.fp = fpOf(t); fixRoof(t);
     towers.push(t); dsel = { t: t.id, l: null }; saveSel(); save();
     view = 'build'; renderAll(); toast('Added “' + p.name + '”');
@@ -2127,19 +2190,55 @@ details.termfold[open] > summary { color: var(--ink); }
     L.forEach((lv, i) => lv.forEach(u => { const nf = unitNoFit(u, i === L.length - 1); if (nf.length) out.push({ k: 'warn', l: i, m: `Level ${i + 1} (${unitCode(u)}): ${plural(nf.length, 'part')} no longer ${nf.length === 1 ? 'fits' : 'fit'} the ${printerName()} (${[...new Set(nf.map(l => l.label))].join(', ')}). Print ${nf.length === 1 ? 'it' : 'them'} on a bigger printer, or change the level.` }); }));
     return out;
   }
-  // Colours under the view: five families, each opens the Paint tool
-  const SUMMARY_ROLES = [['shell', 'Shell and roof'], ['facade', 'Fronts'], ['box', 'Drawer boxes'], ['runners', 'Mechanics'], ['accent', 'Accents']];
-  function colorStrip() {
-    const use = trayUse(), n = colorPrefs.palette.filter(p => use.slot.has(p.id)).length;
-    return `<div class="dcolors"><span class="v3-sec">Colors</span>${SUMMARY_ROLES.map(([r, label]) => { const k = colorFor(r, null);
-      return `<button type="button" class="dchip" data-paint="${r}"><span class="dot2 big" style="background:${colorHex(k)}"></span><span><b>${esc(label)}</b><small>${esc(colorName(k))}</small></span></button>`; }).join('')}
-      <button type="button" class="linkbtn" data-paint="">All ${R.ROLES.length} part types…</button><span class="mono dcount">${plural(n, 'filament')}${towers.some(t => t.stack && t.stack.base && t.stack.wheels) ? ' + TPU' : ''}</span></div>`;
+  // ---------- designs saved to a file ----------
+  // The stacks, loose parts and colours as JSON. Chrome and Edge ask where (starting in the downloads folder, where
+  // the print files go, then wherever the last design went); other browsers download it. Opening one replaces the
+  // stacks and loose parts here; what was marked printed stays.
+  const DESIGN_TYPES = [{ description: 'Vault Print Planner design', accept: { 'application/json': ['.json'] } }];
+  async function saveDesign() {
+    const data = { app: 'vault-print-planner', kind: 'design', version: 1, saved: new Date().toISOString(), towers, extras, seq, colors: colorPrefs };
+    const text = JSON.stringify(data, null, 1);
+    const name = (towers.length === 1 ? towers[0].name : 'Vault design').replace(/[\\/:*?"<>|]+/g, '-').trim() + '.vault.json';
+    if (window.showSaveFilePicker) {
+      try {
+        const h = await window.showSaveFilePicker({ id: 'vault-design', startIn: 'downloads', suggestedName: name, types: DESIGN_TYPES });
+        const w = await h.createWritable(); await w.write(text); await w.close();
+        toast(`Saved ${h.name}`); return;
+      } catch (e) { if (e.name === 'AbortError') return; }
+    }
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([text], { type: 'application/json' })), download: name });
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    toast(`Saved ${name} to your downloads`);
+  }
+  async function openDesign() {
+    if (window.showOpenFilePicker) {
+      try {
+        const [h] = await window.showOpenFilePicker({ id: 'vault-design', startIn: 'downloads', types: DESIGN_TYPES });
+        const f = await h.getFile(); loadDesign(await f.text(), f.name); return;
+      } catch (e) { if (e.name === 'AbortError') return; }
+    }
+    const inp = Object.assign(document.createElement('input'), { type: 'file', accept: '.json,application/json' });
+    inp.onchange = async () => { const f = inp.files[0]; if (f) loadDesign(await f.text(), f.name); };
+    inp.click();
+  }
+  function loadDesign(text, name) {
+    let d = null; try { d = JSON.parse(text); } catch (e) { /* not JSON */ }
+    if (!d || d.app !== 'vault-print-planner' || !Array.isArray(d.towers)) { toast(`${name} isn’t a design saved by this planner`); return; }
+    if ((towers.length || extras.length) && !confirm(`Open “${name}”? It replaces the stacks and loose parts here. What you marked printed stays.`)) return;
+    if (d.colors && Array.isArray(d.colors.palette) && d.colors.palette.length) { colorPrefs = { ...d.colors, roles: d.colors.roles || {} }; saveColors(); }
+    towers = d.towers.filter(t => t && Array.isArray(t.levels)).map(t => ({ ...t, levels: t.levels.map(lv => lv.map(u => clean(u))), stack: { ...STACK_DEFAULT, ...(t.stack || {}) } }));
+    towers.forEach(t => { t.fp = fpOf(t); if (!t.roles) t.roles = { ...colorPrefs.roles }; t.levels.flat().forEach(fixUnit); fixTower(t); });
+    extras = Array.isArray(d.extras) ? d.extras.filter(e => e && FILE_BY_PATH.has(e.path)) : [];
+    seq = Math.max(+d.seq || 1, ...towers.map(t => t.id + 1));
+    printSkip = []; savePrintSkip();
+    dsel = towers[0] ? { t: towers[0].id, l: null, u: 0 } : extras.length ? { t: 'loose' } : null;
+    saveSel(); save(); saveExtras(); view = 'build'; renderAll(); toast(`Opened ${name}`);
   }
   // First launch: printer, Vault folder, first stack
   function renderStart() {
     const items = PRESETS.map((p, i) => ({ p, i })).filter(({ p }) => presetFits(p));
     const done = !!(vaultFolder || rememberedFolder);
-    $('view-build').innerHTML = `<div class="start"><div><h1>Start your build</h1><p>Three things, once. Print, Hardware and Assemble open as soon as there is a stack.</p></div>
+    $('view-build').innerHTML = `<div class="start"><div><h1>Start your build</h1><p>Three things, once. Print, Hardware and Assemble open as soon as there is a stack. <button type="button" class="linkbtn" id="startOpen" style="display:inline;margin:0;padding:0">Open a saved design…</button></p></div>
       <section class="panel srow"><span class="snum ok" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>
         <div class="stext"><h2>Your printer</h2><p>Sizes and parts that don’t fit its bed are never offered.</p></div>
         <button type="button" class="btn sbig" id="startPrinter"><b>${esc(printerName())}</b><span class="mono">${printer.v.join(' × ')} mm</span></button></section>
@@ -2153,6 +2252,7 @@ details.termfold[open] > summary { color: var(--ink); }
         <button type="button" class="btn ink big" id="startEmpty">${icon('plus')} Empty stack</button></div>
         <div class="tpls">${items.map(({ p, i }) => tplCard(p, i)).join('')}</div></section></div>`;
     $('startPrinter').onclick = e => { e.stopPropagation(); printerPop(true); };
+    if ($('startOpen')) $('startOpen').onclick = openDesign;
     if ($('startFolder')) $('startFolder').onclick = () => openFolder(false);
     if ($('startLater')) $('startLater').onclick = () => { folderHeroSkipped = true; renderAll(); };
     $('startEmpty').onclick = () => { newStack(); renderAll(); };
@@ -2171,13 +2271,15 @@ details.termfold[open] > summary { color: var(--ink); }
     if (t && dsel.l != null && !t.levels[dsel.l][dsel.u || 0]) dsel.u = 0;
     const info = towers.map(x => ({ t: x, a: analyzeTower(x) }));
     const rail = info.map(({ t: x, a }) => { const fp = fpOf(x), bad = stackAlerts(x, a).some(m => m.k !== 'info');
-      return `<button type="button" class="dstack" data-stack="${x.id}" aria-pressed="${!!t && x.id === t.id}"><span class="dbadge" aria-hidden="true">${fp.w}</span><span class="dst"><b>${esc(x.name)}</b><small>${fpCode(fp)} · ${plural(x.levels.length, 'level')}</small></span>${bad ? '<i class="dot" aria-label="needs attention"></i>' : ''}</button>`; }).join('');
+      return `<div class="dstackw"><button type="button" class="dstack" data-stack="${x.id}" aria-pressed="${!!t && x.id === t.id}"><span class="dbadge" aria-hidden="true">${fp.w}</span><span class="dst"><b>${esc(x.name)}</b><small>${fpCode(fp)} · ${plural(x.levels.length, 'level')}</small></span>${bad ? '<i class="dot" aria-label="needs attention"></i>' : ''}</button>
+        <button type="button" class="dsdel" data-sdel="${x.id}" aria-label="Delete ${esc(x.name)}: press and hold" title="Press and hold to delete"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('');
     const nx = extras.reduce((a, e) => a + e.qty, 0);
     const loose = dsel.t === 'loose';
     $('view-build').innerHTML = `<div class="design">
       <aside class="drail" aria-label="Stacks"><div class="v3-sec">Stacks</div>${rail}
         <button type="button" class="btn dnew" id="dNew">${icon('plus')} New stack</button>
         <button type="button" class="btn" id="dTpl">Start from a template…</button>
+        <div class="dfile" role="group" aria-label="Design file"><span class="v3-sec">Design file</span><button type="button" class="btn" id="dSave" title="Save these stacks, loose parts and colors to a file">Save…</button><button type="button" class="btn" id="dOpen" title="Open a design saved before">Open…</button></div>
         <button type="button" class="dloose" data-loose aria-pressed="${loose}"><span class="v3-sec">Loose parts</span><span>${nx ? `${plural(nx, 'part')} outside any stack` : 'Spares or single parts outside any stack. None yet.'}</span></button>
       </aside>
       ${loose ? `<section class="dcenter loose">${extrasPanel(true)}</section>` : designCenter(t, info.find(x => x.t === t).a)}
@@ -2186,10 +2288,12 @@ details.termfold[open] > summary { color: var(--ink); }
     <dialog id="tplDlg" aria-labelledby="tplTitle"><button type="button" class="vclose" data-tpl-close aria-label="Close">&times;</button><h2 id="tplTitle">Start from a template</h2><p class="pnote">A ready-made stack, added as a new stack. Change anything in it afterwards.</p>
       <div class="tpls">${PRESETS.map((p, i) => ({ p, i })).filter(({ p }) => presetFits(p)).map(({ p, i }) => tplCard(p, i)).join('')}</div></dialog>`;
     const V = $('view-build');
-    V.querySelectorAll('[data-stack]').forEach(b => b.onclick = () => { const x = towers.find(y => y.id === +b.dataset.stack); dsel = { t: x.id, l: x.levels.length ? x.levels.length - 1 : null, u: 0 }; saveSel(); fpStrip = false; renderAll(); });
+    V.querySelectorAll('[data-stack]').forEach(b => b.onclick = () => { const x = towers.find(y => y.id === +b.dataset.stack); dsel = { t: x.id, l: null, u: 0 }; saveSel(); fpStrip = false; inspPaint = false; renderAll(); });
+    V.querySelectorAll('[data-sdel]').forEach(holdToDelete);
     V.querySelector('[data-loose]').onclick = () => { dsel = { t: 'loose' }; saveSel(); renderAll(); };
     $('dNew').onclick = () => { newStack(); renderAll(); };
     $('dTpl').onclick = () => $('tplDlg').showModal();
+    $('dSave').onclick = saveDesign; $('dOpen').onclick = openDesign;
     V.querySelector('[data-tpl-close]').onclick = () => $('tplDlg').close();
     $('tplDlg').querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => { $('tplDlg').close(); addPreset(PRESETS[+b.dataset.tpl]); });
     if (loose) { bindExtras(); v3sync(); return; }
@@ -2198,6 +2302,18 @@ details.termfold[open] > summary { color: var(--ink); }
     v3sync();
   }
   function closeTpl() { const d = $('tplDlg'); if (d && d.open) d.close(); }
+  // A stack card's cross: held down for a second it deletes the stack (the ring fills meanwhile); let go sooner, nothing
+  const HOLD_MS = 900;
+  function removeStack(t) { towers = towers.filter(x => x.id !== t.id); printSkip = printSkip ? printSkip.filter(x => x !== t.id) : printSkip; savePrintSkip(); if (dsel && dsel.t === t.id) dsel = null; saveSel(); save(); renderAll(); toast(`${t.name} deleted`); }
+  function holdToDelete(b) {
+    let timer = null;
+    const t = () => towers.find(x => x.id === +b.dataset.sdel);
+    const start = e => { if (timer || (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ')) return; if (e.type === 'keydown') e.preventDefault(); b.classList.add('holding'); timer = setTimeout(() => { timer = null; b.classList.remove('holding'); if (t()) removeStack(t()); }, HOLD_MS); };
+    const stop = e => { if (!timer) return; clearTimeout(timer); timer = null; b.classList.remove('holding'); if (e && e.type !== 'pointerleave') toast('Hold the cross down to delete the stack'); };
+    b.addEventListener('pointerdown', start); b.addEventListener('keydown', start);
+    b.addEventListener('pointerup', stop); b.addEventListener('pointerleave', stop); b.addEventListener('pointercancel', stop); b.addEventListener('keyup', stop);
+    b.onclick = e => e.preventDefault();
+  }
   function designCenter(t, a) {
     const fp = fpOf(t);
     const wOpts = FP_W.filter(w => sizeFits(w, R.DEPTHS[0]) || w === fp.w).map(w => ({ v: w, label: w, sub: Math.round(R.WIDTH_MM[w]) + ' mm' }));
@@ -2211,24 +2327,29 @@ details.termfold[open] > summary { color: var(--ink); }
         <div class="field"><div class="lbl">Depth <span class="hint">grid units of 42 mm</span></div><div class="seg">${segBtns(dOpts, fp.d, 'data-fpd')}</div></div>
         <p class="pnote">Applies to every level of ${esc(t.name)}. Sizes too big for the ${esc(printerName())} aren’t offered.</p></div>` : ''}
       ${t.levels.length ? '<div class="v3-slot"></div>' : `<div class="dempty"><p>This stack has no level yet.</p><button type="button" class="btn primary big" data-addtop>${icon('plus')} Add a level</button></div>`}
-      ${colorStrip()}
       ${fpAdding && painting() ? '<div class="dcat" id="dCat"></div>' : ''}
     </section>`;
   }
   function bindCenter(t) {
     const V = $('view-build');
-    V.querySelectorAll('[data-dstack]').forEach(b => b.onclick = () => { dsel.l = dsel.l == null && t.levels.length ? t.levels.length - 1 : null; saveSel(); renderInspector(); v3mark(); V.querySelector('[data-dstack]').setAttribute('aria-pressed', String(dsel.l == null)); });
+    V.querySelectorAll('[data-dstack]').forEach(b => b.onclick = () => { if (painting() && inspPaint) { inspPaint = false; dsel.l = null; } else dsel.l = dsel.l == null && t.levels.length ? t.levels.length - 1 : null; saveSel(); renderInspector(); v3mark(); V.querySelector('[data-dstack]').setAttribute('aria-pressed', String(dsel.l == null)); });
     V.querySelectorAll('[data-fp]').forEach(b => b.onclick = () => { fpStrip = !fpStrip; renderAll(); });
     V.querySelectorAll('[data-fpw]').forEach(b => b.onclick = () => { const fp = fpOf(t); let d = fp.d; if (!sizeFits(b.dataset.fpw, d)) d = R.DEPTHS.find(x => sizeFits(b.dataset.fpw, x)) || d; setFootprint(t, b.dataset.fpw, d); renderAll(); });
     V.querySelectorAll('[data-fpd]').forEach(b => b.onclick = () => { setFootprint(t, fpOf(t).w, +b.dataset.fpd); renderAll(); });
     V.querySelectorAll('[data-addtop]').forEach(b => b.onclick = () => levelOp(t, 'top'));
-    V.querySelectorAll('[data-paint]').forEach(b => b.onclick = () => { if (v3) { v3.tool = 'paint'; v3.hot = null; v3.recolor(); v3tools(); v3side(); } });
     bindCatalog();
   }
   // The inspector: the selected level, or the stack's settings
   function renderInspector() {
-    const box = $('dInsp'), t = curTower(); if (!box || !t) return;
-    if (painting()) return paintPanel(box);
+    const box = $('dInsp'); if (!box || !curTower()) return;
+    renderInspector0(box, curTower());
+    if (painting() && !inspPaint) {
+      box.insertAdjacentHTML('afterbegin', '<div class="ipaint"><span>Paint is on in the view.</span><button type="button" class="btn" data-insp-colors>Show the colors</button></div>');
+      box.querySelector('[data-insp-colors]').onclick = () => { inspPaint = true; renderInspector(); };
+    }
+  }
+  function renderInspector0(box, t) {
+    if (painting() && inspPaint) return paintPanel(box);
     if (dsel.l == null || !t.levels[dsel.l]) return stackInspector(box, t);
     const i = dsel.l, L = t.levels, lv = L[i], ui = Math.min(dsel.u || 0, lv.length - 1), u = lv[ui], top = i === L.length - 1;
     const k = clean(u); if (!top) k.roof = 'none';
@@ -2245,7 +2366,7 @@ details.termfold[open] > summary { color: var(--ink); }
     if (u.type === 'drawer') {
       const lay = R.drawersOf(u), layOpts = layoutsReady(u) ? R.LAYOUTS[u.h] || [] : [];
       if (layOpts.length > 1) o += `<div class="field"><div class="lbl">Drawers in this module <span class="hint">${lay.map(x => x + 'F').join(' + ')}${lay.length > 1 ? ', top to bottom' : ''}</span></div>
-        <div class="seg lays" role="group" aria-label="Drawers in this module, top to bottom">${layOpts.map(l => `<button type="button" data-lay="${l.join(',')}" aria-pressed="${l.join() === lay.join()}" aria-label="${l.length === 1 ? `One ${l[0]}F drawer` : l.map(x => x + 'F').join(', ') + ', top to bottom'}">${layIcon(l, u.h)}<small>${l.length === 1 ? l[0] + 'F' : new Set(l).size === 1 ? l.length + '\u00d7' + l[0] + 'F' : l.map(x => x + 'F').join('+')}</small></button>`).join('')}</div>
+        <div class="seg lays" role="group" aria-label="Drawers in this module, top to bottom">${layOpts.map(l => `<button type="button" data-lay="${l.join(',')}" aria-pressed="${l.join() === lay.join()}" aria-label="${l.length === 1 ? `One ${l[0]}F drawer` : l.map(x => x + 'F').join(', ') + ', top to bottom'}">${layIcon(l, u.h)}<small>${l.length === 1 ? l[0] + 'F' : new Set(l).size === 1 ? l.length + '\u00d7' + l[0] + 'F' : l.join('+') + 'F'}</small></button>`).join('')}</div>
         ${new Set(lay).size > 1 ? '<span class="badge inf" title="USSA\u2019s manuals don\u2019t show a 2F with two 1F in one 4F module">Inferred</span>' : ''}</div>`;
       o += `<div class="field"><div class="lbl">Inside</div><div class="seg">${useg('interior', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], u.interior)}</div></div>`;
       if (u.interior === 'gridfinity' && ['S', 'M', 'L2', 'XL2'].includes(u.w))
@@ -2283,7 +2404,7 @@ details.termfold[open] > summary { color: var(--ink); }
         ${o}
         <details class="imore" ${moreOn ? 'open' : ''}><summary>More options: print aid, wall mount, pegboard${moreOn ? ` <span class="mono">${moreOn} on</span>` : ''}</summary><div class="ibody">${more}</div></details>
         <details class="imore iparts"><summary>Parts and bolts of this level <span class="mono">${s.prints} parts · ≈ ${gramsStr(s.g)}</span></summary>
-          <div class="parts">${partRows(res.lines)}</div>${hwTable(res.hardware, 'Hardware', 'For this level. Not printed.')}</details>
+          ${levelParts(res.lines, res.hardware)}</details>
         ${lv.length > 1 ? '<p class="pnote" style="margin:0">With two modules side by side, each is set up on its own (pick it above or click it in the view). Their height stays the same.</p>' : u.w === 'L2' || u.w === 'XL2' ? '<p class="pnote" style="margin:0">Both drawers of this shell share these settings.</p>' : ''}
       </div>`;
     const set = patch => {
@@ -2305,6 +2426,7 @@ details.termfold[open] > summary { color: var(--ink); }
     box.querySelectorAll('[data-lop]').forEach(b => b.onclick = () => levelOp(t, b.dataset.lop, i));
     box.querySelectorAll('[data-umod]').forEach(b => b.onclick = () => { dsel.u = +b.dataset.umod; saveSel(); renderInspector(); v3mark(); });
     bindUnitSeg(box, u, set);
+    box.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { view = b.dataset.go; renderAll(); window.scrollTo(0, 0); });
     // Several drawers in one module: geared rails on, as Drawer Assembly 4/8 advises
     box.querySelectorAll('[data-lay]').forEach(b => b.onclick = () => { const l = b.dataset.lay.split(',').map(Number); set(l.length > 1 ? { drawers: l, gearedRails: true } : { drawers: undefined }); });
     box.querySelectorAll('[data-usel]').forEach(el => el.onchange = () => set({ [el.dataset.usel]: el.value }));
@@ -2359,11 +2481,11 @@ details.termfold[open] > summary { color: var(--ink); }
     });
     const th = box.querySelector('[data-tophandle]'); if (th) th.onchange = () => { ru.topHandle = th.checked; save(); renderAll(); };
     box.querySelectorAll('[data-st]').forEach(el => el.onchange = () => { t.stack = { ...s, [el.dataset.st]: el.checked }; fixTower(t); save(); renderAll(); });
-    box.querySelector('[data-tdup]').onclick = () => { const x = { ...JSON.parse(JSON.stringify(t)), id: seq++, name: t.name + ' copy' }; towers.push(x); dsel = { t: x.id, l: null }; saveSel(); save(); renderAll(); };
+    box.querySelector('[data-tdup]').onclick = () => { const x = { ...JSON.parse(JSON.stringify(t)), id: newId(), name: t.name + ' copy' }; towers.push(x); dsel = { t: x.id, l: null }; saveSel(); save(); renderAll(); };
     box.querySelector('[data-tdel]').onclick = e => {
       const btn = e.currentTarget;
       if (!btn.dataset.confirm) { btn.dataset.confirm = '1'; btn.textContent = 'Press again to remove'; return; }
-      towers = towers.filter(x => x.id !== t.id); dsel = null; saveSel(); save(); renderAll(); toast(`${t.name} removed`);
+      removeStack(t);
     };
   }
   // The 3D view tells the inspector which level was clicked; the inspector's level is outlined in the view
@@ -2374,9 +2496,11 @@ details.termfold[open] > summary { color: var(--ink); }
     const t = curTower();
     if (view === 'build' && t && dsel && dsel.l != null && t.levels[dsel.l]) {
       const u0 = t.levels[dsel.l][dsel.u || 0], col = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#d9622b';
-      // the module's own box (its parts' bounds would take in an open drawer or lid)
+      // the module's own parts once they are in (shell, guides, latches: not its drawers, lid or roof, which move or
+      // stand over it), else its box
       v3markObj = v.units.filter(u => u.cfg === u0 && !u.roof && u.g.visible).map(u => {
-        const y = u.g.position.y, box = new v.T.Box3(new v.T.Vector3(u.x - u.w / 2 - 1, y - 1, -u.d - 1), new v.T.Vector3(u.x + u.w / 2 + 1, y + u.h + 1, 1));
+        const y = u.g.position.y, solid = u.parts && u.parts.children.length ? new v.T.Box3().setFromObject(u.parts) : null;
+        const box = solid && !solid.isEmpty() ? solid.expandByScalar(1) : new v.T.Box3(new v.T.Vector3(u.x - u.w / 2 - 1, y - 1, -u.d - 1), new v.T.Vector3(u.x + u.w / 2 + 1, y + u.h + 1, 1));
         const h = new v.T.Box3Helper(box, col); v.scene.add(h); return h;
       });
     }
@@ -2648,10 +2772,10 @@ details.termfold[open] > summary { color: var(--ink); }
   const two = n => String(n).padStart(2, '0');
   const plateNote = (pl, next) => pl.done ? 'Printed' : next ? 'Up next' : pl.color === 'tpu' ? 'TPU settings' : pl.supports ? 'Supports on' : pl.someSup ? 'Supports on ' + (pl.someSup === pl.items.length ? 'all' : pl.someSup) : '';
   function renderPrint() {
-    const b = computeBuild();
+    const b = computeBuild(true);
     if (b.empty) return emptyStep('view-print', 'to print');
     const s = summary(b.lines);
-    const scope = b.onlyExtras ? 'extras' : 'all';
+    const scope = b.scope;
     const { plates: allPlates, skipped, unbraced = [], state: pst } = stablePlates(b.lines, scope);
     const plates = allPlates.filter(pl => !pl.done), printedPl = allPlates.filter(pl => pl.done);
     plateTotal = allPlates.length;
@@ -2719,9 +2843,10 @@ details.termfold[open] > summary { color: var(--ink); }
       <button type="button" class="btn ${sel.done ? '' : 'ink'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button></aside>`;
     const hasLabels = b.lines.some(isLabel);
     $('view-print').innerHTML = `
-      ${b.extras && towers.length ? `<div class="seg scope" role="group" aria-label="What to print">
-        <button type="button" data-scope="all" aria-pressed="${!b.onlyExtras}">Whole build<small>stacks and loose parts</small></button>
-        <button type="button" data-scope="extras" aria-pressed="${b.onlyExtras}">Only loose parts<small>${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button></div>` : ''}
+      ${towers.length + (extras.length ? 1 : 0) > 1 ? `<div class="pscope" role="group" aria-label="What to print"><span class="v3-sec">Print</span>
+        ${towers.map(t => `<button type="button" class="pchip" data-pskip="${t.id}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small></button>`).join('')}
+        ${extras.length ? `<button type="button" class="pchip" data-pskip="loose" aria-pressed="${b.extras > 0}"><b>Loose parts</b><small class="mono">${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button>` : ''}
+        <span class="pnote">${b.whole ? 'Everything is in these plates.' : 'Only what is ticked is in these plates and in the file.'}</span></div>` : ''}
       <section class="panel ptop" aria-label="Progress and export">
         <div class="ptop-prog"><h1>${pct}% printed</h1><div class="bar2" aria-hidden="true"><i style="width:${pct}%"></i></div>
           <div class="mono">${done} of ${total} parts · ${plates.length} of ${plural(allPlates.length, 'plate')} left · ≈ ${gramsStr(gDone)} of ${gramsStr(s.g)}</div></div>
@@ -2755,7 +2880,12 @@ details.termfold[open] > summary { color: var(--ink); }
       store.set('plateState', plateState); store.set('printed', printed);
       toast(on ? `Plate ${pl.n} marked printed` : `Plate ${pl.n} back on the list`);
     };
-    V.querySelectorAll('[data-scope]').forEach(btn => btn.onclick = () => { printScope = btn.dataset.scope; store.set('printScope', printScope); renderPrint(); renderTabs(); });
+    V.querySelectorAll('[data-pskip]').forEach(btn => btn.onclick = () => {
+      const id = btn.dataset.pskip === 'loose' ? 'loose' : +btn.dataset.pskip, on = btn.getAttribute('aria-pressed') === 'true';
+      if (on && V.querySelectorAll('[data-pskip][aria-pressed=true]').length === 1) { toast('Keep at least one stack or the loose parts to print'); return; }
+      printSkip = on ? [...printSkip, id] : printSkip.filter(x => x !== id); savePrintSkip();
+      selPlate = null; plateFilter = 'all'; renderPrint(); renderTabs();
+    });
     V.querySelectorAll('[data-filter]').forEach(btn => btn.onclick = () => { plateFilter = btn.dataset.filter; renderPrint(); });
     V.querySelectorAll('[data-pick]').forEach(btn => btn.onclick = () => { selPlate = +btn.dataset.pick; renderPrint(); });
     V.querySelectorAll('[data-done]').forEach(cb => cb.onchange = () => { markPlate(allPlates.find(p => p.n === +cb.dataset.done), cb.checked); renderPrint(); renderTabs(); });
@@ -2781,7 +2911,7 @@ details.termfold[open] > summary { color: var(--ink); }
       if (b.onlyExtras) { for (const k of Object.keys(printed)) if (k.startsWith('extra:')) delete printed[k]; }
       else { towers = []; save(); printed = {}; }
       extras = []; saveExtras(); store.set('printed', printed);
-      printScope = 'all'; store.set('printScope', printScope); plateOptsOpen = false;
+      printSkip = []; savePrintSkip(); plateOptsOpen = false;
       renderAll(); toast(b.onlyExtras ? 'Loose parts cleared' : 'All plates cleared');
     };
     $('copyAll').onclick = () => copy(listText(b.lines, 'Vault build'), 'Part list copied');
@@ -3188,7 +3318,7 @@ details.termfold[open] > summary { color: var(--ink); }
   // head, the origin on its axis where the head bears (the top of a countersunk head), the shank from y = 0 to
   // y = -length. They are bought, not printed, so their colour is only the view's: a metal finish, kept apart from
   // the filament colours (colorPrefs.hardware).
-  const HW_STEEL = '#b4b9be', HW_FINISHES = [['#b4b9be', 'Steel'], ['#2b2d30', 'Black'], ['#c8a04c', 'Brass']];
+  const HW_STEEL = '#b4b9be', HW_BLACK = '#2b2d30', HW_FINISHES = [['#b4b9be', 'Zinc or stainless'], ['#2b2d30', 'Black steel'], ['#c8a04c', 'Brass']];
   const hwColor = () => colorPrefs.hardware || HW_STEEL;
   const hwName = hex => (HW_FINISHES.find(f => f[0] === hex) || [0, 'your own color'])[1];
   const hwLabel = spec => spec.replace(/^(M\d+)x([\d.]+) (\w+)$/, '$1 × $2 mm $3 head').replace(/ (rod|nut) head$/, ' $1');
@@ -3486,7 +3616,7 @@ details.termfold[open] > summary { color: var(--ink); }
       if (!down || ev.button !== 0 || Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 5 || performance.now() - down.t > 500) { down = null; return; }
       down = null;
       const h = hitAt(ev);
-      if (v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey) { const m = moverAt(h); if (canOpen(m)) { m.open = !m.open; glide(); } return; }
+      if (v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey) { const m = moverAt(h); if (canOpen(m)) { m.open = !m.open; glide(); if (!store.get('openTip', false)) { store.set('openTip', true); v3tools(); } } return; }
       if (!h || !h.mesh.userData.role) { if (v.tool === 'turn') { v.sel = null; v3side(); } return; }
       v.sel = { role: h.mesh.userData.role, cfg: h.mesh.userData.cfg, u: h.u || null, name: h.mesh.userData.name };
       if (v.tool === 'paint') v3paint(v, h.mesh);
@@ -3528,7 +3658,7 @@ details.termfold[open] > summary { color: var(--ink); }
     } else {
       setRoleColor(role, id);
       const drop = k => { if (k && k.colors && k.colors[role]) { const x = { ...k.colors }; delete x[role]; if (Object.keys(x).length) k.colors = x; else delete k.colors; } };
-      towers.forEach(t => t.levels.forEach(lv => lv.forEach(drop))); drop(c);
+      (stackNow() ? [stackNow()] : towers).forEach(t => t.levels.forEach(lv => lv.forEach(drop))); drop(c);
       save(); store.set('config', c);
       if (v.ghost) editorUnit(v).save();
     }
@@ -3557,11 +3687,14 @@ details.termfold[open] > summary { color: var(--ink); }
         <span class="v3-brush-hint">Click a part in the view, or a line on the right. <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click opens a drawer, to paint its box.</span>
         <div class="v3-seg" role="group" aria-label="What a click in the view paints">${seg([['project', 'Same part everywhere'], ['unit', 'Only this module']], v.pscope, 'data-v3scope')}</div>`;
     } else {
-      B.hidden = false; B.className = 'v3-hintbar';
-      B.innerHTML = '<kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click opens or closes a drawer or a case. A click selects a level. Drag to turn, scroll to zoom, right-drag to move.';
+      const tip = !store.get('openTip', false) && v.units.some(u => u.travel || u.movers || u.lid);
+      B.hidden = false; B.className = 'v3-hintbar' + (tip ? ' tip' : '');
+      B.innerHTML = tip ? '<span><b>Open a drawer:</b> hold <kbd>Ctrl</kbd> or <kbd>Shift</kbd> and click it. Cases open the same way.</span><button type="button" class="btn" data-v3tipok>Got it</button>'
+        : '<kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click opens or closes a drawer or a case. A click selects a level. Drag to turn, scroll to zoom, right-drag to move.';
     }
     const on = (sel, f) => document.querySelectorAll(sel).forEach(b => b.onclick = () => f(b));
-    on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; v.hot = null; v.recolor(); v3tools(); v3side(); });
+    on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; if (v.tool === 'paint') inspPaint = true; v.hot = null; v.recolor(); v3tools(); v3side(); });
+    on('[data-v3tipok]', () => { store.set('openTip', true); v3tools(); });
     on('[data-v3view]', b => { v.view = b.dataset.v3view; v.aim(V3_VIEWS.find(x => x[0] === v.view)[2]); v3tools(); });
     on('[data-v3tog]', b => { v[b.dataset.v3tog] = !v[b.dataset.v3tog]; v.arrange(); v3tools(); v3side(); });
     on('[data-v3scope]', b => { v.pscope = b.dataset.v3scope; v3tools(); });
@@ -3585,8 +3718,8 @@ details.termfold[open] > summary { color: var(--ink); }
     const owner = s.cfg ? v3owner(v, s.cfg) : null;
     box.innerHTML = `<div class="v3-card" data-fp-row><div class="v3-sec">Selected</div>
       <div class="v3-selrow"><span class="v3-selsw" style="background:${colorHex(cur)}"></span><div><b>${esc(r.label)} · ${esc(colorName(cur))}</b>
-        <small>${own ? `${esc(owner.name)} only (the project uses ${esc(colorName(colorFor(s.role, null)))})` : `Project color, every unit${s.u ? '' : ''}`}</small></div></div>
-      <div class="v3-selact"><button type="button" class="btn" data-v3change aria-expanded="false">Change color…</button>${own ? '<button type="button" class="btn" data-v3back>Back to the project color</button>' : ''}</div></div>`;
+        <small>${own ? `${esc(owner.name)} only (the stack uses ${esc(colorName(colorFor(s.role, null)))})` : 'Stack color, every module of this stack'}</small></div></div>
+      <div class="v3-selact"><button type="button" class="btn" data-v3change aria-expanded="false">Change color…</button>${own ? '<button type="button" class="btn" data-v3back>Back to the stack color</button>' : ''}</div></div>`;
     const ch = box.querySelector('[data-v3change]');
     ch.onclick = () => togglePicker(ch, { role: s.role, from: `${name}, selected in 3D`, unit: owner, after: () => v3refresh(v) });
     const back = box.querySelector('[data-v3back]');
@@ -3636,9 +3769,13 @@ details.termfold[open] > summary { color: var(--ink); }
     // Only to show the real parts: the folder is changed from step 1 (unitFolderBar), not here
     $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder || !!vaultFolder;
   }
+  // A part kind's colour in the stack shown (kept even when it is the default: the project's may differ), or the
+  // project's when there is no stack
   function setRoleColor(role, id) {
     const r = ROLE_BY_ID.get(role); if (!r) return;
-    if (id === r.def) delete colorPrefs.roles[role]; else colorPrefs.roles[role] = id;
+    const t = stackNow();
+    if (t) { t.roles = { ...(t.roles || {}), [role]: id }; save(); }
+    else if (id === r.def) delete colorPrefs.roles[role]; else colorPrefs.roles[role] = id;
     saveColors();
   }
   function addPaletteColor(entry) {
@@ -3720,7 +3857,7 @@ details.termfold[open] > summary { color: var(--ink); }
     }).finally(() => { done++; if (live()) { say(); v3list(); } })));
     if (!live()) return;
     todo.forEach(u => { u.loading = false; });
-    v3list(); v.render();
+    v3list(); v3mark(); // the outline takes the parts' bounds now
     let msg = `${plural(todo.reduce((a, u) => a + u.loaded, 0), 'part')} shown, ${Math.round(tris / 1000)}k triangles (from ${(src / 1e6).toFixed(1)}M in the files).`;
     if (missing.length) msg += ` Not found in ${vaultFolder.name}: ${missingList(missing.map(x => x[0]))}.`;
     if (failed.length) msg += ` Couldn’t simplify ${missingList(failed.map(x => x[0]))} (${failed[0][1]}).`;
@@ -4073,8 +4210,8 @@ details.termfold[open] > summary { color: var(--ink); }
   // e.g. "Vault - 9 units in 3 stacks - P1S - plates 4-12.3mf"
   let plateTotal = 0;
   function exportName(plates, ext) {
-    const b = computeBuild();
-    const units = b.onlyExtras ? [] : towers.flatMap(t => t.levels.flat());
+    const b = computeBuild(true);
+    const units = b.list.flatMap(t => t.levels.flat());
     const codes = units.map(u => unitCode(u).replace(' \u00b7 ', ' '));
     const kinds = [...new Set(codes)];
     let what = !units.length ? 'extra parts'
@@ -4169,6 +4306,9 @@ details.termfold[open] > summary { color: var(--ink); }
         ${rows.length ? list : '<p class="pp" style="padding:16px 20px">This build needs no bolts or other bought parts.</p>'}
       </section>
       <aside class="hwside" aria-label="List options">
+        <div class="panel hwbox"><div class="v3-sec">Bolt finish</div>
+          <div class="seg" role="group" aria-label="Bolt finish">${[[HW_BLACK, 'Black', 'raw steel'], [HW_STEEL, 'Grey', 'zinc-plated or stainless']].map(([hex, n, sub]) => `<button type="button" data-hwfin="${hex}" aria-pressed="${hwColor() === hex}"><span class="dot2" style="background:${hex};vertical-align:-2px;margin-right:6px"></span>${n}<small>${sub}</small></button>`).join('')}</div>
+          <small class="pnote" style="margin:0">The bolts in the 3D view take this finish.</small></div>
         <div class="panel hwbox">
           <button type="button" class="btn primary big" id="hwCopy">Copy the list</button>
           <button type="button" class="btn" id="hwCsv">Export as CSV</button>
@@ -4186,6 +4326,7 @@ details.termfold[open] > summary { color: var(--ink); }
     });
     $('hwSpares').onchange = () => { hwSpares = $('hwSpares').checked; store.set('hwSpares', hwSpares); renderHardware(); };
     $('hwCopy').onclick = () => copy(hwText(rows), 'Hardware list copied');
+    V.querySelectorAll('[data-hwfin]').forEach(b => b.onclick = () => { if (b.dataset.hwfin === HW_STEEL) delete colorPrefs.hardware; else colorPrefs.hardware = b.dataset.hwfin; saveColors(); renderHardware(); });
     $('hwCsv').onclick = () => {
       const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob(['\ufeff' + hwCsv(rows)], { type: 'text/csv' })), download: 'Vault hardware.csv' });
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
@@ -4336,7 +4477,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const units = towers.reduce((a, t) => a + t.levels.reduce((x, l) => x + l.length, 0), 0);
     const nx = extras.reduce((a, e) => a + e.qty, 0);
     $('countBuild').textContent = units + nx ? `(${units + nx})` : '';
-    const b = computeBuild();
+    const b = computeBuild(true);
     const total = b.lines.reduce((a, l) => a + (l.fit.s === 'no' || l.fit.s === 'reorient' ? 0 : l.total), 0);
     const done = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0), 0);
     $('countPrint').textContent = total ? `${Math.round(done / total * 100)}%` : '';
@@ -4357,7 +4498,11 @@ details.termfold[open] > summary { color: var(--ink); }
     fb.title = vaultFolder ? `${vaultFolder.name}: click to choose another folder` : 'Choose the unzipped Vault download folder. Nothing is uploaded.';
   }
   $('folderBtn').onclick = () => openFolder(!!vaultFolder);
-  const printerPop = open => { $('printerBox').hidden = !open; $('printerBtn').setAttribute('aria-expanded', String(open)); if (open) $('printer').focus(); };
+  // Opening it drops the printer list down at once (showPicker, where the browser has it), so one click picks a printer
+  const printerPop = open => {
+    $('printerBox').hidden = !open; $('printerBtn').setAttribute('aria-expanded', String(open));
+    if (open) { const sel = $('printer'); sel.focus(); try { sel.getBoundingClientRect(); sel.showPicker(); } catch (e) { /* the list stays one click away */ } }
+  };
   $('printerBtn').onclick = e => { e.stopPropagation(); printerPop($('printerBox').hidden); };
   document.addEventListener('click', e => { if (!$('printerBox').hidden && !e.target.closest('#printerBox, #printerBtn')) printerPop(false); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('printerBox').hidden) { printerPop(false); $('printerBtn').focus(); } });

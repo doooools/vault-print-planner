@@ -169,3 +169,7 @@ Steps 1 to 3 do not depend on the new Design model and can ship first.
 - Roof on a pair of side-by-side modules, and the heavyweight roofs' limits by width: keep today's rules (`roofOf`, `normalize`), nothing was redesigned.
 - On XL, a level taller than 1F has to become S + M side by side. What happens to an existing XL 1F level when the user asks for 2F is not drawn: propose it to the user before coding.
 - The mockups do not show the picker for a custom bed size, nor the "What's new" dialog: keep them as they are.
+
+## Later (not now)
+
+- Assemble: a short animated GIF for each action (a drawer slid in, a latch fitted, a bolt driven), next to its step. Asked by the user on 2026-11-11; not started.
