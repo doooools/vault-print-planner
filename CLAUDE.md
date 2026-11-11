@@ -38,7 +38,14 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
     `R.exterior` uses 51.5 / 99.5 / 195.5 (USSA's figures): within 0.5 mm, pick one and say so.
 - 3D view, milestone 1 (section "3D stack view" in `src/template.html`, dialog `#v3d`, "3D" button on each stack
   card): three.js 0.186.1 and meshoptimizer 1.3.0 from jsDelivr, loaded on open; boxes before the folder is picked,
-  then real parts simplified in workers (0.15 mm, cached in IndexedDB); click a drawer to open or close it.
+  then real parts simplified in workers (0.15 mm, cached in IndexedDB).
+  One view since step 3 of `docs/colors-3d-redesign.md` (`open3d`; `v.global` = opened from step 1, the unit `c`):
+  toolbar `v3tools` (Turn: a click selects; Paint: brush bar with the tray's colours, "More…" adds one, "Same part
+  everywhere" / "This unit only", hover tints what a click would paint via `v.hot`; Drawers: a click opens or closes a
+  drawer), views Front / ¾ / Side (`v.aim`), "Spread units" and "Hide roof" (`v.arrange`). Side column `v3side`:
+  "Selected" card (`v3sel`, "Change color…" opens the picker, "Back to the project color"), units top to bottom
+  (`v3list`: progress, role swatches ringed when the unit has its own), then the Colors panel. `v3paint` writes the
+  colour; `v3owner` says whose `cfg.colors` a part's own colour goes in (a roof's parts are its unit's).
   Checked in Chrome: L7 4F + 2F + 1F + grid roof, 16.4M → 151k triangles. `build.py` embeds `window.VAULT_PLACEMENTS`.
 - Colours: `R.ROLES` / `roleOf` (rules.js) give every part a colour role whose default is its old `colorOf` colour
   (`validate.js` checks), so a build with no choices plans exactly as before. Palette + role choices in
@@ -58,18 +65,18 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   the unit's `cfg.colors`; step 1's unit is `c`, via `editorUnit`), your tray, Bambu Lab's colours (search, line
   filters, grid by shade), and a footer button "Use it" / "Add as slot N" (a new colour joins the palette only then).
   `fpButton` + `bindPickers` show a role's colour as a button that opens it: in place inside dialogs, as a popover
-  elsewhere. Used by the part preview, the 3D bubble (`rolePicker`) and the 3D list (`unitColors`); the Colors
-  panel's "Add a filament" opens it with `role: null` (adds to the tray only).
+  elsewhere. Used by the part preview and the 3D view's "Selected" card; with `role: null` it only adds to the tray
+  (the Colors panel's "Add a filament", the brush bar's "More…"). `after(id)` gets the colour applied.
 - Colors panel (`colorsPanel`, step 2 of the redesign): the filament tray, one card per palette colour with its slot
   and use, TPU fixed in slot 2; "Start from" presets (`applyColorPreset`: USSA render = the old reset, Two-tone, One
   color); a colour map of roles × tray colours (`ROLE_GROUPS`), tagged "N units" when units have their own colour.
   Slots come from `trayUse()`: one per colour in use, in tray order (1, then 3…), like `buildProject`; labels on their
   own plate (`labelsApart`) don't count. With step 3's plates by size or in one colour, the panel says the plates
   don't follow it.
-  Step 1 has a "3D" button: the unit opens with drawers out, a click on a part opens the picker as a bubble, and the
-  side column shows the Colors panel. Step 1's tiles (shell, box, front, key lock, roof; case: body, front, lid, hinge)
-  each carry a colour square that opens the preview with the picker open. Opening the Vault folder is step 1's first thing: a big card in the middle
-  (`renderFolderHero`, "Not now" hides it for the visit), then a one-line status (`unitFolderBar`).
+- Step 1 has a "3D" button: the unit opens with drawers out and the Paint tool. Step 1's tiles (shell, box, front,
+  key lock, roof; case: body, front, lid, hinge) each carry a colour square that opens the preview with the picker
+  open. Opening the Vault folder is step 1's first thing: a big card in the middle (`renderFolderHero`, "Not now"
+  hides it for the visit), then a one-line status (`unitFolderBar`).
   The old `mech` role was split into `runners`, `lock`, `hinge` (saved choices are carried over on load).
 - Checked: `tools/placements/blender_check_placements.py` rebuilt an L7 4F + 2F + 1F + grid roof tower from the
   JSON alone, and an S3 1F from the **original** download files. The matrices apply to the user's files as they are.

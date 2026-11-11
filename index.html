@@ -208,18 +208,59 @@ dialog#viewer::backdrop { background: rgba(10, 12, 12, .45); }
 .vclose { position: absolute; top: 10px; right: 12px; border: 0; background: transparent; font-size: 24px; line-height: 1; color: var(--muted); }
 dialog#viewer { position: fixed; }
 dialog#v3d { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 0; width: min(1180px, calc(100vw - 32px)); height: min(820px, calc(100vh - 32px)); position: fixed; overflow: hidden; }
-dialog#v3d[open] { display: grid; grid-template-columns: minmax(0, 1fr) 330px; }
+dialog#v3d[open] { display: grid; grid-template-columns: minmax(0, 1fr) 340px; }
 dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-stage { min-width: 0; min-height: 0; position: relative; background: var(--sheet-2); }
 .v3-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 .v3-side { display: grid; align-content: start; gap: 12px; padding: 18px 18px 16px; overflow-y: auto; border-left: 1px solid var(--line); }
 .v3-side h2 { margin: 0 28px 0 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
 .v3-status { margin: 0; font-size: 13px; color: var(--muted); }
-.v3-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13px; }
-.v3-list li { display: grid; gap: 2px; padding-top: 8px; border-top: 1px solid var(--line); }
-.v3-list small { color: var(--muted); }
-.v3-pop { position: absolute; z-index: 2; display: grid; gap: 8px; max-height: calc(100% - 16px); overflow-y: auto; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--sheet); color: var(--ink); box-shadow: 0 8px 28px rgba(0, 0, 0, .25); font-size: 13px; }
-.v3-pop[hidden] { display: none; }
+.v3-canvas { position: absolute; inset: 0; }
+/* The toolbar over the 3D view (tool, view, spread, roof), and the brush bar or a hint at its foot */
+.v3-tools { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; pointer-events: none; }
+.v3-tools > *, .v3-right > * { pointer-events: auto; }
+.v3-right { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; pointer-events: none; }
+.v3-seg { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 11px; background: var(--sheet); }
+.v3-seg button { border: 0; border-radius: 8px; background: transparent; color: var(--muted); padding: 6px 11px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.v3-seg button[aria-pressed=true] { background: var(--ink); color: var(--sheet); font-weight: 650; }
+.v3-tog { border: 1px solid var(--line); border-radius: 11px; background: var(--sheet); color: var(--ink); padding: 7px 12px; font-size: 13px; cursor: pointer; }
+.v3-tog[aria-pressed=true] { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
+#v3dBrush[hidden] { display: none; }
+.v3-brush { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); box-shadow: 0 6px 20px rgba(0, 0, 0, .18); font-size: 13px; }
+.v3-brush-l { font-size: 12px; font-weight: 650; color: var(--muted); }
+.v3-brushes { display: flex; gap: 6px; flex-wrap: wrap; }
+.bsw { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 9px; background: var(--sheet); color: var(--muted); cursor: pointer; }
+.bsw > span { width: 26px; height: 26px; border-radius: 7px; border: 1px solid rgba(0, 0, 0, .15); }
+.bsw small { font-family: var(--f-mono); font-size: 11px; }
+.bsw[aria-pressed=true] { border: 2px solid var(--ink); padding: 3px 5px; color: var(--ink); }
+.bsw.more { justify-content: center; border-style: dashed; padding: 0 10px; font-size: 12.5px; }
+.v3-brush-hint { flex: 1 1 200px; color: var(--muted); font-size: 12.5px; }
+.v3-hintbar { position: absolute; left: 12px; bottom: 12px; max-width: calc(100% - 24px); padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet); color: var(--muted); font-size: 12.5px; }
+.v3-morepop { position: absolute; left: 12px; z-index: 3; width: min(400px, calc(100% - 24px)); max-height: calc(100% - 200px); overflow-y: auto; box-sizing: border-box; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); box-shadow: 0 10px 30px rgba(0, 0, 0, .28); }
+/* The side column: the selected part, then the units */
+.v3-sec { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.v3-card { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--sheet-2); }
+.v3-card .pnote { margin: 0; }
+.v3-selrow { display: flex; align-items: center; gap: 10px; }
+.v3-selrow > div { display: grid; gap: 1px; min-width: 0; }
+.v3-selrow small { color: var(--muted); font-size: 12.5px; }
+.v3-selrow .swatch, .v3-selsw { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); flex: none; margin: 0; }
+.v3-selact { display: flex; gap: 6px; flex-wrap: wrap; }
+.v3-selact .btn { padding: 6px 10px; font-size: 12.5px; }
+#v3dSel .fp-host { margin-top: 8px; }
+.v3-list { list-style: none; margin: -6px 0 0; padding: 0; display: grid; font-size: 13px; }
+.v3-list li { display: grid; gap: 6px; padding: 10px 8px; margin: 0 -8px; border-top: 1px solid var(--line); border-radius: 8px; }
+.v3-list li.on { background: var(--sheet-2); }
+.v3-uhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.v3-st { font-size: 12px; color: var(--muted); text-align: right; }
+.v3-st.ok { color: var(--ok); }
+.v3-st.box { color: #b7791f; }
+.v3-bar { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.v3-bar span { display: block; height: 100%; background: var(--accent); }
+.v3-roles { display: flex; gap: 4px; flex-wrap: wrap; }
+.v3-rsw { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line); padding: 0; cursor: pointer; }
+.v3-rsw.own { border: 2px solid var(--accent); box-shadow: inset 0 0 0 2px var(--sheet); }
+.v3-miss { color: #b7791f; font-size: 12px; }
 .vcolor { display: grid; gap: 6px; }
 .vcolor > span { font-weight: 600; font-size: 13.5px; display: grid; }
 .vcolor small { font-weight: 400; color: var(--muted); font-size: 12px; }
@@ -322,11 +363,7 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-colors[data-colors-root] > p.pp { padding: 0 0 8px; }
 .v3-colors .ctray-sw { height: 28px; }
 .v3-colors .ctray-add { grid-column: 1 / -1; min-height: 0; flex-direction: row; padding: 10px; }
-.ucol > summary { cursor: pointer; font-size: 12.5px; color: var(--accent); font-weight: 600; margin-top: 2px; }
-.urole { display: grid; gap: 4px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 12.5px; }
-.urole .fmenu-btn { padding: 6px 8px; font-size: 13px; }
-.urole .fmenu-btn small { font-weight: 400; color: var(--muted); }
-@media (max-width: 760px) { dialog#v3d[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } }
+@media (max-width: 760px) { dialog#v3d[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } .v3-brush-hint { display: none; } }
 .row.done { opacity: .45; }
 .row.done .pname { text-decoration: line-through; }
 .row input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--ok); }
@@ -711,12 +748,14 @@ details.termfold[open] > summary { color: var(--ink); }
 <dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><h3>2026-11-09</h3><ul><li><b>XL units really fit the H2S now:</b> the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.</li><li><b>Closer filament estimates:</b> checked against the weights USSA publishes per module, the planner was reading about 17% high. It's now within a few percent.</li><li><b>Stack heights with 1F cases:</b> the planner listed a 1F case as 71 mm tall instead of about 66, so stack drawings and overall heights came out a little tall. Only the numbers on the page were off; the parts and print files are unchanged.</li><li><b>Assembly:</b> step 4 now also passes on USSA's advice to put a 2F module right under the roof when you use the base, backbones or handles.</li></ul><h3>2026-11-08</h3><ul><li><b>Filament per color:</b> step 3 shows roughly how much of each color the whole build needs, so you can check your spools before you start.</li><li><b>Labels get their own plate,</b> so you can add your text and print them in several colors without touching the other plates. Turn it off in step 3 to print them with the rest.</li><li><b>Manual supports go where they help:</b> each one prints standing against the end of a roof of the same depth. Ones with no roof to brace are left out (step 3 says which), and STL folder names say where to stand them.</li><li><b>Download names say what's inside:</b> the build, the printer, and which plates if some are already printed, like "Vault - 3 units in 2 stacks - P1S - plates 4-12.3mf".</li><li><b>Printer not listed?</b> Pick "My printer isn't listed" and type its name: the bed size for about 380 printers fills in, taken from OrcaSlicer's printer profiles. Or enter your bed size yourself. The bed size is all the planner needs.</li><li><b>Voron presets:</b> 2.4 and Trident (250, 300, 350) and the 0.2. Like other non-Bambu printers, they get plate files for OrcaSlicer or PrusaSlicer.</li></ul><h3>2026-11-07</h3><ul><li><b>More printers:</b> presets for Prusa (MK4/MK4S, CORE One, MINI+, XL), Creality (K1/K1C, K1 Max, K2 Plus, Ender-3 V3 SE), Elegoo (Centauri Carbon, Neptune 4 Pro and Max), Anycubic (Kobra 3, Kobra S1) and Qidi (Q1 Pro, Plus4), plus Custom size for anything else.</li><li><b>Plate files for non-Bambu printers:</b> step 3 now saves a zip with one standard .3mf per plate. Parts are already laid out, and the parts that need supports or a brim are already marked. Works in OrcaSlicer, PrusaSlicer and the slicers built on them; a settings.txt lists the same settings for any other slicer.</li><li><b>STL folders</b> now name each part's settings in its file name, with a settings.txt per plate.</li><li><b>XL units fit the H2S:</b> facades and backbones that are too long for the bed go on the diagonal, at whatever angle fits.</li><li><b>Missing parts are named:</b> if your Vault folder is missing files, step 3 lists them. File names that an unzip or a newer download changed are still matched.</li><li><b>Print and Assemble stay empty</b> until you add something to your build, with a button to add the unit you picked in step 1.</li><li><b>Fewer slicer conflicts:</b> parts with supports keep clear of neighbouring parts, the rows around them and the bed edge.</li></ul><h3>2026-11-06</h3><ul><li><b>First public version.</b></li><li><b>More Bambu printers:</b> P2S, X2D, A2L, H2D Pro, H2C and H3C; plate spacing fixed on dual-nozzle printers.</li><li><b>Stack pictures:</b> front and side views, overall size with dimension lines, and wheels, feet, casters and handles drawn where USSA's manual puts them.</li><li><b>Step 1 checks whether a unit stacks</b> before adding it and offers a matching size.</li><li><b>Hardware list:</b> bolt head shapes, drawer front bolts counted from the holes in each front, and links to matching products.</li><li><b>Choosing the Vault folder</b> is its own step, with a heads-up about the browser's permission prompt.</li><li><b>Plate numbers stay put</b> when you mark plates as printed.</li><li><b>Tree supports</b> no longer run into the next part.</li><li><b>Part pictures</b> at full size.</li></ul></div></dialog>
 <dialog id="viewer" aria-label="Part preview"><button type="button" class="vclose" id="viewerClose" aria-label="Close preview">&times;</button><div id="viewerBody" class="vbody"></div></dialog>
 <dialog id="v3d" aria-labelledby="v3dTitle"><button type="button" class="vclose" id="v3dClose" aria-label="Close 3D view">&times;</button>
-  <div class="v3-stage" id="v3dCanvas"></div>
+  <div class="v3-stage"><div class="v3-canvas" id="v3dCanvas"></div><div class="v3-tools" id="v3dTools"></div><div id="v3dBrush" hidden></div></div>
   <div class="v3-side"><h2 id="v3dTitle">3D</h2><p class="v3-status" id="v3dStatus" role="status"></p>
     <button type="button" class="btn" id="v3dPick" hidden>Show the real parts…</button>
+    <div id="v3dSel"></div>
+    <div class="v3-sec">Units, top to bottom</div>
     <ul class="v3-list" id="v3dList"></ul>
     <div id="v3dColors"></div>
-    <p class="pnote" id="v3dHint">Click a drawer to open or close it. Drag to turn, scroll to zoom, right-drag to move. Your part files are only read here: nothing is uploaded.</p></div></dialog>
+    <p class="pnote" id="v3dHint">Your part files are only read here: nothing is uploaded. The simplified parts are kept in this browser.</p></div></dialog>
 
 
 <script>
@@ -1544,7 +1583,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // the colour for the whole project (colorPrefs.roles) or, when a unit is known, for that unit only (its cfg.colors).
   // A colour from Bambu Lab's list or one of your own is a new filament: the button says so before it is added.
   // o: { role (null: only adds a filament to the tray), from (where it was opened, for the header),
-  //      unit?: { cfg, name, save() }, scope?: 'project'|'unit', after() (redraws whatever shows the colour),
+  //      unit?: { cfg, name, save() }, scope?: 'project'|'unit', after(id) (redraws whatever shows the colour),
   //      close?() (adds a close button) }
   const fpSlot = i => i === 0 ? 1 : i + 2; // the i-th colour in use → its Bambu Studio filament slot (TPU keeps slot 2)
   const fpHsl = hex => {
@@ -1635,7 +1674,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       else if (st.scope === 'unit') { unit.cfg.colors = { ...(unit.cfg.colors || {}), [role]: id }; unit.save(); saveColors(); }
       else setRoleColor(role, id);
       st.sel = { pal: id };
-      o.after();
+      o.after(id);
       if (host.isConnected) draw();
     };
     const bind = () => {
@@ -1704,7 +1743,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const moved = e => { if (!pop.contains(e.target)) closePicker(); }; // the page scrolled away from its button
     document.addEventListener('pointerdown', off, true); document.addEventListener('keydown', key); document.addEventListener('scroll', moved, true);
     fpOpen = { btn, close: () => { pop.remove(); document.removeEventListener('pointerdown', off, true); document.removeEventListener('keydown', key); document.removeEventListener('scroll', moved, true); done(); } };
-    filamentPicker(pop, { ...o, close: closePicker, after: () => { o.after(); closePicker(); } });
+    filamentPicker(pop, { ...o, close: closePicker, after: id => { o.after(id); closePicker(); } });
     const b = btn.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
     pop.style.left = Math.max(12, Math.min(b.left, innerWidth - w - 12)) + 'px';
     pop.style.top = (b.bottom + 6 + h <= innerHeight - 12 ? b.bottom + 6 : Math.max(12, innerHeight - h - 12)) + 'px';
@@ -3392,12 +3431,20 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     return p;
   }
 
-  let v3 = null; // the open view: { t, T, renderer, scene, camera, controls, units: [...], token }
+  // ---------- the 3D view: one view, three tools ----------
+  // Turn (a click selects a part), Paint (a click gives the brush colour to that kind of part, in every unit or in the
+  // clicked unit only) and Drawers (a click opens or closes a drawer). Views from the front, at three quarters and
+  // from the side; units can be spread apart and the roof hidden. Opened from step 1 it shows the unit being set up
+  // (v.global: its colours are that unit's, `c`), drawers out and the brush in hand; from step 2, a whole stack.
+  let v3 = null; // the open view: { t, T, renderer, scene, camera, controls, units: [...], token, tool, brush, ... }
   const v3status = msg => { $('v3dStatus').textContent = msg; };
+  const V3_VIEWS = [['front', 'Front', [0, 0.16, 1]], ['3q', '¾', [0.55, 0.42, 1]], ['side', 'Side', [1, 0.22, 0.02]]];
+  const V3_SPREAD = 60; // mm between units when spread
   async function open3d(t, mode = {}) {
     const d = $('v3d');
     $('v3dTitle').textContent = t.name;
-    $('v3dList').innerHTML = '';
+    $('v3dList').innerHTML = ''; $('v3dSel').replaceChildren(); $('v3dTools').replaceChildren(); $('v3dBrush').hidden = true;
+    d.querySelector('.v3-side').scrollTop = 0;
     v3status('Loading the 3D viewer…');
     d.showModal();
     let lib;
@@ -3417,34 +3464,46 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const size = Math.max(lay.width, lay.depth, lay.height);
     const grid = new T.GridHelper(Math.ceil(size * 2.4 / 100) * 100, Math.ceil(size * 2.4 / 100) * 2, 0x9a9e9b, 0xc4c7c3);
     grid.position.set(0, 0, -lay.depth / 2); grid.material.transparent = true; grid.material.opacity = 0.5; scene.add(grid);
-    const camera = new T.PerspectiveCamera(32, 1, 5, size * 40);
+    const camera = new T.PerspectiveCamera(32, 1, 5, size * 60);
     const out = mode.global ? Math.max(0, ...lay.units.map(u => u.drawer ? Math.round(u.d * 0.6) : 0)) : 0; // drawers open from the start
-    const target = new T.Vector3(0, lay.height / 2, (out - lay.depth) / 2), radius = Math.hypot(lay.width, lay.height, lay.depth + out) / 2;
-    // Front, a little from the right and above, far enough back for the whole stack to fit the narrower side of the view
-    const frame = () => {
-      const half = Math.min(camera.fov / 2, Math.atan(Math.tan(camera.fov * Math.PI / 360) * camera.aspect) * 180 / Math.PI);
-      camera.position.copy(target).add(new T.Vector3(0.55, 0.42, 1).normalize().multiplyScalar(radius * 1.08 / Math.sin(half * Math.PI / 180)));
-    };
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.copy(target); controls.maxPolarAngle = Math.PI * 0.55; controls.update();
-    const mats = new Map(), mat = (role, cfg) => { const hex = colorHex(colorFor(role, cfg)); if (!mats.has(hex)) mats.set(hex, new T.MeshStandardMaterial({ color: hex, roughness: 0.72, metalness: 0 })); return mats.get(hex); };
+    controls.maxPolarAngle = Math.PI * 0.55;
+    // Materials by colour; a highlighted copy for what a click would paint
+    const hiCol = new T.Color(css.getPropertyValue('--accent').trim() || '#d9622b');
+    const mats = new Map(), mat = (role, cfg, hi) => {
+      const hex = colorHex(colorFor(role, cfg)), k = hex + (hi ? '*' : '');
+      // Highlighted: tinted halfway to the accent colour and lit from within a little, so it shows on white and on black
+      if (!mats.has(k)) { const m = new T.MeshStandardMaterial({ color: hi ? new T.Color(hex).lerp(hiCol, 0.5) : hex, roughness: 0.72, metalness: 0 }); if (hi) { m.emissive = hiCol; m.emissiveIntensity = 0.18; } mats.set(k, m); }
+      return mats.get(k);
+    };
     const painted = (geo, role, cfg) => Object.assign(new T.Mesh(geo, mat(role, cfg)), { userData: { role, cfg } });
-    const v = v3 = { t, global: !!mode.global, extras: [], T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {} };
-    v.recolor = () => { scene.traverse(o => { if (o.isMesh && o.userData.role) o.material = mat(o.userData.role, o.userData.cfg); }); render(); };
+    const v = v3 = { t, global: !!mode.global, extras: [], T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {},
+      tool: mode.global ? 'paint' : 'turn', pscope: 'project', brush: null, sel: null, hot: null, explode: false, hideRoof: false, view: '3q' };
     const render = () => renderer.render(scene, camera);
     v.render = render;
+    v.recolor = () => { scene.traverse(o => { if (o.isMesh && o.userData.role) o.material = mat(o.userData.role, o.userData.cfg, !!(v.hot && v.hot(o))); }); render(); };
     controls.addEventListener('change', render);
+    // Aim at the whole stack (taller when spread) from a direction, far enough back for it to fit the view
+    const hasBase = lay.extra.length > 0, spreadOf = u => v.explode ? (u.level + (hasBase ? 1 : 0)) * V3_SPREAD : 0;
+    v.aim = dir => {
+      const top = Math.max(lay.height, ...v.units.filter(u => u.g.visible).map(u => u.y + u.h + spreadOf(u)));
+      const target = new T.Vector3(0, top / 2, (out - lay.depth) / 2), radius = Math.hypot(lay.width, top, lay.depth + out) / 2;
+      const half = Math.min(camera.fov / 2, Math.atan(Math.tan(camera.fov * Math.PI / 360) * camera.aspect) * 180 / Math.PI);
+      const d = dir ? new T.Vector3(...dir) : camera.position.clone().sub(controls.target);
+      camera.position.copy(target).add(d.normalize().multiplyScalar(radius * 1.08 / Math.sin(half * Math.PI / 180)));
+      controls.target.copy(target); controls.update(); render();
+    };
     let framed = false;
     const resize = () => {
       const w = box.clientWidth, h = box.clientHeight; if (!w || !h) return;
       renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
-      if (!framed) { framed = true; frame(); controls.update(); }
+      if (!framed) { framed = true; v.aim(V3_VIEWS[1][2]); }
       render();
     };
     v.ro = new ResizeObserver(resize); v.ro.observe(box);
     for (const x of lay.extra) {
       const g = x.wheel ? new T.CylinderGeometry(x.wheel, x.wheel, 40, 48).rotateZ(Math.PI / 2) : new T.BoxGeometry(...x.size);
-      const m = painted(g, x.role, null); m.position.set(...x.at); scene.add(m); v.extras.push(m);
+      const m = painted(g, x.role, null); m.position.set(...x.at); m.userData.name = x.name; scene.add(m); v.extras.push(m);
     }
     // Each unit: a group at its place in the stack, its boxes, and a drawer group that slides out along +Z
     for (const u of lay.units) {
@@ -3457,7 +3516,12 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       v.units.push({ ...u, g, drawer, boxes, front, place: placeParts(u), travel: u.drawer ? Math.round(u.d * 0.6) : 0, open: !!(mode.global && u.drawer) });
       if (mode.global && u.drawer) drawer.position.z = Math.round(u.d * 0.6);
     }
-    // Click a drawer (or anywhere on its unit) to open or close it; a drag turns the view instead
+    // Spread units apart (each level lifted a little more) and hide the roofs
+    v.arrange = () => {
+      v.units.forEach(u => { u.g.position.y = u.y + spreadOf(u); u.g.visible = !(u.roof && v.hideRoof); });
+      if (v.sel && v.sel.u && !v.sel.u.g.visible) v.sel = null;
+      v.aim(null);
+    };
     const el = renderer.domElement, ray = new T.Raycaster(), ndc = new T.Vector2();
     const shown = o => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
     // The part under the pointer, and the unit it belongs to (none for the base shapes)
@@ -3470,7 +3534,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       const u = v.units.find(x => { for (let o = hit.object; o; o = o.parent) if (o === x.g) return true; return false; });
       return { u, mesh: hit.object };
     };
-    const unitAt = ev => { const h = hitAt(ev); return h && h.u && h.u.travel ? h.u : null; };
     v.glide = () => glide();
     // Drawers glide to where they should be, a few frames at a time
     const glide = () => {
@@ -3490,29 +3553,164 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       };
       requestAnimationFrame(step);
     };
-    let down = null, hoverQueued = false;
+    // What a click with the brush would change: that kind of part everywhere, or in the units sharing its settings
+    const paintsWith = mesh => {
+      const { role, cfg } = mesh.userData;
+      if (!ROLE_BY_ID.has(role)) return null;
+      return v.pscope === 'unit' && cfg ? o => o.userData.role === role && o.userData.cfg === cfg : o => o.userData.role === role;
+    };
+    const setHot = f => { if (v.hot === f || (!v.hot && !f)) return; v.hot = f; v.recolor(); };
+    let down = null, hoverQueued = false, hotKey = '';
     el.addEventListener('pointerdown', ev => { down = { x: ev.clientX, y: ev.clientY, t: performance.now() }; });
     el.addEventListener('pointerup', ev => {
       if (!down || ev.button !== 0 || Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 5 || performance.now() - down.t > 500) { down = null; return; }
       down = null;
-      // Opened from step 1: a click picks the colour of what was clicked, for the whole project
-      if (v.global) { const h = hitAt(ev); if (h && h.mesh.userData.role) rolePicker(v, ev, h.mesh.userData.role, h.u); else hidePicker(v); return; }
-      const u = unitAt(ev);
-      if (u) { u.open = !u.open; glide(); }
+      const h = hitAt(ev);
+      if (v.tool === 'drawers') { if (h && h.u && h.u.travel) { h.u.open = !h.u.open; glide(); } return; }
+      if (!h || !h.mesh.userData.role) { if (v.tool === 'turn') { v.sel = null; v3side(); } return; }
+      v.sel = { role: h.mesh.userData.role, cfg: h.mesh.userData.cfg, u: h.u || null, name: h.mesh.userData.name };
+      if (v.tool === 'paint') v3paint(v, h.mesh);
+      else v3side();
     });
     el.addEventListener('pointermove', ev => {
       if (ev.buttons || hoverQueued) return;
       hoverQueued = true;
-      requestAnimationFrame(() => { hoverQueued = false; if (v3 === v) el.style.cursor = (v.global ? (hitAt(ev) || {}).mesh : unitAt(ev)) ? 'pointer' : ''; });
+      requestAnimationFrame(() => {
+        hoverQueued = false; if (v3 !== v) return;
+        const h = hitAt(ev);
+        el.style.cursor = !h ? '' : v.tool === 'drawers' ? (h.u && h.u.travel ? 'pointer' : '') : h.mesh.userData.role ? 'pointer' : '';
+        if (v.tool !== 'paint' || !h) { hotKey = ''; setHot(null); return; }
+        const { role, cfg } = h.mesh.userData, key = role + '|' + (v.pscope === 'unit' ? v.units.indexOf(v.units.find(u => u.cfg === cfg)) : '');
+        if (key !== hotKey) { hotKey = key; setHot(paintsWith(h.mesh)); }
+      });
     });
+    el.addEventListener('pointerleave', () => { hotKey = ''; setHot(null); });
     resize();
-    v3list(); v3colors();
-    $('v3dHint').firstChild.textContent = v.global ? 'Click a part to choose its color. Drag to turn, scroll to zoom, right-drag to move. Your part files are only read here: nothing is uploaded.' : 'Click a drawer to open or close it. Drag to turn, scroll to zoom, right-drag to move. Your part files are only read here: nothing is uploaded.';
+    v3tools(); v3side();
     if (vaultFolder) loadParts(v); else v3status(v.units.some(u => u.place) ? 'Boxes for now. Choose your Vault folder to see the real parts.' : 'Boxes from the published sizes.');
   }
-  // What each unit shows: real parts, or a box and why
-  // The colour bubble of the 3D view opened from step 1: what was clicked gets a colour for the whole project, from
-  // your colours, Bambu Lab's, or one of your own
+  // The colour settings a part's own colour goes in, as the picker wants it. In step 1's view that is the unit being
+  // set up (`c`); in a stack, the unit the part belongs to (a roof's parts are its unit's).
+  function v3owner(v, cfg) {
+    if (v.global) return editorUnit(v);
+    const u = v.units.find(x => x.cfg === cfg && !x.roof) || v.units.find(x => x.cfg === cfg);
+    return { cfg, name: u ? u.name : 'unit', save };
+  }
+  // Paint a part's kind with the brush: in every unit (the project's colour; units' own colours for it go), or in
+  // the clicked unit only
+  function v3paint(v, mesh) {
+    const { role, cfg } = mesh.userData;
+    if (!ROLE_BY_ID.has(role)) { toast('Tires print in TPU.'); return; }
+    const id = v.brush;
+    if (v.pscope === 'unit' && cfg) {
+      const o = v3owner(v, cfg);
+      o.cfg.colors = { ...(o.cfg.colors || {}), [role]: id }; o.save();
+    } else {
+      setRoleColor(role, id);
+      const drop = k => { if (k && k.colors && k.colors[role]) { const x = { ...k.colors }; delete x[role]; if (Object.keys(x).length) k.colors = x; else delete k.colors; } };
+      towers.forEach(t => t.levels.forEach(lv => lv.forEach(drop))); drop(c);
+      save(); store.set('config', c);
+      if (v.global) editorUnit(v).save();
+    }
+    saveColors();
+    v3refresh(v);
+  }
+  function v3refresh(v) { if (v3 !== v) return; v.recolor(); v3tools(); v3side(); renderAll(); }
+  // The toolbar over the view, and the brush bar while painting
+  function v3tools() {
+    const v = v3; if (!v) return;
+    const P = colorPrefs.palette, use = trayUse();
+    if (!paletteOf(v.brush)) v.brush = P[0].id;
+    const seg = (items, cur, attr) => items.map(([id, label]) => `<button type="button" ${attr}="${id}" aria-pressed="${cur === id}">${label}</button>`).join('');
+    const roof = v.units.some(u => u.roof);
+    $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool">${seg([['turn', 'Turn'], ['paint', 'Paint'], ['drawers', 'Drawers']], v.tool, 'data-v3tool')}</div>
+      <div class="v3-right"><div class="v3-seg" role="group" aria-label="View">${seg(V3_VIEWS.map(x => [x[0], x[1]]), v.view, 'data-v3view')}</div>
+        ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}">Spread units</button>` : ''}
+        ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}">Hide roof</button>` : ''}</div>`;
+    const B = $('v3dBrush');
+    if (v.tool === 'paint') {
+      B.hidden = false; B.className = 'v3-brush';
+      B.innerHTML = `<span class="v3-brush-l">Brush</span><div class="v3-brushes">${P.map(p => `<button type="button" class="bsw" data-v3brush="${p.id}" aria-pressed="${v.brush === p.id}" title="${esc(p.name)}" aria-label="Brush: ${esc(p.name)}"><span style="background:${p.hex}"></span><small>${use.slot.get(p.id) || '–'}</small></button>`).join('')}
+          <button type="button" class="bsw more" data-v3more aria-expanded="false">More…</button></div>
+        <div class="v3-seg" role="group" aria-label="Paint where">${seg([['project', 'Same part everywhere'], ['unit', 'This unit only']], v.pscope, 'data-v3scope')}</div>
+        <span class="v3-brush-hint">${v.pscope === 'project' ? 'A click paints that kind of part in every unit of the project.' : 'A click paints that kind of part in the clicked unit only.'}</span>
+    `;
+    } else {
+      B.hidden = false; B.className = 'v3-hintbar';
+      B.textContent = v.tool === 'drawers' ? 'Click a drawer to open or close it. Drag to turn, scroll to zoom, right-drag to move.' : 'Click a part to select it. Drag to turn, scroll to zoom, right-drag to move.';
+    }
+    const on = (sel, f) => document.querySelectorAll(sel).forEach(b => b.onclick = () => f(b));
+    on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; v.hot = null; v.recolor(); v3tools(); v3side(); });
+    on('[data-v3view]', b => { v.view = b.dataset.v3view; v.aim(V3_VIEWS.find(x => x[0] === v.view)[2]); v3tools(); });
+    on('[data-v3tog]', b => { v[b.dataset.v3tog] = !v[b.dataset.v3tog]; v.arrange(); v3tools(); v3side(); });
+    on('[data-v3brush]', b => { v.brush = b.dataset.v3brush; v3tools(); });
+    on('[data-v3scope]', b => { v.pscope = b.dataset.v3scope; v3tools(); });
+    // More…: the filament picker in a panel above the brush bar; what it adds becomes the brush
+    document.querySelectorAll('.v3-morepop').forEach(x => x.remove());
+    const more = B.querySelector('[data-v3more]');
+    if (more) more.onclick = () => {
+      const was = document.querySelector('.v3-morepop'); if (was) { was.remove(); more.setAttribute('aria-expanded', 'false'); return; }
+      const pop = document.createElement('div'); pop.className = 'v3-morepop'; B.after(pop);
+      pop.style.bottom = (B.offsetHeight + 20) + 'px'; more.setAttribute('aria-expanded', 'true');
+      const shut = () => { pop.remove(); if (more.isConnected) more.setAttribute('aria-expanded', 'false'); };
+      filamentPicker(pop, { role: null, from: 'A new brush, added to your tray', close: shut, after: id => { shut(); if (id) v.brush = id; v3refresh(v); } });
+    };
+  }
+  // The side column: what is selected, then the units top to bottom, then the project's colours
+  function v3side() { v3sel(); v3list(); v3colors(); }
+  function v3sel() {
+    const v = v3, box = $('v3dSel'); if (!v) return;
+    const s = v.sel;
+    if (!s) { box.innerHTML = `<div class="v3-card"><div class="v3-sec">Selected</div><p class="pnote">${v.tool === 'paint' ? 'Pick a brush, then click a part: every part the click would paint lights up first.' : 'Click a part to see its color here.'}</p></div>`; return; }
+    const r = ROLE_BY_ID.get(s.role), name = s.u ? s.u.name : s.name || 'Stack';
+    if (!r) { box.innerHTML = `<div class="v3-card"><div class="v3-sec">Selected</div><div class="v3-selrow">${swatch('tpu')}<div><b>Tires</b><small>TPU, slot 2</small></div></div></div>`; return; }
+    const cur = colorFor(s.role, s.cfg), own = s.cfg && s.cfg.colors && paletteOf(s.cfg.colors[s.role]);
+    const owner = s.cfg ? v3owner(v, s.cfg) : null;
+    box.innerHTML = `<div class="v3-card" data-fp-row><div class="v3-sec">Selected</div>
+      <div class="v3-selrow"><span class="v3-selsw" style="background:${colorHex(cur)}"></span><div><b>${esc(r.label)} · ${esc(colorName(cur))}</b>
+        <small>${own ? `${esc(owner.name)} only (the project uses ${esc(colorName(colorFor(s.role, null)))})` : `Project color, every unit${s.u ? '' : ''}`}</small></div></div>
+      <div class="v3-selact"><button type="button" class="btn" data-v3change aria-expanded="false">Change color…</button>${own ? '<button type="button" class="btn" data-v3back>Back to the project color</button>' : ''}</div></div>`;
+    const ch = box.querySelector('[data-v3change]');
+    ch.onclick = () => togglePicker(ch, { role: s.role, from: `${name}, selected in 3D`, unit: owner, after: () => v3refresh(v) });
+    const back = box.querySelector('[data-v3back]');
+    if (back) back.onclick = () => {
+      const x = { ...owner.cfg.colors }; delete x[s.role];
+      if (Object.keys(x).length) owner.cfg.colors = x; else delete owner.cfg.colors;
+      owner.save(); v3refresh(v);
+    };
+  }
+  // The project's colours (tray and map), at the foot of the side column
+  function v3colors() {
+    const v = v3, box = $('v3dColors'); if (!v) return;
+    box.innerHTML = colorsPanel(true);
+    bindColors(box, () => v3refresh(v));
+  }
+  // The units, top to bottom: how far their parts are, their colours (ringed when the unit has its own), and what
+  // the measured assemblies don't place yet
+  function v3list() {
+    const v = v3; if (!v) return;
+    const rows = v.units.map((u, ui) => [u, ui]).filter(([u]) => u.g.visible).reverse();
+    $('v3dList').innerHTML = rows.map(([u, ui]) => {
+      const n = u.place ? u.place.parts.length : 0;
+      const [st, cls] = !u.place ? ['Box: not measured yet', 'box']
+        : u.loading ? [`Loading parts… ${u.loaded || 0} of ${n}`, 'wait']
+        : u.loaded || u.failed ? [`${plural(u.loaded, 'part')}${u.failed ? `, ${u.failed} couldn’t be shown` : ''}`, u.failed ? 'box' : 'ok'] : [`Box until the folder is chosen`, 'wait'];
+      const roles = [...new Set(u.lines.map(l => l.role).concat(u.roof ? ['roof'] : []))].filter(r => ROLE_BY_ID.has(r));
+      const cfgOf = r => { const l = u.lines.find(x => x.role === r); return l ? l.cfg : u.cfg; };
+      const sw = roles.map(r => { const k = cfgOf(r), cur = colorFor(r, k), own = k && k.colors && paletteOf(k.colors[r]);
+        return `<button type="button" class="v3-rsw${own ? ' own' : ''}" style="background:${colorHex(cur)}" data-v3pick="${ui}|${r}" title="${esc(ROLE_BY_ID.get(r).label)}: ${esc(colorName(cur))}${own ? ' (this unit only)' : ''}" aria-label="${esc(ROLE_BY_ID.get(r).label)}: ${esc(colorName(cur))}${own ? ', this unit only' : ''}"></button>`; }).join('');
+      const un = u.place && u.place.unplaced.length ? `<small class="v3-miss">Not placed yet: ${esc(u.place.unplaced.join(', '))}</small>` : '';
+      return `<li class="${v.sel && v.sel.u === u ? 'on' : ''}"><div class="v3-uhead"><b>${esc(u.name)}</b><span class="v3-st ${cls}">${esc(st)}</span></div>
+        ${u.loading && n ? `<div class="v3-bar"><span style="width:${Math.round(100 * (u.loaded || 0) / n)}%"></span></div>` : ''}
+        <div class="v3-roles">${sw}</div>${un}</li>`;
+    }).join('');
+    $('v3dList').querySelectorAll('[data-v3pick]').forEach(b => b.onclick = () => {
+      const [ui, role] = b.dataset.v3pick.split('|'), u = v.units[+ui], l = u.lines.find(x => x.role === role);
+      v.sel = { role, cfg: l ? l.cfg : u.cfg, u }; v3side();
+    });
+    $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder;
+    $('v3dPick').textContent = vaultFolder ? 'Change folder' : 'Show the real parts…';
+  }
   function setRoleColor(role, id) {
     const r = ROLE_BY_ID.get(role); if (!r) return;
     if (id === r.def) delete colorPrefs.roles[role]; else colorPrefs.roles[role] = id;
@@ -3524,61 +3722,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     let n = 1; while (paletteOf('c' + n)) n++;
     colorPrefs.palette.push({ id: 'c' + n, ...entry });
     return 'c' + n;
-  }
-  function hidePicker(v) { if (v.pop) v.pop.hidden = true; }
-  function rolePicker(v, ev, role, u) {
-    const box = $('v3dCanvas');
-    if (!v.pop || !v.pop.isConnected) { v.pop = document.createElement('div'); v.pop.className = 'v3-pop'; box.append(v.pop); }
-    const pop = v.pop, r = ROLE_BY_ID.get(role), from = `${u ? u.name : v.t.name}, clicked in 3D`;
-    if (ev) v.popAt = [ev.clientX, ev.clientY];
-    pop.innerHTML = `<div data-pop-pick></div>${u && u.travel ? `<button type="button" class="btn" data-pop-drawer>${u.open ? 'Close' : 'Open'} the drawer</button>` : ''}`;
-    const host = pop.querySelector('[data-pop-pick]');
-    if (r) filamentPicker(host, { role, from, close: () => hidePicker(v),
-      unit: !u ? null : v.global ? editorUnit(v) : { cfg: u.cfg, name: u.name, save },
-      after: () => { v.recolor(); v3list(); v3colors(); renderAll(); } });
-    else {
-      host.innerHTML = `<div class="fp"><div class="fp-head"><div><b>Tires</b><small>${esc(from)}</small></div><button type="button" class="vclose" data-fp-close aria-label="Close">&times;</button></div><p class="pnote" style="margin:0">Tires print in TPU.</p></div>`;
-      host.querySelector('[data-fp-close]').onclick = () => hidePicker(v);
-    }
-    pop.hidden = false;
-    const b = box.getBoundingClientRect(), w = Math.min(380, b.width - 16);
-    pop.style.width = w + 'px';
-    pop.style.left = Math.max(8, Math.min(v.popAt[0] - b.left + 14, b.width - w - 8)) + 'px';
-    pop.style.top = Math.max(8, Math.min(v.popAt[1] - b.top - 20, b.height - pop.offsetHeight - 8)) + 'px';
-    const dr = pop.querySelector('[data-pop-drawer]');
-    if (dr) dr.onclick = () => { u.open = !u.open; v.glide(); dr.textContent = `${u.open ? 'Close' : 'Open'} the drawer`; };
-  }
-  // One unit's colours, role by role: its own choice or the stack's (step 2, Colors)
-  function unitColors(u, ui) {
-    const roles = [...new Set(u.lines.map(l => l.role))].filter(r => r !== 'tpu' && ROLE_BY_ID.has(r));
-    if (!roles.length) return '';
-    const own = (u.cfg && u.cfg.colors) || {}, n = roles.filter(r => own[r]).length;
-    return `<details class="ucol" data-ucol="${ui}" ${v3.colorsOpen.has(ui) ? 'open' : ''}><summary>Colors${n ? ` \u00b7 ${n} of its own` : ''}</summary>${roles.map(r => {
-      return `<div class="urole" data-fp-row><span>${esc(ROLE_BY_ID.get(r).label)}</span>${fpButton(r, u.cfg, `data-unit="${ui}"`)}</div>`;
-    }).join('')}</details>`;
-  }
-  // The project's colours, in the side column of a 3D view opened from step 1
-  function v3colors() {
-    const v = v3, box = $('v3dColors');
-    if (!v || !v.global) { box.replaceChildren(); return; }
-    box.innerHTML = colorsPanel(true);
-    bindColors(box, () => { if (v3 === v) { v.recolor(); v3list(); v3colors(); } renderAll(); });
-  }
-  function v3list() {
-    const v = v3; if (!v) return;
-    v.colorsOpen = v.colorsOpen || new Set();
-    $('v3dList').innerHTML = v.units.map((u, ui) => {
-      const st = !u.place ? 'Box: no measured placements for this unit yet'
-        : u.loading ? 'Loading parts…' + (u.loaded ? ` ${u.loaded} in` : '')
-        : u.loaded || u.failed ? `${plural(u.loaded, 'part')}${u.failed ? `, ${u.failed} couldn’t be shown` : ''}` : `Box until the folder is chosen (${plural(u.place.parts.length, 'part')} measured)`;
-      const un = u.place && u.place.unplaced.length ? `<small>Not placed yet: ${esc(u.place.unplaced.join(', '))}</small>` : '';
-      return `<li><b>${esc(u.name)}</b><small>${esc(st)}</small>${un}${v.global ? '' : unitColors(u, ui)}</li>`;
-    }).join('');
-    $('v3dList').querySelectorAll('details[data-ucol]').forEach(d => d.ontoggle = () => { d.open ? v.colorsOpen.add(+d.dataset.ucol) : v.colorsOpen.delete(+d.dataset.ucol); });
-    bindPickers($('v3dList'), b => { const u = v.units[+b.dataset.unit];
-      return { from: `${u.name}, in the stack's list`, unit: { cfg: u.cfg, name: u.name, save }, scope: 'unit', after: () => { v.recolor(); v3list(); renderAll(); } }; });
-    $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder;
-    $('v3dPick').textContent = vaultFolder ? 'Change folder' : 'Show the real parts…';
   }
   async function loadParts(v) {
     const todo = v.units.filter(u => u.place && u.place.parts.length), token = v.token = {};
@@ -3631,6 +3774,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     v.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     v.mats.forEach(m => m.dispose());
     $('v3dCanvas').replaceChildren();
+    document.querySelectorAll('.v3-morepop').forEach(x => x.remove()); closePicker();
   }
   $('v3d').addEventListener('close', close3d);
   $('v3dClose').onclick = () => $('v3d').close();
