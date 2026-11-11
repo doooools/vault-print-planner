@@ -3,6 +3,8 @@
   blender -b --factory-startup --python blender_check_placements.py -- <placements.json> <stl_root> <out.png> <unit key> [<unit key> ...]
 
 Units go bottom to top, e.g.  drawer|L|7|4  drawer|L|7|2  roof|L|7|grid
+Also writes <out>_secx.png (the stack cut at x = SEC_X, default 0.3 mm right of the middle, seen from
+the right; set SEC_X to cut through an off-centre latch) and <out>.blend.
 stl_root: the Vault download (or its decimated copy: same coordinates).
 Only reads the JSON and the STL files: this checks the exported matrices and the
 stacking rule independently of the .blend files they came from.
@@ -29,7 +31,10 @@ for key in keys:
     u = P["units"][key]
     for f, role, group, m in u["parts"]:
         if f not in cache:
-            bpy.ops.wm.stl_import(filepath=os.path.join(root, f))
+            fp = os.path.join(root, f)
+            if not os.path.exists(fp):  # some unzip tools turn the '²' of L²/XL² into '┬▓'
+                fp = os.path.join(root, f.replace("²", "┬▓"))
+            bpy.ops.wm.stl_import(filepath=fp)
             src = bpy.context.selected_objects[0]
             cache[f] = src.data
             bpy.data.objects.remove(src)
@@ -41,9 +46,11 @@ for key in keys:
         if not o.data.materials:
             o.data.materials.append(mats.get(role, mats["body"]))
         o.color = (*COL.get(role, COL["body"]), 1)
-    lv = int(key.split("|")[3]) if key.startswith("drawer") else 0
+    lv = int(key.split("|")[3]) if key.split("|")[0] in ("drawer", "case") else 0
     print("PLACED", key, "at", y)
-    if lv:
+    if key.startswith("case"):
+        y += P["stack"]["case"]["rise"][str(lv)]
+    elif lv:
         y += P["stack"]["first"] + P["stack"]["per_level"] * (lv - 1)
 
 sc.render.engine = "BLENDER_WORKBENCH"
@@ -67,4 +74,14 @@ cam.rotation_euler = (-d).to_track_quat("-Z", "Y").to_euler()
 cam.data.ortho_scale = (mx - mn).length * 0.95
 sc.render.filepath = out
 bpy.ops.render.render(write_still=True)
+# side section: camera on +X (Blender), clipping everything right of x0
+x0 = float(os.environ.get("SEC_X", "0.3"))
+cam.location = (mx.x + 2000, ctr.y, ctr.z)
+cam.rotation_euler = mathutils.Vector((-1, 0, 0)).to_track_quat("-Z", "Y").to_euler()
+cam.data.clip_start = cam.location.x - x0
+cam.data.ortho_scale = max(mx.y - mn.y, mx.z - mn.z) * 1.1
+sc.render.resolution_x, sc.render.resolution_y = 1000, 1200
+sc.render.filepath = os.path.splitext(out)[0] + "_secx.png"
+bpy.ops.render.render(write_still=True)
+bpy.ops.wm.save_as_mainfile(filepath=os.path.splitext(out)[0] + ".blend")
 print("CHECKED", out)

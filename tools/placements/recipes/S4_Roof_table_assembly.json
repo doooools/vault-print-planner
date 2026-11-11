@@ -1,0 +1,57 @@
+{
+ "name": "S4_Roof_table",
+ "key": "roof|S|4|table",
+ "notes": [
+  "1 latch(es)"
+ ],
+ "parts": [
+  {
+   "name": "S4_Roof_table_Roof",
+   "file": "01. DRAWERS/01. S Families/S4/Roofs/S4 Table Roof.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -45.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     0.06
+    ],
+    "z": [
+     "min",
+     -3.6
+    ]
+   }
+  },
+  {
+   "name": "S4_Roof_table_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     0.025
+    ],
+    "y": [
+     "max",
+     -124.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "S4_Roof_table_Roof"
+ }
+}

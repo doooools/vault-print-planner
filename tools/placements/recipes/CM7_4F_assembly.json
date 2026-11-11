@@ -1,0 +1,209 @@
+{
+ "name": "CM7_4F",
+ "key": "case|M|7|4",
+ "notes": [
+  "lid: the one-piece version is placed; the split version's parts are not",
+  "1 latch frame(s) under the body (a latch is placed in each; the planner's case list has no latch)",
+  "1 lock(s) (lock seats in the front panel; the planner counts 2 for every case); hinges not placed: each hinge file holds both leaves printed side by side, with their knuckles apart, so no single turn puts them on their common pin (manual p. 17); their notches are at x = +/-69.3"
+ ],
+ "parts": [
+  {
+   "name": "CM7_4F_Body",
+   "file": "02. SUSTAINERS/02. M Families/M7/Modules/M7 4F Module .stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0
+    ],
+    "y": [
+     "max",
+     0
+    ],
+    "z": [
+     "min",
+     0
+    ]
+   }
+  },
+  {
+   "name": "CM7_4F_Facade",
+   "file": "02. SUSTAINERS/02. M Families/Facades/M4f Facade.stl",
+   "role": "facade",
+   "group": "module",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0
+    ],
+    "y": [
+     "min",
+     0
+    ],
+    "z": [
+     "max",
+     180.8
+    ]
+   }
+  },
+  {
+   "name": "CM7_4F_Lid",
+   "file": "02. SUSTAINERS/02. M Families/M7/Roofs/M7 Roof Whole.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    -90,
+    -42.8,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0
+    ],
+    "y": [
+     "max",
+     10.0
+    ],
+    "z": [
+     "min",
+     173.9
+    ]
+   }
+  },
+  {
+   "name": "CM7_4F_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     -250.54
+    ],
+    "z": [
+     "min",
+     0.3
+    ]
+   }
+  },
+  {
+   "name": "CM7_4F_LockHolder_1",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK HOLDER.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "min",
+     -5.598
+    ],
+    "z": [
+     "min",
+     152.03
+    ]
+   }
+  },
+  {
+   "name": "CM7_4F_LockLink_1",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK INNER PART.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "min",
+     5.892
+    ],
+    "z": [
+     "min",
+     146.48
+    ]
+   }
+  },
+  {
+   "name": "CM7_4F_LockOuter_1",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK OUTER PART 2-4F.stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "min",
+     -1.698
+    ],
+    "z": [
+     "min",
+     140.49
+    ]
+   }
+  },
+  {
+   "name": "CM7_4F_CaseLabel",
+   "file": "02. SUSTAINERS/05. Universal/Label for Sustainers.stl",
+   "role": "insert",
+   "group": "module",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     95.97
+    ],
+    "y": [
+     "min",
+     7.91
+    ],
+    "z": [
+     "center",
+     137.17
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "CM7_4F_Body"
+ }
+}

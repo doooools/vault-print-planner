@@ -175,6 +175,8 @@ if fin:
     root = bpy.data.objects.new(cfg.get("name", "Assembly"), None)
     root.empty_display_type = "ARROWS"
     root.empty_display_size = 30
+    if cfg.get("key"):
+        root["vault_key"] = cfg["key"]  # the planner's unit key, read by blender_export_placements.py
     coll_root.objects.link(root)
     drawer = bpy.data.objects.new(cfg.get("name", "Assembly") + "_Drawer", None)
     drawer.empty_display_type = "SINGLE_ARROW"

@@ -1,0 +1,77 @@
+{
+ "name": "L4_Roof_undertable",
+ "key": "roof|L|4|undertable",
+ "notes": [
+  "2 latch(es)"
+ ],
+ "parts": [
+  {
+   "name": "L4_Roof_undertable_Roof",
+   "file": "01. DRAWERS/03. L Families/L4/Roofs/L4 Under Table Mount Roof.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -45.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     0.06
+    ],
+    "z": [
+     "min",
+     -3.6
+    ]
+   }
+  },
+  {
+   "name": "L4_Roof_undertable_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     82.425
+    ],
+    "y": [
+     "max",
+     -124.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  },
+  {
+   "name": "L4_Roof_undertable_Latch_2",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     -82.575
+    ],
+    "y": [
+     "max",
+     -124.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "L4_Roof_undertable_Roof"
+ }
+}

@@ -1,0 +1,1258 @@
+{
+ "name": "L2-3_2F",
+ "key": "drawer|L2|3|2",
+ "notes": [
+  "2 latch frame(s) found under the module",
+  "L² accessories (x3 Accessory 1st/2nd) not placed: their place is not shown in the manual or the CAD file"
+ ],
+ "parts": [
+  {
+   "name": "L2-3_2F_Module",
+   "file": "01. DRAWERS/04. L┬▓ Families/L3┬▓/L3┬▓ Module 2F.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     1854.402
+    ],
+    "z": [
+     "min",
+     -3.6
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Box_left",
+   "file": "01. DRAWERS/01. S Families/S3/Boxes/S3 Box 2F.stl",
+   "role": "drawer",
+   "group": "drawer",
+   "align": {
+    "x": [
+     "center",
+     82.4
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "min",
+     5.0
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Baseplate_left",
+   "file": "01. DRAWERS/01. S Families/S3/Gridfinity Baseplate/S3 Baseplate.stl",
+   "role": "insert",
+   "group": "drawer",
+   "align": {
+    "x": [
+     "center",
+     82.4
+    ],
+    "y": [
+     "min",
+     1713.742
+    ],
+    "z": [
+     "min",
+     7.999
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Baseplate_H1_left",
+   "file": "01. DRAWERS/01. S Families/S3/Gridfinity Baseplate/S3 Baseplate_With 1 Handle.stl",
+   "role": "insert",
+   "group": "drawer",
+   "align": {
+    "x": [
+     "center",
+     82.4
+    ],
+    "y": [
+     "min",
+     1713.742
+    ],
+    "z": [
+     "min",
+     7.999
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Baseplate_H2_left",
+   "file": "01. DRAWERS/01. S Families/S3/Gridfinity Baseplate/S3 Baseplate_With 2 Handles.stl",
+   "role": "insert",
+   "group": "drawer",
+   "align": {
+    "x": [
+     "center",
+     82.4
+    ],
+    "y": [
+     "min",
+     1713.742
+    ],
+    "z": [
+     "min",
+     7.999
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Facade_left",
+   "file": "01. DRAWERS/01. S Families/Facades/S2F (Turn On Supports).stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     82.4
+    ],
+    "y": [
+     "min",
+     1854.342
+    ],
+    "z": [
+     "min",
+     0.0
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Key_left",
+   "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     82.4
+    ],
+    "y": [
+     "center",
+     1862.502
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_KeyCap_left",
+   "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     82.4
+    ],
+    "y": [
+     "center",
+     1879.502
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Rail_bottom_left",
+   "file": "01. DRAWERS/07. Universal/Geared Rails/S Rails.stl",
+   "role": "accent",
+   "group": "drawer",
+   "align": {
+    "x": [
+     "center",
+     82.4
+    ],
+    "y": [
+     "center",
+     1846.962
+    ],
+    "z": [
+     "center",
+     15.02
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Rail_top_left",
+   "file": "01. DRAWERS/07. Universal/Geared Rails/S Rails.stl",
+   "role": "accent",
+   "group": "drawer",
+   "rot": [
+    0,
+    180,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     82.4
+    ],
+    "y": [
+     "center",
+     1846.962
+    ],
+    "z": [
+     "center",
+     31.98
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Slide_L1_left",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Slide.stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "max",
+     17.501
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Slide_R1_left",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Slide.stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     147.299
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Guide_L1_left",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Guide.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     3.58
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Guide_R1_left",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Guide.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "max",
+     161.22
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Stopper_R1_left",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "max",
+     164.64
+    ],
+    "y": [
+     "center",
+     1809.562
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Stopper_L1_left",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    0,
+    0,
+    180
+   ],
+   "align": {
+    "x": [
+     "min",
+     0.16
+    ],
+    "y": [
+     "center",
+     1809.562
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Slide_L2_left",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Slide.stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "max",
+     17.501
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Slide_R2_left",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Slide.stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     147.299
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Guide_L2_left",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Guide.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     3.58
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Guide_R2_left",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Guide.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "max",
+     161.22
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Stopper_R2_left",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "max",
+     164.64
+    ],
+    "y": [
+     "center",
+     1809.562
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Stopper_L2_left",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    0,
+    0,
+    180
+   ],
+   "align": {
+    "x": [
+     "min",
+     0.16
+    ],
+    "y": [
+     "center",
+     1809.562
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Label_left",
+   "file": "01. DRAWERS/07. Universal/Label.stl",
+   "role": "insert",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     115.05
+    ],
+    "y": [
+     "min",
+     1862.252
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_FacadeCap_1_left",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     133.87
+    ],
+    "y": [
+     "min",
+     1860.262
+    ],
+    "z": [
+     "center",
+     71.49
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_FacadeCap_2_left",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     30.93
+    ],
+    "y": [
+     "min",
+     1860.262
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_FacadeCap_3_left",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     30.93
+    ],
+    "y": [
+     "min",
+     1860.262
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Box_right",
+   "file": "01. DRAWERS/01. S Families/S3/Boxes/S3 Box 2F.stl",
+   "role": "drawer",
+   "group": "drawer",
+   "align": {
+    "x": [
+     "center",
+     -82.4
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "min",
+     5.0
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Baseplate_right",
+   "file": "01. DRAWERS/01. S Families/S3/Gridfinity Baseplate/S3 Baseplate.stl",
+   "role": "insert",
+   "group": "drawer",
+   "align": {
+    "x": [
+     "center",
+     -82.4
+    ],
+    "y": [
+     "min",
+     1713.742
+    ],
+    "z": [
+     "min",
+     7.999
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Baseplate_H1_right",
+   "file": "01. DRAWERS/01. S Families/S3/Gridfinity Baseplate/S3 Baseplate_With 1 Handle.stl",
+   "role": "insert",
+   "group": "drawer",
+   "align": {
+    "x": [
+     "center",
+     -82.4
+    ],
+    "y": [
+     "min",
+     1713.742
+    ],
+    "z": [
+     "min",
+     7.999
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Baseplate_H2_right",
+   "file": "01. DRAWERS/01. S Families/S3/Gridfinity Baseplate/S3 Baseplate_With 2 Handles.stl",
+   "role": "insert",
+   "group": "drawer",
+   "align": {
+    "x": [
+     "center",
+     -82.4
+    ],
+    "y": [
+     "min",
+     1713.742
+    ],
+    "z": [
+     "min",
+     7.999
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Facade_right",
+   "file": "01. DRAWERS/01. S Families/Facades/S2F (Turn On Supports).stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -82.4
+    ],
+    "y": [
+     "min",
+     1854.342
+    ],
+    "z": [
+     "min",
+     0.0
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Key_right",
+   "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -82.4
+    ],
+    "y": [
+     "center",
+     1862.502
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_KeyCap_right",
+   "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -82.4
+    ],
+    "y": [
+     "center",
+     1879.502
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Rail_bottom_right",
+   "file": "01. DRAWERS/07. Universal/Geared Rails/S Rails.stl",
+   "role": "accent",
+   "group": "drawer",
+   "align": {
+    "x": [
+     "center",
+     -82.4
+    ],
+    "y": [
+     "center",
+     1846.962
+    ],
+    "z": [
+     "center",
+     15.02
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Rail_top_right",
+   "file": "01. DRAWERS/07. Universal/Geared Rails/S Rails.stl",
+   "role": "accent",
+   "group": "drawer",
+   "rot": [
+    0,
+    180,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -82.4
+    ],
+    "y": [
+     "center",
+     1846.962
+    ],
+    "z": [
+     "center",
+     31.98
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Slide_L1_right",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Slide.stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "max",
+     -147.299
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Slide_R1_right",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Slide.stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -17.501
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Guide_L1_right",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Guide.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -161.22
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Guide_R1_right",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Guide.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "max",
+     -3.58
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Stopper_R1_right",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "max",
+     -0.16
+    ],
+    "y": [
+     "center",
+     1809.562
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Stopper_L1_right",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    0,
+    0,
+    180
+   ],
+   "align": {
+    "x": [
+     "min",
+     -164.64
+    ],
+    "y": [
+     "center",
+     1809.562
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Slide_L2_right",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Slide.stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "max",
+     -147.299
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Slide_R2_right",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Slide.stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -17.501
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Guide_L2_right",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Guide.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -161.22
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Guide_R2_right",
+   "file": "01. DRAWERS/07. Universal/Runners/x3 Runner Guide.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "max",
+     -3.58
+    ],
+    "y": [
+     "max",
+     1854.342
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Stopper_R2_right",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "max",
+     -0.16
+    ],
+    "y": [
+     "center",
+     1809.562
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Stopper_L2_right",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    0,
+    0,
+    180
+   ],
+   "align": {
+    "x": [
+     "min",
+     -164.64
+    ],
+    "y": [
+     "center",
+     1809.562
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Label_right",
+   "file": "01. DRAWERS/07. Universal/Label.stl",
+   "role": "insert",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -49.75
+    ],
+    "y": [
+     "min",
+     1862.252
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_FacadeCap_1_right",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -30.93
+    ],
+    "y": [
+     "min",
+     1860.262
+    ],
+    "z": [
+     "center",
+     71.49
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_FacadeCap_2_right",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -133.87
+    ],
+    "y": [
+     "min",
+     1860.262
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_FacadeCap_3_right",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -133.87
+    ],
+    "y": [
+     "min",
+     1860.262
+    ],
+    "z": [
+     "center",
+     71.5
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     82.425
+    ],
+    "y": [
+     "max",
+     1771.862
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  },
+  {
+   "name": "L2-3_2F_Latch_2",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     -82.325
+    ],
+    "y": [
+     "max",
+     1771.862
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "L2-3_2F_Module"
+ }
+}

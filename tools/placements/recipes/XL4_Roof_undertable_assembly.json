@@ -1,0 +1,77 @@
+{
+ "name": "XL4_Roof_undertable",
+ "key": "roof|XL|4|undertable",
+ "notes": [
+  "2 latch(es)"
+ ],
+ "parts": [
+  {
+   "name": "XL4_Roof_undertable_Roof",
+   "file": "01. DRAWERS/05. XL Families/XL4/Roofs/XL4 Under Table Mount Roof.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -42.8,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     0.06
+    ],
+    "z": [
+     "min",
+     -3.6
+    ]
+   }
+  },
+  {
+   "name": "XL4_Roof_undertable_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     127.005
+    ],
+    "y": [
+     "max",
+     -124.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  },
+  {
+   "name": "XL4_Roof_undertable_Latch_2",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     -82.37
+    ],
+    "y": [
+     "max",
+     -124.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "XL4_Roof_undertable_Roof"
+ }
+}

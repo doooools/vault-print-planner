@@ -1,5 +1,9 @@
 {
  "name": "L7_1F",
+ "key": "drawer|L|7|1",
+ "notes": [
+  "2 latch frame(s) found under the module"
+ ],
  "parts": [
   {
    "name": "L7_1F_Module",
@@ -7,18 +11,18 @@
    "role": "body",
    "group": "module",
    "rot": [
-    -90,
-    -45,
-    0
+    -90.0,
+    -45.0,
+    0.0
    ],
    "align": {
     "x": [
      "center",
-     3001.55
+     3001.554
     ],
     "y": [
      "max",
-     -145.59799999999998
+     -145.598
     ],
     "z": [
      "min",
@@ -30,7 +34,21 @@
    "name": "L7_1F_Box",
    "file": "01. DRAWERS/03. L Families/L7/Boxes/L7 Box 1F.stl",
    "role": "drawer",
-   "group": "drawer"
+   "group": "drawer",
+   "align": {
+    "x": [
+     "center",
+     3001.554
+    ],
+    "y": [
+     "max",
+     -145.658
+    ],
+    "z": [
+     "min",
+     5.0
+    ]
+   }
   },
   {
    "name": "L7_1F_Baseplate",
@@ -40,7 +58,7 @@
    "align": {
     "x": [
      "center",
-     3001.55
+     3001.554
     ],
     "y": [
      "min",
@@ -65,7 +83,7 @@
    "align": {
     "x": [
      "center",
-     3001.55
+     3001.554
     ],
     "y": [
      "min",
@@ -90,7 +108,7 @@
    "align": {
     "x": [
      "center",
-     3001.55
+     3001.554
     ],
     "y": [
      "center",
@@ -115,11 +133,11 @@
    "align": {
     "x": [
      "center",
-     3001.55
+     3001.554
     ],
     "y": [
      "center",
-     -120.49799999999999
+     -120.498
     ],
     "z": [
      "center",
@@ -135,11 +153,11 @@
    "align": {
     "x": [
      "center",
-     3001.55
+     3001.554
     ],
     "y": [
      "center",
-     -153.03799999999998
+     -153.038
     ],
     "z": [
      "center",
@@ -160,11 +178,11 @@
    "align": {
     "x": [
      "center",
-     3001.55
+     3001.554
     ],
     "y": [
      "center",
-     -153.03799999999998
+     -153.038
     ],
     "z": [
      "center",
@@ -210,7 +228,7 @@
    "align": {
     "x": [
      "min",
-     3148.853
+     3148.852
     ],
     "y": [
      "max",
@@ -235,7 +253,7 @@
    "align": {
     "x": [
      "min",
-     2840.33
+     2840.334
     ],
     "y": [
      "max",
@@ -260,7 +278,7 @@
    "align": {
     "x": [
      "max",
-     3162.7700000000004
+     3162.774
     ],
     "y": [
      "max",
@@ -280,11 +298,11 @@
    "align": {
     "x": [
      "max",
-     3166.1900000000005
+     3166.194
     ],
     "y": [
      "center",
-     -274.44800000000004
+     -274.448
     ],
     "z": [
      "center",
@@ -305,55 +323,15 @@
    "align": {
     "x": [
      "min",
-     2836.91
+     2836.914
     ],
     "y": [
      "center",
-     -274.44800000000004
+     -274.448
     ],
     "z": [
      "center",
      23.5
-    ]
-   }
-  },
-  {
-   "name": "L7_1F_Latch_L",
-   "file": "01. DRAWERS/07. Universal/Latch.stl",
-   "role": "accent",
-   "group": "module",
-   "align": {
-    "x": [
-     "center",
-     2919.25
-    ],
-    "y": [
-     "max",
-     -396.138
-    ],
-    "z": [
-     "min",
-     -3.3
-    ]
-   }
-  },
-  {
-   "name": "L7_1F_Latch_R",
-   "file": "01. DRAWERS/07. Universal/Latch.stl",
-   "role": "accent",
-   "group": "module",
-   "align": {
-    "x": [
-     "center",
-     3083.8500000000004
-    ],
-    "y": [
-     "max",
-     -396.138
-    ],
-    "z": [
-     "min",
-     -3.3
     ]
    }
   },
@@ -370,7 +348,7 @@
    "align": {
     "x": [
      "min",
-     3116.7400000000002
+     3116.744
     ],
     "y": [
      "min",
@@ -395,7 +373,7 @@
    "align": {
     "x": [
      "center",
-     2871.3100000000004
+     3053.054
     ],
     "y": [
      "min",
@@ -420,7 +398,7 @@
    "align": {
     "x": [
      "center",
-     2950.1200000000003
+     2950.094
     ],
     "y": [
      "min",
@@ -445,7 +423,7 @@
    "align": {
     "x": [
      "center",
-     3053.07
+     2871.294
     ],
     "y": [
      "min",
@@ -454,6 +432,46 @@
     "z": [
      "center",
      23.5
+    ]
+   }
+  },
+  {
+   "name": "L7_1F_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     3083.979
+    ],
+    "y": [
+     "max",
+     -396.138
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  },
+  {
+   "name": "L7_1F_Latch_2",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     2919.229
+    ],
+    "y": [
+     "max",
+     -396.138
+    ],
+    "z": [
+     "min",
+     -3.3
     ]
    }
   }

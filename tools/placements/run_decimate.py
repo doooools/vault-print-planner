@@ -33,6 +33,7 @@ else:
 
 todo = [r for r in rels if not os.path.exists(os.path.join(a.dst, r))]
 # biggest first, dealt round-robin, so workers finish at about the same time
+# (the biggest files take ~4 GB of RAM each in Blender: keep --jobs x 4 GB under the free memory)
 todo.sort(key=lambda r: -os.path.getsize(os.path.join(a.src, r)))
 print(f"{len(rels)} files selected, {len(todo)} to do, {a.jobs} workers")
 if not todo:
@@ -44,6 +45,8 @@ tmp = tempfile.mkdtemp(prefix="vault_dec_")
 procs = []
 for j in range(a.jobs):
     chunk = todo[j::a.jobs]
+    if j % 2:  # odd workers start with the small files, so the biggest ones are never all in memory at once
+        chunk = chunk[::-1]
     if not chunk:
         continue
     lf = os.path.join(tmp, f"list_{j}.txt")

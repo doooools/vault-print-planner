@@ -1,24 +1,28 @@
 {
- "name": "L7_Roof_Grid",
+ "name": "L7_Roof_grid",
+ "key": "roof|L|7|grid",
+ "notes": [
+  "2 latch(es)"
+ ],
  "parts": [
   {
-   "name": "L7_Roof_Grid_Roof",
+   "name": "L7_Roof_grid_Roof",
    "file": "01. DRAWERS/03. L Families/L7/Roofs/L7 Grid Roof.stl",
    "role": "roof",
    "group": "module",
    "rot": [
-    -90,
-    -45,
-    0
+    -90.0,
+    -45.0,
+    0.0
    ],
    "align": {
     "x": [
      "center",
-     3001.55
+     0.0
     ],
     "y": [
      "max",
-     -145.6
+     0.06
     ],
     "z": [
      "min",
@@ -27,18 +31,18 @@
    }
   },
   {
-   "name": "L7_Roof_Grid_Latch_L",
+   "name": "L7_Roof_grid_Latch_1",
    "file": "01. DRAWERS/07. Universal/Latch.stl",
    "role": "accent",
    "group": "module",
    "align": {
     "x": [
      "center",
-     2919.25
+     82.425
     ],
     "y": [
      "max",
-     -396.14
+     -250.35
     ],
     "z": [
      "min",
@@ -47,27 +51,52 @@
    }
   },
   {
-   "name": "L7_Roof_Grid_Latch_R",
+   "name": "L7_Roof_grid_Latch_2",
    "file": "01. DRAWERS/07. Universal/Latch.stl",
    "role": "accent",
    "group": "module",
    "align": {
     "x": [
      "center",
-     3083.8500000000004
+     -82.325
     ],
     "y": [
      "max",
-     -396.14
+     -250.35
     ],
     "z": [
      "min",
      -3.3
     ]
    }
+  },
+  {
+   "name": "L7_Roof_grid_TopHandle",
+   "file": "01. DRAWERS/07. Universal/Top Handle (Turn On Supports).stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    90,
+    0,
+    90
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "center",
+     -156.924
+    ],
+    "z": [
+     "min",
+     11.15
+    ]
+   }
   }
  ],
  "finalize": {
-  "anchor": "L7_Roof_Grid_Roof"
+  "anchor": "L7_Roof_grid_Roof"
  }
 }

@@ -1,0 +1,493 @@
+{
+ "name": "XL4_1F",
+ "key": "drawer|XL|4|1",
+ "notes": [
+  "back panel: set flush in the box's open back; which face goes inside is a guess (its 1.3 mm relief inwards)",
+  "2 latch frame(s) found under the module"
+ ],
+ "parts": [
+  {
+   "name": "XL4_1F_Module",
+   "file": "01. DRAWERS/05. XL Families/XL4/Modules/XL4 Module 1F.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -42.8,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     0.06
+    ],
+    "z": [
+     "min",
+     -3.6
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Box",
+   "file": "01. DRAWERS/05. XL Families/XL4/Boxes/XL4 Box 1F.stl",
+   "role": "drawer",
+   "group": "drawer",
+   "rot": [
+    90.0,
+    42.8,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     0.0
+    ],
+    "z": [
+     "min",
+     5.0
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_BackPanel",
+   "file": "01. DRAWERS/05. XL Families/XL4/Boxes/XL4 Back Panel.stl",
+   "role": "drawer",
+   "group": "drawer",
+   "rot": [
+    90.0,
+    42.8,
+    180.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "min",
+     -185.8
+    ],
+    "z": [
+     "min",
+     5.0
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Facade",
+   "file": "01. DRAWERS/05. XL Families/XL Facade 1F.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "min",
+     0.0
+    ],
+    "z": [
+     "min",
+     0.0
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Key",
+   "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "center",
+     8.16
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_KeyCap",
+   "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "center",
+     25.16
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Rail_bottom",
+   "file": "01. DRAWERS/07. Universal/Geared Rails/XL Rails.stl",
+   "role": "accent",
+   "group": "drawer",
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "center",
+     -7.38
+    ],
+    "z": [
+     "center",
+     15.02
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Rail_top",
+   "file": "01. DRAWERS/07. Universal/Geared Rails/XL Rails.stl",
+   "role": "accent",
+   "group": "drawer",
+   "rot": [
+    0,
+    180,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "center",
+     -7.38
+    ],
+    "z": [
+     "center",
+     31.98
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Slide_L",
+   "file": "01. DRAWERS/07. Universal/Runners/XL Runners/x4 Runner Slide XL.stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "max",
+     -186.65
+    ],
+    "y": [
+     "max",
+     0.0
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Slide_R",
+   "file": "01. DRAWERS/07. Universal/Runners/XL Runners/x4 Runner Slide XL.stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     186.65
+    ],
+    "y": [
+     "max",
+     0.0
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Guide_L",
+   "file": "01. DRAWERS/07. Universal/Runners/XL Runners/x4 Runner Guide XL.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -205.82
+    ],
+    "y": [
+     "max",
+     0.0
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Guide_R",
+   "file": "01. DRAWERS/07. Universal/Runners/XL Runners/x4 Runner Guide XL.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "max",
+     205.82
+    ],
+    "y": [
+     "max",
+     0.0
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Stopper_R",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "max",
+     209.24
+    ],
+    "y": [
+     "center",
+     -65.77
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Stopper_L",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    0,
+    0,
+    180
+   ],
+   "align": {
+    "x": [
+     "min",
+     -209.24
+    ],
+    "y": [
+     "center",
+     -65.77
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Label",
+   "file": "01. DRAWERS/07. Universal/Label.stl",
+   "role": "insert",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "min",
+     159.7
+    ],
+    "y": [
+     "min",
+     7.91
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_FacadeCap_1",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     51.53
+    ],
+    "y": [
+     "min",
+     5.92
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_FacadeCap_2",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -51.48
+    ],
+    "y": [
+     "min",
+     5.92
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_FacadeCap_3",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "role": "facade",
+   "group": "drawer",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -169.62
+    ],
+    "y": [
+     "min",
+     5.92
+    ],
+    "z": [
+     "center",
+     23.5
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     127.025
+    ],
+    "y": [
+     "max",
+     -124.49
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  },
+  {
+   "name": "XL4_1F_Latch_2",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     -82.475
+    ],
+    "y": [
+     "max",
+     -124.49
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "XL4_1F_Module"
+ }
+}

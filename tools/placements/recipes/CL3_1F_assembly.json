@@ -1,0 +1,354 @@
+{
+ "name": "CL3_1F",
+ "key": "case|L|3|1",
+ "notes": [
+  "the three body styles (flat, dividers, sealed) share one place; the page shows the one in the part list",
+  "2 latch frame(s) under the body (a latch is placed in each; the planner's case list has no latch)",
+  "2 lock(s) (lock seats in the front panel; the planner counts 2 for every case); hinges not placed: each hinge file holds both leaves printed side by side, with their knuckles apart, so no single turn puts them on their common pin (manual p. 17); their notches are at x = +/-86.8"
+ ],
+ "parts": [
+  {
+   "name": "CL3_1F_Body_Flat",
+   "file": "02. SUSTAINERS/03. L Families/L3/Modules/L3 1F Flat Module.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0
+    ],
+    "y": [
+     "max",
+     0
+    ],
+    "z": [
+     "min",
+     0
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_Body_Dividers",
+   "file": "02. SUSTAINERS/03. L Families/L3/Modules/L3 1F Dividers Module.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0
+    ],
+    "y": [
+     "max",
+     0
+    ],
+    "z": [
+     "min",
+     0
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_Body_Sealed",
+   "file": "02. SUSTAINERS/03. L Families/L3/Modules/L3 1F Sealed Module.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0
+    ],
+    "y": [
+     "max",
+     0
+    ],
+    "z": [
+     "min",
+     0
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_Facade",
+   "file": "02. SUSTAINERS/03. L Families/Facades/L1F Facade.stl",
+   "role": "facade",
+   "group": "module",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0
+    ],
+    "y": [
+     "min",
+     0
+    ],
+    "z": [
+     "max",
+     50.8
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_Lid",
+   "file": "02. SUSTAINERS/03. L Families/L3/Roofs/L3 Roof.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    -90,
+    -42.8,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0
+    ],
+    "y": [
+     "max",
+     10.0
+    ],
+    "z": [
+     "min",
+     43.9
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     82.425
+    ],
+    "y": [
+     "max",
+     -82.54
+    ],
+    "z": [
+     "min",
+     0.3
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_Latch_2",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     -82.325
+    ],
+    "y": [
+     "max",
+     -82.54
+    ],
+    "z": [
+     "min",
+     0.3
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_LockHolder_1",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK HOLDER.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     82.4
+    ],
+    "y": [
+     "min",
+     -5.598
+    ],
+    "z": [
+     "min",
+     28.03
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_LockLink_1",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK INNER PART.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     82.4
+    ],
+    "y": [
+     "min",
+     5.892
+    ],
+    "z": [
+     "min",
+     22.48
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_LockOuter_1",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK OUTER PART 1F.stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     82.4
+    ],
+    "y": [
+     "min",
+     -1.698
+    ],
+    "z": [
+     "min",
+     16.49
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_LockHolder_2",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK HOLDER.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -82.4
+    ],
+    "y": [
+     "min",
+     -5.598
+    ],
+    "z": [
+     "min",
+     28.03
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_LockLink_2",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK INNER PART.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -82.4
+    ],
+    "y": [
+     "min",
+     5.892
+    ],
+    "z": [
+     "min",
+     22.48
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_LockOuter_2",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK OUTER PART 1F.stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -82.4
+    ],
+    "y": [
+     "min",
+     -1.698
+    ],
+    "z": [
+     "min",
+     16.49
+    ]
+   }
+  },
+  {
+   "name": "CL3_1F_CaseLabel",
+   "file": "02. SUSTAINERS/05. Universal/Label for Sustainers.stl",
+   "role": "insert",
+   "group": "module",
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "align": {
+    "x": [
+     "center",
+     -0.07
+    ],
+    "y": [
+     "min",
+     7.91
+    ],
+    "z": [
+     "center",
+     40.8
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "CL3_1F_Body_Flat"
+ }
+}

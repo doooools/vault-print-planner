@@ -31,6 +31,12 @@ C = mathutils.Matrix(((-1, 0, 0, 0), (0, 0, 1, 0), (0, 1, 0, 0), (0, 0, 0, 1)))
 ROOF_IDS = {"Bowl": "bowl", "Grid": "grid", "Heavyweight": "heavy", "Table": "table", "UnderTable": "undertable"}
 
 
+def canonical(path):
+    """The planner's spelling of a path. Some unzip tools decode the '²' of 'L²'/'XL²' as cp437
+    ('┬▓'); the page and stl-measurements.tsv use '²'."""
+    return path.replace("┬▓", "²")
+
+
 def unit_key(name):
     # S3_1F -> drawer|S|3|1 ; L7_Roof_Grid -> roof|L|7|grid
     fam_d, rest = name.split("_", 1)
@@ -52,7 +58,7 @@ for path in blends:
         f = o["vault_file"]
         M = C @ inv @ o.matrix_world @ mathutils.Matrix.Translation(-centre[f])
         rows = [[round(M[i][j], 6) for j in range(3)] + [round(M[i][3], 3)] for i in range(3)]
-        parts.append([f, o["vault_role"], o["vault_group"], [v for r in rows for v in r]])
+        parts.append([canonical(f), o["vault_role"], o["vault_group"], [v for r in rows for v in r]])
         # unit bounds from the real vertices
         mw = C @ inv @ o.matrix_world
         vs = o.data.vertices
@@ -60,9 +66,16 @@ for path in blends:
             p = mw @ vs[i].co
             lo = [min(a, b) for a, b in zip(lo, p)]
             hi = [max(a, b) for a, b in zip(hi, p)]
-    key = unit_key(name)
+    key = root.get("vault_key") or unit_key(name)
     units[key] = {"name": name, "bbox": [[round(x, 1) for x in lo], [round(x, 1) for x in hi]], "parts": parts}
     print("EXPORTED", key, len(parts), "parts")
+
+# A single L² or XL² unit on top of a stack gets the L or XL roof (rules.js), keyed by its own width
+for k in list(units):
+    fam = k.split("|")[1] if k.startswith("roof|") else None
+    if fam in ("L", "XL"):
+        alias = k.replace(f"roof|{fam}|", f"roof|{fam}2|", 1)
+        units[alias] = {**units[k], "same_as": k}
 
 data.update({
     "about": "Where each Vault part goes, per unit, measured from the STL files (tools/placements). "
@@ -72,7 +85,11 @@ data.update({
              "group 'drawer' parts slide out along +Z when the drawer opens.",
     "stack": {"note": "a module's underside rests on the top face of the one below: the next unit starts "
                       "first + per_level * (levels - 1) above the bottom of the one below (measured on L7)",
-              "first": 52.0, "per_level": 48.0},
+              "first": 52.0, "per_level": 48.0,
+              "case": {"note": "a case (sustainer) is its body plus a lid that comes down 6.9 mm over it; the next unit "
+                               "starts body height + 15.6 above the case's bottom (push fits on S3 1F, corrected by the same "
+                               "fit run on two drawer modules). R.exterior says 65.5 / 99.5 / 195.5.",
+                       "rise": {"1": 66.4, "2": 100.4, "4": 196.4}}},
     "units": dict(sorted(units.items())),
 })
 json.dump(data, open(out, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))

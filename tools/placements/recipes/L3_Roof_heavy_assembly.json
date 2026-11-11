@@ -1,0 +1,102 @@
+{
+ "name": "L3_Roof_heavy",
+ "key": "roof|L|3|heavy",
+ "notes": [
+  "2 latch(es)"
+ ],
+ "parts": [
+  {
+   "name": "L3_Roof_heavy_Roof",
+   "file": "01. DRAWERS/03. L Families/L3/Roofs/L3 Heawyweight Roof.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -45.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     0.06
+    ],
+    "z": [
+     "min",
+     -3.6
+    ]
+   }
+  },
+  {
+   "name": "L3_Roof_heavy_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     82.375
+    ],
+    "y": [
+     "max",
+     -82.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  },
+  {
+   "name": "L3_Roof_heavy_Latch_2",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     -82.375
+    ],
+    "y": [
+     "max",
+     -82.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  },
+  {
+   "name": "L3_Roof_heavy_Handle",
+   "file": "01. DRAWERS/07. Universal/Heawyweight Roof Handle.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    0,
+    0,
+    90
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "center",
+     -72.924
+    ],
+    "z": [
+     "center",
+     41.4
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "L3_Roof_heavy_Roof"
+ }
+}

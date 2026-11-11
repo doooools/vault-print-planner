@@ -1,0 +1,57 @@
+{
+ "name": "M6_Roof_table",
+ "key": "roof|M|6|table",
+ "notes": [
+  "1 latch(es)"
+ ],
+ "parts": [
+  {
+   "name": "M6_Roof_table_Roof",
+   "file": "01. DRAWERS/02. M Families/M6/Roofs/M6 Table Roof.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -45.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     0.06
+    ],
+    "z": [
+     "min",
+     -3.6
+    ]
+   }
+  },
+  {
+   "name": "M6_Roof_table_Latch_1",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "center",
+     0.0
+    ],
+    "y": [
+     "max",
+     -208.35
+    ],
+    "z": [
+     "min",
+     -3.3
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "M6_Roof_table_Roof"
+ }
+}
