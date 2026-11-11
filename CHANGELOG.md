@@ -3,7 +3,7 @@
 Changes to the Vault Print Planner at [vault.romy.io](https://vault.romy.io), newest first.
 
 ## 2026-11-10
-- **Supports only where USSA asks for them:** In abundance of caution, supports are now only added if USSA says "Turn On Supports" since there are some facets that could use supports but aren't mandatory. The onus is on you to think through what makes sense with the part you're building.
+- **Supports only where USSA asks for them:** the planner used to turn supports on for any part Bambu Studio warned about, about 140 in all. On drawer boxes they filled the channel the bottom geared rail slides into, where they can't be cleared. Supports now go only on the files USSA names "Turn On Supports" (and the XL drawer front, the one drawer front USSA didn't label). Bambu Studio may warn about a "floating cantilever" on some parts; that's usually one of USSA's built-in break-away supports, which are meant to print that way.
 
 ## 2026-11-09
 - **XL units really fit the H2S now:** the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.
