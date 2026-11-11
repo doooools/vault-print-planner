@@ -11,6 +11,12 @@ colours must feed what the planner already does with colour: plate grouping, fil
 3MF/Bambu export. Today colours are fixed categories in `src/rules.js` (`colorOf`: body / inner / accent / tpu)
 and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
 
+## Next: the UX redesign
+`docs/ux-redesign.md` is the brief for the redesign of the whole page, approved by the user on 2026-11-11: footprint
+and roof set per stack, levels edited in place (no draft unit), a Paint tool for colours, a plate sheet with nesting,
+Hardware as its own step, several drawers per module. Read it before any UI work and follow its steps in order, one
+at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
+
 ## Hard rules
 - The page is **one HTML file** (`index.html`) built from `src/` and runs entirely in the browser. It has no external
   scripts today. Load three.js (or similar) **only when the 3D view is shown** (step 1 shows it), as a dynamic
