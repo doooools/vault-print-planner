@@ -31,7 +31,7 @@ Your files are read on your own computer and never uploaded. Your stacks and pro
 
 ## No support
 
-I built this for my own Vault build and am sharing it as is. I fix things when people point them out, but there's no schedule or support promise. If something's wrong or you want it to work differently, fork it and change it; it's all here.
+I built this for my own Vault build and am sharing it. I fix things when people point them out, but there's no schedule or support promise. If something's wrong or you want it to work differently, fork it and change it; it's all here.
 
 If it saved you some time, you can [buy me a coffee](https://ko-fi.com/E8R32A64D1).
 
