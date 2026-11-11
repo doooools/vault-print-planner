@@ -3025,18 +3025,44 @@ details.termfold[open] > summary { color: var(--ink); }
     if (missing.length) throw new Error(`${plural(missing.length, 'part')} not found in \u201c${folder.name}\u201d: ${missingList(missing)}. Pick the Vault download folder (${SRC_DEFAULT.split('/').pop()}).`);
     const ps = plan.printer && BAMBU.per[plan.printer] ? { ...BAMBU.base, ...BAMBU.per[plan.printer] } : null;
     // One filament per plate colour, in its colour: the first in slot 1, TPU staying in slot 2 as in Bambu Studio's
-    // own projects, the others from slot 3 on. Bambu Studio fills the per-filament settings a project lists fewer of
-    // from the first filament's, so the extra colours get slot 1's PLA settings.
+    // own projects, the others from slot 3 on. How Bambu Studio reads them (PresetBundle::load_config_file_config):
+    // - the number of filaments is the length of filament_colour;
+    // - filament_extruder_variant and filament_self_index list each filament's rows (one per nozzle variant it has
+    //   settings for); they must be as long as each other and cover every filament, or the file is "invalid". A new
+    //   filament gets copies of filament 1's rows;
+    // - any other per-filament setting a project lists fewer of falls back to the first one, so the extra colours
+    //   print with filament 1's PLA settings, and the TPU keeps its own in slot 2.
     const tpuSlot = ps && ps.filament_settings_id.length > 1 ? 2 : 1;
     const pla = [...new Map(plan.plates.filter(pl => pl.color !== 'tpu').map(pl => [pl.color, pl.hex])).entries()];
     const slotOf = new Map(pla.map(([c], i) => [c, i === 0 ? 1 : i + tpuSlot]));
     if (ps && pla.length) {
-      const ids = ps.filament_settings_id, n = Math.max(ids.length, pla.length + (tpuSlot === 2 ? 1 : 0));
-      const colours = Array.from({ length: n }, (_, i) => (ps.filament_colour || [])[Math.min(i, (ps.filament_colour || ['#00AE42']).length - 1)] || '#00AE42');
-      const sids = Array.from({ length: n }, (_, i) => i === tpuSlot - 1 && tpuSlot === 2 ? ids[1] : ids[0]);
+      const n = Math.max(ps.filament_settings_id.length, pla.length + (tpuSlot === 2 ? 1 : 0));
+      // Per-filament names: filament 1's everywhere but the TPU's slot
+      const perFilament = old => Array.from({ length: n }, (_, i) => tpuSlot === 2 && i === 1 && old.length > 1 ? old[1] : old[0]);
+      const NAMES = ['filament_settings_id', 'filament_ids', 'filament_type', 'filament_vendor', 'filament_colour'];
+      const fev0 = ps.filament_extruder_variant; // the per-variant rows are extended below, from the original length
+      for (const k of NAMES.slice(0, -1)) if (Array.isArray(ps[k]) && ps[k].length) ps[k] = perFilament(ps[k]);
+      const colours = perFilament(ps.filament_colour && ps.filament_colour.length ? ps.filament_colour : ['#00AE42']);
       if (tpuSlot === 2) colours[1] = '#1F1F1F';
       pla.forEach(([c, hex]) => { colours[slotOf.get(c) - 1] = hex.toUpperCase(); });
-      ps.filament_settings_id = sids; ps.filament_colour = colours;
+      ps.filament_colour = colours;
+      const fev = fev0, fsi = ps.filament_self_index;
+      if (Array.isArray(fev) && Array.isArray(fsi) && fev.length === fsi.length) {
+        const rows = fsi.map((f, r) => (+f === 1 ? r : -1)).filter(r => r >= 0);
+        const have = Math.max(0, ...fsi.map(Number)), oldLen = fev.length, v = [...fev], si = [...fsi];
+        for (let k = have + 1; k <= n; k++) rows.forEach(r => { v.push(fev[r]); si.push(String(k)); });
+        // A filament with settings for several nozzle variants (dual-nozzle printers) makes Bambu Studio read every
+        // per-variant setting row by row, resizing the short ones: give the new filaments filament 1's rows there too.
+        // (With one row per filament, as on single-nozzle printers, short settings fall back to filament 1's anyway.)
+        if (oldLen > have)
+          for (const [k, val] of Object.entries(ps))
+            if (Array.isArray(val) && val.length === oldLen && !NAMES.includes(k) && k !== 'filament_extruder_variant' && k !== 'filament_self_index') {
+              const out = [...val];
+              for (let f = have + 1; f <= n; f++) rows.forEach(r => out.push(val[r]));
+              ps[k] = out;
+            }
+        ps.filament_extruder_variant = v; ps.filament_self_index = si;
+      }
     }
     const ver = (ps && ps.version) || '02.09.01.70';
     // Bambu Studio spaces plates by the whole bed, wider than one nozzle's reach on dual-nozzle printers

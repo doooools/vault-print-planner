@@ -45,7 +45,10 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   `colorPrefs` (localStorage `vpp.colors`, panel "Colors" in step 2); per-unit choices in the unit's own `cfg.colors`
   (edited in the 3D view's side list). `paintLines` recolours lines; a non-default colour gets its own line key
   (`path#colour`), so plates and progress keep it apart. The Bambu project gets one filament per plate colour
-  (slot 1, TPU in 2, others from 3) — **not yet checked in Bambu Studio**.
+  (slot 1, TPU in 2, others from 3). Bambu Studio counts filaments by `filament_colour` and refuses a project
+  whose `filament_extruder_variant` / `filament_self_index` don't give every filament its rows ("Invalid configuration
+  file"): new filaments get copies of filament 1's rows. A project with several colours opened in Bambu Studio
+  (after a Bambu Studio update made at the same time).
 - Bambu Lab colours: `src/bambu-colors.tsv` (PLA Basic/Matte, PETG Basic/Matte on sale in the EU store, with the
   hex from Bambu's own `filaments_color_codes.json`, matched by colour code), made by `tools/bambu_colors.py`,
   embedded as `window.BAMBU_COLORS`, offered as a swatch grid in the Colors panel. PETG colours still get PLA
