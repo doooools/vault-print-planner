@@ -157,33 +157,13 @@
    }
   },
   {
-   "name": "XL6_1F_Rail_bottom",
-   "file": "01. DRAWERS/07. Universal/Geared Rails/XL Rails.stl",
-   "role": "accent",
-   "group": "drawer",
-   "align": {
-    "x": [
-     "center",
-     0.0
-    ],
-    "y": [
-     "center",
-     -7.38
-    ],
-    "z": [
-     "center",
-     15.02
-    ]
-   }
-  },
-  {
-   "name": "XL6_1F_Rail_top",
-   "file": "01. DRAWERS/07. Universal/Geared Rails/XL Rails.stl",
-   "role": "accent",
+   "name": "XL6_1F_HiddenKey",
+   "file": "01. DRAWERS/07. Universal/Hidden Key (Turn On Supports).stl",
+   "role": "mech",
    "group": "drawer",
    "rot": [
+    -90,
     0,
-    180,
     0
    ],
    "align": {
@@ -192,14 +172,99 @@
      0.0
     ],
     "y": [
-     "center",
-     -7.38
+     "min",
+     -8.55
     ],
     "z": [
      "center",
-     31.98
+     23.5
     ]
    }
+  },
+  {
+   "name": "XL6_1F_HiddenKey2",
+   "file": "01. DRAWERS/07. Universal/Hidden Key Part 2 (Turn on Supports).stl",
+   "role": "mech",
+   "group": "drawer",
+   "rot": [
+    -90.0,
+    28.9641,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -17.022
+    ],
+    "y": [
+     "min",
+     2.851
+    ],
+    "z": [
+     "min",
+     6.479
+    ]
+   }
+  },
+  {
+   "name": "XL6_1F_Rail_bottom",
+   "file": "01. DRAWERS/07. Universal/Geared Rails/XL Rails.stl",
+   "role": "accent",
+   "group": "drawer",
+   "rot": [
+    90.0,
+    0.0,
+    180.0
+   ],
+   "align": {
+    "x": [
+     "max",
+     66.77
+    ],
+    "y": [
+     "center",
+     -3.2
+    ],
+    "z": [
+     "center",
+     9.21
+    ]
+   },
+   "pick": [
+    -5939.661,
+    1957.688,
+    38.475
+   ]
+  },
+  {
+   "name": "XL6_1F_Rail_top",
+   "file": "01. DRAWERS/07. Universal/Geared Rails/XL Rails.stl",
+   "role": "accent",
+   "group": "drawer",
+   "rot": [
+    -90.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -66.57
+    ],
+    "y": [
+     "center",
+     -3.2
+    ],
+    "z": [
+     "min",
+     35.39
+    ]
+   },
+   "pick": [
+    -5939.661,
+    1951.115,
+    38.475
+   ]
   },
   {
    "name": "XL6_1F_Slide_L",
@@ -213,8 +278,8 @@
    ],
    "align": {
     "x": [
-     "max",
-     -186.65
+     "min",
+     -198.579
     ],
     "y": [
      "max",
@@ -238,8 +303,8 @@
    ],
    "align": {
     "x": [
-     "min",
-     186.65
+     "max",
+     198.579
     ],
     "y": [
      "max",

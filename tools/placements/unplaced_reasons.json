@@ -4,10 +4,6 @@
   "kind": "option",
   "why": "inside the key lock, not assembled in the CAD file"
  },
- "Universal/Hidden Key": {
-  "kind": "option",
-  "why": "lock option instead of the key: not assembled in the CAD file, place not measured"
- },
  "Accessories/x\\d Accessory": {
   "kind": "option",
   "why": "L² accessories: neither the manual nor the CAD file shows where they go"
@@ -35,14 +31,6 @@
  "SUSTAINERS/05. Universal/Baseplates/": {
   "kind": "option",
   "why": "case baseplates: not placed yet"
- },
- "SUSTAINERS/05. Universal/Hinges/": {
-  "kind": "option",
-  "why": "each hinge file holds both leaves printed side by side with their knuckles apart: no single turn puts them on their common pin (manual p. 17). Notches: x = ±51.8 (S), ±69.3 (M), ±86.8 (L), ±131.4 (XL)"
- },
- "SUSTAINERS/05. Universal/Rods/": {
-  "kind": "option",
-  "why": "one file holds both hinge pins, which go in two different hinges"
  },
  "07. Universal/Label\\.stl": {
   "kind": "option",

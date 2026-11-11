@@ -44,6 +44,28 @@ def surface_samples(tris, k=40000, seed=0):
     return a[idx] + (b[idx] - a[idx]) * u[:, None] + (c[idx] - a[idx]) * v[:, None]
 
 
+def pieces(tris, tol=1e-3):
+    """Connected pieces of a mesh (vertices welded at `tol` mm), largest first. Some Vault files
+    hold several parts printed side by side (both leaves of a hinge, both racks of a drawer); a
+    placement entry with {"piece": [x, y, z]} takes the piece whose bbox centre is nearest to that
+    point, in the file's own coordinates (the decimated copy has the same pieces and centres)."""
+    from scipy.sparse import coo_matrix
+    from scipy.sparse.csgraph import connected_components
+    q = np.round(tris.reshape(-1, 3) / tol).astype(np.int64)
+    _, inv = np.unique(q, axis=0, return_inverse=True)
+    inv = inv.reshape(-1, 3)
+    n = int(inv.max()) + 1
+    r, c = np.r_[inv[:, 0], inv[:, 1]], np.r_[inv[:, 1], inv[:, 2]]
+    _, lab = connected_components(coo_matrix((np.ones(len(r)), (r, c)), shape=(n, n)), directed=False)
+    tl = lab[inv[:, 0]]
+    return sorted((tris[tl == i] for i in np.unique(tl)), key=len, reverse=True)
+
+
+def piece_centre(t):
+    P = t.reshape(-1, 3)
+    return (P.min(0) + P.max(0)) / 2
+
+
 def rot_axis(axis, deg):
     t = np.radians(deg)
     c, s = np.cos(t), np.sin(t)

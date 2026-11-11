@@ -5,7 +5,8 @@
   "the three body styles (flat, dividers, sealed) share one place; the page shows the one in the part list",
   "lid: the one-piece version is placed; the split version's parts are not",
   "2 latch frame(s) under the body (a latch is placed in each; the planner's case list has no latch)",
-  "2 lock(s) (lock seats in the front panel; the planner counts 2 for every case); hinges not placed: each hinge file holds both leaves printed side by side, with their knuckles apart, so no single turn puts them on their common pin (manual p. 17); their notches are at x = +/-86.8"
+  "2 lock(s) (lock seats in the front panel; the planner counts 2 for every case)",
+  "hinges: 2 leaves, 2 top(s), 2 rods on one axis at y 180.8, z -321.59; the hinge tops' plates come 0.85 mm under the lid's bosses (the lid's push-fit height and the hinge disagree by that much)"
  ],
  "parts": [
   {
@@ -112,7 +113,7 @@
    "name": "CL7_4F_Lid",
    "file": "02. SUSTAINERS/03. L Families/L7/Roofs/L7 Roof Whole.stl",
    "role": "roof",
-   "group": "module",
+   "group": "lid",
    "rot": [
     -90,
     -42.8,
@@ -347,9 +348,193 @@
      137.17
     ]
    }
+  },
+  {
+   "name": "CL7_4F_HingeLeaf_1",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/L 2-4F Hinge.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -111.8
+    ],
+    "y": [
+     "min",
+     -328.59
+    ],
+    "z": [
+     "min",
+     120.801
+    ]
+   },
+   "pick": [
+    -411.646,
+    1706.49,
+    53.499
+   ]
+  },
+  {
+   "name": "CL7_4F_HingeLeaf_2",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/L 2-4F Hinge.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    180.0,
+    -90.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     61.8
+    ],
+    "y": [
+     "min",
+     -328.59
+    ],
+    "z": [
+     "min",
+     120.801
+    ]
+   },
+   "pick": [
+    -411.646,
+    1735.347,
+    53.499
+   ]
+  },
+  {
+   "name": "CL7_4F_HingeTop_1",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/L-XL Hinge Top.stl",
+   "role": "mech",
+   "group": "lid",
+   "rot": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -61.3
+    ],
+    "y": [
+     "min",
+     -328.59
+    ],
+    "z": [
+     "min",
+     173.8
+    ]
+   },
+   "pick": [
+    1542.351,
+    1722.242,
+    45.997
+   ]
+  },
+  {
+   "name": "CL7_4F_HingeTop_2",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/L-XL Hinge Top.stl",
+   "role": "mech",
+   "group": "lid",
+   "rot": [
+    -0.0,
+    90.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     21.3
+    ],
+    "y": [
+     "min",
+     -328.59
+    ],
+    "z": [
+     "min",
+     173.8
+    ]
+   },
+   "pick": [
+    1525.028,
+    1722.242,
+    45.997
+   ]
+  },
+  {
+   "name": "CL7_4F_HingeRod_1",
+   "file": "02. SUSTAINERS/05. Universal/Rods/L-XL Rods.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "min",
+     -116.8
+    ],
+    "y": [
+     "min",
+     -330.59
+    ],
+    "z": [
+     "min",
+     177.15
+    ]
+   },
+   "pick": [
+    1566.282,
+    1709.845,
+    48.673
+   ]
+  },
+  {
+   "name": "CL7_4F_HingeRod_2",
+   "file": "02. SUSTAINERS/05. Universal/Rods/L-XL Rods.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "min",
+     18.3
+    ],
+    "y": [
+     "min",
+     -330.59
+    ],
+    "z": [
+     "min",
+     177.15
+    ]
+   },
+   "pick": [
+    1571.601,
+    1700.742,
+    48.673
+   ]
   }
  ],
  "finalize": {
   "anchor": "CL7_4F_Body_Flat"
+ },
+ "hinge": {
+  "origin": [
+   0.0,
+   180.8,
+   -321.59
+  ],
+  "axis": [
+   -1,
+   0,
+   0
+  ],
+  "open_deg": 105.0,
+  "note": "the lid and the hinge tops (group lid) turn about this axis (unit frame, right-handed: a positive angle lifts the lid's front); 0 = closed"
  }
 }

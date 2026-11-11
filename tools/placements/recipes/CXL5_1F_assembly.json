@@ -4,7 +4,8 @@
  "notes": [
   "the three body styles (flat, dividers, sealed) share one place; the page shows the one in the part list",
   "2 latch frame(s) under the body (a latch is placed in each; the planner's case list has no latch)",
-  "2 lock(s) (lock seats in the front panel; the planner counts 2 for every case); hinges not placed: each hinge file holds both leaves printed side by side, with their knuckles apart, so no single turn puts them on their common pin (manual p. 17); their notches are at x = +/-131.4"
+  "2 lock(s) (lock seats in the front panel; the planner counts 2 for every case)",
+  "hinges: 2 leaves, 2 top(s), 2 rods on one axis at y 50.8, z -237.59; the hinge tops' plates come 0.85 mm under the lid's bosses (the lid's push-fit height and the hinge disagree by that much)"
  ],
  "parts": [
   {
@@ -111,7 +112,7 @@
    "name": "CXL5_1F_Lid",
    "file": "02. SUSTAINERS/04. XL Families/XL5/Roofs/XL5  Roof.stl",
    "role": "roof",
-   "group": "module",
+   "group": "lid",
    "rot": [
     -90,
     -42.8,
@@ -346,9 +347,193 @@
      40.8
     ]
    }
+  },
+  {
+   "name": "CXL5_1F_HingeLeaf_1",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/L-XL 1F Hinge.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -156.4
+    ],
+    "y": [
+     "min",
+     -244.59
+    ],
+    "z": [
+     "min",
+     10.001
+    ]
+   },
+   "pick": [
+    1587.85,
+    1706.49,
+    29.099
+   ]
+  },
+  {
+   "name": "CXL5_1F_HingeLeaf_2",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/L-XL 1F Hinge.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    180.0,
+    -90.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     106.4
+    ],
+    "y": [
+     "min",
+     -244.59
+    ],
+    "z": [
+     "min",
+     10.001
+    ]
+   },
+   "pick": [
+    1587.85,
+    1735.212,
+    29.099
+   ]
+  },
+  {
+   "name": "CXL5_1F_HingeTop_1",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/L-XL Hinge Top.stl",
+   "role": "mech",
+   "group": "lid",
+   "rot": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -105.9
+    ],
+    "y": [
+     "min",
+     -244.59
+    ],
+    "z": [
+     "min",
+     43.8
+    ]
+   },
+   "pick": [
+    1542.351,
+    1722.242,
+    45.997
+   ]
+  },
+  {
+   "name": "CXL5_1F_HingeTop_2",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/L-XL Hinge Top.stl",
+   "role": "mech",
+   "group": "lid",
+   "rot": [
+    -0.0,
+    90.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     65.9
+    ],
+    "y": [
+     "min",
+     -244.59
+    ],
+    "z": [
+     "min",
+     43.8
+    ]
+   },
+   "pick": [
+    1525.028,
+    1722.242,
+    45.997
+   ]
+  },
+  {
+   "name": "CXL5_1F_HingeRod_1",
+   "file": "02. SUSTAINERS/05. Universal/Rods/L-XL Rods.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "min",
+     -161.4
+    ],
+    "y": [
+     "min",
+     -246.59
+    ],
+    "z": [
+     "min",
+     47.15
+    ]
+   },
+   "pick": [
+    1566.282,
+    1709.845,
+    48.673
+   ]
+  },
+  {
+   "name": "CXL5_1F_HingeRod_2",
+   "file": "02. SUSTAINERS/05. Universal/Rods/L-XL Rods.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "min",
+     62.9
+    ],
+    "y": [
+     "min",
+     -246.59
+    ],
+    "z": [
+     "min",
+     47.15
+    ]
+   },
+   "pick": [
+    1571.601,
+    1700.742,
+    48.673
+   ]
   }
  ],
  "finalize": {
   "anchor": "CXL5_1F_Body_Flat"
+ },
+ "hinge": {
+  "origin": [
+   0.0,
+   50.8,
+   -237.59
+  ],
+  "axis": [
+   -1,
+   0,
+   0
+  ],
+  "open_deg": 105.0,
+  "note": "the lid and the hinge tops (group lid) turn about this axis (unit frame, right-handed: a positive angle lifts the lid's front); 0 = closed"
  }
 }

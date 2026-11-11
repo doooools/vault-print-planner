@@ -6,7 +6,8 @@ from the user's own Vault files. It holds numbers only, no geometry, like `src/s
 ## The data
 
 ```
-units["drawer|L|7|2"] = { name, bbox, parts: [[path, role, group, m], ...] }
+units["drawer|L|7|2"] = { name, bbox, parts: [[path, role, group, m], [path, role, group, m, {piece}], ...] }
+units["case|S|3|1"]  = { ..., hinge: { origin: [0, 50.8, -153.59], axis: [-1, 0, 0], open_deg: 105 } }
 units["roof|L|7|grid"] = ...
 stack = { first: 52, per_level: 48 }
 ```
@@ -20,7 +21,21 @@ stack = { first: 52, per_level: 48 }
 - **path**: the file in the Vault download, as in `stl-measurements.tsv` (with `²`; some unzip tools write
   `┬▓` for it, and the tools accept both). Parts used twice (runners, stoppers, caps…) appear once per copy.
 - **role**: colour role (`body`, `roof`, `facade`, `drawer`, `mech`, `accent`, `insert`).
-- **group**: `drawer` parts slide out with the drawer (along +Z). `module` parts stay put.
+- **group**: `drawer` parts slide out with the drawer (along +Z). `module` parts stay put. `lid` parts (a case's
+  lid and its hinge tops) turn about the unit's `hinge`.
+- **piece** (optional 5th element, `{"piece": [x, y, z]}`): the part is only one connected piece of the file.
+  Some files hold several parts printed side by side (a drawer's two racks, a case's two hinge leaves, two hinge
+  tops, two rods); each copy is then its own entry with its own matrix. Split the file into connected pieces
+  (vertices welded at 0.001 mm: an STL has no shared vertices, so weld first) and take the piece whose
+  bounding-box centre is nearest to `[x, y, z]`, in the file's own coordinates (as downloaded; the decimated copy
+  has the same pieces and centres, and the pieces are far apart, 6 mm or more, so the choice is never close).
+  The matrix applies to the piece's own vertices as they are in the file. `vault_geom.pieces` (numpy) and
+  `blender_pieces.py` (Blender) do it.
+- **hinge** (cases only): the lid's axis in the unit frame, `origin` a point on it and `axis` its direction.
+  The lid opens by turning the `lid` group about it by 0 (closed) to `open_deg` degrees, right-handed about
+  `axis` (with `axis` −X a positive angle lifts the lid's front). The axis is the hinge knuckles' own: level
+  with the body's top, 7.49 mm behind its back face. `open_deg` is 105, the manual's open view (p. 17).
+  Swept in steps on the exported parts, nothing meets the body, the leaves or the rods before 180°.
 - **m**: a 3×4 row-major matrix that takes the file's own coordinates (as downloaded) to the unit frame. The unit frame uses three.js axes: +X right seen from the front, +Y up, +Z towards the viewer, in mm. Its origin is the middle of the module's front bottom edge.
 - **stack**: a unit starts `first + per_level × (levels − 1)` mm above the bottom of the unit below it (52 / 100 / 196 for 1F / 2F / 4F). Roofs sit like a module.
 
@@ -81,7 +96,8 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
 - Module: Rx −90°, plus Ry −45° for the 1F, which is printed diagonally. Centred on the box, front at the box front + 0.06, bottom at z −3.6.
 - Facade: Rx −90°. Its back is on the box front, its bottom at z 0, and its bolt holes line up with the box's.
 - Key: Rx −90°, centre at facade back + 8.16. Key cap: Rx +90°, centre at facade back + 25.16. Both on the bottom level.
-- Geared rails: at z 15.02 / 31.98 (the top one Ry 180°), 7.38 mm behind the box front.
+- Geared rails: see "Geared rails" below (the first session's rule, both racks of the file at z 15.02 / 31.98
+  7.38 mm behind the box front, lying flat, was wrong: it put them through the box's front wall).
 - Two latches at x = centre ± 82.3. Facade caps go in every counterbore. The label goes in the slot (starts at centre + 115.19).
 - There is only one baseplate file, sitting in the 1F box. It keeps the same offset in the 2F and 4F boxes.
 - Roofs are printed on edge at 45° like the 1F module, and their underside is the same as a module's (same latch frames).
@@ -98,6 +114,30 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
   - facade: a cap in every counterbore but the one under the label, which sits at the facade's left end (seen
     from the front) over the left bolt: S1F 1 cap, S2F/S4F 3; M1F 3, M2F/M4F 5; L1F 3, L2F/L4F 5;
   - the three baseplate files of a size (plain, 1 or 2 handle cut-outs) share the plain one's place.
+- **Geared rails** (every drawer, from sections of S3, S5 2F, M3, M6 4F, L3, L7 2F, XL3, XL5, XL7, L² and XL²
+  boxes). Each `<w> Rails.stl` holds the drawer's two racks (two pieces). The box's front wall is hollow: two
+  channels run inside it, 5.2 mm high and 4.4 mm deep, centred 3.1 mm behind the box's front face (3.2 on the XL
+  box, whose face is 0.1 mm behind its bbox). The bottom channel is at y 10.2–15.4 (unit frame, box bottom at 8.6),
+  from a closed end left of the key (x −65.87 on S and M, −66.77 on L and XL) to the box's right side. The top
+  channel is at y 38.8–44.0, from a closed end right of the key (+66.21 on S, +66.57 on M, L, XL) to the left side,
+  with a 1.5 mm groove along its top. The key's pinion is between the two. Each rack lies in its channel on edge,
+  in the x-y plane, with its teeth towards the pinion: the plain rack at the bottom, with its teeth up; the rack with a
+  1.4 mm fin on its back edge at the top, turned half a turn about z, teeth down, its fin in the groove. Both are
+  retracted, rounded end against the channel's closed end (unlocked), so their teeth span the pinion and their
+  tabs stay 6 to 12 mm inside the box's sides.
+- **Hidden key** (lock option "Hidden key (flush)", every drawer): `Hidden Key` is the key lock without its knob,
+  with the same gear, the same text and the same print pose. So it takes the key's place with the key's turn: its
+  back (the gear) is where the key's back is, 8.55 mm behind the box front, and its front sits 0.15 mm under the
+  facade's front. `Hidden Key Part 2` is the removable key: two half-disc tongues (115° each) that go into the
+  two half-round pockets in the hidden key's front, one on each side of its bar, and a grip. It is shown
+  inserted, turned 29° about its axis so the tongues sit in the pockets, the root of its tongues against the
+  hidden key's front. The manuals don't draw this option. An entry holds both locks; a unit's part list names
+  either the key and key cap or these two files, and the page draws only the files the list names.
+- **XL runner slides** are wedges: the XL box's sides narrow towards the back (0.035 mm per mm on XL3, 0.038 on
+  XL7, from depth maps of both sides), and each XL slide tapers the same way (12.0 mm thick at the front,
+  16.0 at the back of x3, 22.6 at the back of x7). The sloped face goes in the box's groove, 2.2 mm in from the
+  box's face at the front, as on S/M/L. The flat face runs along the straight guide. (Placed by its bounding box,
+  as before, the wedge stood 4 mm out on XL3 and 10.6 mm on XL7, through the module's wall at the back.)
 - **Roofs** (S, M, L, XL): turned so their latch frames are underneath, 12 mm from the back (on some roofs the
   frame's rim runs into the next relief, so only its back edge counts); otherwise placed like a module.
   Heavyweight (and cut) roofs: the handle is a bar across the middle slot, in the pockets of its walls (156 mm
@@ -142,9 +182,25 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
   (hook down): the side sections show the closed lever clearing the recess floor and the hook in the lid's
   groove. The two pins (one file) are not placed.
   Case label: on 1F panels in a closed recess 10 mm under the top; on 2F/4F in a slot open on the panel's left
-  edge, 43.6 mm under the top, pushed to its end. Hinges are not placed: each hinge file holds both leaves
-  printed side by side with their knuckles apart, so one matrix can't put them on their common pin; their
-  notches in the body's back wall are at x = ±51.8 (S), ±69.3 (M), ±86.8 (L), ±131.4 (XL), 7 mm deep.
+  edge, 43.6 mm under the top, pushed to its end.
+  Hinges (manual p. 17), each piece of a file on its own (`piece`):
+  - the hinge file (`S-M 1F`, `S-M 2-4F`, `L-XL 1F`, `L 2-4F Hinge`) holds the two body leaves, mirror images
+    printed face to face. Each leaf bolts inside the back wall, on the 2 mm pad under a notch in the wall's top,
+    with 4 M4 × 10 bolts. Its 4 holes (23 × 15.4 mm apart on S/M, 33 × 15.4 on L/XL; 34.6 down the plate on
+    2-4F) meet the wall's at x = ±51.9 (S), ±69.27 (M), ±86.8 (L), ±131.4 (XL). The crank goes over the
+    lowered wall and the knuckle sits behind it, touching the back face.
+  - the hinge top bolts under the lid with 4 M4 × 14 bolts, into the lid's holes 16 and 36 mm in front of the
+    body's back face. S and M have one long top (62.8 / 98.8 mm) between the two leaves, at x = 0. L and XL
+    have a file with two 40 mm tops, each 0.5 mm inside its leaf, at x = ±41.3 (L) and ±85.9 (XL). The plate's
+    face through the knuckle's axis is its bottom face.
+  - every knuckle is on one axis along x, level with the body's top and 7.49 mm behind its back face. On every
+    case measured (S3, M5, L3, XL3, XL7 1F; S3, L7 2F; S7 4F), the leaves' holes and the wall's agree within
+    0.02 mm, and so do the tops' and the lid's.
+  - the rods (one file holds both): 7.9 mm shafts in the 8.3 mm bores, one from each end, its head against the
+    leaf's outer end.
+  The hinge tops' plates stop 0.85 mm under the lid's bosses on every height: the lid's push-fit height and
+  the hinge disagree by that much. The lid stays where the push fit puts it, since the locks and the stacking
+  height were measured from there.
 - **Checks against USSA's renders**: `compare_board.py` puts a crop of a PDF page next to our render, for a phone
   (boards in `VAULT_ASSEMBLY/_compare/`, outside the repo: they hold USSA's renders).
 - **Checks**: every unit is assembled with front, iso, side-section, top-section (runner level) and bottom
@@ -162,7 +218,12 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
   places one; the page won't draw it until the list has `Latch.stl`.
 - Latches per unit: S and M 1; L, L², XL and XL² 2 (the planner lists 1 per drawer insert).
 - Case locks: the planner counts 2 per case; S and M fronts have one lock seat, L and XL two.
-- Case hinges can't be drawn from the files as they are (both leaves in one file, printed apart).
+- Case hinges: the planner lists 2 hinge files and, on S/M, 2 hinge tops per case. But one hinge file holds both
+  body leaves, and S/M cases take a single long hinge top (the lid has 4 holes for one); L/XL take the two tops
+  of their one file. So a case needs 1 hinge file, 1 hinge-top file and 1 rods file (8 × M4 × 10 for the two
+  leaves, 4 × M4 × 14 per hinge top).
+- Pieces: the page must split a file into its pieces wherever an entry has `piece` (racks, hinge leaves, hinge
+  tops, rods). Without that, the whole file lands on each copy.
 - The JSON's roles are the first session's (body, drawer, facade, mech, accent, insert, roof); the page takes each
   part's role from the planner's list instead.
 - Decimation: 8 of the 733 files stayed above the 0.15 mm QA after the voxel fallback (M5 Module 2F/4F, S6 1F/2F
