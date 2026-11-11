@@ -2909,12 +2909,14 @@ details.termfold[open] > summary { color: var(--ink); }
   // A unit's measured parts that its part list uses, matched by file. A file in the list gets every copy the assembly
   // places (the list may count fewer, e.g. facade caps); placed files not in the list (another lock, no baseplate) are
   // left out. A roof also takes the files its unit below lists (its latches). What the list has and the assembly doesn't
-  // place comes back in `unplaced`.
+  // place comes back in `unplaced`. The hidden key's removable key (Part 2) is printed but left out of the view: the
+  // lock is shown as it is meant to be seen, flush with the front and the key taken out.
+  const NOT_DRAWN = /\/hidden key part 2/i;
   function placeParts(unit) {
     const pl = PLACE.units[unit.key];
     if (!pl) return null;
     const has = new Map([...(unit.shared || []), ...unit.lines].map(l => [R.norm(l.file.path), l]));
-    const parts = pl.parts.filter(([p]) => has.has(R.norm(p))).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, piece: o && o.piece, role: l.role, cfg: l.cfg }; });
+    const parts = pl.parts.filter(([p]) => has.has(R.norm(p)) && !NOT_DRAWN.test(p)).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, piece: o && o.piece, role: l.role, cfg: l.cfg }; });
     const placed = new Set(pl.parts.map(([p]) => R.norm(p)));
     const unplaced = unit.lines.filter(l => !placed.has(R.norm(l.file.path))).map(l => l.label + (l.qty > 1 ? ' ×' + l.qty : ''));
     return { parts, unplaced };
