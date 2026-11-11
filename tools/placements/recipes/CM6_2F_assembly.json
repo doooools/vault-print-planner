@@ -4,7 +4,8 @@
  "notes": [
   "lid: the one-piece version is placed; the split version's parts are not",
   "1 latch frame(s) under the body (a latch is placed in each; the planner's case list has no latch)",
-  "1 lock(s) (lock seats in the front panel; the planner counts 2 for every case); hinges not placed: each hinge file holds both leaves printed side by side, with their knuckles apart, so no single turn puts them on their common pin (manual p. 17); their notches are at x = +/-69.3"
+  "1 lock(s) (lock seats in the front panel; the planner counts 2 for every case)",
+  "hinges: 2 leaves, 1 top(s), 2 rods on one axis at y 84.8, z -279.59; the hinge tops' plates come 0.85 mm under the lid's bosses (the lid's push-fit height and the hinge disagree by that much)"
  ],
  "parts": [
   {
@@ -61,7 +62,7 @@
    "name": "CM6_2F_Lid",
    "file": "02. SUSTAINERS/02. M Families/M6/Roofs/M6 Roof Whole.stl",
    "role": "roof",
-   "group": "module",
+   "group": "lid",
    "rot": [
     -90,
     -42.8,
@@ -201,9 +202,163 @@
      41.17
     ]
    }
+  },
+  {
+   "name": "CM6_2F_HingeLeaf_1",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/S-M 2-4F Hinge.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -89.27
+    ],
+    "y": [
+     "min",
+     -286.59
+    ],
+    "z": [
+     "min",
+     24.797
+    ]
+   },
+   "pick": [
+    7053.464,
+    1706.485,
+    53.484
+   ]
+  },
+  {
+   "name": "CM6_2F_HingeLeaf_2",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/S-M 2-4F Hinge.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    180.0,
+    -90.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     49.27
+    ],
+    "y": [
+     "min",
+     -286.59
+    ],
+    "z": [
+     "min",
+     24.8
+    ]
+   },
+   "pick": [
+    7053.463,
+    1736.457,
+    53.484
+   ]
+  },
+  {
+   "name": "CM6_2F_HingeTop_1",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/M Hinge Top.stl",
+   "role": "mech",
+   "group": "lid",
+   "rot": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -49.4
+    ],
+    "y": [
+     "min",
+     -286.59
+    ],
+    "z": [
+     "min",
+     77.8
+    ]
+   },
+   "pick": [
+    3501.555,
+    1722.142,
+    175.999
+   ]
+  },
+  {
+   "name": "CM6_2F_HingeRod_1",
+   "file": "02. SUSTAINERS/05. Universal/Rods/S-M Rods.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "min",
+     -94.27
+    ],
+    "y": [
+     "min",
+     -288.59
+    ],
+    "z": [
+     "min",
+     81.15
+    ]
+   },
+   "pick": [
+    6537.646,
+    1709.727,
+    178.673
+   ]
+  },
+  {
+   "name": "CM6_2F_HingeRod_2",
+   "file": "02. SUSTAINERS/05. Universal/Rods/S-M Rods.stl",
+   "role": "accent",
+   "group": "module",
+   "align": {
+    "x": [
+     "min",
+     19.27
+    ],
+    "y": [
+     "min",
+     -288.59
+    ],
+    "z": [
+     "min",
+     81.15
+    ]
+   },
+   "pick": [
+    6545.465,
+    1700.738,
+    178.673
+   ]
   }
  ],
  "finalize": {
   "anchor": "CM6_2F_Body"
+ },
+ "hinge": {
+  "origin": [
+   0.0,
+   84.8,
+   -279.59
+  ],
+  "axis": [
+   -1,
+   0,
+   0
+  ],
+  "open_deg": 105.0,
+  "note": "the lid and the hinge tops (group lid) turn about this axis (unit frame, right-handed: a positive angle lifts the lid's front); 0 = closed"
  }
 }

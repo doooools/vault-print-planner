@@ -10,10 +10,15 @@ Config:
     {"name": "Module", "file": "rel/path.stl", "role": "body",
      "rot": [rx, ry, rz],          # degrees, XYZ euler, about the part's bbox centre
      "move": [dx, dy, dz],         # mm, applied after rotation
-     "align": {...}                # optional, see below
+     "align": {...},               # optional, see below
+     "pick": [x, y, z]             # optional: keep only the file's connected piece whose bbox centre
+                                   # is nearest to this point (file coordinates), see blender_pieces.py
     }, ...
-  ]
+  ],
+  "hinge": {...}                   # optional (cases): the lid's hinge axis, written to the root as
+                                   # "vault_hinge" for blender_export_placements.py
 }
+Groups: "module" parts stay, "drawer" parts slide out with the drawer, "lid" parts turn with a case lid.
 Coordinates stay in the source CAD frame (mm, Blender units = mm), which for
 VAULT is: X across, +Y towards the front, Z up.
 
@@ -25,6 +30,8 @@ Views: iso, front, back, top, bottom, left, right, secx (section at the
 centre plane x = const, seen from +X), secz:<z> (section seen from top).
 """
 import bpy, sys, json, math, os, mathutils
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from blender_pieces import keep_piece  # noqa: E402
 
 argv = sys.argv[sys.argv.index("--") + 1:]
 cfg_path, out_prefix, views = argv[0], argv[1], argv[2:] or ["iso"]
@@ -81,6 +88,11 @@ for part in cfg["parts"]:
     c = mathutils.Vector([(min(v.co[i] for v in vs) + max(v.co[i] for v in vs)) / 2 for i in range(3)])
     me.transform(mathutils.Matrix.Translation(-c))
     o.location = c
+    if part.get("pick"):
+        # one piece of a file holding several; the centre c (and so the exported matrix) stays the whole file's
+        n = keep_piece(me, part["pick"], c)
+        o["vault_piece"] = [round(float(v), 3) for v in part["pick"]]
+        print("PIECE", part["name"], "kept 1 of", n)
     o.rotation_euler = [math.radians(a) for a in part.get("rot", [0, 0, 0])]
     bpy.context.view_layer.update()
     if "align" in part:
@@ -177,13 +189,15 @@ if fin:
     root.empty_display_size = 30
     if cfg.get("key"):
         root["vault_key"] = cfg["key"]  # the planner's unit key, read by blender_export_placements.py
+    if cfg.get("hinge"):
+        root["vault_hinge"] = json.dumps(cfg["hinge"])
     coll_root.objects.link(root)
     drawer = bpy.data.objects.new(cfg.get("name", "Assembly") + "_Drawer", None)
     drawer.empty_display_type = "SINGLE_ARROW"
     drawer.empty_display_size = 40
     coll_root.objects.link(drawer)
     sub = {}
-    for g in ("module", "drawer"):
+    for g in ("module", "drawer", "lid"):
         sub[g] = bpy.data.collections.new(cfg.get("name", "Assembly") + "_" + g)
         coll_root.children.link(sub[g])
     root.location = anchor

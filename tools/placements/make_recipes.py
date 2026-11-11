@@ -20,6 +20,7 @@ Rules (measured on S3 and L7, then checked per family, see README):
   - Facade caps: in every counterbore but the one under the label; label at the facade's left end.
 """
 import json, os, re, sys
+import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import vault_geom as vg  # noqa: E402
 import features as F  # noqa: E402
@@ -117,9 +118,9 @@ def feat(kind, rel, rot):
 
 class Recipe:
     def __init__(self, name, key):
-        self.name, self.key, self.parts, self.notes = name, key, [], []
+        self.name, self.key, self.parts, self.notes, self.hinge = name, key, [], [], None
 
-    def part(self, nm, file, role, group, rot=None, align=None, move=None):
+    def part(self, nm, file, role, group, rot=None, align=None, move=None, pick=None):
         d = {"name": f"{self.name}_{nm}", "file": file, "role": role, "group": group}
         if rot and any(rot):
             d["rot"] = rot
@@ -127,11 +128,116 @@ class Recipe:
             d["align"] = {k: [m, round(v, 3)] for k, (m, v) in align.items()}
         if move:
             d["move"] = move
+        if pick is not None:
+            d["pick"] = [round(float(v), 3) for v in pick]
         self.parts.append(d)
 
+    def placed(self, nm, file, role, group, R_unit, src, dst, piece=None, origin=(0.0, 0.0, 0.0)):
+        """A part (or one piece of its file) turned by R_unit (file axes -> unit axes) with the file
+        point `src` on the unit point `dst`. origin: the unit frame's origin in recipe (CAD) coordinates.
+        Written as the recipe's rot + align (by the real vertices' bbox, as blender_assemble.py does)."""
+        R_unit = np.asarray(R_unit, float)
+        T = piece["tris"] if piece else vg.read_stl(os.path.join(F.ROOT, file))
+        P = (T.reshape(-1, 3) - np.asarray(src)) @ R_unit.T + np.asarray(dst)
+        P = P @ vg.C.T + np.asarray(origin)          # unit -> CAD (C is its own inverse)
+        lo = P.min(0)
+        self.part(nm, file, role, group, vg.euler_xyz(vg.C @ R_unit), {a: ["min", float(lo[i])] for i, a in enumerate("xyz")},
+                  pick=piece["centre"] if piece else None)
+
     def json(self, anchor="Module"):
-        return {"name": self.name, "key": self.key, "notes": self.notes, "parts": self.parts,
-                "finalize": {"anchor": f"{self.name}_{anchor}"}}
+        out = {"name": self.name, "key": self.key, "notes": self.notes, "parts": self.parts,
+               "finalize": {"anchor": f"{self.name}_{anchor}"}}
+        if self.hinge:
+            out["hinge"] = self.hinge
+        return out
+
+
+_PIECES = {}
+
+
+def file_pieces(rel):
+    """Connected pieces of a file (vault_geom.pieces), from the decimated copy (same pieces, same
+    coordinates): [{"tris", "centre", "min", "max"}], largest first."""
+    if rel not in _PIECES:
+        out = []
+        for t in vg.pieces(vg.read_stl(os.path.join(F.ROOT, rel))):
+            P = t.reshape(-1, 3)
+            out.append({"tris": t, "centre": vg.piece_centre(t), "min": P.min(0), "max": P.max(0)})
+        _PIECES[rel] = out
+    return _PIECES[rel]
+
+
+# Geared rails: each file holds the drawer's two racks, printed side by side. They run in two channels
+# inside the box's hollow front wall (both 5.2 mm high, 4.4 mm deep, centred 3.1 mm behind the box's front
+# face, 3.2 on XL boxes): the bottom rack in y 10.2-15.4 (unit frame: box bottom at 8.6), teeth up, from
+# the channel's closed end left of the key towards the box's right side; the top rack in y 38.8-44.0,
+# teeth down, from the closed end right of the key towards the left side. The key's pinion sits between
+# them. The top rack is the one with a 1.4 mm fin along its back edge, which runs in a groove of the top
+# channel. Racks are set retracted (rounded end against the channel's closed end: unlocked). Closed ends
+# (bottom, top), unit x from the drawer's centre, measured on S3, S5 2F, M3, M6 4F, L3, L7 2F, XL3, XL5,
+# XL7 and the L2/XL2 boxes (the same on every depth and height):
+RAIL_END = {"S": (-65.87, 66.21), "M": (-65.87, 66.57), "L": (-66.77, 66.57), "XL": (-66.77, 66.57)}
+
+
+def rails(r, w, cx, yf, zb, t="", depth=3.10):
+    rel = need(U + f"Geared Rails/{w} Rails.stl")
+    ps = file_pieces(rel)
+    top = max(ps, key=lambda p: p["max"][1] - p["min"][1])   # the fin makes it wider
+    bot = next(p for p in ps if p is not top)
+    eb, et = RAIL_END[w]
+    # bottom rack: file axes = unit axes (teeth up, rounded end at file x min); top rack: turned 180 deg about z
+    r.part(f"Rail_bottom{t}", rel, "accent", "drawer", vg.euler_xyz(vg.C),
+           {"x": ["max", cx - eb], "y": ["center", yf - depth], "z": ["center", zb + 4.21]}, pick=bot["centre"])
+    r.part(f"Rail_top{t}", rel, "accent", "drawer", vg.euler_xyz(vg.C @ np.diag([-1.0, -1.0, 1.0])),
+           {"x": ["min", cx - et], "y": ["center", yf - depth], "z": ["min", zb + 30.39]}, pick=top["centre"])
+
+
+def hidden_key(r, cx, yf, z0, t=""):
+    """The hidden key (lock option 'hidden', "flush"): the key lock without its knob. Same gear, same text,
+    printed the same way, so it takes the key's place with the key's turn: its back (the gear) where the key's
+    back is, its front flush with the facade's front. Part 2 is the removable key: two half-disc tongues that
+    go into the two half-round pockets in the hidden key's front, either side of its bar, and a grip. Shown
+    inserted: turned about its axis so its tongues straddle the bar, its tongue root on the hidden key's front.
+    A unit's part list has either these two files or the key and its cap, so the page draws one lock only."""
+    hk = U + "Hidden Key (Turn On Supports).stl"
+    rot = [-90, 0, 0]
+    r.part(f"HiddenKey{t}", hk, "mech", "drawer", rot, {"x": ["center", cx], "y": ["min", yf - 8.55], "z": ["center", z0]})
+    # the same pose by numbers, to carry part 2 along with it
+    R = vg.from_euler_xyz(rot)
+    H = vg.read_stl(os.path.join(F.ROOT, hk)).reshape(-1, 3)
+    Hp = H @ R.T
+    lo, hi = Hp.min(0), Hp.max(0)
+    th = np.array([cx - (lo[0] + hi[0]) / 2, yf - 8.55 - lo[1], z0 - (lo[2] + hi[2]) / 2])
+    hc = np.array([(H[:, 0].min() + H[:, 0].max()) / 2, (H[:, 1].min() + H[:, 1].max()) / 2, H[:, 2].max()])  # front centre
+    p2 = U + "Hidden Key Part 2 (Turn on Supports).stl"
+    P2 = vg.read_stl(os.path.join(F.ROOT, p2)).reshape(-1, 3)
+    c2 = np.array([(P2[:, 0].min() + P2[:, 0].max()) / 2, (P2[:, 1].min() + P2[:, 1].max()) / 2, 0.0])   # tongue root plane z = 0
+    # tongues: the two sectors below the root; turn them so they centre on +-90 deg (the pockets, above and below the bar)
+    q = P2[(P2[:, 2] < -2) & (P2[:, 2] > -6.5)] - c2
+    q = q[np.hypot(q[:, 0], q[:, 1]) > 10]
+    a = np.arctan2(q[:, 1], q[:, 0])
+    mid = np.degrees(np.arctan2(np.sin(2 * a).mean(), np.cos(2 * a).mean()) / 2)   # the sectors' axis (they are opposite)
+    spin = (90 - mid + 90) % 180 - 90
+    Rz = vg.rot_axis("z", spin)
+    P2p = ((P2 - c2) @ Rz.T + hc) @ R.T + th
+    lo2 = P2p.min(0)
+    r.part(f"HiddenKey2{t}", p2, "mech", "drawer", vg.euler_xyz(R @ Rz), {k: ["min", float(lo2[i])] for i, k in enumerate("xyz")})
+
+
+def slide_front(rel):
+    """XL runner slides are wedges (the XL box's sides narrow towards the back: 0.035 mm/mm on XL3,
+    0.038 on XL7, and each slide tapers the same): the slide's thickness at its front end (file y max),
+    from a line fitted to its sloped face over the front 30 mm."""
+    key = f"slidefront|{rel}"
+    if key not in FEAT:
+        V = vg.read_stl(os.path.join(F.ROOT, rel)).reshape(-1, 3)
+        y1 = V[:, 1].max()
+        ys = np.arange(y1 - 30, y1 - 2, 1.0)
+        zt = np.array([V[np.abs(V[:, 1] - y) < 0.5][:, 2].max() for y in ys])
+        a, b = np.polyfit(ys, zt, 1)
+        FEAT[key] = round(float(a * y1 + b - V[:, 2].min()), 3)
+        json.dump(FEAT, open(FEAT_PATH, "w", encoding="utf-8"), ensure_ascii=False)
+    return FEAT[key]
 
 
 def insert_sml(r, w, d, h, box, cx, yf, zb, mod_rot, mod_file, tag="", box_rel=None):
@@ -159,9 +265,8 @@ def insert_sml(r, w, d, h, box, cx, yf, zb, mod_rot, mod_file, tag="", box_rel=N
            {"x": ["center", cx], "y": ["center", yf + 8.16], "z": ["center", z0]})
     r.part(f"KeyCap{t}", U + "Key Cap.stl", "facade", "drawer", [90, 0, 0],
            {"x": ["center", cx], "y": ["center", yf + 25.16], "z": ["center", z0]})
-    rails = need(U + f"Geared Rails/{w} Rails.stl")
-    r.part(f"Rail_bottom{t}", rails, "accent", "drawer", None, {"x": ["center", cx], "y": ["center", yf - 7.38], "z": ["center", zb + 10.02]})
-    r.part(f"Rail_top{t}", rails, "accent", "drawer", [0, 180, 0], {"x": ["center", cx], "y": ["center", yf - 7.38], "z": ["center", zb + 26.98]})
+    hidden_key(r, cx, yf, z0, t)
+    rails(r, w, cx, yf, zb, t)
     side = feat("side", mod_file, mod_rot)
     holes = [hh for hh in side["holes"] if 20 < hh["u"] < 36 and hh["area"] < 200]
     if not holes:
@@ -365,9 +470,8 @@ def drawer_xl(d):
     z0 = zb + 18.5
     r.part("Key", U + "Key (Turn On Supports).stl", "mech", "drawer", [-90, 0, 0], {"x": ["center", cx], "y": ["center", yf + 8.16], "z": ["center", z0]})
     r.part("KeyCap", U + "Key Cap.stl", "facade", "drawer", [90, 0, 0], {"x": ["center", cx], "y": ["center", yf + 25.16], "z": ["center", z0]})
-    rails = need(U + "Geared Rails/XL Rails.stl")
-    r.part("Rail_bottom", rails, "accent", "drawer", None, {"x": ["center", cx], "y": ["center", yf - 7.38], "z": ["center", zb + 10.02]})
-    r.part("Rail_top", rails, "accent", "drawer", [0, 180, 0], {"x": ["center", cx], "y": ["center", yf - 7.38], "z": ["center", zb + 26.98]})
+    hidden_key(r, cx, yf, z0)
+    rails(r, "XL", cx, yf, zb, depth=3.20)
     side = feat("side", mod, mrot)
     holes = [hh for hh in side["holes"] if 20 < hh["u"] < 36 and hh["area"] < 200]
     if holes:
@@ -376,8 +480,11 @@ def drawer_xl(d):
         hole_w = -(44.56 + 21 * (d - 3))
         r.notes.append("no stopper hole read in the XL module wall: stopper set by the S/M/L depth rule")
     rn = U + f"Runners/XL Runners/x{d} Runner "
-    r.part("Slide_L", rn + "Slide XL.stl", "mech", "drawer", [0, 90, 0], {"x": ["max", cx - BW / 2 + 2.2], "y": ["max", yf], "z": ["center", z0]})
-    r.part("Slide_R", rn + "Slide XL.stl", "mech", "drawer", [0, -90, 0], {"x": ["min", cx + BW / 2 - 2.2], "y": ["max", yf], "z": ["center", z0]})
+    # the wedge's sloped face lies along the box's tapered side, in its groove (2.2 mm in from the box's
+    # face at the front, as on S/M/L); its flat face runs along the guide
+    tf = slide_front(need(rn + "Slide XL.stl"))
+    r.part("Slide_L", rn + "Slide XL.stl", "mech", "drawer", [0, 90, 0], {"x": ["min", cx - BW / 2 + 2.2 - tf], "y": ["max", yf], "z": ["center", z0]})
+    r.part("Slide_R", rn + "Slide XL.stl", "mech", "drawer", [0, -90, 0], {"x": ["max", cx + BW / 2 - 2.2 + tf], "y": ["max", yf], "z": ["center", z0]})
     r.part("Guide_L", rn + "Guide XL.stl", "body", "module", [0, 90, 0], {"x": ["min", mxmin + 3.58], "y": ["max", yf], "z": ["center", z0]})
     r.part("Guide_R", rn + "Guide XL.stl", "body", "module", [0, -90, 0], {"x": ["max", mxmax - 3.58], "y": ["max", yf], "z": ["center", z0]})
     ys = yf + 0.06 + hole_w - 0.29
@@ -403,9 +510,22 @@ LID_DROP = 6.9                          # the lid comes down over the body's rim
 # width -> (hinge notch centre |x|, lock seat centre |x| (0: one lock in the middle), case label recess centre x),
 # unit frame, measured with features.py on the S3/M3/L3/XL3 1F bodies and S1F/M1F/L1F/XL1F front panels
 CASE_SEATS = {"S": (51.8, 0.0, -53.28), "M": (69.3, 0.0, -75.6), "L": (86.8, 82.4, 0.07), "XL": (131.4, 127.05, -0.07)}
-# (L/XL file?, 1F?) -> (hinge file, its top relative to the body's top), from the hinges assembled in the CAD file
-CASE_HINGE = {(False, True): ("S-M 1F Hinge.stl", -1.7), (False, False): ("S-M 2-4F Hinge.stl", -11.3),
-              (True, True): ("L-XL 1F Hinge.stl", 3.3), (True, False): ("L 2-4F Hinge.stl", -6.3)}
+# Hinges (manual p. 17). One hinge file holds the two body leaves (mirror images, printed face to face);
+# each leaf bolts inside the body's back wall, on the 2 mm pad under a notch in the wall's top (4 holes,
+# M4 x 10), its knuckle behind the wall. The hinge top(s) bolt under the lid (4 holes each, M4 x 14): S and
+# M have one long top between the two leaves, L and XL a file with two tops, each next to a leaf on its
+# inner side. Every knuckle is on one axis along x, level with the body's top and 7.49 mm behind its back
+# face (the leaves' and tops' holes against the wall's and lid's: within 0.02 mm on S3/M5/L3/XL3/XL7 1F,
+# S3/L7 2F, S7 4F). A rod (one file holds both) goes in from each end, its head against the leaf's end.
+CASE_HINGE = {(False, True): "S-M 1F Hinge.stl", (False, False): "S-M 2-4F Hinge.stl",
+              (True, True): "L-XL 1F Hinge.stl", (True, False): "L 2-4F Hinge.stl"}
+HINGE_X = {"S": 51.9, "M": 69.27, "L": 86.8, "XL": 131.4}                 # leaf centres along the axis (wall holes)
+HINGE_TOP_X = {"S": (0.0,), "M": (0.0,), "L": (41.3, -41.3), "XL": (85.9, -85.9)}   # hinge top centres (lid holes)
+HINGE_BEHIND = 7.49     # axis behind the body's back face
+ROD_HEAD = 5.0          # rod head thickness: the rod's end is this far beyond the leaf's end
+# How far the page opens a lid: the manual's open view (p. 17). Swept on the exported parts, neither the lid nor
+# the hinge tops meet the body, the leaves or the rods before 180 deg.
+LID_OPEN = 105.0
 
 
 def case(w, d, h):
@@ -413,7 +533,9 @@ def case(w, d, h):
     Measured on S3 1F: the body has the drawer module's latch frame; the lid (turned like a drawer roof)
     covers the body and the front panel and comes down 6.9 mm over the body's rim (push fit). The body is
     open at the front: the front panel is its front wall, top level with the body's top (bolt holes meet).
-    Locks: holder behind the panel on its blind holes, link, lever closed in the seat recess (see below)."""
+    Locks: holder behind the panel on its blind holes, link, lever closed in the seat recess (see below).
+    Hinges: leaves, hinge top(s) and rods on one axis behind the back wall (hinges(), CASE_HINGE); the lid and
+    the hinge tops are group "lid" and turn about the recipe's "hinge" axis."""
     fam = SU + CFAM[w] + "/"
     big = w in ("L", "XL")
     depth = 146.1 + 42 * (d - 3)
@@ -438,7 +560,7 @@ def case(w, d, h):
     lid = find(fam + f"{w}{d}/Roofs/{w}{d} Roof.stl") or find(fam + f"{w}{d}/Roof/{w}{d} Roof.stl") \
         or find(fam + f"{w}{d}/Roofs/{w}{d} Roof Whole.stl") or find(fam + f"{w}{d}/Roof/{w}{d} Roof Whole.stl")
     lrot = [-90, -42.8, 0]   # every case lid is printed like S3's (orient.py: S3-XL5 lids <= 0.17, one-piece S6/L7 lids 0.03 on all corners)
-    r.part("Lid", lid, "roof", "module", lrot, {"x": ["center", 0], "y": ["max", 10.0], "z": ["min", T - LID_DROP]})
+    r.part("Lid", lid, "roof", "lid", lrot, {"x": ["center", 0], "y": ["max", 10.0], "z": ["min", T - LID_DROP]})
     if d >= 6:
         r.notes.append("lid: the one-piece version is placed; the split version's parts are not")
     nl = latches(r, first[0], first[1], 0.0, -0.06, 8.6, depth=depth)
@@ -449,7 +571,7 @@ def case(w, d, h):
     # lock seats 51.3 x 36.8 mm in the front panel's top edge, hinge notches 7 mm deep in the body's back
     # wall, the case label's recess in the front panel. Heights and depths come from the files that sit
     # assembled around one case per height in the CAD file (S 1F, S 2F, S 4F; L 1F, L 2F).
-    hinge_x, lock_x, label_u = CASE_SEATS[w]
+    _, lock_x, label_u = CASE_SEATS[w]
     # Lock (manual p. 17), a toggle latch per seat, closed:
     # - holder: the "UP" plate, lying across behind the front panel, bolted into the 4 blind holes beside the
     #   panel's top notch (61.4 x 9 mm apart; their centre 11.7 mm under the top on 1F, 17.7 mm on 2-4F),
@@ -480,10 +602,56 @@ def case(w, d, h):
         label_y, label_u = T - 43.63, -{"S": 82.4, "M": 127.0, "L": 164.8}[w] + 50.1 - 19.07
     r.part("CaseLabel", SUU + "Label for Sustainers.stl", "insert", "module", [-90, 0, 0],
            {"x": ["center", -label_u], "y": ["min", 7.91], "z": ["center", label_y]})
-    r.notes.append("%d lock(s) (lock seats in the front panel; the planner counts 2 for every case); "
-                   "hinges not placed: each hinge file holds both leaves printed side by side, with their knuckles apart, "
-                   "so no single turn puts them on their common pin (manual p. 17); their notches are at x = +/-%.1f" % (1 if not lock_x else 2, hinge_x))
+    r.notes.append("%d lock(s) (lock seats in the front panel; the planner counts 2 for every case)" % (1 if not lock_x else 2))
+    hinges(r, w, d, h, T, depth)
     return r.json("Body" + ("_Flat" if big else ""))
+
+
+def hinges(r, w, d, h, T, depth):
+    """Both body leaves, the hinge top(s) (group lid) and both rods, each piece of its file on its own;
+    sets the unit's hinge axis (see CASE_HINGE)."""
+    big = w in ("L", "XL")
+    yA, zA = T, -depth - HINGE_BEHIND
+    hx = HINGE_X[w]
+    leaf = need(SUU + "Hinges/" + CASE_HINGE[(big, h == 1)])
+    leaves = sorted(file_pieces(leaf), key=lambda p: p["centre"][1])
+    lleaf = None
+    for i, (pc, sx) in enumerate(zip(leaves, (1, -1))):
+        lo, hi, V = pc["min"], pc["max"], pc["tris"].reshape(-1, 3)
+        # knuckle at the piece's x max end; the plate runs along -x from it, offset 14.5 mm to the side
+        # away from the knuckle (+y on the piece whose knuckle is at y min)
+        low = V[V[:, 0] > hi[0] - 1.0][:, 1].mean() < pc["centre"][1]
+        ring = (hi[0] - 7.0, lo[1] + 7.0 if low else hi[1] - 7.0, (lo[2] + hi[2]) / 2)
+        # unit: axis (file z) along x, plate down (file -x -> unit -y), plate in front of the knuckle (inside)
+        R = [[0, 0, 1], [1, 0, 0], [0, 1, 0]] if low else [[0, 0, -1], [1, 0, 0], [0, -1, 0]]
+        r.placed(f"HingeLeaf_{i+1}", leaf, "mech", "module", R, ring, (sx * hx, yA, zA), piece=pc)
+        lleaf = hi[2] - lo[2]
+    top = need(SUU + "Hinges/" + ({"S": "S Hinge Top.stl", "M": "M Hinge Top.stl"}.get(w) or "L-XL Hinge Top.stl"))
+    tops = sorted(file_pieces(top), key=lambda p: -p["centre"][0])
+    for i, (pc, tx) in enumerate(zip(tops, HINGE_TOP_X[w])):
+        lo, hi, V = pc["min"], pc["max"], pc["tris"].reshape(-1, 3)
+        rx = (lo[0] + hi[0]) / 2 if big else lo[0] + 7.0
+        ring = (rx, lo[1] + 7.0, (lo[2] + hi[2]) / 2)
+        # the plate runs along file +y from the knuckle (forward, under the lid); its face through the axis
+        # is its bottom face, the plate's thickness goes up (file +x, or -x on one of the L/XL tops)
+        plus = V[V[:, 1] > lo[1] + 25][:, 0].mean() > rx
+        R = [[0, 0, 1], [1, 0, 0], [0, 1, 0]] if plus else [[0, 0, -1], [-1, 0, 0], [0, 1, 0]]
+        r.placed(f"HingeTop_{i+1}", top, "mech", "lid", R, ring, (tx, yA, zA), piece=pc)
+    rod = need(SUU + "Rods/" + ("L-XL Rods.stl" if big else "S-M Rods.stl"))
+    for i, (pc, sx) in enumerate(zip(file_pieces(rod), (1, -1))):
+        lo, hi, V = pc["min"], pc["max"], pc["tris"].reshape(-1, 3)
+        wide = lambda m: np.ptp(V[m][:, 1])
+        head_min = wide(V[:, 0] < lo[0] + 1.0) > wide(V[:, 0] > hi[0] - 1.0)
+        # shaft axis: 3.65 above the piece's flat bottom (printed on a flat); the head goes outwards
+        end = (lo[0] if head_min else hi[0], pc["centre"][1], lo[2] + 3.65)
+        flip = (head_min and sx > 0) or (not head_min and sx < 0)
+        R = [[-1, 0, 0], [0, 0, 1], [0, 1, 0]] if flip else [[1, 0, 0], [0, 0, 1], [0, -1, 0]]
+        r.placed(f"HingeRod_{i+1}", rod, "accent", "module", R, end, (sx * (hx + lleaf / 2 + ROD_HEAD), yA, zA), piece=pc)
+    r.hinge = {"origin": [0.0, round(yA, 3), round(zA, 3)], "axis": [-1, 0, 0], "open_deg": LID_OPEN,
+               "note": "the lid and the hinge tops (group lid) turn about this axis (unit frame, right-handed: a "
+                       "positive angle lifts the lid's front); 0 = closed"}
+    r.notes.append("hinges: 2 leaves, %d top(s), 2 rods on one axis at y %.1f, z %.2f; the hinge tops' plates come "
+                   "0.85 mm under the lid's bosses (the lid's push-fit height and the hinge disagree by that much)" % (len(HINGE_TOP_X[w]), yA, zA))
 
 
 def family_sml(w):

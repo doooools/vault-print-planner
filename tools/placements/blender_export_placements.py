@@ -58,7 +58,10 @@ for path in blends:
         f = o["vault_file"]
         M = C @ inv @ o.matrix_world @ mathutils.Matrix.Translation(-centre[f])
         rows = [[round(M[i][j], 6) for j in range(3)] + [round(M[i][3], 3)] for i in range(3)]
-        parts.append([canonical(f), o["vault_role"], o["vault_group"], [v for r in rows for v in r]])
+        entry = [canonical(f), o["vault_role"], o["vault_group"], [v for r in rows for v in r]]
+        if "vault_piece" in o:   # one connected piece of a file that holds several (blender_pieces.py)
+            entry.append({"piece": [round(v, 3) for v in o["vault_piece"]]})
+        parts.append(entry)
         # unit bounds from the real vertices
         mw = C @ inv @ o.matrix_world
         vs = o.data.vertices
@@ -68,6 +71,8 @@ for path in blends:
             hi = [max(a, b) for a, b in zip(hi, p)]
     key = root.get("vault_key") or unit_key(name)
     units[key] = {"name": name, "bbox": [[round(x, 1) for x in lo], [round(x, 1) for x in hi]], "parts": parts}
+    if root.get("vault_hinge"):
+        units[key]["hinge"] = json.loads(root["vault_hinge"])
     print("EXPORTED", key, len(parts), "parts")
 
 # A single L² or XL² unit on top of a stack gets the L or XL roof (rules.js), keyed by its own width
@@ -82,7 +87,10 @@ data.update({
              "Each part: [path in the Vault download, colour role, group, 3x4 row-major matrix]. "
              "The matrix maps the file's own coordinates to the unit frame: three.js axes, +X right seen from the front, "
              "+Y up, +Z towards the viewer, mm, origin at the middle of the module's front bottom edge. "
-             "group 'drawer' parts slide out along +Z when the drawer opens.",
+             "group 'drawer' parts slide out along +Z when the drawer opens; group 'lid' parts (a case's lid and "
+             "hinge tops) turn about the unit's 'hinge' axis (origin, axis, right-handed, 0 to open_deg degrees). "
+             "A 5th element {\"piece\": [x, y, z]} means: only the connected piece of the file (vertices welded) "
+             "whose bounding-box centre is nearest to that point, in the file's own coordinates.",
     "stack": {"note": "a module's underside rests on the top face of the one below: the next unit starts "
                       "first + per_level * (levels - 1) above the bottom of the one below (measured on L7)",
               "first": 52.0, "per_level": 48.0,

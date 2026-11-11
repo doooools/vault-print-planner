@@ -6,10 +6,16 @@ Units go bottom to top, e.g.  drawer|L|7|4  drawer|L|7|2  roof|L|7|grid
 Also writes <out>_secx.png (the stack cut at x = SEC_X, default 0.3 mm right of the middle, seen from
 the right; set SEC_X to cut through an off-centre latch) and <out>.blend.
 stl_root: the Vault download (or its decimated copy: same coordinates).
+LID_DEG=<deg> opens case lids (group "lid") by that angle about the unit's hinge axis; VIEW="x,y,z" sets
+the camera direction (Blender axes, default 0.9,-1.4,0.8: front right, from above). One entry holds every
+variant of a unit (key and hidden key, every baseplate, ...): SKIP="text,text" leaves out the parts whose path
+contains one of them, as the page does for the files a unit's part list doesn't name.
 Only reads the JSON and the STL files: this checks the exported matrices and the
 stacking rule independently of the .blend files they came from.
 """
 import bpy, sys, os, json, math, mathutils
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from blender_pieces import keep_piece  # noqa: E402
 
 argv = sys.argv[sys.argv.index("--") + 1:]
 pl_path, root, out, keys = argv[0], argv[1], argv[2], argv[3:]
@@ -29,18 +35,33 @@ cache = {}
 y = 0.0
 for key in keys:
     u = P["units"][key]
-    for f, role, group, m in u["parts"]:
-        if f not in cache:
+    lid = mathutils.Matrix.Identity(4)
+    if u.get("hinge") and float(os.environ.get("LID_DEG", "0")):
+        hg = u["hinge"]
+        O = mathutils.Vector(hg["origin"])
+        lid = (mathutils.Matrix.Translation(O) @ mathutils.Matrix.Rotation(math.radians(float(os.environ["LID_DEG"])), 4, mathutils.Vector(hg["axis"]))
+               @ mathutils.Matrix.Translation(-O))
+    for part in u["parts"]:
+        f, role, group, m = part[:4]
+        if any(k and k in f for k in os.environ.get("SKIP", "").split(",")):
+            continue
+        piece = part[4].get("piece") if len(part) > 4 else None
+        ck = (f, tuple(piece) if piece else None)
+        if ck not in cache:
             fp = os.path.join(root, f)
             if not os.path.exists(fp):  # some unzip tools turn the '²' of L²/XL² into '┬▓'
                 fp = os.path.join(root, f.replace("²", "┬▓"))
             bpy.ops.wm.stl_import(filepath=fp)
             src = bpy.context.selected_objects[0]
-            cache[f] = src.data
+            if piece:
+                keep_piece(src.data, piece)
+            cache[ck] = src.data
             bpy.data.objects.remove(src)
-        o = bpy.data.objects.new(os.path.basename(f), cache[f])
+        o = bpy.data.objects.new(os.path.basename(f), cache[ck])
         sc.collection.objects.link(o)
         M = mathutils.Matrix((m[0:4], m[4:8], m[8:12], (0, 0, 0, 1)))
+        if group == "lid":
+            M = lid @ M
         o.matrix_world = Y2Z @ mathutils.Matrix.Translation((0, y, 0)) @ M
         o.material_slots and None
         if not o.data.materials:
@@ -68,7 +89,7 @@ sc.collection.objects.link(cam)
 sc.camera = cam
 cam.data.type = "ORTHO"
 cam.data.clip_end = 100000
-d = mathutils.Vector((0.9, -1.4, 0.8)).normalized()   # front (-Y in Blender = +Z three) right, from above
+d = mathutils.Vector([float(v) for v in os.environ.get("VIEW", "0.9,-1.4,0.8").split(",")]).normalized()   # front (-Y in Blender = +Z three) right, from above
 cam.location = ctr + d * 4000
 cam.rotation_euler = (-d).to_track_quat("-Z", "Y").to_euler()
 cam.data.ortho_scale = (mx - mn).length * 0.95
