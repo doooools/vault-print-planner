@@ -235,6 +235,24 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-side h2 { margin: 0 28px 0 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
 .v3-status { margin: 0; font-size: 13px; color: var(--muted); }
 .v3-canvas { position: absolute; inset: 0; }
+/* Step 1: what Add does, at the top of the settings column */
+.uadd { display: grid; gap: 8px; padding-bottom: 14px; margin-bottom: 2px; border-bottom: 1px solid var(--line); }
+.uadd:empty { display: none; }
+.uadd-title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.uadd-title b { font-family: var(--f-display); font-stretch: 112%; font-size: 18px; }
+.uadd-title .dims { font-size: 12px; color: var(--muted); }
+.uadd-l { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: -4px; }
+.uadd select { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--sheet-2); color: var(--ink); font-weight: 600; }
+.uadd-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.uadd .stackchk { margin: 0; }
+.uadd .alert { font-size: 13px; }
+/* The unit's summary on the page; its pictures and part list fold away */
+.unit-title h2 small { font-family: var(--f-body, inherit); font-stretch: 100%; font-size: 13px; font-weight: 600; color: var(--accent); margin-left: 6px; }
+.uparts > summary { cursor: pointer; font-weight: 600; color: var(--accent); font-size: 13.5px; padding: 4px 0; }
+.uparts[open] > summary { margin-bottom: 12px; }
+.uparts .parts { margin-top: 12px; }
+.v3-phead h2 small { font-family: var(--f-body, inherit); font-stretch: 100%; font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 8px; }
+.v3-list li.ghost b small { font-weight: 400; color: var(--accent); }
 /* The toolbar over the 3D view (tool, view, spread, roof), and the brush bar or a hint at its foot */
 .v3-tools { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; pointer-events: none; }
 .v3-tools > *, .v3-right > * { pointer-events: auto; }
@@ -694,10 +712,9 @@ details.termfold[open] > summary { color: var(--ink); }
 
   <nav class="nav">
     <div class="tabs" role="tablist" aria-label="Sections">
-      <button role="tab" id="tab-unit" data-tab="unit">1 · Design a unit</button>
-      <button role="tab" id="tab-build" data-tab="build">2 · Build <span class="count" id="countBuild"></span></button>
-      <button role="tab" id="tab-print" data-tab="print">3 · Print <span class="count" id="countPrint"></span></button>
-      <button role="tab" id="tab-assemble" data-tab="assemble">4 · Assemble</button>
+      <button role="tab" id="tab-build" data-tab="build">1 · Design &amp; build <span class="count" id="countBuild"></span></button>
+      <button role="tab" id="tab-print" data-tab="print">2 · Print <span class="count" id="countPrint"></span></button>
+      <button role="tab" id="tab-assemble" data-tab="assemble">3 · Assemble</button>
     </div>
     <div class="printer" id="printerBox">
       <label for="printer">Printer</label>
@@ -719,6 +736,7 @@ details.termfold[open] > summary { color: var(--ink); }
   <div class="main" id="main">
     <aside class="panel config" id="config" aria-label="Unit configuration">
       <div id="editingBox"></div>
+      <div class="uadd" id="unitAdd"></div>
       <div class="field">
         <div class="lbl">Unit type</div>
         <div class="seg" id="type"></div>
@@ -745,7 +763,6 @@ details.termfold[open] > summary { color: var(--ink); }
     </aside>
 
     <section class="results">
-      <div class="view" id="view-unit"></div>
       <div class="view" id="view-build" hidden></div>
       <div class="view" id="view-print" hidden></div>
       <div class="view" id="view-assemble" hidden></div>
@@ -905,7 +922,8 @@ details.termfold[open] > summary { color: var(--ink); }
   let destChoice = null;                   // the Add destination the user picked in step 1 ('top:id', 'beside:id', 'new')
   let addTo = null;                         // tower id when the user came from a tower's "Add a unit" button
   const openTowers = new Set();             // tower cards opened when cards are folded (3+ towers)
-  let view = store.get('view', 'unit');
+  let view = store.get('view', 'build');
+  if (view === 'unit') view = 'build'; // designing a unit and building stacks are one step now
   let towers = store.get('towers', null);
   let seq = store.get('seq', 1);
   if (!towers) { // migrate the old flat build list: each unit becomes its own tower
@@ -1172,7 +1190,7 @@ details.termfold[open] > summary { color: var(--ink); }
     if (e) e.qty += n; else extras.push({ path, qty: n });
     saveExtras(); renderTabs();
     const q = extras.find(x => x.path === path).qty;
-    toast(`${niceName(path)}: ${q} in extra parts. Print it from step 3.`);
+    toast(`${niceName(path)}: ${q} in extra parts. Print it from step 2.`);
   }
 
   function computeBuild() {
@@ -1380,11 +1398,13 @@ details.termfold[open] > summary { color: var(--ink); }
   // The unit being set up in step 1, for "Only this unit" in the picker
   const editorUnit = v => ({ cfg: c, name: unitCode(c), save: () => {
     store.set('config', c);
-    if (v) v.units.forEach(x => { if (c.colors) x.cfg.colors = c.colors; else delete x.cfg.colors; }); // step 1's 3D view draws a copy of it
+    if (v && v.ghost) { if (c.colors) v.ghost.colors = c.colors; else delete v.ghost.colors; } // the 3D view draws a copy of it
   } });
-  function openViewer(path, menuOpen) {
+  let viewerInUnit = false;
+  // inUnit: opened from the unit being set up (its summary), whose colours can be its own
+  function openViewer(path, menuOpen, inUnit = viewerInUnit) {
     const l = viewMap.get(path); if (!l) return;
-    const inUnit = view === 'unit'; // step 1: the part is the unit's being set up, which can have its own colors
+    viewerInUnit = inUnit;
     $('viewerBody').innerHTML = `
       <div class="thumb lg" style="${spriteStyle(l.file)}" role="img" aria-label="${esc(l.label)}"></div>
       <div class="vinfo">
@@ -1408,8 +1428,8 @@ details.termfold[open] > summary { color: var(--ink); }
     if (menuOpen && $('viewerBody').querySelector('[data-fp-role]')) $('viewerBody').querySelector('[data-fp-role]').click();
   }
   document.addEventListener('click', e => {
-    const t = e.target.closest('[data-view]'); if (t) openViewer(t.dataset.view);
-    const sw = e.target.closest('[data-view-color]'); if (sw) openViewer(sw.dataset.viewColor, true);
+    const t = e.target.closest('[data-view]'); if (t) openViewer(t.dataset.view, false, !!t.closest('#unitSum'));
+    const sw = e.target.closest('[data-view-color]'); if (sw) openViewer(sw.dataset.viewColor, true, !!sw.closest('#unitSum'));
     const a = e.target.closest('[data-addextra]'); if (a) { addExtra(a.dataset.addextra, 1); if (view === 'build') renderBuild(); }
   });
   $('viewerClose').onclick = () => $('viewer').close ? $('viewer').close() : $('viewer').removeAttribute('open');
@@ -1593,8 +1613,8 @@ details.termfold[open] > summary { color: var(--ink); }
     if (editing) {
       const t = towers.find(t => t.id === editing.t);
       $('editingBox').innerHTML = `<div class="editing"><span>Editing level ${editing.l + 1} of <b>${esc(t ? t.name : '')}</b></span><span class="actions"><button class="btn primary" id="saveEdit">Save to stack</button><button class="btn" id="cancelEdit">Cancel</button></span></div>`;
-      $('saveEdit').onclick = () => { const t = towers.find(t => t.id === editing.t); if (t && t.levels[editing.l]) t.levels[editing.l][editing.u] = clean(c); save(); editing = null; view = 'build'; renderAll(); toast('Saved to ' + t.name); };
-      $('cancelEdit').onclick = () => { editing = null; view = 'build'; renderAll(); };
+      $('saveEdit').onclick = () => { const t = towers.find(t => t.id === editing.t); if (t && t.levels[editing.l]) t.levels[editing.l][editing.u] = clean(c); save(); editing = null; renderAll(); toast('Saved to ' + t.name); };
+      $('cancelEdit').onclick = () => { editing = null; renderAll(); };
     } else $('editingBox').innerHTML = '';
 
     seg($('type'), [{ v: 'drawer', label: 'Drawer', sub: 'pulls out the front' }, { v: 'case', label: 'Top-opening case', sub: '\u201csustainer\u201d in the files' }], c.type, v => set({ type: v }));
@@ -1747,7 +1767,7 @@ details.termfold[open] > summary { color: var(--ink); }
   // The first thing to do on step 1: open the Vault folder. A big card in the middle until it is open (or put off for
   // this visit); after that, step 1 keeps a one-line status.
   let folderHeroSkipped = false, folderHeroError = '';
-  const folderHeroShown = () => view === 'unit' && canMake && !vaultFolder && !folderHeroSkipped;
+  const folderHeroShown = () => view === 'build' && canMake && !vaultFolder && !folderHeroSkipped;
   const ICON_FOLDER = '<svg viewBox="0 0 48 40" width="56" height="46" aria-hidden="true"><path d="M3 7a4 4 0 0 1 4-4h11l5 5h18a4 4 0 0 1 4 4v21a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="currentColor" opacity=".18"/><path d="M3 13h42v20a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="currentColor"/></svg>';
   async function openFolder(fresh) {
     folderHeroError = '';
@@ -1798,13 +1818,16 @@ details.termfold[open] > summary { color: var(--ink); }
     if ('showDirectoryPicker' in window && !vaultFolder && !rememberedFolder)
       idb('readonly', st => st.get('folder')).then(h => { if (h && h.name && !vaultFolder) { rememberedFolder = h.name; redraw(); } }).catch(() => {});
   }
+  // The unit being set up, in step 1: what Add does (top of the settings column), and a summary on the page
+  // (its warnings and numbers, then its pictures, part list and hardware folded away). The 3D view shows it where Add
+  // would put it, see v3sync.
+  let unitPartsOpen = false;
   function renderUnit() {
-    v3park();
     const res = withSpares(computeUnit(c)), s = summary(res.lines);
     const ext = unitExt(c);
     const label = unitCode(c);
     const inferred = res.lines.filter(l => l.inferred);
-    const cd = currentDest(), defT = towers.find(t => t.id === addTo) || cd.t;
+    const cd = currentDest();
     const opt = (v, txt) => `<option value="${v}" ${cd.v === v ? 'selected' : ''}>${txt}</option>`;
     const dest = towers.map(t => opt('top:' + t.id, 'On top of ' + esc(t.name)) +
       (t.levels.length && t.levels[t.levels.length - 1].length === 1 ? opt('beside:' + t.id, 'Beside the top unit of ' + esc(t.name)) : '')).join('');
@@ -1813,56 +1836,47 @@ details.termfold[open] > summary { color: var(--ink); }
     const check = !cd.t || !cd.t.levels.length ? '' : prob
       ? `<div class="alert warn stackchk"><span><strong>${esc(prob)}</strong>${cd.v.startsWith('beside:') ? '' : ' Stacked units need the same width and depth.'}</span>${match ? `<button class="btn" id="matchIt">Match it: ${WNAME[match.w]} \u00d7 x${match.d}${match.h !== c.h ? ' \u00b7 ' + match.h + 'F' : ''}</button>` : ''}</div>`
       : `<div class="stackchk okline">${ICON_OK}Fits ${where}${esc(cd.t.name)}${cd.v === 'edit' ? ` (level ${editing.l + 1})` : ''}</div>`;
-    $('view-unit').innerHTML = `
-      ${towers.length ? '' : presetsBlock(false)}
-      ${v3panel()}
-      <div class="panel unit-head">
-        <div class="unit-title"><h2>${esc(label)}</h2><span class="ut-side"><span class="dims mono num">${ext.map(n => Math.round(n)).join(' \u00d7 ')} mm outside (W \u00d7 D \u00d7 H)</span></span></div>
-        ${heroStrip(res.lines)}
+    $('unitAdd').innerHTML = `<div class="uadd-title"><b>${esc(label)}</b><span class="dims mono num">${ext.map(n => Math.round(n)).join(' \u00d7 ')} mm</span></div>
+      ${editing ? '' : `<label for="addDest" class="uadd-l">Add to build</label>
+        <select id="addDest">${dest}${opt('new', 'As a new stack')}</select>
+        <div class="uadd-row"><span class="stepper" style="padding:4px 4px 4px 10px">\u00d7<div><button type="button" id="addLess" aria-label="Fewer">\u2212</button><output id="addN">1</output><button type="button" id="addMore" aria-label="More">+</button></div></span>
+          <button class="btn primary" id="addBuild">Add</button><button class="btn" id="copyList">Copy part list</button></div>`}
+      ${check}`;
+    const box = $('unitSum'); if (!box) return;
+    const warns = [fitAlert(s), ...res.notes.map(n => `<div class="alert warn">${esc(n)}</div>`),
+      inferred.length ? `<div class="alert warn"><span><strong>${plural(inferred.length, 'count')} here ${inferred.length > 1 ? 'are' : 'is'} inferred, not from the manual.</strong> They\u2019re marked <span class="badge inf">Inferred</span> in the part list with the reason. Check those in your slicer before printing a batch.</span></div>` : ''].join('');
+    box.innerHTML = `<div class="unit-title"><h2>${esc(label)}${editing ? ' <small>being edited</small>' : ''}</h2><span class="ut-side"><span class="dims mono num">${ext.map(n => Math.round(n)).join(' \u00d7 ')} mm outside (W \u00d7 D \u00d7 H)</span></span></div>
         <div id="unitFolder">${unitFolderBar(res.lines)}</div>
         ${statsBlock(s)}
-        ${fitAlert(s)}
-        ${res.notes.map(n => `<div class="alert warn">${esc(n)}</div>`).join('')}
-        ${inferred.length ? `<div class="alert warn"><span><strong>${plural(inferred.length, 'count')} here ${inferred.length > 1 ? 'are' : 'is'} inferred, not from the manual.</strong> They\u2019re marked <span class="badge inf">Inferred</span> below with the reason. Check those in your slicer before printing a batch.</span></div>` : ''}
-        ${!editing && addTo !== null && defT ? `<div class="alert ok addto"><span>Adding to <b>${esc(defT.name)}</b>. Set up the unit, then press <b>Add</b> to put it on top.</span><button class="btn" id="cancelAddTo">Back to step 2</button></div>` : ''}
-        ${check}
-        ${editing ? '' : `<div class="addrow">
-          <label for="addDest" class="pnote" style="margin:0">Add to build:</label>
-          <select id="addDest">${dest}${opt('new', 'As a new stack')}</select>
-          <span class="stepper" style="padding:4px 4px 4px 10px">\u00d7<div><button type="button" id="addLess" aria-label="Fewer">\u2212</button><output id="addN">1</output><button type="button" id="addMore" aria-label="More">+</button></div></span>
-          <button class="btn primary" id="addBuild">Add</button>
-          <button class="btn" id="copyList">Copy part list</button>
-        </div>`}
-      </div>
-      <div class="panel parts">
-        <div class="legend"><span style="padding-top:12px">Part list for one unit, roof included. ${HAS_PREVIEWS ? 'Click a picture to enlarge it. ' : ''}The square shows the part\u2019s footprint on your ${printer.v[0]} \u00d7 ${printer.v[1]} mm plate, front edge in bold.</span></div>
-        ${partRows(res.lines)}
-      </div>
-      ${hwTable(res.hardware)}`;
-    bindPresets($('view-unit'));
+        ${warns}
+        <details class="uparts" ${unitPartsOpen ? 'open' : ''}><summary>Pictures, part list and hardware of this unit</summary>
+          ${heroStrip(res.lines)}
+          <div class="parts">
+            <div class="legend"><span style="padding-top:12px">Part list for one unit, roof included. ${HAS_PREVIEWS ? 'Click a picture to enlarge it. ' : ''}The square shows the part\u2019s footprint on your ${printer.v[0]} \u00d7 ${printer.v[1]} mm plate, front edge in bold.</span></div>
+            ${partRows(res.lines)}
+          </div>
+          ${hwTable(res.hardware)}</details>`;
+    box.querySelector('.uparts').ontoggle = e => { unitPartsOpen = e.target.open; };
     bindUnitFolder(res.lines);
-    bindV3panel($('view-unit')); v3sync();
     if (!editing) {
       let n = 1;
-      $('addDest').onchange = () => { destChoice = $('addDest').value; renderControls(); renderUnit(); };
+      $('addDest').onchange = () => { destChoice = $('addDest').value; renderAll(); };
       $('addLess').onclick = () => { n = Math.max(1, n - 1); $('addN').textContent = n; };
       $('addMore').onclick = () => { n = Math.min(12, n + 1); $('addN').textContent = n; };
       $('addBuild').onclick = () => {
         const v = $('addDest').value, unit = () => clean(c);
         let t;
-        if (v === 'new') { t = { id: seq++, name: 'Stack ' + (towers.length + 1), levels: [], stack: { ...STACK_DEFAULT } }; towers.push(t); }
+        if (v === 'new') { t = { id: seq++, name: 'Stack ' + (towers.length + 1), levels: [], stack: { ...STACK_DEFAULT } }; towers.push(t); destChoice = 'top:' + t.id; }
         else t = towers.find(x => x.id === +v.split(':')[1]);
-        if (v.startsWith('beside:')) t.levels[t.levels.length - 1].push(unit());
+        if (v.startsWith('beside:')) { t.levels[t.levels.length - 1].push(unit()); destChoice = 'top:' + t.id; }
         else for (let i = 0; i < n; i++) t.levels.push([unit()]);
-        lastTower = t.id; store.set('lastTower', lastTower);
-        if (addTo !== null) { addTo = null; openTowers.add(t.id); save(); view = 'build'; renderAll(); scrollToTower(t.id); }
-        else { save(); renderControls(); renderUnit(); renderTabs(); }
+        lastTower = t.id; store.set('lastTower', lastTower); openTowers.add(t.id);
+        save(); renderAll();
         toast(`Added ${n > 1 && !v.startsWith('beside:') ? n + ' \u00d7 ' : ''}${label} to ${t.name}`);
       };
       $('copyList').onclick = () => copy(listText(res.lines, label), 'Part list copied');
     }
     if ($('matchIt')) $('matchIt').onclick = () => { const m = stackMatch(); if (m) { set(m); toast(`Changed to ${WNAME[m.w]} \u00d7 x${m.d} \u00b7 ${m.h}F`); } };
-    if ($('cancelAddTo')) $('cancelAddTo').onclick = () => { const id = addTo; addTo = null; view = 'build'; renderAll(); scrollToTower(id); };
   }
   function scrollToTower(id) {
     requestAnimationFrame(() => { const el = document.getElementById('tower-' + id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
@@ -2200,7 +2214,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const head = `<tr><th scope="col"><span class="sr">Parts</span></th>${P.map(p => `<th scope="col" title="${esc(p.name)}"><span class="cmap-h">${swatch(p.id)}${use.slot.get(p.id) || '–'}</span></th>`).join('')}</tr>`;
     const section = ([title, ids]) => `<tbody><tr class="cmap-sec"><th colspan="${P.length + 1}" scope="rowgroup">${title}</th></tr>${ids.map(id => {
       const r = ROLE_BY_ID.get(id), cur = colorFor(id, null), n = use.owned.get(id) || 0;
-      return `<tr><th scope="row"><span class="cmap-role"><span class="cmap-bar" style="background:${colorHex(cur)}"></span><span>${esc(r.label)}</span>${id === 'label' && labelsApart ? '<span class="cmap-note" title="Step 3 puts labels on a plate of their own, in a filament of their own">own plate</span>' : ''}${n ? `<span class="cmap-own" title="${plural(n, 'unit')} of your stacks ${n > 1 ? 'have' : 'has'} a color of ${n > 1 ? 'their' : 'its'} own here">${plural(n, 'unit')}</span>` : ''}</span></th>${P.map(p => cell(id, p, p.id === cur)).join('')}</tr>`;
+      return `<tr><th scope="row"><span class="cmap-role"><span class="cmap-bar" style="background:${colorHex(cur)}"></span><span>${esc(r.label)}</span>${id === 'label' && labelsApart ? '<span class="cmap-note" title="Step 2 puts labels on a plate of their own, in a filament of their own">own plate</span>' : ''}${n ? `<span class="cmap-own" title="${plural(n, 'unit')} of your stacks ${n > 1 ? 'have' : 'has'} a color of ${n > 1 ? 'their' : 'its'} own here">${plural(n, 'unit')}</span>` : ''}</span></th>${P.map(p => cell(id, p, p.id === cur)).join('')}</tr>`;
     }).join('')}${title === 'Other' ? `<tr><th scope="row"><span class="cmap-role"><span class="cmap-bar" style="background:${colorHex('tpu')}"></span><span>Tires</span></span></th><td colspan="${P.length}" class="cmap-fixed">TPU, slot 2</td></tr>` : ''}</tbody>`;
     // Two tables side by side when there is room: outside and inside, mechanics and the rest
     const table = groups => `<div class="cmap-box"><table class="cmap"><caption class="sr">Which filament each kind of part prints in</caption><thead>${head}</thead>${groups.map(section).join('')}</table></div>`;
@@ -2212,7 +2226,7 @@ details.termfold[open] > summary { color: var(--ink); }
         <button type="button" class="ctray-add" data-fp-add>${'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'}Add a filament</button></div>
       ${preset().bambu && P.some(p => /^PETG/.test(p.line || '')) ? '<p class="pp">PETG colors: the Bambu Studio project gives every color PLA settings. In Bambu Studio, set the PETG filaments to a PETG profile.</p>' : ''}
       <div class="cmap-wrap">${table(ROLE_GROUPS.slice(0, 2))}${table(ROLE_GROUPS.slice(2))}</div>
-      ${plateColors !== 'renders' ? `<p class="pp">Step 3 ${plateColors === 'size' ? 'splits plates by part size' : 'puts every part in one color'}, so plates and the Bambu Studio project don’t follow these colors (the 3D views do). Choose “Your colors” there to print in them.</p>`
+      ${plateColors !== 'renders' ? `<p class="pp">Step 2 ${plateColors === 'size' ? 'splits plates by part size' : 'puts every part in one color'}, so plates and the Bambu Studio project don’t follow these colors (the 3D views do). Choose “Your colors” there to print in them.</p>`
         : P.some(p => !use.slot.has(p.id)) ? '<p class="pp">A filament no part uses gets no slot in the Bambu Studio project.</p>' : ''}
     ${in3d ? '</div>' : '</details>'}`;
   }
@@ -2240,9 +2254,10 @@ details.termfold[open] > summary { color: var(--ink); }
   }
   function renderBuild() {
     v3park();
+    const unitSum = '<section class="panel unit-head" id="unitSum" aria-label="The unit being set up"></section>';
     if (!towers.length) {
-      $('view-build').innerHTML = `${presetsBlock(!extras.length)}${extrasPanel()}<div class="panel empty">No stacks yet. Pick a starting point above, or design a unit in step 1 and press <b>Add</b>.${stackExplainer()}</div>`;
-      bindPresets($('view-build')); bindExtras();
+      $('view-build').innerHTML = `${v3panel()}${unitSum}${presetsBlock(!extras.length)}${extrasPanel()}<div class="panel empty">No stacks yet. Pick a starting point above, or set up a unit on the left and press <b>Add</b>.${stackExplainer()}</div>`;
+      bindPresets($('view-build')); bindExtras(); renderUnit(); bindV3panel($('view-build')); v3sync();
       return;
     }
     const info = towers.map(t => { const a = analyzeTower(t); return { t, a, st: towerStats(t, a) }; });
@@ -2254,7 +2269,7 @@ details.termfold[open] > summary { color: var(--ink); }
       const fam = a.fam;
       const bad = a.issues.some(x => x.k === 'bad');
       const head = `<div class="tower-head"><input class="tname" value="${esc(t.name)}" data-rename="${t.id}" aria-label="Stack name">
-          <span class="actions"><button class="btn primary" data-addunit="${t.id}">+ Add a unit</button>${t.levels.length ? `<button class="btn" data-view3d="${t.id}" title="Show this stack in the 3D view">Show in 3D</button>` : ''}<button class="btn" data-dup-tower="${t.id}">Duplicate</button><button class="btn" data-del-tower="${t.id}">Remove stack</button>${fold ? `<button class="iconbtn foldbtn" data-fold="${t.id}" aria-label="Fold ${esc(t.name)}" title="Fold">\u2212</button>` : ''}</span></div>`;
+          <span class="actions"><button class="btn primary" data-addunit="${t.id}">+ Add a unit</button>${t.levels.length ? `<button class="btn" data-view3d="${t.id}" title="Show this stack in the 3D view, with the unit being set up on top">Show in 3D</button>` : ''}<button class="btn" data-dup-tower="${t.id}">Duplicate</button><button class="btn" data-del-tower="${t.id}">Remove stack</button>${fold ? `<button class="iconbtn foldbtn" data-fold="${t.id}" aria-label="Fold ${esc(t.name)}" title="Fold">\u2212</button>` : ''}</span></div>`;
       const open = fold ? `<details class="panel tower folded" id="tower-${t.id}" data-tower="${t.id}" ${openTowers.has(t.id) ? 'open' : ''}>
         <summary>${t.levels.length ? miniTower(t, a, fpx) : ''}<span class="ft-name"><b>${esc(t.name)}</b><small class="num">${t.levels.length ? `${plural(t.levels.length, 'level')} · ${Math.round(a.height)} mm · ${plural(st.plates, 'plate')} · ≈ ${gramsStr(st.g)}` : 'no units yet'}</small></span>${bad ? '<span class="tag bad">Won\u2019t stack</span>' : ''}</summary>` : `<div class="panel tower" id="tower-${t.id}" data-tower="${t.id}">`;
       return `${open}
@@ -2265,7 +2280,7 @@ details.termfold[open] > summary { color: var(--ink); }
             <div class="levels">${[...t.levels].map((L, i) => ({ L, i })).reverse().map(({ L, i }) => `<div class="level">
               <span class="n">${i + 1}</span>
               <div class="units">${L.map((u, ui) => `<div class="unit"><b>${esc(unitCode(u))}</b><small>${esc(optSummary(u, i === t.levels.length - 1))}</small>
-                <button class="iconbtn" data-edit="${t.id}:${i}:${ui}" title="Edit in step 1">Edit</button>${L.length > 1 ? `<button class="iconbtn" data-del-unit="${t.id}:${i}:${ui}" title="Remove this unit">\u2715</button>` : ''}</div>`).join('')}</div>
+                <button class="iconbtn" data-edit="${t.id}:${i}:${ui}" title="Edit it in the settings on the left">Edit</button>${L.length > 1 ? `<button class="iconbtn" data-del-unit="${t.id}:${i}:${ui}" title="Remove this unit">\u2715</button>` : ''}</div>`).join('')}</div>
               <div class="ctl">
                 <button class="iconbtn" data-move="${t.id}:${i}:1" ${i === t.levels.length - 1 ? 'disabled' : ''} aria-label="Move up">\u2191</button>
                 <button class="iconbtn" data-move="${t.id}:${i}:-1" ${i === 0 ? 'disabled' : ''} aria-label="Move down">\u2193</button>
@@ -2283,20 +2298,20 @@ details.termfold[open] > summary { color: var(--ink); }
           </div>
         </div>${fold ? '</details>' : '</div>'}`;
     }).join('');
-    $('view-build').innerHTML = `${overviewPanel(info)}${v3panel()}${colorsPanel()}${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
+    $('view-build').innerHTML = `${v3panel()}${unitSum}${overviewPanel(info)}${colorsPanel()}${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
       <div class="actions"><button class="btn" id="newTower">New empty stack</button><button class="btn primary" id="toPrint">Next: print plates \u2192</button></div>`;
     bindPresets($('view-build')); bindExtras(); bindColors($('view-build'), renderAll);
     const V = $('view-build'), find = id => towers.find(t => t.id === +id);
     V.querySelectorAll('[data-rename]').forEach(i => i.onchange = () => { find(i.dataset.rename).name = i.value.trim() || 'Stack'; save(); renderTabs(); });
     V.querySelectorAll('[data-del-tower]').forEach(b => b.onclick = () => { towers = towers.filter(t => t.id !== +b.dataset.delTower); save(); renderAll(); });
-    bindV3panel(V); v3sync();
-    V.querySelectorAll('[data-view3d]').forEach(b => b.onclick = () => { v3stack = +b.dataset.view3d; renderAll(); const p = V.querySelector('.v3-panel'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    renderUnit(); bindV3panel(V); v3sync();
+    V.querySelectorAll('[data-view3d]').forEach(b => b.onclick = () => { if (!editing) destChoice = 'top:' + b.dataset.view3d; renderAll(); const p = V.querySelector('.v3-panel'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     V.querySelectorAll('[data-dup-tower]').forEach(b => b.onclick = () => { const t = find(b.dataset.dupTower); towers.push({ ...JSON.parse(JSON.stringify(t)), id: seq++, name: t.name + ' copy' }); save(); renderAll(); });
     V.querySelectorAll('[data-move]').forEach(b => b.onclick = () => { const [tid, i, d] = b.dataset.move.split(':').map(Number); const L = find(tid).levels; [L[i], L[i + d]] = [L[i + d], L[i]]; save(); renderAll(); });
     V.querySelectorAll('[data-dup]').forEach(b => b.onclick = () => { const [tid, i] = b.dataset.dup.split(':').map(Number); const L = find(tid).levels; L.splice(i + 1, 0, JSON.parse(JSON.stringify(L[i]))); save(); renderAll(); });
     V.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { const [tid, i] = b.dataset.del.split(':').map(Number); find(tid).levels.splice(i, 1); save(); renderAll(); });
     V.querySelectorAll('[data-del-unit]').forEach(b => b.onclick = () => { const [tid, i, u] = b.dataset.delUnit.split(':').map(Number); find(tid).levels[i].splice(u, 1); save(); renderAll(); });
-    V.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const [tid, i, u] = b.dataset.edit.split(':').map(Number); c = clean(find(tid).levels[i][u]); editing = { t: tid, l: i, u }; view = 'unit'; renderAll(); window.scrollTo(0, 0); });
+    V.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const [tid, i, u] = b.dataset.edit.split(':').map(Number); c = clean(find(tid).levels[i][u]); editing = { t: tid, l: i, u }; renderAll(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
     towers.forEach(t => ['base', 'wheels', 'feet', 'casters', 'stationaryHandle', 'pullHandle'].forEach(k => { const el = $(`st-${k}-${t.id}`); if (el) el.onchange = () => { t.stack = { ...STACK_DEFAULT, ...t.stack, [k]: el.checked }; save(); renderAll(); }; }));
     const newTower = () => { const t = { id: seq++, name: 'Stack ' + (towers.length + 1), levels: [], stack: { ...STACK_DEFAULT } }; towers.push(t); lastTower = t.id; store.set('lastTower', lastTower); openTowers.clear(); openTowers.add(t.id); save(); renderAll(); scrollToTower(t.id); };
     $('newTower').onclick = newTower; $('ovNew').onclick = newTower;
@@ -2305,9 +2320,9 @@ details.termfold[open] > summary { color: var(--ink); }
     V.querySelectorAll('details.folded').forEach(d => d.ontoggle = () => { const id = +d.dataset.tower; d.open ? openTowers.add(id) : openTowers.delete(id); });
     V.querySelectorAll('[data-addunit]').forEach(b => b.onclick = () => {
       const t = find(b.dataset.addunit), top = t.levels[t.levels.length - 1];
-      addTo = t.id; editing = null;
+      destChoice = 'top:' + t.id; editing = null;
       if (top) { c = clean(top[0]); delete c.colors; } // start from the unit below so it stacks (its own colours stay its own)
-      view = 'unit'; renderAll(); window.scrollTo(0, 0);
+      store.set('config', c); renderAll(); window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     $('toPrint').onclick = () => { view = 'print'; renderAll(); window.scrollTo(0, 0); };
   }
@@ -2559,8 +2574,8 @@ details.termfold[open] > summary { color: var(--ink); }
 
   // Steps 3 and 4 with an empty build: say so, and offer to add the unit from step 1 only when asked
   function emptyStep(id, what) {
-    $(id).innerHTML = `<div class="panel empty"><p style="margin:0 0 12px"><strong>Nothing ${what} yet.</strong> Add units to your build first: pick a starting point in step 2, or design a unit in step 1 and press <b>Add</b>.</p>
-      <div class="actions"><button class="btn primary" data-empty-add>Add ${esc(unitCode(c))} to build</button><button class="btn" data-empty-go="build">Go to step 2</button></div></div>`;
+    $(id).innerHTML = `<div class="panel empty"><p style="margin:0 0 12px"><strong>Nothing ${what} yet.</strong> Add units to your build first: pick a starting point in step 1, or set up a unit there and press <b>Add</b>.</p>
+      <div class="actions"><button class="btn primary" data-empty-add>Add ${esc(unitCode(c))} to build</button><button class="btn" data-empty-go="build">Go to step 1</button></div></div>`;
     $(id).querySelector('[data-empty-add]').onclick = () => {
       const t = { id: seq++, name: 'Stack ' + (towers.length + 1), levels: [[clean(c)]], stack: { ...STACK_DEFAULT } };
       towers.push(t); lastTower = t.id; store.set('lastTower', lastTower); save(); renderAll();
@@ -2589,7 +2604,7 @@ details.termfold[open] > summary { color: var(--ink); }
       ${b.extras && towers.length ? `<div class="seg scope" role="group" aria-label="What to print">
         <button type="button" data-scope="all" aria-pressed="${!b.onlyExtras}">Whole build<small>stacks and extra parts</small></button>
         <button type="button" data-scope="extras" aria-pressed="${b.onlyExtras}">Only extra parts<small>${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button></div>` : ''}
-      ${b.towerIssues.length ? `<div class="alert bad"><strong>Some stacks won\u2019t fit together as designed.</strong><span>${b.towerIssues.map(esc).join(' ')} Fix them in step 2 before printing.</span></div>` : ''}
+      ${b.towerIssues.length ? `<div class="alert bad"><strong>Some stacks won\u2019t fit together as designed.</strong><span>${b.towerIssues.map(esc).join(' ')} Fix them in step 1 before printing.</span></div>` : ''}
       <div class="panel progress">
         <div class="unit-title"><h2>${pct}% printed</h2><span class="dims num">${plural(plates.length, 'plate')} left on the ${esc(printerName())}</span></div>
         <div class="bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
@@ -2602,7 +2617,7 @@ details.termfold[open] > summary { color: var(--ink); }
       <div class="panel">
         <div class="printopts" style="padding-top:14px">
           <div class="seg" role="group" aria-label="Plate colors">
-            <button type="button" data-colors="renders" aria-pressed="${plateColors === 'renders'}">${colorsCustom() ? 'Your colors<small>As chosen in step 2, Colors</small>' : 'Like the renders<small>Grey body, charcoal parts, orange accents</small>'}</button>
+            <button type="button" data-colors="renders" aria-pressed="${plateColors === 'renders'}">${colorsCustom() ? 'Your colors<small>As chosen in step 1, Colors</small>' : 'Like the renders<small>Grey body, charcoal parts, orange accents</small>'}</button>
             <button type="button" data-colors="size" aria-pressed="${plateColors === 'size'}">Big &amp; small<small>Shell in one color, small parts in another</small></button>
             <button type="button" data-colors="one" aria-pressed="${plateColors === 'one'}">One color<small>Fewest plates</small></button>
           </div>
@@ -2618,7 +2633,7 @@ details.termfold[open] > summary { color: var(--ink); }
         ${pl.care ? `<div class="alert ${pl.items[0].diag || pl.items[0].asis ? 'ok' : 'warn'}" style="font-size:13px">${pl.items[0].asis ? 'Kept at the angle USSA exported it, where it just fits this bed. Check it in the slicer before printing.' : pl.items[0].diag ? 'Too long to lie straight, so it\u2019s placed diagonally, the way USSA exported it.' : 'Lay this part on a different face than exported to fit; check supports.'}</div>` : ''}
         <div class="pitems">${pl.lines.map((x, i) => `<div class="pitem">${thumb(x.l, 'sm')}<span class="q">${x.count}\u00d7</span><span class="lbl"><b>${i + 1}</b> \u00b7 ${esc(x.l.label)}${x.l.walls ? ` <span class="tag wall">${x.l.walls} walls${x.l.infill ? ' \u00b7 ' + x.l.infill + '%' : ''}</span>` : ''}<small class="mono">${esc(fileName(x.l.file.path))}</small></span></div>`).join('')}</div>
         <div class="actions"><button class="btn primary" data-plate="${pl.n}">Printed</button></div>
-      </div>`).join('')}</div>` : `<div class="panel empty">${total ? 'Everything is printed. Head to step 4 to assemble.' : 'Nothing to print yet.'}</div>`}
+      </div>`).join('')}</div>` : `<div class="panel empty">${total ? 'Everything is printed. Head to step 3 to assemble.' : 'Nothing to print yet.'}</div>`}
       ${printedLines.length ? `<details class="panel fold"><summary>Already printed <small>${plural(done, 'part')}</small></summary>
         <div class="donelist">${printedLines.map(l => `<div class="doneitem"><span>${esc(l.label)}${isExtra(l) ? ' <span class="tag">extra</span>' : ''} <small class="mono" style="color:var(--muted)">${esc(fileName(l.file.path))}</small></span><span class="num">${Math.min(printed[pkey(l)], l.total)} / ${l.total}</span><button class="iconbtn" data-unprint="${esc(pkey(l))}" aria-label="Take one back">\u22121</button></div>`).join('')}
         <div class="actions" style="padding-top:8px"><button class="btn" id="resetPrinted">Reset all progress</button></div></div></details>` : ''}
@@ -3064,7 +3079,7 @@ details.termfold[open] > summary { color: var(--ink); }
   // Turn (a click selects a part), Paint (a click gives the brush colour to that kind of part, in every unit or in the
   // clicked unit only) and Drawers (a click opens or closes a drawer). Views from the front, at three quarters and
   // from the side; units can be spread apart and the roof hidden. Opened from step 1 it shows the unit being set up
-  // (v.global: its colours are that unit's, `c`), drawers out and the brush in hand; from step 2, a whole stack.
+  // The unit being set up (`c`) is drawn from a copy, `v.ghost`, where Add would put it (see v3sync).
   let v3 = null; // the open view: { t, T, renderer, scene, camera, controls, units: [...], token, tool, brush, ... }
   const v3status = msg => { $('v3dStatus').textContent = msg; };
   const V3_VIEWS = [['front', 'Front', [0, 0.16, 1]], ['3q', '¾', [0.55, 0.42, 1]], ['side', 'Side', [1, 0.22, 0.02]]];
@@ -3073,6 +3088,7 @@ details.termfold[open] > summary { color: var(--ink); }
   // kept for the page's life; each model (a unit, a stack) gets its own scene, and the tools and the camera's
   // direction carry over from one to the next (v3ui).
   let v3gl = null, v3want = null;
+  let v3preview = store.get('v3preview', true); // show the unit being set up in the stack, where Add would put it
   const v3ui = { tool: null, pscope: 'project', brush: null, explode: false, hideRoof: false, view: '3q', dir: null };
   async function open3d(t, mode = {}) {
     const want = v3want = {};
@@ -3097,20 +3113,27 @@ details.termfold[open] > summary { color: var(--ink); }
     const grid = new T.GridHelper(Math.ceil(size * 2.4 / 100) * 100, Math.ceil(size * 2.4 / 100) * 2, 0x9a9e9b, 0xc4c7c3);
     grid.position.set(0, 0, -lay.depth / 2); grid.material.transparent = true; grid.material.opacity = 0.5; scene.add(grid);
     const camera = new T.PerspectiveCamera(32, 1, 5, size * 60);
-    const out = mode.global ? Math.max(0, ...lay.units.map(u => u.drawer ? Math.round(u.d * 0.6) : 0)) : 0; // drawers open from the start
+    const out = 0;
+    // The unit being set up, drawn where Add would put it: see-through while it isn't in the stack yet
+    const ghost = mode.ghost || null, seeThrough = ghost && mode.preview && t.levels.flat().some(u => u !== ghost);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.maxPolarAngle = Math.PI * 0.55;
     // Materials by colour; a highlighted copy for what a click would paint
     const hiCol = new T.Color(css.getPropertyValue('--accent').trim() || '#d9622b');
     const mats = new Map(), mat = (role, cfg, hi) => {
-      const hex = colorHex(colorFor(role, cfg)), k = hex + (hi ? '*' : '');
+      const hex = colorHex(colorFor(role, cfg)), see = !!(seeThrough && cfg === ghost), k = hex + (hi ? '*' : '') + (see ? '~' : '');
       // Highlighted: tinted halfway to the accent colour and lit from within a little, so it shows on white and on black
-      if (!mats.has(k)) { const m = new T.MeshStandardMaterial({ color: hi ? new T.Color(hex).lerp(hiCol, 0.5) : hex, roughness: 0.72, metalness: 0 }); if (hi) { m.emissive = hiCol; m.emissiveIntensity = 0.18; } mats.set(k, m); }
+      if (!mats.has(k)) {
+        const m = new T.MeshStandardMaterial({ color: hi ? new T.Color(hex).lerp(hiCol, 0.5) : hex, roughness: 0.72, metalness: 0 });
+        if (hi) { m.emissive = hiCol; m.emissiveIntensity = 0.18; }
+        if (see) { m.transparent = true; m.opacity = 0.45; }
+        mats.set(k, m);
+      }
       return mats.get(k);
     };
     const painted = (geo, role, cfg) => Object.assign(new T.Mesh(geo, mat(role, cfg)), { userData: { role, cfg } });
-    const v = v3 = { t, global: !!mode.global, key: mode.key, cfgs: mode.cfgs || [], ac: new AbortController(), extras: [], T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {},
-      tool: v3ui.tool || (mode.global ? 'paint' : 'turn'), pscope: v3ui.pscope, brush: v3ui.brush, sel: null, hot: null, explode: v3ui.explode, hideRoof: v3ui.hideRoof, view: v3ui.view };
+    const v = v3 = { t, ghost, canPreview: !!mode.canPreview, label: mode.label || t.name, key: mode.key, cfgs: mode.cfgs || [], ac: new AbortController(), extras: [], T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {},
+      tool: v3ui.tool || 'turn', pscope: v3ui.pscope, brush: v3ui.brush, sel: null, hot: null, explode: v3ui.explode, hideRoof: v3ui.hideRoof, view: v3ui.view };
     const sig = { signal: v.ac.signal };
     const render = () => renderer.render(scene, camera);
     v.render = render;
@@ -3146,8 +3169,7 @@ details.termfold[open] > summary { color: var(--ink); }
       shell.position.set(0, u.h / 2, -u.d / 2); boxes.add(shell);
       const front = u.drawer ? painted(new T.BoxGeometry(u.w - 8, u.h - 8, 4), 'facade', u.cfg) : null;
       if (front) { front.position.set(0, u.h / 2, 2); drawer.add(front); }
-      v.units.push({ ...u, g, drawer, boxes, front, place: placeParts(u), travel: u.drawer ? Math.round(u.d * 0.6) : 0, open: !!(mode.global && u.drawer) });
-      if (mode.global && u.drawer) drawer.position.z = Math.round(u.d * 0.6);
+      v.units.push({ ...u, g, drawer, boxes, front, place: placeParts(u), travel: u.drawer ? Math.round(u.d * 0.6) : 0, open: false, ghost: !!ghost && u.cfg === ghost });
     }
     // Spread units apart (each level lifted a little more) and hide the roofs
     v.arrange = () => {
@@ -3226,7 +3248,7 @@ details.termfold[open] > summary { color: var(--ink); }
   // The colour settings a part's own colour goes in, as the picker wants it. In step 1's view that is the unit being
   // set up (`c`); in a stack, the unit the part belongs to (a roof's parts are its unit's).
   function v3owner(v, cfg) {
-    if (v.global) return editorUnit(v);
+    if (v.ghost && cfg === v.ghost) return editorUnit(v);
     const u = v.units.find(x => x.cfg === cfg && !x.roof) || v.units.find(x => x.cfg === cfg);
     return { cfg, name: u ? u.name : 'unit', save };
   }
@@ -3244,7 +3266,7 @@ details.termfold[open] > summary { color: var(--ink); }
       const drop = k => { if (k && k.colors && k.colors[role]) { const x = { ...k.colors }; delete x[role]; if (Object.keys(x).length) k.colors = x; else delete k.colors; } };
       towers.forEach(t => t.levels.forEach(lv => lv.forEach(drop))); drop(c);
       save(); store.set('config', c);
-      if (v.global) editorUnit(v).save();
+      if (v.ghost) editorUnit(v).save();
     }
     saveColors();
     v3refresh(v);
@@ -3259,6 +3281,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const roof = v.units.some(u => u.roof);
     $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool">${seg([['turn', 'Turn'], ['paint', 'Paint'], ['drawers', 'Drawers']], v.tool, 'data-v3tool')}</div>
       <div class="v3-right"><div class="v3-seg" role="group" aria-label="View">${seg(V3_VIEWS.map(x => [x[0], x[1]]), v.view, 'data-v3view')}</div>
+        ${v.canPreview ? `<button type="button" class="v3-tog" data-v3preview aria-pressed="${v3preview}" title="Show the unit you’re setting up where Add would put it, or the stack as it is">Preview</button>` : ''}
         ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}">Spread units</button>` : ''}
         ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}">Hide roof</button>` : ''}</div>`;
     const B = $('v3dBrush');
@@ -3278,6 +3301,7 @@ details.termfold[open] > summary { color: var(--ink); }
     on('[data-v3view]', b => { v.view = b.dataset.v3view; v.aim(V3_VIEWS.find(x => x[0] === v.view)[2]); v3tools(); });
     on('[data-v3tog]', b => { v[b.dataset.v3tog] = !v[b.dataset.v3tog]; v.arrange(); v3tools(); v3side(); });
     on('[data-v3brush]', b => { v.brush = b.dataset.v3brush; v3tools(); });
+    on('[data-v3preview]', () => { v3preview = !v3preview; store.set('v3preview', v3preview); v3sync(); });
     on('[data-v3scope]', b => { v.pscope = b.dataset.v3scope; v3tools(); });
     // More…: the filament picker in a panel above the brush bar; what it adds becomes the brush
     document.querySelectorAll('.v3-morepop').forEach(x => x.remove());
@@ -3316,7 +3340,7 @@ details.termfold[open] > summary { color: var(--ink); }
   // The project's colours (tray and map), at the foot of the side column
   function v3colors() {
     const v = v3, box = $('v3dColors'); if (!v) return;
-    if (view === 'build' && !$('v3d').open) { box.replaceChildren(); return; } // step 2 has it on the page
+    if (view === 'build' && !$('v3d').open) { box.replaceChildren(); return; } // step 1 has it on the page
     box.innerHTML = colorsPanel(true);
     bindColors(box, () => v3refresh(v));
   }
@@ -3335,7 +3359,7 @@ details.termfold[open] > summary { color: var(--ink); }
       const sw = roles.map(r => { const k = cfgOf(r), cur = colorFor(r, k), own = k && k.colors && paletteOf(k.colors[r]);
         return `<button type="button" class="v3-rsw${own ? ' own' : ''}" style="background:${colorHex(cur)}" data-v3pick="${ui}|${r}" title="${esc(ROLE_BY_ID.get(r).label)}: ${esc(colorName(cur))}${own ? ' (this unit only)' : ''}" aria-label="${esc(ROLE_BY_ID.get(r).label)}: ${esc(colorName(cur))}${own ? ', this unit only' : ''}"></button>`; }).join('');
       const un = u.place && u.place.unplaced.length ? `<small class="v3-miss">Not placed yet: ${esc(u.place.unplaced.join(', '))}</small>` : '';
-      return `<li class="${v.sel && v.sel.u === u ? 'on' : ''}"><div class="v3-uhead"><b>${esc(u.name)}</b><span class="v3-st ${cls}">${esc(st)}</span></div>
+      return `<li class="${v.sel && v.sel.u === u ? 'on' : ''}${u.ghost ? ' ghost' : ''}"><div class="v3-uhead"><b>${esc(u.name)}${u.ghost ? ` <small>${editing ? 'being edited' : 'not added yet'}</small>` : ''}</b><span class="v3-st ${cls}">${esc(st)}</span></div>
         ${u.loading && n ? `<div class="v3-bar"><span style="width:${Math.round(100 * (u.loaded || 0) / n)}%"></span></div>` : ''}
         <div class="v3-roles">${sw}</div>${un}</li>`;
     }).join('');
@@ -3416,7 +3440,6 @@ details.termfold[open] > summary { color: var(--ink); }
   }
   // Put the view where it belongs and show the right model: step 1's unit, or the chosen stack of step 2. Called after
   // every page render; a change of colour only repaints, a change of the unit or stack builds the model again.
-  let v3stack = null; // the stack step 2 shows
   const noColors = x => JSON.stringify(x, (k, val) => k === 'colors' ? undefined : val);
   function v3sync() {
     const page = $('view-' + view), slot = page && !page.hidden ? page.querySelector('.v3-slot') : null, box = $('v3view'), big = $('v3d').open;
@@ -3424,19 +3447,25 @@ details.termfold[open] > summary { color: var(--ink); }
       if (!slot) { $('v3home').append(box); v3want = null; return; }
       if (box.parentNode !== slot) slot.append(box);
     }
-    let t, mode;
-    if (view === 'unit') {
-      t = { id: 'unit', name: unitCode(c), levels: [[clean(c)]], stack: { ...STACK_DEFAULT } };
-      mode = { global: true, key: 'unit|' + noColors(clean(c)) };
-    } else {
-      const tw = towers.find(x => x.id === v3stack && x.levels.length) || towers.find(x => x.id === lastTower && x.levels.length) || towers.find(x => x.levels.length);
-      if (!tw) return;
-      v3stack = tw.id; t = tw;
-      mode = { key: `stack|${tw.id}|${tw.name}|${noColors(tw.levels)}|${JSON.stringify(tw.stack)}`, cfgs: tw.levels.flat() };
-    }
+    // The stack Add would go to, with the unit being set up in its place: on top, beside the top unit, or instead of
+    // the unit being edited; alone when it would start a new stack
+    const cd = currentDest(), tw = cd.t, real = !!(tw && tw.levels.length);
+    // Preview off: the stack as it is (with the unit being edited as saved); a stack with nothing in it yet always
+    // shows the unit being set up
+    const ghost = v3preview || !real ? clean(c) : null;
+    let levels, label;
+    if (!ghost) { levels = tw.levels; label = `${tw.name}, as it is`; }
+    else if (cd.v === 'edit' && tw) { levels = tw.levels.map((lv, i) => lv.map((u, j) => i === editing.l && j === editing.u ? ghost : u)); label = `${tw.name}, level ${editing.l + 1} being edited`; }
+    else if (cd.v.startsWith('beside:') && tw) { levels = tw.levels.map((lv, i) => i === tw.levels.length - 1 ? [...lv, ghost] : lv); label = `${tw.name}, with ${unitCode(c)} beside its top unit (not added yet)`; }
+    else if (tw && tw.levels.length) { levels = [...tw.levels, [ghost]]; label = `${tw.name}, with ${unitCode(c)} on top (not added yet)`; }
+    else { levels = [[ghost]]; label = `${unitCode(c)}, ${tw ? 'the first unit of ' + tw.name : 'a new stack'} (not added yet)`; }
+    const t = { id: tw ? tw.id : 'new', name: tw ? tw.name : unitCode(c), levels, stack: tw ? tw.stack : { ...STACK_DEFAULT } };
+    const mode = { ghost, preview: cd.v !== 'edit', canPreview: real, label, cfgs: tw ? tw.levels.flat() : [],
+      key: `${cd.v}|${tw ? `${tw.name}|${noColors(tw.levels)}|${JSON.stringify(tw.stack)}` : ''}|${ghost ? noColors(ghost) : 'as it is'}` };
     const v = v3;
-    if (v && v.key === mode.key && (!mode.cfgs || (mode.cfgs.length === v.cfgs.length && mode.cfgs.every((x, i) => x === v.cfgs[i])))) {
-      if (v.global) v.units.forEach(x => { if (c.colors) x.cfg.colors = c.colors; else delete x.cfg.colors; }); // step 1's unit is drawn from a copy
+    const head = page && page.querySelector('.v3-phead small'); if (head) head.textContent = label;
+    if (v && v.key === mode.key && mode.cfgs.length === v.cfgs.length && mode.cfgs.every((x, i) => x === v.cfgs[i])) {
+      if (v.ghost) { if (c.colors) v.ghost.colors = c.colors; else delete v.ghost.colors; } // the unit being set up is drawn from a copy
       if (vaultFolder && v.folder !== vaultFolder) loadParts(v); // the folder was chosen since
       v.recolor(); v3tools(); v3side();
       return;
@@ -3446,15 +3475,11 @@ details.termfold[open] > summary { color: var(--ink); }
   }
   // The panel the view sits in, in steps 1 and 2: a heading, the stack to show (step 2) and Enlarge
   function v3panel() {
-    if (view === 'build' && !towers.some(t => t.levels.length)) return '';
-    const list = towers.filter(t => t.levels.length), cur = list.find(t => t.id === v3stack) || list.find(t => t.id === lastTower) || list[0];
-    return `<section class="panel v3-panel" aria-label="3D view"><div class="v3-phead"><h2>3D</h2>
-      ${view === 'build' && list.length > 1 ? `<label class="v3-pick">Stack <select data-v3stack>${list.map(t => `<option value="${t.id}" ${t === cur ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select></label>` : ''}
+    return `<section class="panel v3-panel" aria-label="3D view"><div class="v3-phead"><h2>3D <small></small></h2>
       <button type="button" class="btn" data-v3big>Enlarge</button></div><div class="v3-slot"></div></section>`;
   }
-  // (steps 1 and 2 each have this panel; only the shown step's holds the view)
+  // (only the shown step's panel holds the view)
   function bindV3panel(root) {
-    const sel = root.querySelector('[data-v3stack]'); if (sel) sel.onchange = () => { v3stack = +sel.value; v3sync(); };
     const big = root.querySelector('[data-v3big]'); if (big) big.onclick = v3enlarge;
   }
   // Before steps 1 and 2 redraw, the view steps out of the way, so the redraw doesn't take it with the old page
@@ -3886,12 +3911,12 @@ details.termfold[open] > summary { color: var(--ink); }
 
   // ---------- tabs ----------
   function renderTabs() {
-    ['unit', 'build', 'print', 'assemble'].forEach(v => {
+    ['build', 'print', 'assemble'].forEach(v => {
       $('tab-' + v).setAttribute('aria-selected', String(view === v));
       $('view-' + v).hidden = view !== v;
     });
-    $('config').hidden = view !== 'unit';
-    $('main').classList.toggle('single', view !== 'unit');
+    $('config').hidden = view !== 'build';
+    $('main').classList.toggle('single', view !== 'build');
     const units = towers.reduce((a, t) => a + t.levels.reduce((x, l) => x + l.length, 0), 0);
     const nx = extras.reduce((a, e) => a + e.qty, 0);
     $('countBuild').textContent = units + nx ? `(${units + nx})` : '';
@@ -3906,10 +3931,10 @@ details.termfold[open] > summary { color: var(--ink); }
   function renderAll() {
     renderFolderHero();
     renderPrinter();
-    if (view === 'unit') renderControls();
+    if (view === 'build') renderControls();
     renderTabs();
-    ({ unit: renderUnit, build: renderBuild, print: renderPrint, assemble: renderAssemble })[view]();
-    if (view !== 'unit' && view !== 'build') v3sync(); // steps 1 and 2 put the view back themselves
+    ({ build: renderBuild, print: renderPrint, assemble: renderAssemble })[view]();
+    if (view !== 'build') v3sync(); // step 1 puts the view back itself
   }
 
   $('footnote').innerHTML = `Part rules come from the four PDF manuals in the Vault download and USSA\u2019s published component counts; anything worked out beyond them is marked <span class="badge inf">Inferred</span>. Sizes are measured from each STL (${FILES.length} files)${HAS_PREVIEWS ? ' and pictures are rendered from them' : ''}. Filament is a rough figure from part volume at standard settings, calibrated against USSA\u2019s own gram estimates. Progress and stacks are saved in this browser only.${window.VAULT_PUBLIC ? ' Free and open source, provided as is, with no support.' : ''}`;

@@ -13,7 +13,7 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
 
 ## Hard rules
 - The page is **one HTML file** (`index.html`) built from `src/` and runs entirely in the browser. It has no external
-  scripts today. Load three.js (or similar) **only when the 3D view is shown** (steps 1 and 2 show it), as a dynamic
+  scripts today. Load three.js (or similar) **only when the 3D view is shown** (step 1 shows it), as a dynamic
   import from a pinned CDN version, and keep the rest of the page working without it.
 - **Never commit USSA geometry**: no STL (original or decimated), no `.blend`, no renders of the parts. Vault's
   files are commercial and the page must keep reading them from the user's own folder only. Numbers derived from
@@ -38,25 +38,28 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
     `R.exterior` uses 51.5 / 99.5 / 195.5 (USSA's figures): within 0.5 mm, pick one and say so.
 - 3D view (section "3D stack view" in `src/template.html`): three.js 0.186.1 and meshoptimizer 1.3.0 from jsDelivr,
   loaded when the view is first shown; boxes before the folder is picked, then real parts simplified in workers
-  (0.15 mm, cached in IndexedDB). Always on in steps 1 and 2: `v3panel()` puts a panel in each (step 1 at the top of
-  the right column, step 2 under the overview, with a stack menu; a stack card's "Show in 3D" picks it), and
-  `v3sync()` (end of `renderUnit` / `renderBuild` / `renderAll`) moves the one persistent `#v3view` into the shown
-  step's `.v3-slot`, rebuilding the model only when the unit or stack changes (`v.key`, colours left out) and just
-  repainting otherwise. `v3park()` takes the view out before those steps redraw with `innerHTML` (else it goes with
-  the old page and `getElementById` stops finding it). One WebGL renderer (`v3gl`) for the page's life; `close3d`
+  (0.15 mm, cached in IndexedDB). Always on in step 1: `v3panel()` at the top of the page, and `v3sync()` (end of
+  `renderBuild`, and `renderAll` for the other steps) moves the one persistent `#v3view` into the shown step's
+  `.v3-slot`, or parks it. It shows the stack Add would go to (`currentDest()`, set by the Add menu, a stack's
+  "+ Add a unit" or "Show in 3D") with the unit being set up drawn from a copy of `c` (`v.ghost`) where Add would put
+  it: on top, beside the top unit, alone for a new stack (see-through while not added), or instead of the unit being
+  edited. The "Preview" toggle (`v3preview`, saved) shows the stack as it is instead. The model is rebuilt only when
+  the stack or the unit changes (`v.key`, colours left out), and just repainted otherwise. `v3park()` takes the view
+  out before step 1 redraws with `innerHTML` (else it goes with the old page and `getElementById` stops finding it). One WebGL renderer (`v3gl`) for the page's life; `close3d`
   drops a model's scene; `v3ui` carries tools and camera direction over. "Enlarge" (`v3enlarge`) moves the view into
   the `#v3d` dialog; closing it puts it back.
-  One view since step 3 of `docs/colors-3d-redesign.md` (`open3d`; `v.global` = opened from step 1, the unit `c`):
+  One view since step 3 of `docs/colors-3d-redesign.md` (`open3d`):
   toolbar `v3tools` (Turn: a click selects; Paint: brush bar with the tray's colours, "More…" adds one, "Same part
   everywhere" / "This unit only", hover tints what a click would paint via `v.hot`; Drawers: a click opens or closes a
   drawer), views Front / ¾ / Side (`v.aim`), "Spread units" and "Hide roof" (`v.arrange`). Side column `v3side`:
   "Selected" card (`v3sel`, "Change color…" opens the picker, "Back to the project color"), units top to bottom
-  (`v3list`: progress, role swatches ringed when the unit has its own), then the Colors panel. `v3paint` writes the
-  colour; `v3owner` says whose `cfg.colors` a part's own colour goes in (a roof's parts are its unit's).
+  (`v3list`: progress, role swatches ringed when the unit has its own, "not added yet"), then the Colors panel when
+  enlarged. `v3paint` writes the colour; `v3owner` says whose `cfg.colors` a part's own colour goes in (the ghost's
+  go to `c` via `editorUnit`; a roof's parts are its unit's).
   Checked in Chrome: L7 4F + 2F + 1F + grid roof, 16.4M → 151k triangles. `build.py` embeds `window.VAULT_PLACEMENTS`.
 - Colours: `R.ROLES` / `roleOf` (rules.js) give every part a colour role whose default is its old `colorOf` colour
   (`validate.js` checks), so a build with no choices plans exactly as before. Palette + role choices in
-  `colorPrefs` (localStorage `vpp.colors`, panel "Colors" in step 2); per-unit choices in the unit's own `cfg.colors`
+  `colorPrefs` (localStorage `vpp.colors`, panel "Colors" in step 1); per-unit choices in the unit's own `cfg.colors`
   (edited in the 3D view's side list). `paintLines` recolours lines; a non-default colour gets its own line key
   (`path#colour`), so plates and progress keep it apart. The Bambu project gets one filament per plate colour
   (slot 1, TPU in 2, others from 3). Bambu Studio counts filaments by `filament_colour` and refuses a project
@@ -69,7 +72,7 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   settings in the Bambu project.
 - Choosing colours: one filament picker everywhere (`filamentPicker`, step 1 of `docs/colors-3d-redesign.md`): header
   (role, where it was opened), "Whole project" / "Only this <unit>" when a unit is known (writes `colorPrefs.roles` or
-  the unit's `cfg.colors`; step 1's unit is `c`, via `editorUnit`), your tray, Bambu Lab's colours (search, line
+  the unit's `cfg.colors`; the unit being set up is `c`, via `editorUnit`), your tray, Bambu Lab's colours (search, line
   filters, grid by shade), and a footer button "Use it" / "Add as slot N" (a new colour joins the palette only then).
   `fpButton` + `bindPickers` show a role's colour as a button that opens it: in place inside dialogs, as a popover
   elsewhere. Used by the part preview and the 3D view's "Selected" card; with `role: null` it only adds to the tray
@@ -78,11 +81,15 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   and use, TPU fixed in slot 2; "Start from" presets (`applyColorPreset`: USSA render = the old reset, Two-tone, One
   color); a colour map of roles × tray colours (`ROLE_GROUPS`), tagged "N units" when units have their own colour.
   Slots come from `trayUse()`: one per colour in use, in tray order (1, then 3…), like `buildProject`; labels on their
-  own plate (`labelsApart`) don't count. With step 3's plates by size or in one colour, the panel says the plates
+  own plate (`labelsApart`) don't count. With step 2's (Print) plates by size or in one colour, the panel says the plates
   don't follow it.
-- Step 1's 3D shows the unit being set up, drawers out, Paint tool first. Step 1's tiles (shell, box, front,
-  key lock, roof; case: body, front, lid, hinge) each carry a colour square that opens the preview with the picker
-  open. Opening the Vault folder is step 1's first thing: a big card in the middle (`renderFolderHero`, "Not now"
+- Tabs: 1 · Design & build (`view` 'build'; the old 'unit' step merged into it, a saved 'unit' opens it), 2 · Print,
+  3 · Assemble. Step 1 = the settings column (`#config`) with the Add block at its top (`#unitAdd`, by `renderUnit`),
+  then on the page: 3D, the unit's summary (`#unitSum`: folder, numbers, warnings; pictures, part list and hardware
+  folded), then the stacks' overview, Colors, starting points, extra parts and the stacks. Editing a stack's unit or
+  "+ Add a unit" stay on step 1 and scroll up. The summary's tiles (shell, box, front, key lock, roof; case: body,
+  front, lid, hinge) each carry a colour square that opens the preview with the picker open (unit scope there, via
+  `viewerInUnit`). Opening the Vault folder is step 1's first thing: a big card in the middle (`renderFolderHero`, "Not now"
   hides it for the visit), then a one-line status (`unitFolderBar`).
   The old `mech` role was split into `runners`, `lock`, `hinge` (saved choices are carried over on load).
 - Checked: `tools/placements/blender_check_placements.py` rebuilt an L7 4F + 2F + 1F + grid roof tower from the
