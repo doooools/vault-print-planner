@@ -1,6 +1,6 @@
 # Vault Print Planner
 
-An unofficial, fan-made planner for [Vault by USSA](https://www.ussadesign.com/products/vault), the 3D-printable modular storage system.
+An unofficial, independent planner for [Vault by USSA](https://www.ussadesign.com/products/vault), the 3D-printable modular storage system.
 
 Pick a unit and the planner tells you exactly which STL files to print and how many. You can stack units on top of each other and check every part against your printer's bed. It packs the parts onto plates and makes a Bambu Studio project with one plate per tab.
 
@@ -31,7 +31,7 @@ Your files are read on your own computer and never uploaded. Your stacks and pro
 
 ## No support
 
-I built this for my own Vault build and am sharing it as is. I don't plan to maintain it, answer questions or take feature requests. If something's wrong or you want it to work differently, fork it and change it; it's all here.
+I built this for my own Vault build and am sharing it as is. I fix things when people point them out, but there's no schedule or support promise. If something's wrong or you want it to work differently, fork it and change it; it's all here.
 
 If it saved you some time, you can [buy me a coffee](https://ko-fi.com/E8R32A64D1).
 

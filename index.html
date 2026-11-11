@@ -87,7 +87,7 @@ dialog#news h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stret
 }
 @media (max-width: 640px) {
   .hside { justify-items: stretch; }
-  .hbtns { display: grid; grid-template-columns: 1fr 1fr; }
+  .hbtns { display: grid; grid-template-columns: minmax(0, 1fr); }
   .hbtn .lg { display: none; }
 }
 .printer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 12px; }
@@ -237,10 +237,13 @@ pre.code { margin: 0; background: var(--sheet-2); border-radius: 8px; padding: 1
 .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); transform: translateX(-50%); background: var(--ink); color: var(--sheet); padding: 8px 14px; border-radius: 8px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
 .toast.show { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
-footer.site { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 18px 40px; border-top: 1px solid var(--line); margin-top: 24px; padding: 22px 0 8px; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+footer.site { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto; gap: 18px 40px; border-top: 1px solid var(--line); margin-top: 24px; padding: 22px 0 8px; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
 footer.site h2 { margin: 0 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--ink); }
 footer.site p { margin: 0; max-width: 75ch; text-wrap: pretty; }
 footer.site a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+footer.site a.hbtn { color: var(--ink); text-decoration: none; }
+.pitch { margin: 0; max-width: 46ch; font-size: 13px; line-height: 1.45; color: var(--muted); text-align: right; text-wrap: pretty; }
+@media (max-width: 860px) { .pitch { text-align: left; } }
 @media (max-width: 760px) { footer.site { grid-template-columns: minmax(0, 1fr); } }
 /* ---- v3: tabs as top-level navigation, towers, plates, guide ---- */
 .nav { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
@@ -493,9 +496,9 @@ details.termfold[open] > summary { color: var(--ink); }
       <p>Because “Hidden Key Part 2 (Turn on Supports)” shouldn’t be a riddle.</p>
     </div>
     <div class="hside">
-      <p class="byline">An unofficial fan project by Romy · <button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog">What’s new</button></p>
+      <p class="byline">An unofficial companion tool by Romy ❤️</p>
+      <p class="pitch">Free with no ads and your files stay local · <button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog">What’s new</button></p>
       <div class="hbtns">
-        <a class="hbtn yt" href="https://youtu.be/kaqDeQVAulc" target="_blank" rel="noopener"><svg viewBox="0 0 24 17" width="20" height="14" aria-hidden="true"><rect width="24" height="17" rx="4" fill="#ff0033"/><path d="M9.6 4.6v7.8l6.4-3.9z" fill="#fff"/></svg><span><span class="lg">Watch on </span>YouTube</span></a>
         <a class="hbtn kofi" href="https://ko-fi.com/E8R32A64D1" target="_blank" rel="noopener"><img src="https://storage.ko-fi.com/cdn/cup-border.png" alt=""><span>Support<span class="lg"> me</span> on Ko-fi</span></a>
       </div>
     </div>
@@ -563,11 +566,15 @@ details.termfold[open] > summary { color: var(--ink); }
   <footer class="site">
     <section>
       <h2>Not affiliated with USSA</h2>
-      <p>An unofficial, fan-made planner. <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault</a>, its designs and its files belong to USSA; you need your own copy of the files to print anything.</p>
+      <p>An unofficial, independent planner. <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault</a>, its designs and its files belong to USSA; you need your own copy of the files to print anything.</p>
     </section>
     <section>
       <h2>Where the numbers come from</h2>
       <p class="fnotes" id="footnote"></p>
+    </section>
+    <section>
+      <h2>See it in action</h2>
+      <p><a class="hbtn yt" href="https://youtu.be/kaqDeQVAulc" target="_blank" rel="noopener"><svg viewBox="0 0 24 17" width="20" height="14" aria-hidden="true"><rect width="24" height="17" rx="4" fill="#ff0033"/><path d="M9.6 4.6v7.8l6.4-3.9z" fill="#fff"/></svg><span>Watch on YouTube</span></a></p>
     </section>
   </footer>
 </div>
