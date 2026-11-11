@@ -409,8 +409,7 @@ def roof_sml(w, d, kind, ref_mod=None):
     if not n and ref_mod:
         n = latches(r, ref_mod[0], ref_mod[1], cx, yf, zb, depth=146.1 + 42 * (d - 3))
         r.notes.append("no latch frame read under the roof: latches set from the module's frames")
-    ey, ez = extents(rel, rr)[1:]
-    yc, top = yf + 0.06 - ey / 2, zb - 8.6 + ez
+    yc = yf + 0.06 - extents(rel, rr)[1] / 2
     if kind in ("heavy", "heavycut"):
         # A bar from one pocket of the middle slot's walls to the other: the pockets are 156 mm apart, the bar
         # 156.5 long. Its axis is 59.8 mm above the roof's bottom: the middle of the pockets, which run from 44.7 to
@@ -425,11 +424,89 @@ def roof_sml(w, d, kind, ref_mod=None):
             r.part(f"Insert_{i}", U + "Heawyweight Roof Insert.stl", "roof", "module", [0, 0, rz],
                    {"x": ["center", cx + sx * 68.414], "y": ["center", yc - sx * 27.056], "z": ["center", zb - 8.6 + 59.8 - 0.25]})
     if kind == "grid":
-        # option "top handle": lying on the grid, in the middle, long side across (manual p. 18)
-        r.part("TopHandle", U + "Top Handle (Turn On Supports).stl", "roof", "module", [90, 0, 90],
-               {"x": ["center", cx], "y": ["center", yc], "z": ["min", top]})
+        top_handle(r, rel, rr, (cx, yf + 0.06, zb - 8.6))
     r.notes.append(f"{n} latch(es)")
     return {**r.json("Roof")}
+
+
+# The grid roof's optional top handle (manual p. 18 "Required Hardware - Drawers"): a loop that stands on the grid,
+# long side across, its hole running front to back. Its bottom has two notches that take the grid's two pegs at
+# x = +-21, and two 6 mm channels that run up and out at 45 deg to its ends; each continues into a 45 deg hole
+# through the grid under it, and an M6 x 50 countersunk bolt goes up from under the roof through both. (It was set
+# lying flat, which hid all of this.) Measured on every grid roof: the holes are at x = +-22.4 in the middle of
+# the roof's depth, except S3 and M3 (10 mm further back); the handle comes down onto the ribs, its pegs inside
+# the notches, which leaves its channels 0.4 to 0.7 mm off the axes of the roof's holes (hardware.py measures it).
+HANDLE = U + "Top Handle (Turn On Supports).stl"
+HANDLE_ROT = [-180.0, 90.0, 0.0]   # CAD Euler of the file, standing
+
+
+def grid_holes_z(t):
+    """z (unit frame) of the middle of the two 45 deg bolt holes under a grid roof's top handle, from the posed
+    roof's triangles: rays across each hole's axis (x + y = -13.86 on the left, mirrored on the right)."""
+    import hw_geom as hg
+    zs = []
+    for side in (-1, 1):
+        cen = t.mean(1)
+        sub = t[(np.abs(cen[:, 0] - side * 22) < 14) & (cen[:, 1] < 17)]
+        n = np.array([1, -side, 0.0]) / np.sqrt(2)
+        for z in np.arange(t[..., 2].min() + 5, t[..., 2].max() - 5, 0.25):
+            o = np.array([side * 22.43, 8.57, z]) - n * 15
+            hs = [(s - 15, f) for s, f in hg.ray_hits(sub, o, n) if abs(s - 15) < 8]
+            if any(a[1] > 0 and b[1] < 0 and a[0] < 0.5 and b[0] > -0.5 and 5 < b[0] - a[0] < 7 for a, b in zip(hs, hs[1:])):
+                zs.append(z)
+    if not zs:
+        return None
+    return float(np.mean(zs))
+
+
+def _crop(t, lo, hi):
+    c = t.mean(1)
+    return t[np.all((c > np.asarray(lo) - 3) & (c < np.asarray(hi) + 3), axis=1)]
+
+
+def top_handle(r, rel, rr, origin):
+    """The handle's feet sit between two of the grid's cross ribs, which leaves it one depth only: it is put where it
+    comes down furthest (searched 2.5 mm around the holes, 0.1 mm steps), then down onto the ribs."""
+    key = f"handle3|{rel}|{rr}"
+    if key not in FEAT:
+        t = F.posed_fbc(rel, rr)                       # roof in the unit frame (front-bottom-centre at 0)
+        hz = grid_holes_z(t)
+        R = vg.C @ vg.from_euler_xyz(HANDLE_ROT)
+        h = vg.read_stl(os.path.join(F.ROOT, HANDLE))
+        P = h.reshape(-1, 3)
+        c = (P.min(0) + P.max(0)) / 2
+        q = (h - c) @ R.T
+        Q = q.reshape(-1, 3)
+        y0 = t[..., 1].max() - Q[:, 1].min()           # handle bottom level with the roof's highest point
+        z0 = hz if hz is not None else (t[..., 2].min() + t[..., 2].max()) / 2
+        st, ext = 0.1, 2.5
+        hlo, hhi = Q.min(0), Q.max(0)
+        qb = _crop(q, [hlo[0], hlo[1], hlo[2]], [hhi[0], hlo[1] + 8, hhi[2]])
+        Dh = vg.depthmap(qb, 1, -1, st, [hlo[0], hlo[1], hlo[2]], [hhi[0], hlo[1] + 8, hhi[2]])[0] + y0
+        rlo = [hlo[0], -5, z0 + hlo[2] - ext]
+        rhi = [hhi[0], t[..., 1].max() + 1, z0 + hhi[2] + ext]
+        Dr = vg.depthmap(_crop(t, rlo, rhi), 1, +1, st, rlo, rhi)[0]
+        nz, nx = Dh.shape
+        best = None
+        for k in range(Dr.shape[0] - nz + 1):
+            g = Dh - Dr[k:k + nz, :nx]
+            if np.isnan(g).all():
+                continue
+            dmin = float(np.nanmin(g))
+            if best is None or dmin > best[0] + 1e-9:
+                best = (dmin, [k])
+            elif abs(dmin - best[0]) < 0.02:
+                best[1].append(k)
+        drop, ks = best
+        zc = float(z0 - ext + st * np.mean(ks))
+        FEAT[key] = {"holes_z": hz, "centre": [0.0, float(y0 - drop), zc], "drop": round(drop, 3), "src": [float(v) for v in c]}
+        json.dump(FEAT, open(FEAT_PATH, "w", encoding="utf-8"), ensure_ascii=False)
+    f = FEAT[key]
+    if f["holes_z"] is None:
+        r.notes.append("top handle: no bolt holes found in the grid")
+    r.placed("TopHandle", HANDLE, "roof", "module", vg.C @ vg.from_euler_xyz(HANDLE_ROT), f["src"], f["centre"], origin=origin)
+    r.notes.append(f"top handle standing between the cross ribs at z {f['centre'][2]:.2f} (grid holes at "
+                   f"{f['holes_z'] and round(f['holes_z'], 2)}), {f['drop']:.2f} mm down onto the ribs")
 
 
 def drawer_xl2(d):

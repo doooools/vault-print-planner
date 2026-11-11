@@ -2919,7 +2919,11 @@ details.termfold[open] > summary { color: var(--ink); }
     const parts = pl.parts.filter(([p]) => has.has(R.norm(p)) && !NOT_DRAWN.test(p)).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, piece: o && o.piece, joint: o && o.joint, role: l.role, cfg: l.cfg }; });
     const placed = new Set(pl.parts.map(([p]) => R.norm(p)));
     const unplaced = unit.lines.filter(l => !placed.has(R.norm(l.file.path))).map(l => l.label + (l.qty > 1 ? ' ×' + l.qty : ''));
-    return { parts, unplaced };
+    // Its bolts (tools/placements/hardware.py): each is held by a part (`part`, an index in `parts`) and is drawn with
+    // it, so a variant that isn't in the list (another lock, no top handle) takes its bolts away too
+    const bolts = (pl.hardware || []).filter(([, , , o]) => { const p = pl.parts[o.part]; return p && has.has(R.norm(p[0])) && !NOT_DRAWN.test(p[0]); })
+      .map(([spec, group, m, o]) => { const q = pl.parts[o.part]; return { spec, group, m, path: q[0], joint: q[4] && q[4].joint, cfg: has.get(R.norm(q[0])).cfg }; });
+    return { parts, unplaced, bolts };
   }
 
   // Read an STL, weld identical corners, drop triangles with no area (some exports carry 100k+ of them, which wreck a
@@ -3050,6 +3054,54 @@ details.termfold[open] > summary { color: var(--ink); }
     }
     return { P, N };
   }
+  // ---------- hardware ----------
+  // Bolts aren't in the Vault download: the page makes them from their standard sizes (PLACE.sizes, written by
+  // tools/placements/hardware.py: ISO 7380 button, ISO 10642 countersunk and ISO 4762 socket heads, ISO 4017 hex
+  // heads, ISO 4032 nuts), without threads, with a simplified hex key hole. A bolt's own frame: +Y from its tip to its
+  // head, the origin on its axis where the head bears (the top of a countersunk head), the shank from y = 0 to
+  // y = -length. They are bought, not printed, so their colour is only the view's: a metal finish, kept apart from
+  // the filament colours (colorPrefs.hardware).
+  const HW_STEEL = '#b4b9be', HW_FINISHES = [['#b4b9be', 'Steel'], ['#2b2d30', 'Black'], ['#c8a04c', 'Brass']];
+  const hwColor = () => colorPrefs.hardware || HW_STEEL;
+  const hwName = hex => (HW_FINISHES.find(f => f[0] === hex) || [0, 'your own color'])[1];
+  const hwLabel = spec => spec.replace(/^(M\d+)x([\d.]+) (\w+)$/, '$1 × $2 mm $3 head').replace(/ (rod|nut) head$/, ' $1');
+  function hwSpec(spec) {
+    const m = /^(M(\d+))(?:x([\d.]+))? (\w+)$/.exec(spec); if (!m) return null;
+    const sz = m[4] === 'rod' ? { d: +m[2] } : PLACE.sizes && PLACE.sizes[m[4]] && PLACE.sizes[m[4]][m[1]];
+    return sz ? { ...sz, L: +(m[3] || 0), kind: m[4] } : null;
+  }
+  // The outline turned about the bolt's axis, tip to top: [radius, y] rings, [radius, y, true] for a hexagon (radius =
+  // half its width across flats)
+  function hwProfile(s) {
+    const rs = s.d / 2, L = s.L, R = s.dk / 2, c = Math.min(0.4, rs * 0.2), tip = [[0, -L], [rs - c, -L], [rs, -L + c]];
+    const key = y => [[s.s * 0.6, y], [s.s / 2, y, true], [s.s / 2, y - s.t, true], [0, y - s.t - s.s * 0.25]];
+    if (s.kind === 'button') {
+      const dome = [];
+      for (let j = 0; j < 6; j++) { const a = j / 6 * Math.PI / 2; dome.push([s.s * 0.6 + (R - s.s * 0.6) * Math.cos(a), s.k * (0.18 + 0.82 * Math.sin(a))]); }
+      return [...tip, [rs, 0], [R, 0], ...dome, ...key(s.k)];
+    }
+    if (s.kind === 'countersunk') return [...tip, [rs, -(R - rs)], [R, 0], ...key(0)];
+    if (s.kind === 'socket') return [...tip, [rs, 0], [R, 0], [R, s.k - 0.08 * s.dk], [R - 0.08 * s.dk, s.k], ...key(s.k)];
+    if (s.kind === 'hex') return [...tip, [rs, 0], [R, 0, true], [R, s.k, true], [0, s.k]];
+    if (s.kind === 'nut') return [[rs, 0], [R, 0, true], [R, s.k, true], [rs, s.k], [rs, 0]];
+    if (s.kind === 'rod') return [[0, -L], [rs, -L], [rs, 0], [0, 0]];
+    return null;
+  }
+  // A surface of revolution about +Y from its rings, 24 segments a turn (so a hexagon's corners are ring vertices)
+  function hwRevolve(prof) {
+    const n = 24, pos = new Float32Array(prof.length * n * 3), idx = [];
+    prof.forEach(([r, y, hex], k) => {
+      for (let i = 0; i < n; i++) {
+        const a = 2 * Math.PI * i / n, rr = hex ? r / Math.cos((a + Math.PI / 6) % (Math.PI / 3) - Math.PI / 6) : r;
+        pos.set([rr * Math.cos(a), y, -rr * Math.sin(a)], (k * n + i) * 3);
+      }
+    });
+    for (let k = 0; k + 1 < prof.length; k++) for (let i = 0; i < n; i++) {
+      const a = k * n + i, b = k * n + (i + 1) % n;
+      idx.push(a, b, b + n, a, b + n, a + n);
+    }
+    return { pos, idx: new Uint32Array(idx) };
+  }
   // Up to two workers run meshJob, let go once idle so their memory goes with them. A job holds a whole file plus the
   // simplifier's copy, all inside this tab, so big files go one at a time (about 300 MB of STL in flight at most), and
   // a job that never answers (a worker out of memory) gives up after three minutes. If module workers can't load the
@@ -3127,6 +3179,7 @@ details.termfold[open] > summary { color: var(--ink); }
   // kept for the page's life; each model (a unit, a stack) gets its own scene, and the tools and the camera's
   // direction carry over from one to the next (v3ui).
   let v3gl = null, v3want = null;
+  let v3hw = store.get('v3hardware', true); // show the bolts
   let v3preview = store.get('v3preview', true); // show the unit being set up in the stack, where Add would put it
   const v3ui = { tool: null, pscope: 'project', brush: null, explode: false, hideRoof: false, view: '3q', dir: null };
   async function open3d(t, mode = {}) {
@@ -3160,10 +3213,10 @@ details.termfold[open] > summary { color: var(--ink); }
     // Materials by colour; a highlighted copy for what a click would paint
     const hiCol = new T.Color(css.getPropertyValue('--accent').trim() || '#d9622b');
     const mats = new Map(), mat = (role, cfg, hi) => {
-      const hex = colorHex(colorFor(role, cfg)), see = !!(seeThrough && cfg === ghost), k = hex + (hi ? '*' : '') + (see ? '~' : '');
+      const hw = role === 'hardware', hex = hw ? hwColor() : colorHex(colorFor(role, cfg)), see = !!(seeThrough && cfg === ghost), k = (hw ? 'hw' : '') + hex + (hi ? '*' : '') + (see ? '~' : '');
       // Highlighted: tinted halfway to the accent colour and lit from within a little, so it shows on white and on black
       if (!mats.has(k)) {
-        const m = new T.MeshStandardMaterial({ color: hi ? new T.Color(hex).lerp(hiCol, 0.5) : hex, roughness: 0.72, metalness: 0 });
+        const m = new T.MeshStandardMaterial({ color: hi ? new T.Color(hex).lerp(hiCol, 0.5) : hex, roughness: hw ? 0.4 : 0.72, metalness: hw ? 0.5 : 0 });
         if (hi) { m.emissive = hiCol; m.emissiveIntensity = 0.18; }
         if (see) { m.transparent = true; m.opacity = 0.45; }
         mats.set(k, m);
@@ -3172,7 +3225,17 @@ details.termfold[open] > summary { color: var(--ink); }
     };
     const painted = (geo, role, cfg) => Object.assign(new T.Mesh(geo, mat(role, cfg)), { userData: { role, cfg } });
     const v = v3 = { t, ghost, canPreview: !!mode.canPreview, label: mode.label || t.name, key: mode.key, cfgs: mode.cfgs || [], ac: new AbortController(), extras: [], T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {},
-      tool: v3ui.tool || 'turn', pscope: v3ui.pscope, brush: v3ui.brush, sel: null, hot: null, explode: v3ui.explode, hideRoof: v3ui.hideRoof, view: v3ui.view };
+      tool: v3ui.tool || 'turn', pscope: v3ui.pscope, brush: v3ui.brush, sel: null, hot: null, explode: v3ui.explode, hideRoof: v3ui.hideRoof, view: v3ui.view, hwGeo: new Map() };
+    // A bolt's shape, made once per size for this model
+    v.hwGeom = spec => {
+      if (!v.hwGeo.has(spec)) {
+        const s = hwSpec(spec), p = s && hwProfile(s);
+        let g = null;
+        if (p) { const { pos, idx } = hwRevolve(p), { P, N } = creased(pos, idx); g = new T.BufferGeometry(); g.setAttribute('position', new T.BufferAttribute(P, 3)); g.setAttribute('normal', new T.BufferAttribute(N, 3)); }
+        v.hwGeo.set(spec, g);
+      }
+      return v.hwGeo.get(spec);
+    };
     const sig = { signal: v.ac.signal };
     const render = () => renderer.render(scene, camera);
     v.render = render;
@@ -3311,7 +3374,7 @@ details.termfold[open] > summary { color: var(--ink); }
   // the clicked unit only
   function v3paint(v, mesh) {
     const { role, cfg } = mesh.userData;
-    if (!ROLE_BY_ID.has(role)) { toast('Tires print in TPU.'); return; }
+    if (!ROLE_BY_ID.has(role)) { toast(role === 'hardware' ? 'Bolts aren\u2019t printed. Click one with Turn to change their color.' : 'Tires print in TPU.'); return; }
     const id = v.brush;
     if (v.pscope === 'unit' && cfg) {
       const o = v3owner(v, cfg);
@@ -3338,7 +3401,8 @@ details.termfold[open] > summary { color: var(--ink); }
       <div class="v3-right"><div class="v3-seg" role="group" aria-label="View">${seg(V3_VIEWS.map(x => [x[0], x[1]]), v.view, 'data-v3view')}</div>
         ${v.canPreview ? `<button type="button" class="v3-tog" data-v3preview aria-pressed="${v3preview}" title="Show the unit you’re setting up where Add would put it, or the stack as it is">Preview</button>` : ''}
         ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}">Spread units</button>` : ''}
-        ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}">Hide roof</button>` : ''}</div>`;
+        ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}">Hide roof</button>` : ''}
+        ${v.units.some(u => u.place && u.place.bolts.length) ? `<button type="button" class="v3-tog" data-v3hw aria-pressed="${v3hw}" title="Show or hide the bolts (bought hardware, drawn from their standard sizes)">Bolts</button>` : ''}</div>`;
     const B = $('v3dBrush');
     if (v.tool === 'paint') {
       B.hidden = false; B.className = 'v3-brush';
@@ -3359,6 +3423,12 @@ details.termfold[open] > summary { color: var(--ink); }
     on('[data-v3brush]', b => { v.brush = b.dataset.v3brush; v3tools(); });
     on('[data-v3preview]', () => { v3preview = !v3preview; store.set('v3preview', v3preview); v3sync(); });
     on('[data-v3scope]', b => { v.pscope = b.dataset.v3scope; v3tools(); });
+    on('[data-v3hw]', () => {
+      v3hw = !v3hw; store.set('v3hardware', v3hw);
+      v.scene.traverse(o => { if (o.userData.hw) o.visible = v3hw; });
+      if (!v3hw && v.sel && v.sel.role === 'hardware') v.sel = null;
+      v.render(); v3tools(); v3side();
+    });
     on('[data-v3allcolors]', () => v3showColors());
     // More…: the filament picker in a panel above the brush bar; what it adds becomes the brush
     document.querySelectorAll('.v3-morepop').forEach(x => x.remove());
@@ -3384,6 +3454,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const v = v3, box = $('v3dSel'); if (!v) return;
     const s = v.sel;
     if (!s) { box.innerHTML = `<div class="v3-card"><div class="v3-sec">Selected</div><p class="pnote">${v.tool === 'paint' ? 'Pick a brush, then click a part: every part the click would paint lights up first.' : 'Click a part to see its color here.'}</p></div>`; return; }
+    if (s.role === 'hardware') { v3selHw(v, box, s); return; }
     const r = ROLE_BY_ID.get(s.role), name = s.u ? s.u.name : s.name || 'Stack';
     if (!r) { box.innerHTML = `<div class="v3-card"><div class="v3-sec">Selected</div><div class="v3-selrow">${swatch('tpu')}<div><b>Tires</b><small>TPU, slot 2</small></div></div></div>`; return; }
     const cur = colorFor(s.role, s.cfg), own = s.cfg && s.cfg.colors && paletteOf(s.cfg.colors[s.role]);
@@ -3401,6 +3472,18 @@ details.termfold[open] > summary { color: var(--ink); }
       owner.save(); v3refresh(v);
     };
   }
+  // A bolt: what it is, and the bolts' colour (every bolt: they are bought, so it is only the view's)
+  function v3selHw(v, box, s) {
+    const cur = hwColor();
+    box.innerHTML = `<div class="v3-card"><div class="v3-sec">Selected</div>
+      <div class="v3-selrow"><span class="v3-selsw" style="background:${cur}"></span><div><b>${esc(s.name || 'Bolt')}${s.u ? ` \u00b7 ${esc(s.u.name)}` : ''}</b>
+        <small>Bought, not printed. Bolts: ${esc(hwName(cur))}, in this view only.</small></div></div>
+      <div class="v3-selact">${HW_FINISHES.map(([hex, n]) => `<button type="button" class="btn" data-v3hwc="${hex}" aria-pressed="${cur === hex}">${n}</button>`).join('')}
+        <label class="btn" style="position:relative">Other\u2026<input type="color" data-v3hwx value="${cur}" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer"></label></div></div>`;
+    const set = hex => { if (hex === HW_STEEL) delete colorPrefs.hardware; else colorPrefs.hardware = hex; saveColors(); v.recolor(); v3selHw(v, box, s); };
+    box.querySelectorAll('[data-v3hwc]').forEach(b => b.onclick = () => set(b.dataset.v3hwc));
+    box.querySelector('[data-v3hwx]').onchange = e => set(e.target.value);
+  }
   // The project's colours (tray and map), at the foot of the side column
   function v3colors() {
     const v = v3, box = $('v3dColors'); if (!v) return;
@@ -3417,7 +3500,7 @@ details.termfold[open] > summary { color: var(--ink); }
       const n = u.place ? u.place.parts.length : 0;
       const [st, cls] = !u.place ? ['Box: not measured yet', 'box']
         : u.loading ? [`Loading parts… ${u.loaded || 0} of ${n}`, 'wait']
-        : u.loaded || u.failed ? [`${plural(u.loaded, 'part')}${u.failed ? `, ${u.failed} couldn’t be shown` : ''}`, u.failed ? 'box' : 'ok'] : [`Box until the folder is chosen`, 'wait'];
+        : u.loaded || u.failed ? [`${plural(u.loaded, 'part')}${u.bolts ? ` and ${plural(u.bolts, 'bolt')}` : ''}${u.failed ? `, ${u.failed} couldn’t be shown` : ''}`, u.failed ? 'box' : 'ok'] : [`Box until the folder is chosen`, 'wait'];
       const roles = [...new Set(u.lines.map(l => l.role).concat(u.roof ? ['roof'] : []))].filter(r => ROLE_BY_ID.has(r));
       const cfgOf = r => { const l = u.lines.find(x => x.role === r); return l ? l.cfg : u.cfg; };
       const sw = roles.map(r => { const k = cfgOf(r), cur = colorFor(r, k), own = k && k.colors && paletteOf(k.colors[r]);
@@ -3456,7 +3539,7 @@ details.termfold[open] > summary { color: var(--ink); }
     let done = 0, tris = 0, src = 0;
     const say = () => v3status(`Reading and simplifying part files: ${done} of ${paths.length}… The big ones take a while the first time; after that this browser keeps them.`);
     todo.forEach(u => {
-      u.loading = true; u.loaded = 0; u.failed = 0;
+      u.loading = true; u.loaded = 0; u.failed = 0; u.bolts = 0;
       if (u.parts) u.g.remove(u.parts); // parts from a folder chosen before
       u.parts = new T.Group(); u.g.add(u.parts);
       u.drawer.clear(); if (u.front) u.drawer.add(u.front); u.boxes.visible = true;
@@ -3489,6 +3572,20 @@ details.termfold[open] > summary { color: var(--ink); }
         const at = p.group === 'drawer' ? u.drawer : p.group === 'lid' && u.lid ? u.lid.userData.inner : u.parts;
         (p.joint && v3joint(T, u, p.joint, at) || at).add(mesh);
         u.loaded++;
+      }
+      // The bolts this file's parts hold, in the same group (they slide out with a drawer front, turn with a lid) and
+      // on the same joint as their part (a latch lever's bolts swing with it)
+      for (const u of todo) for (const b of u.place.bolts) {
+        if (b.path !== path) continue;
+        const g = v.hwGeom(b.spec); if (!g) continue;
+        const mesh = v.painted(g, 'hardware', b.cfg), m = b.m;
+        Object.assign(mesh.userData, { name: hwLabel(b.spec), hw: true });
+        mesh.visible = v3hw;
+        mesh.matrixAutoUpdate = false;
+        mesh.matrix.set(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], 0, 0, 0, 1);
+        const at = b.group === 'drawer' ? u.drawer : b.group === 'lid' && u.lid ? u.lid.userData.inner : u.parts;
+        (b.joint && v3joint(T, u, b.joint, at) || at).add(mesh);
+        u.bolts++;
       }
       todo.forEach(v3pose);
     };

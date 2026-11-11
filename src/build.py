@@ -66,7 +66,11 @@ catalog += "window.PRINTER_BEDS=" + json.dumps([[b, m, int(w), int(d), int(h)] f
 pf = here / "stl-placements.json"
 if pf.exists():
     pl = json.loads(pf.read_text(encoding="utf-8"))
-    catalog += "window.VAULT_PLACEMENTS=" + json.dumps({"stack": {k: pl["stack"][k] for k in ("first", "per_level")}, "units": {k: {"parts": u["parts"], **({"hinge": {x: u["hinge"][x] for x in ("origin", "axis", "open_deg")}} if "hinge" in u else {}), **({"motion": u["motion"]} if "motion" in u else {})} for k, u in pl["units"].items()}}, ensure_ascii=False, separators=(",", ":")) + ";"
+    # hardware: the unit's bolts ([spec, group, m, {part}], drawn from the standard sizes in hardware_sizes, see
+    # tools/placements/hardware.py); only what the page draws them with is kept
+    sizes = {k: v for k, v in pl.get("hardware_sizes", {}).items() if k != "note"}
+    hw = lambda u: {"hardware": [[b[0], b[1], b[2], {"part": b[3]["part"]}] for b in u["hardware"]]} if u.get("hardware") else {}
+    catalog += "window.VAULT_PLACEMENTS=" + json.dumps({"stack": {k: pl["stack"][k] for k in ("first", "per_level")}, **({"sizes": sizes} if sizes else {}), "units": {k: {"parts": u["parts"], **({"hinge": {x: u["hinge"][x] for x in ("origin", "axis", "open_deg")}} if "hinge" in u else {}), **({"motion": u["motion"]} if "motion" in u else {}), **hw(u)} for k, u in pl["units"].items()}}, ensure_ascii=False, separators=(",", ":")) + ";"
 # Bambu Lab's PLA and PETG colours (src/bambu-colors.tsv, from tools/bambu_colors.py): line, code, name, hex
 bc = here / "bambu-colors.tsv"
 if bc.exists():

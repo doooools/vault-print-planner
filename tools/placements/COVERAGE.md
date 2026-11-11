@@ -107,6 +107,83 @@ part whose place was not measured in this pass; the units that list it can still
 | Gridfinity baseplate, part 2 | 2 | option, not measured | case baseplates: not placed yet |
 | Gridfinity baseplate, part 1 | 2 | option, not measured | XL baseplates are printed tilted and were not placed yet |
 | Gridfinity baseplate, part 2 | 2 | option, not measured | XL baseplates are printed tilted and were not placed yet |
+## Hardware (bolts)
+
+`hardware.py` finds, on every assembled unit, the holes each kind of bolt goes in and writes `hardware` into
+the placements; the page draws the bolts from their standard sizes (no USSA geometry). Counts per unit, the
+same on every depth of a family (one row per family and height):
+
+| Unit | Bolts placed per unit |
+|---|---|
+| `case|L|*|1` (5) | 5 x M4 x 20 button, case front to body, 8 x M4 x 10 button, hinge leaves to body, 8 x M4 x 14 button, hinge tops to lid, 8 x M4 x 14 button, lock holders to front |
+| `case|L|*|2` (5) | 5 x M4 x 20 button, case front to body, 8 x M4 x 10 button, hinge leaves to body, 8 x M4 x 14 button, hinge tops to lid, 8 x M4 x 14 button, lock holders to front |
+| `case|L|*|4` (5) | 7 x M4 x 20 button, case front to body, 8 x M4 x 10 button, hinge leaves to body, 8 x M4 x 14 button, hinge tops to lid, 8 x M4 x 14 button, lock holders to front |
+| `case|M|*|1` (5) | 4 x M4 x 20 button, case front to body, 8 x M4 x 10 button, hinge leaves to body, 4 x M4 x 14 button, hinge tops to lid, 4 x M4 x 14 button, lock holders to front |
+| `case|M|*|2` (5) | 4 x M4 x 20 button, case front to body, 8 x M4 x 10 button, hinge leaves to body, 4 x M4 x 14 button, hinge tops to lid, 4 x M4 x 14 button, lock holders to front |
+| `case|M|*|4` (5) | 6 x M4 x 20 button, case front to body, 8 x M4 x 10 button, hinge leaves to body, 4 x M4 x 14 button, hinge tops to lid, 4 x M4 x 14 button, lock holders to front |
+| `case|S|*|1` (5) | 4 x M4 x 20 button, case front to body, 8 x M4 x 10 button, hinge leaves to body, 4 x M4 x 14 button, hinge tops to lid, 4 x M4 x 14 button, lock holders to front |
+| `case|S|*|2` (5) | 4 x M4 x 20 button, case front to body, 8 x M4 x 10 button, hinge leaves to body, 4 x M4 x 14 button, hinge tops to lid, 4 x M4 x 14 button, lock holders to front |
+| `case|S|*|4` (5) | 6 x M4 x 20 button, case front to body, 8 x M4 x 10 button, hinge leaves to body, 4 x M4 x 14 button, hinge tops to lid, 4 x M4 x 14 button, lock holders to front |
+| `case|XL|*|1` (5) | 5 x M4 x 20 button, case front to body, 8 x M4 x 10 button, hinge leaves to body, 8 x M4 x 14 button, hinge tops to lid, 8 x M4 x 14 button, lock holders to front |
+| `drawer|L|*|1` (5) | 4 x M4 x 14 button, drawer front to box |
+| `drawer|L|*|2` (5) | 6 x M4 x 14 button, drawer front to box |
+| `drawer|L|*|4` (5) | 6 x M4 x 14 button, drawer front to box |
+| `drawer|L2|*|1` (5) | 4 x M4 x 14 button, drawer front to box |
+| `drawer|L2|*|2` (5) | 8 x M4 x 14 button, drawer front to box |
+| `drawer|L2|*|4` (5) | 8 x M4 x 14 button, drawer front to box |
+| `drawer|M|*|1` (5) | 4 x M4 x 14 button, drawer front to box |
+| `drawer|M|*|2` (5) | 6 x M4 x 14 button, drawer front to box |
+| `drawer|M|*|4` (5) | 6 x M4 x 14 button, drawer front to box |
+| `drawer|S|*|1` (5) | 2 x M4 x 14 button, drawer front to box |
+| `drawer|S|*|2` (5) | 4 x M4 x 14 button, drawer front to box |
+| `drawer|S|*|4` (5) | 4 x M4 x 14 button, drawer front to box |
+| `drawer|XL|*|1` (5) | 4 x M4 x 14 button, drawer front to box |
+| `drawer|XL2|*|1` (5) | 6 x M4 x 14 button, drawer front to box |
+| `roof|L|*|grid` (5) | 2 x M6 x 50 countersunk, top handle to grid roof |
+| `roof|M|*|grid` (5) | 2 x M6 x 50 countersunk, top handle to grid roof |
+| `roof|S|*|grid` (5) | 2 x M6 x 50 countersunk, top handle to grid roof |
+| `roof|XL|*|grid` (5) | 2 x M6 x 50 countersunk, top handle to grid roof |
+
+Room left at the tip (from the bolt's end to the bottom of the hole it goes in, on the axis), all units:
+
+| Bolt | Bolts | Room, mm (min / max) |
+|---|---|---|
+| M4 x 20 button, case front to body | 250 | 2.99 / 3.00 |
+| M4 x 10 button, hinge leaves to body | 400 | 0.01 / 0.02 |
+| M4 x 14 button, hinge tops to lid | 280 | 0.28 / 0.69 |
+| M4 x 14 button, lock holders to front | 280 | -0.00 / -0.00 |
+| M4 x 14 button, drawer front to box | 360 | 0.50 / 0.61 |
+| M6 x 50 countersunk, top handle to grid roof | 40 | 0.64 / 0.87 |
+
+Every bolt's head bears on its part (the counterbore's floor, the part's face, or the countersink for the M6),
+its shank goes down a hole into the next part, and no tip goes past the bottom of its hole (the hinge M4 x 10
+and the lock M4 x 14 are exactly as long as their holes are deep). `hw_check.py` cut S, M, L, L2, XL, XL2
+drawers, S, M, L, XL cases and S, L, XL grid roofs through their bolts and found no head inside a part.
+
+Planner, manual and files (counts per unit; the planner's counts were left as they are):
+
+| Bolt | Planner (`rules.js`) | Manual | Holes in the files |
+|---|---|---|---|
+| M4 x 14, drawer front | S 2/4, M and L 4/6, XL 4 (1F / 2F-4F), L2 and XL2 the sum of their drawers | x4 for 1F, x6 for 2F/4F (p. 18, drawn on an M) | same as the planner |
+| M4 x 20, case front | 7 on every case | x7 per module (p. 17, drawn on an L 4F) | S and M: 4 (1F, 2F), 6 (4F); L: 5 (1F, 2F), 7 (4F); XL: 5. Only the L 4F has 7 |
+| M4 x 14, case hinge tops and locks | 16 on every case | x16 per module (p. 17, an L: 2 tops, 2 locks) | L and XL 16; S and M 8 (one hinge top with 4 holes, one lock) |
+| M4 x 10, case hinges | 8 | x8 | 8 |
+| M6 x 50 countersunk, grid roof top handle | 2 (option) | x2 (p. 18) | 2 |
+
+Not placed, and why:
+
+| Hardware (planner) | Why |
+|---|---|
+| Base, wheels and feet: M16 rod, M4 x 25, 6205ZZ bearings, SCSAW collars, M6 x 90, casters | the base and its parts have no placement yet (`stack|...` units) |
+| Stationary and pull-out handles: M4 x 60, M6 x 30, M6 x 35 hex, M6 heat inserts, M16 rods | same: tower parts, not placed yet |
+| Pegboard M4 x 40, backbone M4 x 60-100 | the mounts on the back of a unit are not placed yet |
+| Lock pins, hinge rods | printed parts, not bought hardware (the rods are placed with the hinges) |
+
+Moving parts: a bolt carries the index of the part that holds it (`part`), and its group is that part's. The
+hinge tops' bolts turn with the lid (group `lid`). The case locks' bolts are in the holder, which doesn't move;
+if an animation moves a part on its own (a key, a latch, a lock lever), its bolts should get the same motion
+through `part`. No bolt is in a moving lock part today.
+
 
 ## Units
 
