@@ -50,6 +50,36 @@ for (const w of Object.keys(R.HEIGHTS.drawer)) for (const d of R.DEPTHS) for (co
   checkRoof(R.buildUnit(c, resolve), rf.id, th, `drawer ${w}${d}`);
   if (!/2$/.test(w)) checkRoof(R.buildRoof(w, d, rf.id, th, resolve), rf.id, th, `roof over a pair, ${w}${d}`);
 }
+// Quantities against the measured assembly (stl-placements.json, one entry per copy): a file both list and place must
+// have as many copies in the list.
+const PL = JSON.parse(fs.readFileSync(require('path').join(__dirname, 'stl-placements.json'), 'utf8'));
+const countClash = [];
+for (const [key, pu] of Object.entries(PL.units)) {
+  const [kind, w, d, h] = key.split('|');
+  // An entry with `piece` is one piece of its file (a rack, a hinge leaf): a file is printed once per set of its
+  // pieces, so its copies are its entries over its distinct pieces
+  const placed = {}, pieces = {};
+  pu.parts.forEach(([p, , , , o]) => {
+    const k = R.norm(p); placed[k] = (placed[k] || 0) + 1;
+    if (o && o.piece) (pieces[k] = pieces[k] || new Set()).add(o.piece.join(','));
+  });
+  for (const k of Object.keys(pieces)) placed[k] /= pieces[k].size;
+  for (const lock of ['std', 'hidden']) {
+    const c = kind === 'roof' ? { type: 'drawer', w, d: +d, h: R.HEIGHTS.drawer[w][0], roof: h, topHandle: true, lock, interior: 'gridfinity' }
+      : { type: kind, w, d: +d, h: +h, roof: 'none', lock, interior: 'gridfinity', gearedRails: true };
+    const lines = R.buildUnit(c, resolve).lines.filter(l => (l.group === 'Roof') === (kind === 'roof'));
+    // a roof's latches are its unit's (the page gives a roof the files its unit lists)
+    const own = kind === 'roof' ? R.buildUnit({ ...c, roof: 'none' }, resolve).lines : [];
+    const listed = {};
+    for (const l of lines.length && kind === 'roof' ? lines.concat(own.filter(o => !lines.some(x => R.norm(x.file.path) === R.norm(o.file.path)))) : lines)
+      listed[R.norm(l.file.path)] = (listed[R.norm(l.file.path)] || 0) + l.qty;
+    for (const [p, n] of Object.entries(listed)) {
+      if (placed[p] === undefined || placed[p] === n) continue;
+      countClash.push(`${key} ${lock}: ${p.split('/').pop()} listed ${n}, placed ${placed[p]}`);
+    }
+  }
+}
+console.log('PLACEMENT COUNTS:'); [...new Set(countClash)].slice(0, 20).forEach(m => console.log(' ', m)); if (countClash.length > 20) console.log(`  (+${countClash.length - 20})`);
 console.log('ROOF HANDLES:'); roofClash.slice(0, 20).forEach(m => console.log(' ', m)); if (roofClash.length > 20) console.log(`  (+${roofClash.length - 20})`);
 if (process.argv[3]) fs.writeFileSync(process.argv[3], [...used].sort().join('\n') + '\n');
 console.log('ROLE COLOURS:'); roleClash.forEach(m => console.log(' ', m));

@@ -1,6 +1,6 @@
 // VAULT part rules: turn one configured unit (or a tower's base) into a list of STL files + quantities.
 // Sources: 01_Instructions Manual, 02_Drawer Assembly, 04_Modifications, 05_Mounting (PDFs in the download),
-// plus USSA's own component data (2 springs, 2 geared rails, 2+2 runners per drawer; 2 locks + 2 hinges per case).
+// plus USSA's own component data (2 springs, 2 geared rails, 2+2 runners per drawer level; 2 hinges per case).
 // Anything not stated in those sources is marked `inferred` with the reason, so the page can flag it.
 (function (root) {
   const FAM_DIR = { S: '01. S Families', M: '02. M Families', L: '03. L Families', XL: '04. XL Families' };
@@ -91,6 +91,8 @@
     return {};
   }
 
+  // Bolt holes in a drawer front, counted in the STLs (Drawer Assembly 6/8 shows the 2 on an S 1F)
+  const frontBolts = (w, h) => w === 'S' ? (h === 1 ? 2 : 4) : w === 'XL' ? 4 : (h === 1 ? 4 : 6);
   // One "drawer insert" = box + facade + lock + runners for a single-width drawer (S, M, L or XL)
   function drawerInsert(add, w, d, h, o, tag, inferred) {
     const fam = D + DRAWER_FAM_DIR[w] + '/';
@@ -105,17 +107,19 @@
         add('Drawer', 'Box back panel' + t, fam + `XL${d}/Boxes/XL${d} Back Panel.stl`, 1, x);
       }
       add('Drawer', 'Drawer front (facade)' + t, fam + 'XL Facade 1F.stl', 1, { supports: true, ...x });
-      add('Runners', 'Runner guide' + t, U + `Runners/XL Runners/x${d} Runner Guide XL.stl`, 2, x);
-      add('Runners', 'Runner slide' + t, U + `Runners/XL Runners/x${d} Runner Slide XL.stl`, 2, x);
+      add('Runners', 'Runner guide' + t, U + `Runners/XL Runners/x${d} Runner Guide XL.stl`, 2 * h, x);
+      add('Runners', 'Runner slide' + t, U + `Runners/XL Runners/x${d} Runner Slide XL.stl`, 2 * h, x);
     } else {
       add('Drawer', 'Drawer box' + t, fam + `${w}${d}/Boxes/${w}${d} Box ${h}F.stl`, 1, x);
       add('Drawer', 'Drawer front (facade)' + t, fam + `Facades/${w}${h}F (Turn On Supports).stl`, 1, { supports: true, ...x });
-      add('Runners', 'Runner guide' + t, U + `Runners/x${d} Runner Guide.stl`, 2, x);
-      add('Runners', 'Runner slide' + t, U + `Runners/x${d} Runner Slide.stl`, 2, x);
+      add('Runners', 'Runner guide' + t, U + `Runners/x${d} Runner Guide.stl`, 2 * h, x);
+      add('Runners', 'Runner slide' + t, U + `Runners/x${d} Runner Slide.stl`, 2 * h, x);
     }
-    add('Runners', 'Runner stopper' + t, U + 'Runners/Runner Stopper.stl', 2, { spare: true, ...x });
-    if (o.gearedRails) add('Runners', 'Geared rail' + t, U + `Geared Rails/${w} Rails.stl`, 2,
-      { note: 'Optional in the manual. Adds locking force; use them if you put more than one box in a 2F/4F module.', ...x });
+    // A pair of guides, slides and stoppers on every 48 mm level of the module (h levels), as the assembly has them:
+    // one 2F/4F box rides on all of them, and the same module can take a 1F box per level instead
+    add('Runners', 'Runner stopper' + t, U + 'Runners/Runner Stopper.stl', 2 * h, { spare: true, ...x });
+    if (o.gearedRails) add('Runners', 'Geared rails (pair)' + t, U + `Geared Rails/${w} Rails.stl`, 1,
+      { note: 'Optional in the manual. Adds locking force; use them if you put more than one box in a 2F/4F module. One file holds both racks, top and bottom.', ...x });
     if (o.lock === 'hidden') {
       add('Lock', 'Hidden key' + t, U + 'Hidden Key (Turn On Supports).stl', 1, { supports: true, ...x });
       add('Lock', 'Hidden key, part 2' + t, U + 'Hidden Key Part 2 (Turn on Supports).stl', 1, { supports: true, ...x });
@@ -124,9 +128,12 @@
       add('Lock', 'Key cap' + t, U + 'Key Cap.stl', 1, { spare: true, ...x });
     }
     add('Lock', 'Springs (pair)' + t, U + 'Springs.stl', 1, { note: 'One file holds both springs. Fit them flat side up.', spare: true, ...x });
-    add('Lock', 'Latch' + t, U + 'Latch.stl', 1, x);
+    // One latch per latch frame under the module: S and M have one, in the middle; L and XL two (measured on the modules)
+    add('Lock', 'Latch' + t, U + 'Latch.stl', w === 'L' || w === 'XL' ? 2 : 1, x);
     add('Lock', 'Label' + t, U + 'Label.stl', 1, { note: 'Add your own text with the slicer’s text tool.', ...x });
-    add('Lock', 'Facade cap' + t, U + 'Facade Cap.stl', 1, { spare: true, ...x });
+    // One cap per counterbore of the front: every bolt hole but the one the label covers (Drawer Assembly 6/8 shows
+    // the one cap of an S 1F; the others are counted on the fronts)
+    add('Lock', 'Facade cap' + t, U + 'Facade Cap.stl', frontBolts(w, h) - 1, { spare: true, ...x });
     if (o.interior === 'gridfinity') {
       const subdir = fam + `${w}${d}/Gridfinity Baseplate/`;
       if (w === 'XL' && d >= 6) {
@@ -229,16 +236,22 @@
       add('Lid', 'Lid', roofDir + `${w}${d} Roof.stl`, 1);
     }
     const sm = !big;
-    add('Hinges & locks', 'Hinge', SUU + 'Hinges/' + (sm ? (h === 1 ? 'S-M 1F Hinge.stl' : 'S-M 2-4F Hinge.stl') : (h === 1 ? 'L-XL 1F Hinge.stl' : 'L 2-4F Hinge.stl')), 2,
-      { note: 'Each file is one complete hinge (both leaves).' });
-    if (sm) add('Hinges & locks', 'Hinge top', SUU + 'Hinges/' + (w === 'S' ? 'S Hinge Top.stl' : 'M Hinge Top.stl'), 2,
-      { inferred: 'One hinge top per hinge is assumed; the S/M files hold a single top.' });
+    add('Hinges & locks', 'Hinge', SUU + 'Hinges/' + (sm ? (h === 1 ? 'S-M 1F Hinge.stl' : 'S-M 2-4F Hinge.stl') : (h === 1 ? 'L-XL 1F Hinge.stl' : 'L 2-4F Hinge.stl')), 1,
+      { note: 'One file holds the two leaves that bolt to the case body, one per hinge.' });
+    // S and M lids take one long hinge top across both leaves (the lid has 4 holes for one); L and XL two short ones
+    if (sm) add('Hinges & locks', 'Hinge top', SUU + 'Hinges/' + (w === 'S' ? 'S Hinge Top.stl' : 'M Hinge Top.stl'), 1,
+      { note: 'One long top spans both hinges.' });
     else add('Hinges & locks', 'Hinge tops (pair)', SUU + 'Hinges/L-XL Hinge Top.stl', 1, { note: 'This file already contains two hinge tops.' });
     add('Hinges & locks', 'Hinge rods (pair)', SUU + 'Rods/' + (sm ? 'S-M Rods.stl' : 'L-XL Rods.stl'), 1, { note: 'One file holds both rods.', spare: true });
-    add('Hinges & locks', 'Lock holder', SUU + 'Locks/LOCK HOLDER.stl', 2);
-    add('Hinges & locks', 'Lock inner part', SUU + 'Locks/LOCK INNER PART.stl', 2);
-    add('Hinges & locks', 'Lock outer part', SUU + 'Locks/' + (h === 1 ? 'LOCK OUTER PART 1F.stl' : 'LOCK OUTER PART 2-4F.stl'), 2);
-    add('Hinges & locks', 'Lock pin set', SUU + 'Locks/1 SET OF PINS FOR 1 LOCK.stl', 2, { note: 'Four pins per file, one file per lock.', spare: true });
+    // One lock per notch in the front's top edge: S and M fronts have one, L and XL two (Sustainers Naming shows two on L)
+    const locks = big ? 2 : 1;
+    add('Hinges & locks', 'Lock holder', SUU + 'Locks/LOCK HOLDER.stl', locks);
+    add('Hinges & locks', 'Lock inner part', SUU + 'Locks/LOCK INNER PART.stl', locks);
+    add('Hinges & locks', 'Lock outer part', SUU + 'Locks/' + (h === 1 ? 'LOCK OUTER PART 1F.stl' : 'LOCK OUTER PART 2-4F.stl'), locks);
+    add('Hinges & locks', 'Lock pin set', SUU + 'Locks/1 SET OF PINS FOR 1 LOCK.stl', locks, { note: 'Four pins per file, one file per lock.', spare: true });
+    // The case body has a drawer module's underside, latch frames included, and stacks like one
+    add('Hinges & locks', 'Latch', U + 'Latch.stl', big ? 2 : 1,
+      { inferred: 'The manual doesn’t show a case from below. Its body has the same latch frames as a drawer module (one on S and M, two on L and XL), so it takes the same latches.' });
     add('Hinges & locks', 'Case label', SUU + 'Label for Sustainers.stl', 1);
     add('Hinges & locks', 'Front label', U + 'Label.stl', 1);
     if (c.caseBaseplate) {
@@ -322,7 +335,7 @@
     if (c.type === 'drawer') {
       // Front to box: one bolt per hole in the drawer front, counted in the STLs (Drawer Assembly 6/8 shows the 2 on an S 1F).
       // S: 2 at 1F, 4 at 2F/4F. M and L: 4 at 1F, 6 at 2F/4F. XL (1F only): 4. L² is two S drawers, XL² an S and an M (both 1F).
-      const front = (w, h) => w === 'S' ? (h === 1 ? 2 : 4) : w === 'XL' ? 4 : (h === 1 ? 4 : 6);
+      const front = frontBolts;
       const bolts = c.w === 'L2' ? 2 * front('S', c.h) : c.w === 'XL2' ? front('S', 1) + front('M', 1) : front(c.w, c.h);
       push('M4 × 14 mm button-head bolt', bolts, 'Drawer front to box');
       if (c.roof === 'grid' && c.topHandle) push('M6 × 50 mm countersunk bolt', 2, 'Roof top handle');

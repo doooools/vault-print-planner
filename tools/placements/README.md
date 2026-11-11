@@ -214,16 +214,19 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
   planner can't find the L² and XL² files there. Mapping `┬▓` to `²` in `R.norm` would fix it.
 - Cases: the measured rise (66.4 / 100.4 / 196.4) is 0.9 mm above `R.exterior` (65.5 / 99.5 / 195.5); it is in
   `stack.case.rise`, which `build.py` does not embed yet.
-- A case body latches like a module (it has the latch frame), but the planner lists no latch for a case. The JSON
-  places one; the page won't draw it until the list has `Latch.stl`.
-- Latches per unit: S and M 1; L, L², XL and XL² 2 (the planner lists 1 per drawer insert).
-- Case locks: the planner counts 2 per case; S and M fronts have one lock seat, L and XL two.
-- Case hinges: the planner lists 2 hinge files and, on S/M, 2 hinge tops per case. But one hinge file holds both
-  body leaves, and S/M cases take a single long hinge top (the lid has 4 holes for one); L/XL take the two tops
-  of their one file. So a case needs 1 hinge file, 1 hinge-top file and 1 rods file (8 × M4 × 10 for the two
-  leaves, 4 × M4 × 14 per hinge top).
-- Pieces: the page must split a file into its pieces wherever an entry has `piece` (racks, hinge leaves, hinge
-  tops, rods). Without that, the whole file lands on each copy.
+- Now in the planner (`src/rules.js`, checked by `validate.js` "PLACEMENT COUNTS", where a file split into
+  pieces counts once per set of its pieces):
+  - latches per unit: S and M 1; L, L², XL and XL² 2, cases included (a case body has a module's latch frames);
+  - a facade cap per counterbore (S1F 1, S2F/S4F 3, M1F 3, M2F/M4F 5, L1F 3, L2F/L4F 5, XL 3);
+  - runner guides, slides and stoppers: a pair on every 48 mm level (2, 4 or 8 of each for 1F, 2F, 4F);
+  - case locks: S and M 1, L and XL 2;
+  - one geared-rails file per drawer (both racks), one hinge file per case (both leaves), one hinge-top file.
+- Roofs have a module's latch frames too and the JSON places latches there (the page gives a roof its unit's
+  latch files), but the manual's exploded S3 with a grid roof (Drawers Naming) shows a single latch, so the
+  planner lists none for the roof itself.
+- Pieces: the page splits a file into its connected pieces (corners welded at 0.001 mm, from the simplified mesh)
+  wherever an entry has `piece`, and takes the one whose centre is nearest. Case lids turn about `hinge` with the
+  Open tool.
 - The JSON's roles are the first session's (body, drawer, facade, mech, accent, insert, roof); the page takes each
   part's role from the planner's list instead.
 - Decimation: 8 of the 733 files stayed above the 0.15 mm QA after the voxel fallback (M5 Module 2F/4F, S6 1F/2F
