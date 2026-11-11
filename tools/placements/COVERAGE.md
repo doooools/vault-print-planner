@@ -103,7 +103,6 @@ part whose place was not measured in this pass; the units that list it can still
 | Hidden key, part 2 | 50 | option, not measured | lock option instead of the key: not assembled in the CAD file, place not measured |
 | Gridfinity baseplate | 48 | option, not measured | case baseplates: not placed yet |
 | Hinge top | 30 | option, not measured | each hinge file holds both leaves printed side by side with their knuckles apart: no single turn puts them on their common pin (manual p. 17). Notches: x = ±51.8 (S), ±69.3 (M), ±86.8 (L), ±131.4 (XL) |
-| Heavyweight roof insert | 30 | option, not measured | small insert for the handle bar's end, inside a pocket of the slot wall: its exact place is not measured |
 | Hinge tops (pair) | 20 | option, not measured | each hinge file holds both leaves printed side by side with their knuckles apart: no single turn puts them on their common pin (manual p. 17). Notches: x = ±51.8 (S), ±69.3 (M), ±86.8 (L), ±131.4 (XL) |
 | Springs (pair) (left) | 15 | option, not measured | inside the key lock, not assembled in the CAD file |
 | L² accessory, 1st | 15 | option, not measured | L² accessories: neither the manual nor the CAD file shows where they go |
@@ -475,7 +474,7 @@ part whose place was not measured in this pass; the units that list it can still
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
 - `roof|L2|3|grid` **verified**, 4 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
-- `roof|L2|3|heavy` **verified**, 4 parts placed
+- `roof|L2|3|heavy` **verified**, 6 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
 - `roof|L2|3|table` **verified**, 3 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
@@ -485,7 +484,7 @@ part whose place was not measured in this pass; the units that list it can still
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
 - `roof|L2|4|grid` **verified**, 4 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
-- `roof|L2|4|heavy` **verified**, 4 parts placed
+- `roof|L2|4|heavy` **verified**, 6 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
 - `roof|L2|4|table` **verified**, 3 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
@@ -495,7 +494,7 @@ part whose place was not measured in this pass; the units that list it can still
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
 - `roof|L2|5|grid` **verified**, 4 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
-- `roof|L2|5|heavy` **verified**, 4 parts placed
+- `roof|L2|5|heavy` **verified**, 6 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
 - `roof|L2|5|table` **verified**, 3 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
@@ -505,7 +504,7 @@ part whose place was not measured in this pass; the units that list it can still
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
 - `roof|L2|6|grid` **verified**, 4 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
-- `roof|L2|6|heavy` **verified**, 4 parts placed
+- `roof|L2|6|heavy` **verified**, 6 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
 - `roof|L2|6|table` **verified**, 3 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
@@ -515,7 +514,7 @@ part whose place was not measured in this pass; the units that list it can still
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
 - `roof|L2|7|grid` **verified**, 4 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
-- `roof|L2|7|heavy` **verified**, 4 parts placed
+- `roof|L2|7|heavy` **verified**, 6 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
 - `roof|L2|7|table` **verified**, 3 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
@@ -525,7 +524,7 @@ part whose place was not measured in this pass; the units that list it can still
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|L|3|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|L|3|heavy` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|L|3|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|L|3|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
@@ -535,7 +534,7 @@ part whose place was not measured in this pass; the units that list it can still
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|L|4|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|L|4|heavy` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|L|4|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|L|4|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
@@ -545,7 +544,7 @@ part whose place was not measured in this pass; the units that list it can still
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|L|5|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|L|5|heavy` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|L|5|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|L|5|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
@@ -555,7 +554,7 @@ part whose place was not measured in this pass; the units that list it can still
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|L|6|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|L|6|heavy` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|L|6|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|L|6|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
@@ -565,7 +564,7 @@ part whose place was not measured in this pass; the units that list it can still
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|L|7|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|L|7|heavy` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|L|7|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|L|7|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
@@ -658,9 +657,9 @@ part whose place was not measured in this pass; the units that list it can still
   - same entry as the XL roof of that depth
 - `roof|XL2|3|grid` **verified**, 4 parts placed
   - same entry as the XL roof of that depth
-- `roof|XL2|3|heavy` **verified**, 4 parts placed
+- `roof|XL2|3|heavy` **verified**, 6 parts placed
   - same entry as the XL roof of that depth
-- `roof|XL2|3|heavycut` **verified**, 4 parts placed
+- `roof|XL2|3|heavycut` **verified**, 6 parts placed
   - same entry as the XL roof of that depth
 - `roof|XL2|3|table` **verified**, 3 parts placed
   - same entry as the XL roof of that depth
@@ -670,9 +669,9 @@ part whose place was not measured in this pass; the units that list it can still
   - same entry as the XL roof of that depth
 - `roof|XL2|4|grid` **verified**, 4 parts placed
   - same entry as the XL roof of that depth
-- `roof|XL2|4|heavy` **verified**, 4 parts placed
+- `roof|XL2|4|heavy` **verified**, 6 parts placed
   - same entry as the XL roof of that depth
-- `roof|XL2|4|heavycut` **verified**, 4 parts placed
+- `roof|XL2|4|heavycut` **verified**, 6 parts placed
   - same entry as the XL roof of that depth
 - `roof|XL2|4|table` **verified**, 3 parts placed
   - same entry as the XL roof of that depth
@@ -682,9 +681,9 @@ part whose place was not measured in this pass; the units that list it can still
   - same entry as the XL roof of that depth
 - `roof|XL2|5|grid` **verified**, 4 parts placed
   - same entry as the XL roof of that depth
-- `roof|XL2|5|heavy` **verified**, 4 parts placed
+- `roof|XL2|5|heavy` **verified**, 6 parts placed
   - same entry as the XL roof of that depth
-- `roof|XL2|5|heavycut` **verified**, 4 parts placed
+- `roof|XL2|5|heavycut` **verified**, 6 parts placed
   - same entry as the XL roof of that depth
 - `roof|XL2|5|table` **verified**, 3 parts placed
   - same entry as the XL roof of that depth
@@ -694,9 +693,9 @@ part whose place was not measured in this pass; the units that list it can still
   - same entry as the XL roof of that depth
 - `roof|XL2|6|grid` **verified**, 4 parts placed
   - same entry as the XL roof of that depth
-- `roof|XL2|6|heavy` **verified**, 4 parts placed
+- `roof|XL2|6|heavy` **verified**, 6 parts placed
   - same entry as the XL roof of that depth
-- `roof|XL2|6|heavycut` **verified**, 4 parts placed
+- `roof|XL2|6|heavycut` **verified**, 6 parts placed
   - same entry as the XL roof of that depth
 - `roof|XL2|6|table` **verified**, 3 parts placed
   - same entry as the XL roof of that depth
@@ -706,9 +705,9 @@ part whose place was not measured in this pass; the units that list it can still
   - same entry as the XL roof of that depth
 - `roof|XL2|7|grid` **verified**, 4 parts placed
   - same entry as the XL roof of that depth
-- `roof|XL2|7|heavy` **verified**, 4 parts placed
+- `roof|XL2|7|heavy` **verified**, 6 parts placed
   - same entry as the XL roof of that depth
-- `roof|XL2|7|heavycut` **verified**, 4 parts placed
+- `roof|XL2|7|heavycut` **verified**, 6 parts placed
   - same entry as the XL roof of that depth
 - `roof|XL2|7|table` **verified**, 3 parts placed
   - same entry as the XL roof of that depth
@@ -718,9 +717,9 @@ part whose place was not measured in this pass; the units that list it can still
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|XL|3|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|XL|3|heavy` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|XL|3|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|XL|3|heavycut` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|XL|3|heavycut` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|XL|3|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
@@ -730,9 +729,9 @@ part whose place was not measured in this pass; the units that list it can still
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|XL|4|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|XL|4|heavy` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|XL|4|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|XL|4|heavycut` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|XL|4|heavycut` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|XL|4|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
@@ -742,9 +741,9 @@ part whose place was not measured in this pass; the units that list it can still
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|XL|5|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|XL|5|heavy` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|XL|5|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|XL|5|heavycut` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|XL|5|heavycut` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|XL|5|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
@@ -754,9 +753,9 @@ part whose place was not measured in this pass; the units that list it can still
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|XL|6|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|XL|6|heavy` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|XL|6|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|XL|6|heavycut` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|XL|6|heavycut` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|XL|6|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
@@ -766,9 +765,9 @@ part whose place was not measured in this pass; the units that list it can still
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|XL|7|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|XL|7|heavy` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|XL|7|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `roof|XL|7|heavycut` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
+- `roof|XL|7|heavycut` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
 - `roof|XL|7|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
   - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)

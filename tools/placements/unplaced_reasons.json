@@ -36,10 +36,6 @@
   "kind": "option",
   "why": "case baseplates: not placed yet"
  },
- "Heawyweight Roof Insert": {
-  "kind": "option",
-  "why": "small insert for the handle bar's end, inside a pocket of the slot wall: its exact place is not measured"
- },
  "SUSTAINERS/05. Universal/Hinges/": {
   "kind": "option",
   "why": "each hinge file holds both leaves printed side by side with their knuckles apart: no single turn puts them on their common pin (manual p. 17). Notches: x = ±51.8 (S), ±69.3 (M), ±86.8 (L), ±131.4 (XL)"
