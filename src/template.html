@@ -585,10 +585,7 @@ details.termfold[open] > summary { color: var(--ink); }
 (function () {
   const R = window.VaultRules;
   // Row: path, true footprint a, b (smallest rectangle around the part seen from above), height z, volume mm³, export angle, sprite sheet, cell, Bambu says it needs supports
-  // Drawer boxes never get Bambu-flag supports: what Bambu calls floating is USSA's own break-away support in the box's front
-  // window (Drawer Assembly 3/8, "remove the manual supports"), and slicer supports also fill the bottom geared-rail channel,
-  // where they can't be cleared (a viewer reported it on an M4 1F box, 2026-11-10).
-  const FILES = window.VAULT_FILES.map(r => ({ path: r[0], dims: [r[1], r[2], r[3]], vol: r[4], angle: r[5], sheet: r[6], cell: r[7], needsSupport: !!r[8] && !/\/Boxes\//.test(r[0]), supReach: r[9] == null || r[9] < 0 ? null : r[9], ex: r[10] ? [r[10], r[11]] : null }));
+  const FILES = window.VAULT_FILES.map(r => ({ path: r[0], dims: [r[1], r[2], r[3]], vol: r[4], angle: r[5], sheet: r[6], cell: r[7], needsSupport: !!r[8], supReach: r[9] == null || r[9] < 0 ? null : r[9], ex: r[10] ? [r[10], r[11]] : null }));
   const resolve = R.makeResolver(FILES);
   const SRC_DEFAULT = '261021_VAULT_USSA_S';
   // Filament estimate. Thin-walled parts print close to solid (0.78 g/cm³ of part volume, the median of USSA's published
@@ -935,7 +932,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const m = partMeta(path) || {};
     return { group: 'Extra parts', label: niceName(path), file: f, qty, total: qty, key: 'extra:' + path,
       color: m.color || (/tpu/i.test(path) ? 'tpu' : 'body'), walls: m.walls, infill: m.infill, flex: m.flex,
-      supports: m.supports || /turn on supports/i.test(path) || f.needsSupport, tpu: m.tpu || /tpu/i.test(path), aid: m.aid,
+      supports: m.supports || /turn on supports/i.test(path), tpu: m.tpu || /tpu/i.test(path), aid: m.aid,
       note: m.label ? m.label.replace(/ \((left|right|S side|M side)\)$/, '') : '', fit: fitOf(f.dims, printer.v, f.ex) };
   }
   const extraLines = () => extras.map(e => extraLine(e.path, e.qty)).filter(Boolean);
@@ -1007,7 +1004,7 @@ details.termfold[open] > summary { color: var(--ink); }
   function tagsFor(l) {
     const tags = [], fit = l.fit || fitOf(l.file.dims, printer.v, l.file.ex);
     tags.push(`<span class="tag ${FIT_CLASS[fit.s]}">${FIT_TEXT[fit.s]}${fit.tight ? ', tight' : ''}</span>`);
-    if (l.supports) tags.push(`<span class="tag sup" title="${l.supportsWhy === 'bambu' || (!/turn on supports/i.test(l.file.path) && l.file.needsSupport) ? 'Bambu Studio flags overhangs on this part when printed without supports, so the project turns them on' : 'USSA says to print this part with supports'}">Supports on</span>`);
+    if (l.supports) tags.push(`<span class="tag sup" title="${/turn on supports/i.test(l.file.path) ? 'USSA says to print this part with supports' : 'USSA names every other drawer front \u201cTurn On Supports\u201d; this one has the same overhangs'}">Supports on</span>`);
     if (l.walls) tags.push(`<span class="tag wall" title="${l.infill ? 'Carries load: extra walls and infill' : 'Takes bolts or wear: one extra wall'}">${l.walls} walls${l.infill ? ' \u00b7 ' + l.infill + '% infill' : ''}</span>`);
     if (brimOf(l.file)) tags.push('<span class="tag wall" title="Tall and thin: a 5 mm brim keeps it from wobbling loose late in the print">Brim</span>');
     if (l.flex) tags.push('<span class="tag wall" title="This part has to bend. More walls make it stiff and it can crack.">Keep 2 walls</span>');

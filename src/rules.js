@@ -323,8 +323,10 @@
       const f = resolve(path) || (extra.fallback && resolve(extra.fallback));
       if (!f) { missing.push(path); return; }
       const l = { group, label, file: f, qty, color: colorOf(label, group), ...strengthOf(label), ...extra };
-      // Bambu Studio's own check says this part has overhangs that need supports (see src/bambu-support-audit.tsv)
-      if (f.needsSupport && !l.aid) { l.supports = true; if (!extra.supports) l.supportsWhy = 'bambu'; }
+      // Supports follow USSA only: the files they name "(Turn On Supports)" plus the XL drawer front (see drawerInsert).
+      // Bambu Studio's overhang warnings (src/bambu-support-audit.tsv) no longer turn supports on: USSA builds break-away
+      // supports into parts, Bambu flags those as floating, and its supports then fill spots like the drawer box's
+      // geared-rail channel (2026-11-10, the user: "err on what ussa says").
       lines.push(l);
     };
     return { lines, missing, add };
