@@ -79,6 +79,47 @@ for (const [key, pu] of Object.entries(PL.units)) {
     }
   }
 }
+// Drawers per module (src/rules.js LAYOUTS): every layout of every drawer shell resolves its files, and is counted as
+// the manuals have it. Per module: shell, a pair of runner guides, slides and stoppers per 48 mm level, the latch (S
+// and M one, L and XL two; L² is two S sides). Per drawer: box and front of its height, lock, springs, label, geared
+// rails, the front's bolts and its caps (every counterbore but the label's).
+const layoutClash = [];
+const FRONT_BOLTS = (w, h) => w === 'S' ? (h === 1 ? 2 : 4) : w === 'XL' ? 4 : (h === 1 ? 4 : 6);
+for (const w of ['S', 'M', 'L', 'L2']) for (const d of R.DEPTHS) for (const h of R.HEIGHTS.drawer[w]) for (const lay of R.LAYOUTS[h])
+  for (const lock of ['std', 'hidden']) {
+    const c = { type: 'drawer', w, d, h, drawers: lay, lock, interior: 'gridfinity', gearedRails: true, roof: 'none' };
+    const what = `drawer ${w}${d} ${h}F [${lay.join(' ')}] ${lock}`;
+    const r = R.buildUnit(c, resolve);
+    note(r, what);
+    if (R.drawersOf(c).join() !== lay.join()) layoutClash.push(`${what}: drawersOf gives ${R.drawersOf(c).join(' ')}`);
+    const sides = w === 'L2' ? 2 : 1, fw = w === 'L2' ? 'S' : w;
+    const qty = re => r.lines.filter(l => re.test(l.file.path)).reduce((a, l) => a + l.qty, 0);
+    const want = {
+      shell: [/ Module \dF\.stl$/i, 1],
+      boxes: [/ Box \dF\.stl$/i, sides * lay.length],
+      fronts: [/Facades\/.*F \(Turn On Supports\)\.stl$/, sides * lay.length],
+      guides: [/Runner Guide\.stl$/, sides * 2 * h], slides: [/Runner Slide\.stl$/, sides * 2 * h], stoppers: [/Runner Stopper\.stl$/, sides * 2 * h],
+      latches: [/\/Latch\.stl$/, w === 'L' || w === 'L2' ? 2 : 1],
+      locks: [lock === 'hidden' ? /\/Hidden Key \(Turn On Supports\)\.stl$/ : /\/Key \(Turn On Supports\)\.stl$/, sides * lay.length],
+      springs: [/\/Springs\.stl$/, sides * lay.length], labels: [/\/Label\.stl$/, sides * lay.length], rails: [/ Rails\.stl$/, sides * lay.length],
+      caps: [/\/Facade Cap\.stl$/, sides * lay.reduce((a, dh) => a + FRONT_BOLTS(fw, dh) - 1, 0)],
+    };
+    for (const [k, [re, n]] of Object.entries(want)) if (qty(re) !== n) layoutClash.push(`${what}: ${qty(re)} ${k}, want ${n}`);
+    // each drawer's box and front are its own height
+    for (const dh of new Set(lay)) {
+      const n = sides * lay.filter(x => x === dh).length;
+      const re = new RegExp(` Box ${dh}F\\.stl$`, 'i');
+      if (qty(re) !== n) layoutClash.push(`${what}: ${dh}F boxes ${qty(re)}, want ${n}`);
+    }
+    const mixed = new Set(lay).size > 1 || w === 'L2'; // L² contents are inferred anyway
+    if (mixed !== r.lines.filter(l => l.group === 'Drawer').every(l => l.inferred)) layoutClash.push(`${what}: ${mixed ? 'mixed layout not marked inferred' : 'marked inferred'}`);
+    const bolts = r.hardware.filter(x => /M4 × 14/.test(x.item)).reduce((a, x) => a + x.qty, 0);
+    if (bolts !== sides * lay.reduce((a, dh) => a + FRONT_BOLTS(fw, dh), 0)) layoutClash.push(`${what}: ${bolts} front bolts`);
+  }
+// A list that isn't one of the shell's layouts plans one drawer of the shell's height, and XL is always one 1F drawer
+for (const [c, want] of [[{ w: 'S', h: 2, drawers: [1] }, '2'], [{ w: 'M', h: 4, drawers: [3, 1] }, '4'], [{ w: 'XL', h: 1, drawers: [1, 1] }, '1'], [{ w: 'L', h: 2 }, '2']])
+  if (R.drawersOf(c).join() !== want) layoutClash.push(`drawersOf(${JSON.stringify(c)}) = ${R.drawersOf(c).join(' ')}, want ${want}`);
+console.log('DRAWER LAYOUTS:'); layoutClash.slice(0, 20).forEach(m => console.log(' ', m)); if (layoutClash.length > 20) console.log(`  (+${layoutClash.length - 20})`);
 console.log('PLACEMENT COUNTS:'); [...new Set(countClash)].slice(0, 20).forEach(m => console.log(' ', m)); if (countClash.length > 20) console.log(`  (+${countClash.length - 20})`);
 console.log('ROOF HANDLES:'); roofClash.slice(0, 20).forEach(m => console.log(' ', m)); if (roofClash.length > 20) console.log(`  (+${roofClash.length - 20})`);
 if (process.argv[3]) fs.writeFileSync(process.argv[3], [...used].sort().join('\n') + '\n');

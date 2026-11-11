@@ -252,7 +252,8 @@ def check(pl, download, key, steps=41, hidden=False, quiet=False):
     tris = [load_tris(p[0], download, p[4].get("piece") if len(p) > 4 else None) for p in parts]
     latches = {jid: Latch(j["latch"]) for jid, j in (unit.get("motion") or {}).get("joints", {}).items() if "latch" in j}
     travel = travel_of(unit)
-    names = [os.path.basename(p[0]) + (f" [{p[4]['joint']}]" if len(p) > 4 and "joint" in p[4] else "") for p in parts]
+    names = [os.path.basename(p[0]) + (f" [{p[4]['joint']}]" if len(p) > 4 and "joint" in p[4] else "")
+             + (f" <{p[4].get('side', '')}{p[4]['drawer']}>" if len(p) > 4 and "drawer" in p[4] else "") for p in parts]
     mov = [moves(p) for p in parts]
     pls = planes(key, unit)
     worst, base = {}, {}

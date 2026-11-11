@@ -56,7 +56,7 @@ class Part:
     def __init__(self, i, entry):
         self.i = i
         self.path, self.role, self.group, m = entry[:4]
-        self.piece = entry[4]["piece"] if len(entry) > 4 and entry[4] else None
+        self.piece = entry[4].get("piece") if len(entry) > 4 and entry[4] else None
         self.R, self.t = vg.mat34(m)
         src = piece_tris(self.path, self.piece) if self.piece else file_tris(self.path)
         self.tris = src @ self.R.T + self.t

@@ -93,11 +93,30 @@
 
   // Bolt holes in a drawer front, counted in the STLs (Drawer Assembly 6/8 shows the 2 on an S 1F)
   const frontBolts = (w, h) => w === 'S' ? (h === 1 ? 2 : 4) : w === 'XL' ? 4 : (h === 1 ? 4 : 6);
-  // One "drawer insert" = box + facade + lock + runners for a single-width drawer (S, M, L or XL)
-  function drawerInsert(add, w, d, h, o, tag, inferred) {
+  // The drawers a module shell holds, as their heights top to bottom (Instructions Manual, "50 Size Variants": no 3F,
+  // everything divides by 2). Drawer Assembly 4/8 supports more than one box per 2F or 4F module. A 2F next to two 1F
+  // in a 4F shell is not drawn anywhere: those layouts are inferred.
+  const LAYOUTS = { 1: [[1]], 2: [[2], [1, 1]], 4: [[4], [2, 2], [1, 1, 1, 1], [2, 1, 1], [1, 2, 1], [1, 1, 2]] };
+  const MIXED_WHY = 'The manuals show one box per module or boxes of one height; a 2F with two 1F in one 4F module is inferred ("no 3F, everything divides by 2").';
+  // A unit's drawers: its `drawers` list when it is one of its shell's layouts, else one drawer of the shell's height.
+  // XL and XL² modules are 1F only.
+  function drawersOf(c) {
+    const lay = (LAYOUTS[c.h] || [[c.h]]).find(l => Array.isArray(c.drawers) && l.join() === c.drawers.join());
+    return c.w === 'XL' || c.w === 'XL2' || !lay ? [c.h] : lay;
+  }
+  const mixedLayout = lay => new Set(lay).size > 1;
+  // One "drawer insert": the drawers of one width in a module of height h (S, M, L or XL), with the module's runners and
+  // latch. `lay` is the drawers' heights, top to bottom (one drawer of height h unless the module holds several). Per
+  // module: runner guides, slides and stoppers (a pair per 48 mm level), latch. Per drawer: box and front of its own
+  // height, lock, key cap, springs, label, facade caps, geared rails, interior.
+  function drawerInsert(add, w, d, h, o, tag, inferred, lay = [h]) {
     const fam = D + DRAWER_FAM_DIR[w] + '/';
     const t = tag ? ' (' + tag + ')' : '';
-    const x = inferred ? { inferred } : {};
+    const why = inferred || (mixedLayout(lay) ? MIXED_WHY : '');
+    const x = why ? { inferred: why } : {};
+    const n = lay.length;
+    // Drawers of the same height share their lines: tallest first
+    const byH = [...new Set(lay)].sort((p, q) => q - p).map(dh => [dh, lay.filter(v => v === dh).length]);
     if (w === 'XL') {
       if (d >= 6) {
         add('Drawer', 'Drawer box, part 1' + t, fam + `XL${d}/Boxes/XL${d} Box 1F Part 1.stl`, 1, x);
@@ -110,30 +129,31 @@
       add('Runners', 'Runner guide' + t, U + `Runners/XL Runners/x${d} Runner Guide XL.stl`, 2 * h, x);
       add('Runners', 'Runner slide' + t, U + `Runners/XL Runners/x${d} Runner Slide XL.stl`, 2 * h, x);
     } else {
-      add('Drawer', 'Drawer box' + t, fam + `${w}${d}/Boxes/${w}${d} Box ${h}F.stl`, 1, x);
-      add('Drawer', 'Drawer front (facade)' + t, fam + `Facades/${w}${h}F (Turn On Supports).stl`, 1, { supports: true, ...x });
+      byH.forEach(([dh, k]) => add('Drawer', 'Drawer box' + (byH.length > 1 ? ` ${dh}F` : '') + t, fam + `${w}${d}/Boxes/${w}${d} Box ${dh}F.stl`, k, x));
+      byH.forEach(([dh, k]) => add('Drawer', 'Drawer front (facade)' + (byH.length > 1 ? ` ${dh}F` : '') + t, fam + `Facades/${w}${dh}F (Turn On Supports).stl`, k, { supports: true, ...x }));
       add('Runners', 'Runner guide' + t, U + `Runners/x${d} Runner Guide.stl`, 2 * h, x);
       add('Runners', 'Runner slide' + t, U + `Runners/x${d} Runner Slide.stl`, 2 * h, x);
     }
     // A pair of guides, slides and stoppers on every 48 mm level of the module (h levels), as the assembly has them:
     // one 2F/4F box rides on all of them, and the same module can take a 1F box per level instead
     add('Runners', 'Runner stopper' + t, U + 'Runners/Runner Stopper.stl', 2 * h, { spare: true, ...x });
-    if (o.gearedRails) add('Runners', 'Geared rails (pair)' + t, U + `Geared Rails/${w} Rails.stl`, 1,
+    if (o.gearedRails) add('Runners', 'Geared rails (pair)' + t, U + `Geared Rails/${w} Rails.stl`, n,
       { note: 'Optional in the manual. Adds locking force; use them if you put more than one box in a 2F/4F module. One file holds both racks, top and bottom.', ...x });
     if (o.lock === 'hidden') {
-      add('Lock', 'Hidden key' + t, U + 'Hidden Key (Turn On Supports).stl', 1, { supports: true, ...x });
-      add('Lock', 'Hidden key, part 2' + t, U + 'Hidden Key Part 2 (Turn on Supports).stl', 1, { supports: true, ...x });
+      add('Lock', 'Hidden key' + t, U + 'Hidden Key (Turn On Supports).stl', n, { supports: true, ...x });
+      add('Lock', 'Hidden key, part 2' + t, U + 'Hidden Key Part 2 (Turn on Supports).stl', n, { supports: true, ...x });
     } else {
-      add('Lock', 'Key lock' + t, U + 'Key (Turn On Supports).stl', 1, { supports: true, ...x });
-      add('Lock', 'Key cap' + t, U + 'Key Cap.stl', 1, { spare: true, ...x });
+      add('Lock', 'Key lock' + t, U + 'Key (Turn On Supports).stl', n, { supports: true, ...x });
+      add('Lock', 'Key cap' + t, U + 'Key Cap.stl', n, { spare: true, ...x });
     }
-    add('Lock', 'Springs (pair)' + t, U + 'Springs.stl', 1, { note: 'One file holds both springs. Fit them flat side up.', spare: true, ...x });
-    // One latch per latch frame under the module: S and M have one, in the middle; L and XL two (measured on the modules)
+    add('Lock', 'Springs (pair)' + t, U + 'Springs.stl', n, { note: 'One file holds both springs. Fit them flat side up.', spare: true, ...x });
+    // One latch per latch frame under the module, whatever the drawers in it: S and M have one, in the middle; L and XL
+    // two (measured on the modules). Drawer Assembly 8/8 pushes it into the module's underside.
     add('Lock', 'Latch' + t, U + 'Latch.stl', w === 'L' || w === 'XL' ? 2 : 1, x);
-    add('Lock', 'Label' + t, U + 'Label.stl', 1, { note: 'Add your own text with the slicer’s text tool.', ...x });
-    // One cap per counterbore of the front: every bolt hole but the one the label covers (Drawer Assembly 6/8 shows
+    add('Lock', 'Label' + t, U + 'Label.stl', n, { note: 'Add your own text with the slicer’s text tool.', ...x });
+    // One cap per counterbore of a front: every bolt hole but the one the label covers (Drawer Assembly 6/8 shows
     // the one cap of an S 1F; the others are counted on the fronts)
-    add('Lock', 'Facade cap' + t, U + 'Facade Cap.stl', frontBolts(w, h) - 1, { spare: true, ...x });
+    add('Lock', 'Facade cap' + t, U + 'Facade Cap.stl', lay.reduce((a, dh) => a + frontBolts(w, dh) - 1, 0), { spare: true, ...x });
     if (o.interior === 'gridfinity') {
       const subdir = fam + `${w}${d}/Gridfinity Baseplate/`;
       if (w === 'XL' && d >= 6) {
@@ -141,12 +161,12 @@
         add('Interior', 'Gridfinity baseplate, part 2' + t, subdir + `XL${d} Baseplate Part 2.stl`, 1, x);
       } else {
         const v = o.baseplateHandles && o.baseplateHandles !== '0' ? `_With ${o.baseplateHandles} Handle${o.baseplateHandles === '1' ? '' : 's'}` : '';
-        add('Interior', 'Gridfinity baseplate' + (v ? ` (${o.baseplateHandles}-handle cut-out)` : '') + t, subdir + `${w}${d} Baseplate${v}.stl`, 1,
+        add('Interior', 'Gridfinity baseplate' + (v ? ` (${o.baseplateHandles}-handle cut-out)` : '') + t, subdir + `${w}${d} Baseplate${v}.stl`, n,
           { fallback: subdir + `${w}${d} Baseplate.stl`, ...x });
       }
     }
-    if (o.interior === 'grid') gridDividers(add, w, d, h, o, t);
-    if (o.manualSupports) add('Drawer', 'Manual support' + t, U + `Manual Supports/x${d}.stl`, 1,
+    if (o.interior === 'grid') byH.forEach(([dh, k]) => gridDividers(add, w, d, dh, o, t, k));
+    if (o.manualSupports) add('Drawer', 'Manual support' + t, U + `Manual Supports/x${d}.stl`, n,
       { note: 'Optional print aid for tall prints. Not part of the finished drawer.', aid: true, ...x });
   }
 
@@ -159,10 +179,10 @@
   };
   const GRID_WIDTH_FILE = { S: '10-S, x3', M: '18-M, x5', L: '26-L, x7', XL: '32-XL' };
   const GRID_DEPTH_FILE = { 3: '10-S, x3', 4: '14, x4', 5: '18-M, x5', 6: '22, x6', 7: '26-L, x7' };
-  function gridDividers(add, w, d, h, o, t) {
+  function gridDividers(add, w, d, h, o, t, k = 1) {
     const tall = o.gridHeight === 'full' ? (h === 1 ? 1 : 2) : 20;
     const dir = GRID_DIR[tall], sfx = tall === 20 ? '20MM' : tall + 'F';
-    const across = +o.gridAcross || 0, along = +o.gridAlong || 0;
+    const across = (+o.gridAcross || 0) * k, along = (+o.gridAlong || 0) * k;
     if (across) add('Interior', `Grid divider, full width (${GRID_WIDTH_FILE[w].split(',')[0]})` + t, dir + GRID_WIDTH_FILE[w] + '.stl', across);
     if (along) add('Interior', `Grid divider, full depth (${GRID_DEPTH_FILE[d].split(',')[0]})` + t, dir + GRID_DEPTH_FILE[d] + '.stl', along);
     if (across + along) {
@@ -202,8 +222,9 @@
     if (w === 'L2') {
       const why = 'The manual doesn’t list L² contents. L = S + S, so this assumes two S drawers side by side.';
       add('Module', 'Module shell', fam + `L${d}²/L${d}² Module ${h}F.stl`, 1);
-      drawerInsert(add, 'S', d, h, c, 'left', why);
-      drawerInsert(add, 'S', d, h, c, 'right', why);
+      // Both sides of an L² take the same drawers
+      drawerInsert(add, 'S', d, h, c, 'left', why, drawersOf(c));
+      drawerInsert(add, 'S', d, h, c, 'right', why, drawersOf(c));
       add('Module', 'L² accessory, 1st', U + `L² Accessories/x${d} Accessory 1st.stl`, 1, { inferred: 'One of each accessory per module is assumed.' });
       add('Module', 'L² accessory, 2nd', U + `L² Accessories/x${d} Accessory 2nd.stl`, 1, { inferred: 'One of each accessory per module is assumed.' });
     } else if (w === 'XL2') {
@@ -213,7 +234,7 @@
       drawerInsert(add, 'M', d, 1, c, 'M side', why);
     } else {
       add('Module', 'Module shell', fam + `${w}${d}/Modules/${w}${d} Module ${h}F.stl`, 1);
-      drawerInsert(add, w, d, h, c, '');
+      drawerInsert(add, w, d, h, c, '', '', drawersOf(c));
     }
     if (c.roof && c.roof !== 'none') roof(add, w === 'L2' ? 'L' : w === 'XL2' ? 'XL' : w, d, c.roof, c.topHandle);
   }
@@ -336,7 +357,8 @@
       // Front to box: one bolt per hole in the drawer front, counted in the STLs (Drawer Assembly 6/8 shows the 2 on an S 1F).
       // S: 2 at 1F, 4 at 2F/4F. M and L: 4 at 1F, 6 at 2F/4F. XL (1F only): 4. L² is two S drawers, XL² an S and an M (both 1F).
       const front = frontBolts;
-      const bolts = c.w === 'L2' ? 2 * front('S', c.h) : c.w === 'XL2' ? front('S', 1) + front('M', 1) : front(c.w, c.h);
+      const lay = drawersOf(c), per = w => lay.reduce((a, dh) => a + front(w, dh), 0);
+      const bolts = c.w === 'L2' ? 2 * per('S') : c.w === 'XL2' ? front('S', 1) + front('M', 1) : per(c.w);
       push('M4 × 14 mm button-head bolt', bolts, 'Drawer front to box');
       if (c.roof === 'grid' && c.topHandle) push('M6 × 50 mm countersunk bolt', 2, 'Roof top handle');
     } else {
@@ -403,6 +425,6 @@
     return { lines: k.lines, missing: k.missing, hardware: kind === 'grid' && topHandle ? [{ item: 'M6 × 50 mm countersunk bolt', qty: 2, why: 'Roof top handle' }] : [] };
   }
 
-  const api = { buildUnit, buildStack, buildRoof, makeResolver, exterior, familyForWidth, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, norm };
+  const api = { buildUnit, buildStack, buildRoof, makeResolver, exterior, familyForWidth, drawersOf, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, LAYOUTS, norm };
   if (typeof module !== 'undefined') module.exports = api; else root.VaultRules = api;
 })(this);
