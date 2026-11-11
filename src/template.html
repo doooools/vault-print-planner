@@ -3029,18 +3029,28 @@ details.termfold[open] > summary { color: var(--ink); }
   // place comes back in `unplaced`. The hidden key's removable key (Part 2) is printed but left out of the view: the
   // lock is shown as it is meant to be seen, flush with the front and the key taken out.
   const NOT_DRAWN = /\/hidden key part 2/i;
+  // A module holding several drawers (R.drawersOf; README "Layouts"): the shell's own parts (shell, guides, stoppers,
+  // latches) and each drawer's parts from the layout, tagged with their drawer (`mv`: side + index) and its joints.
   function placeParts(unit) {
-    const pl = PLACE.units[unit.key];
+    let pl = PLACE.units[unit.key];
     if (!pl) return null;
+    const lay = unit.cfg.type === 'drawer' && pl.layouts ? pl.layouts[R.drawersOf(unit.cfg).join()] || null : null;
+    if (lay) {
+      const keep = pl.parts.map((q, i) => [q, i]).filter(([q]) => q[2] !== 'drawer'), at = new Map(keep.map(([, i], k) => [i, k]));
+      pl = { parts: [...keep.map(([q]) => q), ...lay.parts],
+        hardware: [...(pl.hardware || []).filter(b => at.has(b[3].part)).map(b => [b[0], b[1], b[2], { ...b[3], part: at.get(b[3].part) }]),
+          ...(lay.hardware || []).map(b => [b[0], b[1], b[2], { ...b[3], part: b[3].part + keep.length }])] };
+    }
+    const mvOf = o => o && o.drawer != null ? (o.side || '') + o.drawer : null;
     const has = new Map([...(unit.shared || []), ...unit.lines].map(l => [R.norm(l.file.path), l]));
-    const parts = pl.parts.filter(([p]) => has.has(R.norm(p)) && !NOT_DRAWN.test(p)).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, piece: o && o.piece, joint: o && o.joint, role: l.role, cfg: l.cfg }; });
+    const parts = pl.parts.filter(([p]) => has.has(R.norm(p)) && !NOT_DRAWN.test(p)).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, piece: o && o.piece, joint: o && o.joint, mv: mvOf(o), role: l.role, cfg: l.cfg }; });
     const placed = new Set(pl.parts.map(([p]) => R.norm(p)));
     const unplaced = unit.lines.filter(l => !placed.has(R.norm(l.file.path))).map(l => l.label + (l.qty > 1 ? ' ×' + l.qty : ''));
     // Its bolts (tools/placements/hardware.py): each is held by a part (`part`, an index in `parts`) and is drawn with
     // it, so a variant that isn't in the list (another lock, no top handle) takes its bolts away too
     const bolts = (pl.hardware || []).filter(([, , , o]) => { const p = pl.parts[o.part]; return p && has.has(R.norm(p[0])) && !NOT_DRAWN.test(p[0]); })
-      .map(([spec, group, m, o]) => { const q = pl.parts[o.part]; return { spec, group, m, path: q[0], joint: q[4] && q[4].joint, cfg: has.get(R.norm(q[0])).cfg }; });
-    return { parts, unplaced, bolts };
+      .map(([spec, group, m, o]) => { const q = pl.parts[o.part]; return { spec, group, m, path: q[0], joint: q[4] && q[4].joint, mv: mvOf(q[4]), cfg: has.get(R.norm(q[0])).cfg }; });
+    return { parts, unplaced, bolts, lay };
   }
 
   // Read an STL, weld identical corners, drop triangles with no area (some exports carry 100k+ of them, which wreck a
@@ -3385,7 +3395,8 @@ details.termfold[open] > summary { color: var(--ink); }
       g.position.set(u.x, u.y, 0); g.add(boxes, drawer); scene.add(g);
       const shell = painted(new T.BoxGeometry(u.w - 1, u.h - 1, u.d), u.roof ? 'roof' : 'shell', u.cfg);
       shell.position.set(0, u.h / 2, -u.d / 2); boxes.add(shell);
-      const front = u.drawer ? painted(new T.BoxGeometry(u.w - 8, u.h - 8, 4), 'facade', u.cfg) : null;
+      const place = placeParts(u), lay = place && place.lay;
+      const front = u.drawer && !lay ? painted(new T.BoxGeometry(u.w - 8, u.h - 8, 4), 'facade', u.cfg) : null;
       if (front) { front.position.set(0, u.h / 2, 2); drawer.add(front); }
       // A case's lid (and its hinge tops) turns about the hinge axis: a pivot on the axis holding the parts set back by it
       const hinge = (PLACE.units[u.key] || {}).hinge;
@@ -3397,8 +3408,17 @@ details.termfold[open] > summary { color: var(--ink); }
       }
       const motion = (PLACE.units[u.key] || {}).motion || null;
       const steps = (motion && motion.open) || [{ joints: [u.drawer ? 'drawer' : 'lid'], from: 0, to: 1, s: 1 }];
-      v.units.push({ ...u, g, drawer, boxes, front, lid, place: placeParts(u), travel: u.drawer ? Math.round(u.d * 0.6) : 0, open: false, ghost: !!ghost && u.cfg === ghost,
-        motion, steps, t: 0, jn: new Map(), dur: Math.min(1, Math.max(0.6, steps.reduce((a, s) => a + (s.s || 0.5), 0))) });
+      const dur = st => Math.min(1, Math.max(0.6, st.reduce((a, s) => a + (s.s || 0.5), 0)));
+      // Several drawers in the module: each its own group, front, steps (its key and racks, then its slide) and joints
+      const movers = lay ? lay.drawers.map(dr => {
+        const dg = new T.Group(), fw = dr.side ? u.w / 2 : u.w, fh = 48 * dr.h;
+        const f = painted(new T.BoxGeometry(fw - 8, fh - 6, 4), 'facade', u.cfg);
+        f.position.set(dr.side ? (dr.side === 'left' ? -1 : 1) * u.w / 4 : 0, 2 + 48 * dr.level + fh / 2, 2); dg.add(f); g.add(dg);
+        return { id: (dr.side || '') + dr.drawer, side: dr.side || null, level: dr.level, h: dr.h, drawer: dg, front: f, travel: Math.round(u.d * 0.6),
+          open: false, t: 0, jn: new Map(), motion: lay.motion, steps: dr.open, dur: dur(dr.open) };
+      }) : null;
+      v.units.push({ ...u, g, drawer, boxes, front, lid, place, movers, travel: u.drawer && !movers ? Math.round(u.d * 0.6) : 0, open: false, ghost: !!ghost && u.cfg === ghost,
+        motion, steps, t: 0, jn: new Map(), dur: dur(steps) });
     }
     v.units.forEach(v3pose);
     // Spread units apart (each level lifted a little more) and hide the roofs
@@ -3418,7 +3438,17 @@ details.termfold[open] > summary { color: var(--ink); }
       const hit = ray.intersectObjects([...v.units.map(u => u.g), ...v.extras], true).find(h => shown(h.object));
       if (!hit) return null;
       const u = v.units.find(x => { for (let o = hit.object; o; o = o.parent) if (o === x.g) return true; return false; });
-      return { u, mesh: hit.object };
+      return { u, mesh: hit.object, point: hit.point };
+    };
+    // What a click opens: the unit, or in a module holding several drawers the one clicked (its parts, or the shell's
+    // levels it rides on, on its side of an L²)
+    const moverAt = h => {
+      if (!h || !h.u || !h.u.movers) return h && h.u;
+      const ms = h.u.movers;
+      for (let o = h.mesh; o && o !== h.u.g; o = o.parent) { const m = ms.find(x => x.drawer === o); if (m) return m; }
+      const p = h.u.g.worldToLocal(h.point.clone()), top = Math.max(...ms.map(m => m.level + m.h)) - 1;
+      const k = Math.min(top, Math.max(0, Math.floor((p.y - 2) / 48)));
+      return ms.find(m => (!m.side || (m.side === 'left') === (p.x < 0)) && k >= m.level && k < m.level + m.h) || null;
     };
     v.glide = () => glide();
     // A drawer opens any time; a case once its lid's parts are in
@@ -3432,7 +3462,7 @@ details.termfold[open] > summary { color: var(--ink); }
         if (v3 !== v) return;
         const dt = Math.min(0.05, Math.max(0, now - last) / 1000); last = now;
         let moving = false;
-        for (const u of v.units) {
+        for (const u of v.units.flatMap(x => x.movers || [x])) {
           const to = u.open ? 1 : 0;
           if (u.t === to) continue;
           u.t = to > u.t ? Math.min(to, u.t + dt / u.dur) : Math.max(to, u.t - dt / u.dur);
@@ -3456,7 +3486,7 @@ details.termfold[open] > summary { color: var(--ink); }
       if (!down || ev.button !== 0 || Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 5 || performance.now() - down.t > 500) { down = null; return; }
       down = null;
       const h = hitAt(ev);
-      if (v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey) { if (h && canOpen(h.u)) { h.u.open = !h.u.open; glide(); } return; }
+      if (v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey) { const m = moverAt(h); if (canOpen(m)) { m.open = !m.open; glide(); } return; }
       if (!h || !h.mesh.userData.role) { if (v.tool === 'turn') { v.sel = null; v3side(); } return; }
       v.sel = { role: h.mesh.userData.role, cfg: h.mesh.userData.cfg, u: h.u || null, name: h.mesh.userData.name };
       if (v.tool === 'paint') v3paint(v, h.mesh);
@@ -3468,7 +3498,7 @@ details.termfold[open] > summary { color: var(--ink); }
       requestAnimationFrame(() => {
         hoverQueued = false; if (v3 !== v) return;
         const h = hitAt(ev);
-        el.style.cursor = !h ? '' : v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey ? (canOpen(h.u) ? 'pointer' : '') : h.mesh.userData.role ? 'pointer' : '';
+        el.style.cursor = !h ? '' : v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey ? (canOpen(moverAt(h)) ? 'pointer' : '') : h.mesh.userData.role ? 'pointer' : '';
         if (v.tool !== 'paint' || !h) { hotKey = ''; setHot(null); return; }
         const { role, cfg } = h.mesh.userData, key = role + '|' + (v.pscope === 'unit' ? v.units.indexOf(v.units.find(u => u.cfg === cfg)) : '');
         if (key !== hotKey) { hotKey = key; setHot(paintsWith(h.mesh)); }
@@ -3634,6 +3664,7 @@ details.termfold[open] > summary { color: var(--ink); }
       u.drawer.clear(); if (u.front) u.drawer.add(u.front); u.boxes.visible = true;
       if (u.lid) u.lid.userData.inner.clear();
       u.jn = new Map(); // the joints' groups went with the drawer and parts groups
+      (u.movers || []).forEach(m => { m.drawer.clear(); m.drawer.add(m.front); m.jn = new Map(); });
     });
     say(); v3list();
     // Each file's copies go in as soon as it's ready, and a unit's box goes with its first part
@@ -3654,12 +3685,13 @@ details.termfold[open] > summary { color: var(--ink); }
       };
       for (const u of todo) for (const p of u.place.parts) {
         if (p.path !== path) continue;
-        if (!u.loaded) { u.boxes.visible = false; if (u.front) u.drawer.remove(u.front); }
+        if (!u.loaded) { u.boxes.visible = false; if (u.front) u.drawer.remove(u.front); (u.movers || []).forEach(m => m.drawer.remove(m.front)); }
         const mesh = v.painted(geomFor(p.piece), p.role, p.cfg), m = p.m;
         mesh.matrixAutoUpdate = false;
         mesh.matrix.set(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], 0, 0, 0, 1);
-        const at = p.group === 'drawer' ? u.drawer : p.group === 'lid' && u.lid ? u.lid.userData.inner : u.parts;
-        (p.joint && v3joint(T, u, p.joint, at) || at).add(mesh);
+        const own = p.mv != null && u.movers && u.movers.find(x => x.id === p.mv) || u;
+        const at = p.group === 'drawer' ? own.drawer : p.group === 'lid' && u.lid ? u.lid.userData.inner : u.parts;
+        (p.joint && v3joint(T, own, p.joint, at) || at).add(mesh);
         u.loaded++;
       }
       // The bolts this file's parts hold, in the same group (they slide out with a drawer front, turn with a lid) and
@@ -3672,8 +3704,9 @@ details.termfold[open] > summary { color: var(--ink); }
         mesh.visible = v3hw;
         mesh.matrixAutoUpdate = false;
         mesh.matrix.set(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], 0, 0, 0, 1);
-        const at = b.group === 'drawer' ? u.drawer : b.group === 'lid' && u.lid ? u.lid.userData.inner : u.parts;
-        (b.joint && v3joint(T, u, b.joint, at) || at).add(mesh);
+        const own = b.mv != null && u.movers && u.movers.find(x => x.id === b.mv) || u;
+        const at = b.group === 'drawer' ? own.drawer : b.group === 'lid' && u.lid ? u.lid.userData.inner : u.parts;
+        (b.joint && v3joint(T, own, b.joint, at) || at).add(mesh);
         u.bolts++;
       }
       todo.forEach(v3pose);
@@ -3738,6 +3771,7 @@ details.termfold[open] > summary { color: var(--ink); }
         else { n.outer.position.set(j.latch.B[0], p.B[1], p.B[0]); n.outer.quaternion.setFromAxisAngle(n.axis, p.theta * Math.PI / 180); }
       }
     }
+    if (u.movers) u.movers.forEach(v3pose);
   }
   // A case's toggle latch, in its plane (u = z, v = y; angles right-handed about the latch's axis, -X): the link
   // turns about A by phi and carries the pin B; the lever hangs on B. Phase 1 (the tooth C in the lid's groove): an
