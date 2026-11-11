@@ -13,8 +13,8 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
 
 ## Hard rules
 - The page is **one HTML file** (`index.html`) built from `src/` and runs entirely in the browser. It has no external
-  scripts today. Load three.js (or similar) **only when the 3D view opens**, from a pinned CDN version, and keep the
-  rest of the page working without it.
+  scripts today. Load three.js (or similar) **only when the 3D view is shown** (steps 1 and 2 show it), as a dynamic
+  import from a pinned CDN version, and keep the rest of the page working without it.
 - **Never commit USSA geometry**: no STL (original or decimated), no `.blend`, no renders of the parts. Vault's
   files are commercial and the page must keep reading them from the user's own folder only. Numbers derived from
   them (measurements, placements) are fine, like the existing `src/stl-measurements.tsv`.
@@ -36,9 +36,16 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   - group `drawer` parts slide out along +Z when the drawer opens; `module` parts stay.
   - Stacking: a unit starts `52 + 48 × (levels − 1)` mm above the bottom of the one below. The planner's
     `R.exterior` uses 51.5 / 99.5 / 195.5 (USSA's figures): within 0.5 mm, pick one and say so.
-- 3D view, milestone 1 (section "3D stack view" in `src/template.html`, dialog `#v3d`, "3D" button on each stack
-  card): three.js 0.186.1 and meshoptimizer 1.3.0 from jsDelivr, loaded on open; boxes before the folder is picked,
-  then real parts simplified in workers (0.15 mm, cached in IndexedDB).
+- 3D view (section "3D stack view" in `src/template.html`): three.js 0.186.1 and meshoptimizer 1.3.0 from jsDelivr,
+  loaded when the view is first shown; boxes before the folder is picked, then real parts simplified in workers
+  (0.15 mm, cached in IndexedDB). Always on in steps 1 and 2: `v3panel()` puts a panel in each (step 1 at the top of
+  the right column, step 2 under the overview, with a stack menu; a stack card's "Show in 3D" picks it), and
+  `v3sync()` (end of `renderUnit` / `renderBuild` / `renderAll`) moves the one persistent `#v3view` into the shown
+  step's `.v3-slot`, rebuilding the model only when the unit or stack changes (`v.key`, colours left out) and just
+  repainting otherwise. `v3park()` takes the view out before those steps redraw with `innerHTML` (else it goes with
+  the old page and `getElementById` stops finding it). One WebGL renderer (`v3gl`) for the page's life; `close3d`
+  drops a model's scene; `v3ui` carries tools and camera direction over. "Enlarge" (`v3enlarge`) moves the view into
+  the `#v3d` dialog; closing it puts it back.
   One view since step 3 of `docs/colors-3d-redesign.md` (`open3d`; `v.global` = opened from step 1, the unit `c`):
   toolbar `v3tools` (Turn: a click selects; Paint: brush bar with the tray's colours, "More…" adds one, "Same part
   everywhere" / "This unit only", hover tints what a click would paint via `v.hot`; Drawers: a click opens or closes a
@@ -73,7 +80,7 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   Slots come from `trayUse()`: one per colour in use, in tray order (1, then 3…), like `buildProject`; labels on their
   own plate (`labelsApart`) don't count. With step 3's plates by size or in one colour, the panel says the plates
   don't follow it.
-- Step 1 has a "3D" button: the unit opens with drawers out and the Paint tool. Step 1's tiles (shell, box, front,
+- Step 1's 3D shows the unit being set up, drawers out, Paint tool first. Step 1's tiles (shell, box, front,
   key lock, roof; case: body, front, lid, hinge) each carry a colour square that opens the preview with the picker
   open. Opening the Vault folder is step 1's first thing: a big card in the middle (`renderFolderHero`, "Not now"
   hides it for the visit), then a one-line status (`unitFolderBar`).

@@ -207,8 +207,27 @@ dialog#viewer::backdrop { background: rgba(10, 12, 12, .45); }
 .bedsvg.big { width: 72px; height: 72px; }
 .vclose { position: absolute; top: 10px; right: 12px; border: 0; background: transparent; font-size: 24px; line-height: 1; color: var(--muted); }
 dialog#viewer { position: fixed; }
-dialog#v3d { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 0; width: min(1180px, calc(100vw - 32px)); height: min(820px, calc(100vh - 32px)); position: fixed; overflow: hidden; }
-dialog#v3d[open] { display: grid; grid-template-columns: minmax(0, 1fr) 340px; }
+dialog#v3d { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 0; width: min(1400px, calc(100vw - 32px)); height: min(900px, calc(100vh - 32px)); position: fixed; overflow: hidden; }
+dialog#v3d .vclose { z-index: 2; }
+.v3-dhost { height: 100%; }
+/* The 3D view: in the page (steps 1 and 2) or enlarged in #v3d */
+.v3-view { display: grid; grid-template-columns: minmax(0, 1fr) 320px; height: 100%; min-height: 0; }
+.v3-panel { overflow: hidden; }
+.v3-phead { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding: 12px 18px; border-bottom: 1px solid var(--line); }
+.v3-phead h2 { margin: 0 auto 0 0; font-family: var(--f-display); font-stretch: 112%; font-size: 18px; }
+.v3-pick { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.v3-pick select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); color: var(--ink); }
+.v3-slot { container-type: inline-size; }
+.v3-slot .v3-view { height: auto; }
+.v3-slot .v3-stage { height: clamp(380px, 60vh, 620px); }
+.v3-slot .v3-side { max-height: clamp(380px, 60vh, 620px); }
+.v3-slot .v3-side h2 { display: none; }
+/* A narrow panel: the side column goes under the view */
+@container (max-width: 760px) {
+  .v3-view { grid-template-columns: minmax(0, 1fr); }
+  .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 440px !important; }
+  .v3-brush-hint, .v3-brush-l { display: none; }
+}
 dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-stage { min-width: 0; min-height: 0; position: relative; background: var(--sheet-2); }
 .v3-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
@@ -363,7 +382,7 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-colors[data-colors-root] > p.pp { padding: 0 0 8px; }
 .v3-colors .ctray-sw { height: 28px; }
 .v3-colors .ctray-add { grid-column: 1 / -1; min-height: 0; flex-direction: row; padding: 10px; }
-@media (max-width: 760px) { dialog#v3d[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } .v3-brush-hint { display: none; } }
+@media (max-width: 760px) { dialog#v3d .v3-view { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } dialog#v3d .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } .v3-brush-hint { display: none; } }
 .row.done { opacity: .45; }
 .row.done .pname { text-decoration: line-through; }
 .row input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--ok); }
@@ -747,7 +766,7 @@ details.termfold[open] > summary { color: var(--ink); }
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><h3>2026-11-09</h3><ul><li><b>XL units really fit the H2S now:</b> the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.</li><li><b>Closer filament estimates:</b> checked against the weights USSA publishes per module, the planner was reading about 17% high. It's now within a few percent.</li><li><b>Stack heights with 1F cases:</b> the planner listed a 1F case as 71 mm tall instead of about 66, so stack drawings and overall heights came out a little tall. Only the numbers on the page were off; the parts and print files are unchanged.</li><li><b>Assembly:</b> step 4 now also passes on USSA's advice to put a 2F module right under the roof when you use the base, backbones or handles.</li></ul><h3>2026-11-08</h3><ul><li><b>Filament per color:</b> step 3 shows roughly how much of each color the whole build needs, so you can check your spools before you start.</li><li><b>Labels get their own plate,</b> so you can add your text and print them in several colors without touching the other plates. Turn it off in step 3 to print them with the rest.</li><li><b>Manual supports go where they help:</b> each one prints standing against the end of a roof of the same depth. Ones with no roof to brace are left out (step 3 says which), and STL folder names say where to stand them.</li><li><b>Download names say what's inside:</b> the build, the printer, and which plates if some are already printed, like "Vault - 3 units in 2 stacks - P1S - plates 4-12.3mf".</li><li><b>Printer not listed?</b> Pick "My printer isn't listed" and type its name: the bed size for about 380 printers fills in, taken from OrcaSlicer's printer profiles. Or enter your bed size yourself. The bed size is all the planner needs.</li><li><b>Voron presets:</b> 2.4 and Trident (250, 300, 350) and the 0.2. Like other non-Bambu printers, they get plate files for OrcaSlicer or PrusaSlicer.</li></ul><h3>2026-11-07</h3><ul><li><b>More printers:</b> presets for Prusa (MK4/MK4S, CORE One, MINI+, XL), Creality (K1/K1C, K1 Max, K2 Plus, Ender-3 V3 SE), Elegoo (Centauri Carbon, Neptune 4 Pro and Max), Anycubic (Kobra 3, Kobra S1) and Qidi (Q1 Pro, Plus4), plus Custom size for anything else.</li><li><b>Plate files for non-Bambu printers:</b> step 3 now saves a zip with one standard .3mf per plate. Parts are already laid out, and the parts that need supports or a brim are already marked. Works in OrcaSlicer, PrusaSlicer and the slicers built on them; a settings.txt lists the same settings for any other slicer.</li><li><b>STL folders</b> now name each part's settings in its file name, with a settings.txt per plate.</li><li><b>XL units fit the H2S:</b> facades and backbones that are too long for the bed go on the diagonal, at whatever angle fits.</li><li><b>Missing parts are named:</b> if your Vault folder is missing files, step 3 lists them. File names that an unzip or a newer download changed are still matched.</li><li><b>Print and Assemble stay empty</b> until you add something to your build, with a button to add the unit you picked in step 1.</li><li><b>Fewer slicer conflicts:</b> parts with supports keep clear of neighbouring parts, the rows around them and the bed edge.</li></ul><h3>2026-11-06</h3><ul><li><b>First public version.</b></li><li><b>More Bambu printers:</b> P2S, X2D, A2L, H2D Pro, H2C and H3C; plate spacing fixed on dual-nozzle printers.</li><li><b>Stack pictures:</b> front and side views, overall size with dimension lines, and wheels, feet, casters and handles drawn where USSA's manual puts them.</li><li><b>Step 1 checks whether a unit stacks</b> before adding it and offers a matching size.</li><li><b>Hardware list:</b> bolt head shapes, drawer front bolts counted from the holes in each front, and links to matching products.</li><li><b>Choosing the Vault folder</b> is its own step, with a heads-up about the browser's permission prompt.</li><li><b>Plate numbers stay put</b> when you mark plates as printed.</li><li><b>Tree supports</b> no longer run into the next part.</li><li><b>Part pictures</b> at full size.</li></ul></div></dialog>
 <dialog id="viewer" aria-label="Part preview"><button type="button" class="vclose" id="viewerClose" aria-label="Close preview">&times;</button><div id="viewerBody" class="vbody"></div></dialog>
-<dialog id="v3d" aria-labelledby="v3dTitle"><button type="button" class="vclose" id="v3dClose" aria-label="Close 3D view">&times;</button>
+<div id="v3home" hidden><div class="v3-view" id="v3view">
   <div class="v3-stage"><div class="v3-canvas" id="v3dCanvas"></div><div class="v3-tools" id="v3dTools"></div><div id="v3dBrush" hidden></div></div>
   <div class="v3-side"><h2 id="v3dTitle">3D</h2><p class="v3-status" id="v3dStatus" role="status"></p>
     <button type="button" class="btn" id="v3dPick" hidden>Show the real parts…</button>
@@ -755,7 +774,8 @@ details.termfold[open] > summary { color: var(--ink); }
     <div class="v3-sec">Units, top to bottom</div>
     <ul class="v3-list" id="v3dList"></ul>
     <div id="v3dColors"></div>
-    <p class="pnote" id="v3dHint">Your part files are only read here: nothing is uploaded. The simplified parts are kept in this browser.</p></div></dialog>
+    <p class="pnote" id="v3dHint">Your part files are only read here: nothing is uploaded. The simplified parts are kept in this browser.</p></div></div></div>
+<dialog id="v3d" aria-label="3D view, enlarged"><button type="button" class="vclose" id="v3dClose" aria-label="Back to the page">&times;</button><div class="v3-dhost" id="v3dHost"></div></dialog>
 
 
 <script>
@@ -2174,6 +2194,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       idb('readonly', st => st.get('folder')).then(h => { if (h && h.name && !vaultFolder) { rememberedFolder = h.name; redraw(); } }).catch(() => {});
   }
   function renderUnit() {
+    v3park();
     const res = withSpares(computeUnit(c)), s = summary(res.lines);
     const ext = unitExt(c);
     const label = unitCode(c);
@@ -2189,8 +2210,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       : `<div class="stackchk okline">${ICON_OK}Fits ${where}${esc(cd.t.name)}${cd.v === 'edit' ? ` (level ${editing.l + 1})` : ''}</div>`;
     $('view-unit').innerHTML = `
       ${towers.length ? '' : presetsBlock(false)}
+      ${v3panel()}
       <div class="panel unit-head">
-        <div class="unit-title"><h2>${esc(label)}</h2><span class="ut-side"><span class="dims mono num">${ext.map(n => Math.round(n)).join(' \u00d7 ')} mm outside (W \u00d7 D \u00d7 H)</span><button type="button" class="btn" id="unit3d" title="Turn this unit around in 3D and choose the project\u2019s colors">3D</button></span></div>
+        <div class="unit-title"><h2>${esc(label)}</h2><span class="ut-side"><span class="dims mono num">${ext.map(n => Math.round(n)).join(' \u00d7 ')} mm outside (W \u00d7 D \u00d7 H)</span></span></div>
         ${heroStrip(res.lines)}
         <div id="unitFolder">${unitFolderBar(res.lines)}</div>
         ${statsBlock(s)}
@@ -2214,7 +2236,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       ${hwTable(res.hardware)}`;
     bindPresets($('view-unit'));
     bindUnitFolder(res.lines);
-    $('unit3d').onclick = () => open3d({ id: 'unit', name: label, levels: [[clean(c)]], stack: { ...STACK_DEFAULT } }, { global: true });
+    bindV3panel($('view-unit')); v3sync();
     if (!editing) {
       let n = 1;
       $('addDest').onchange = () => { destChoice = $('addDest').value; renderControls(); renderUnit(); };
@@ -2612,6 +2634,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     add.onclick = () => togglePicker(add, { role: null, from: 'Your filament tray', after: rerender });
   }
   function renderBuild() {
+    v3park();
     if (!towers.length) {
       $('view-build').innerHTML = `${presetsBlock(!extras.length)}${extrasPanel()}<div class="panel empty">No stacks yet. Pick a starting point above, or design a unit in step 1 and press <b>Add</b>.${stackExplainer()}</div>`;
       bindPresets($('view-build')); bindExtras();
@@ -2626,7 +2649,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       const fam = a.fam;
       const bad = a.issues.some(x => x.k === 'bad');
       const head = `<div class="tower-head"><input class="tname" value="${esc(t.name)}" data-rename="${t.id}" aria-label="Stack name">
-          <span class="actions"><button class="btn primary" data-addunit="${t.id}">+ Add a unit</button>${t.levels.length ? `<button class="btn" data-view3d="${t.id}" title="Turn this stack around in 3D">3D</button>` : ''}<button class="btn" data-dup-tower="${t.id}">Duplicate</button><button class="btn" data-del-tower="${t.id}">Remove stack</button>${fold ? `<button class="iconbtn foldbtn" data-fold="${t.id}" aria-label="Fold ${esc(t.name)}" title="Fold">\u2212</button>` : ''}</span></div>`;
+          <span class="actions"><button class="btn primary" data-addunit="${t.id}">+ Add a unit</button>${t.levels.length ? `<button class="btn" data-view3d="${t.id}" title="Show this stack in the 3D view">Show in 3D</button>` : ''}<button class="btn" data-dup-tower="${t.id}">Duplicate</button><button class="btn" data-del-tower="${t.id}">Remove stack</button>${fold ? `<button class="iconbtn foldbtn" data-fold="${t.id}" aria-label="Fold ${esc(t.name)}" title="Fold">\u2212</button>` : ''}</span></div>`;
       const open = fold ? `<details class="panel tower folded" id="tower-${t.id}" data-tower="${t.id}" ${openTowers.has(t.id) ? 'open' : ''}>
         <summary>${t.levels.length ? miniTower(t, a, fpx) : ''}<span class="ft-name"><b>${esc(t.name)}</b><small class="num">${t.levels.length ? `${plural(t.levels.length, 'level')} · ${Math.round(a.height)} mm · ${plural(st.plates, 'plate')} · ≈ ${gramsStr(st.g)}` : 'no units yet'}</small></span>${bad ? '<span class="tag bad">Won\u2019t stack</span>' : ''}</summary>` : `<div class="panel tower" id="tower-${t.id}" data-tower="${t.id}">`;
       return `${open}
@@ -2655,13 +2678,14 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
           </div>
         </div>${fold ? '</details>' : '</div>'}`;
     }).join('');
-    $('view-build').innerHTML = `${overviewPanel(info)}${colorsPanel()}${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
+    $('view-build').innerHTML = `${overviewPanel(info)}${v3panel()}${colorsPanel()}${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
       <div class="actions"><button class="btn" id="newTower">New empty stack</button><button class="btn primary" id="toPrint">Next: print plates \u2192</button></div>`;
     bindPresets($('view-build')); bindExtras(); bindColors($('view-build'), renderAll);
     const V = $('view-build'), find = id => towers.find(t => t.id === +id);
     V.querySelectorAll('[data-rename]').forEach(i => i.onchange = () => { find(i.dataset.rename).name = i.value.trim() || 'Stack'; save(); renderTabs(); });
     V.querySelectorAll('[data-del-tower]').forEach(b => b.onclick = () => { towers = towers.filter(t => t.id !== +b.dataset.delTower); save(); renderAll(); });
-    V.querySelectorAll('[data-view3d]').forEach(b => b.onclick = () => open3d(find(b.dataset.view3d)));
+    bindV3panel(V); v3sync();
+    V.querySelectorAll('[data-view3d]').forEach(b => b.onclick = () => { v3stack = +b.dataset.view3d; renderAll(); const p = V.querySelector('.v3-panel'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     V.querySelectorAll('[data-dup-tower]').forEach(b => b.onclick = () => { const t = find(b.dataset.dupTower); towers.push({ ...JSON.parse(JSON.stringify(t)), id: seq++, name: t.name + ' copy' }); save(); renderAll(); });
     V.querySelectorAll('[data-move]').forEach(b => b.onclick = () => { const [tid, i, d] = b.dataset.move.split(':').map(Number); const L = find(tid).levels; [L[i], L[i + d]] = [L[i + d], L[i]]; save(); renderAll(); });
     V.querySelectorAll('[data-dup]').forEach(b => b.onclick = () => { const [tid, i] = b.dataset.dup.split(':').map(Number); const L = find(tid).levels; L.splice(i + 1, 0, JSON.parse(JSON.stringify(L[i]))); save(); renderAll(); });
@@ -3440,21 +3464,24 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   const v3status = msg => { $('v3dStatus').textContent = msg; };
   const V3_VIEWS = [['front', 'Front', [0, 0.16, 1]], ['3q', '¾', [0.55, 0.42, 1]], ['side', 'Side', [1, 0.22, 0.02]]];
   const V3_SPREAD = 60; // mm between units when spread
+  // The view lives in the page (steps 1 and 2, see v3sync) or, enlarged, in the #v3d dialog. One WebGL renderer is
+  // kept for the page's life; each model (a unit, a stack) gets its own scene, and the tools and the camera's
+  // direction carry over from one to the next (v3ui).
+  let v3gl = null, v3want = null;
+  const v3ui = { tool: null, pscope: 'project', brush: null, explode: false, hideRoof: false, view: '3q', dir: null };
   async function open3d(t, mode = {}) {
-    const d = $('v3d');
-    $('v3dTitle').textContent = t.name;
-    $('v3dList').innerHTML = ''; $('v3dSel').replaceChildren(); $('v3dTools').replaceChildren(); $('v3dBrush').hidden = true;
-    d.querySelector('.v3-side').scrollTop = 0;
-    v3status('Loading the 3D viewer…');
-    d.showModal();
+    const want = v3want = {};
+    if (!v3gl) v3status('Loading the 3D viewer…');
     let lib;
-    try { lib = await loadThree(); } catch (e) { v3status('Couldn’t load the 3D viewer (three.js, from cdn.jsdelivr.net). Check your connection and try again; the rest of the page works without it.'); return; }
-    if (!d.open) return;
+    try { lib = await loadThree(); } catch (e) { v3status('Couldn’t load the 3D viewer (three.js, from cdn.jsdelivr.net). Check your connection and reload the page; the rest of the page works without it.'); return; }
+    if (v3want !== want) return; // something else was asked for meanwhile
     close3d();
+    $('v3dTitle').textContent = t.name;
+    $('v3dList').innerHTML = ''; $('v3dSel').replaceChildren();
     const { T, OrbitControls } = lib, box = $('v3dCanvas');
-    const renderer = new T.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-    box.replaceChildren(renderer.domElement);
+    if (!v3gl) { v3gl = new T.WebGLRenderer({ antialias: true }); v3gl.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); }
+    const renderer = v3gl;
+    if (renderer.domElement.parentNode !== box) box.replaceChildren(renderer.domElement);
     const scene = new T.Scene(), css = getComputedStyle(document.documentElement);
     scene.background = new T.Color(css.getPropertyValue('--sheet-2').trim() || '#e9e9e4');
     scene.add(new T.HemisphereLight(0xffffff, 0x6d6f6c, 1.6));
@@ -3477,8 +3504,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       return mats.get(k);
     };
     const painted = (geo, role, cfg) => Object.assign(new T.Mesh(geo, mat(role, cfg)), { userData: { role, cfg } });
-    const v = v3 = { t, global: !!mode.global, extras: [], T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {},
-      tool: mode.global ? 'paint' : 'turn', pscope: 'project', brush: null, sel: null, hot: null, explode: false, hideRoof: false, view: '3q' };
+    const v = v3 = { t, global: !!mode.global, key: mode.key, cfgs: mode.cfgs || [], ac: new AbortController(), extras: [], T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {},
+      tool: v3ui.tool || (mode.global ? 'paint' : 'turn'), pscope: v3ui.pscope, brush: v3ui.brush, sel: null, hot: null, explode: v3ui.explode, hideRoof: v3ui.hideRoof, view: v3ui.view };
+    const sig = { signal: v.ac.signal };
     const render = () => renderer.render(scene, camera);
     v.render = render;
     v.recolor = () => { scene.traverse(o => { if (o.isMesh && o.userData.role) o.material = mat(o.userData.role, o.userData.cfg, !!(v.hot && v.hot(o))); }); render(); };
@@ -3497,7 +3525,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const resize = () => {
       const w = box.clientWidth, h = box.clientHeight; if (!w || !h) return;
       renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
-      if (!framed) { framed = true; v.aim(V3_VIEWS[1][2]); }
+      if (!framed) { framed = true; v.aim(v3ui.dir || V3_VIEWS[1][2]); }
       render();
     };
     v.ro = new ResizeObserver(resize); v.ro.observe(box);
@@ -3522,6 +3550,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       if (v.sel && v.sel.u && !v.sel.u.g.visible) v.sel = null;
       v.aim(null);
     };
+    v.units.forEach(u => { u.g.position.y = u.y + spreadOf(u); u.g.visible = !(u.roof && v.hideRoof); });
     const el = renderer.domElement, ray = new T.Raycaster(), ndc = new T.Vector2();
     const shown = o => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
     // The part under the pointer, and the unit it belongs to (none for the base shapes)
@@ -3561,7 +3590,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     };
     const setHot = f => { if (v.hot === f || (!v.hot && !f)) return; v.hot = f; v.recolor(); };
     let down = null, hoverQueued = false, hotKey = '';
-    el.addEventListener('pointerdown', ev => { down = { x: ev.clientX, y: ev.clientY, t: performance.now() }; });
+    el.addEventListener('pointerdown', ev => { down = { x: ev.clientX, y: ev.clientY, t: performance.now() }; }, sig);
     el.addEventListener('pointerup', ev => {
       if (!down || ev.button !== 0 || Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 5 || performance.now() - down.t > 500) { down = null; return; }
       down = null;
@@ -3571,7 +3600,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       v.sel = { role: h.mesh.userData.role, cfg: h.mesh.userData.cfg, u: h.u || null, name: h.mesh.userData.name };
       if (v.tool === 'paint') v3paint(v, h.mesh);
       else v3side();
-    });
+    }, sig);
     el.addEventListener('pointermove', ev => {
       if (ev.buttons || hoverQueued) return;
       hoverQueued = true;
@@ -3583,8 +3612,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         const { role, cfg } = h.mesh.userData, key = role + '|' + (v.pscope === 'unit' ? v.units.indexOf(v.units.find(u => u.cfg === cfg)) : '');
         if (key !== hotKey) { hotKey = key; setHot(paintsWith(h.mesh)); }
       });
-    });
-    el.addEventListener('pointerleave', () => { hotKey = ''; setHot(null); });
+    }, sig);
+    el.addEventListener('pointerleave', () => { hotKey = ''; setHot(null); }, sig);
     resize();
     v3tools(); v3side();
     if (vaultFolder) loadParts(v); else v3status(v.units.some(u => u.place) ? 'Boxes for now. Choose your Vault folder to see the real parts.' : 'Boxes from the published sizes.');
@@ -3682,6 +3711,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // The project's colours (tray and map), at the foot of the side column
   function v3colors() {
     const v = v3, box = $('v3dColors'); if (!v) return;
+    if (view === 'build' && !$('v3d').open) { box.replaceChildren(); return; } // step 2 has it on the page
     box.innerHTML = colorsPanel(true);
     bindColors(box, () => v3refresh(v));
   }
@@ -3708,7 +3738,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       const [ui, role] = b.dataset.v3pick.split('|'), u = v.units[+ui], l = u.lines.find(x => x.role === role);
       v.sel = { role, cfg: l ? l.cfg : u.cfg, u }; v3side();
     });
-    $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder;
+    $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder || (!!vaultFolder && $('v3d').open); // enlarged, only to show the real parts
     $('v3dPick').textContent = vaultFolder ? 'Change folder' : 'Show the real parts…';
   }
   function setRoleColor(role, id) {
@@ -3724,6 +3754,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     return 'c' + n;
   }
   async function loadParts(v) {
+    v.folder = vaultFolder;
     const todo = v.units.filter(u => u.place && u.place.parts.length), token = v.token = {};
     if (!todo.length) { v3status('No unit in this stack has measured placements yet, so they stay boxes.'); return; }
     const { T } = v, live = () => v3 === v && v.token === token;
@@ -3767,16 +3798,65 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (failed.length) msg += ` Couldn’t simplify ${missingList(failed.map(x => x[0]))} (${failed[0][1]}).`;
     v3status(msg);
   }
+  // Let go of a model (its scene, controls and listeners); the renderer stays for the next one
   function close3d() {
     const v = v3; if (!v) return;
-    v3 = null; v.token = null;
-    v.ro.disconnect(); v.controls.dispose(); v.renderer.dispose();
+    Object.assign(v3ui, { tool: v.tool, pscope: v.pscope, brush: v.brush, explode: v.explode, hideRoof: v.hideRoof, view: v.view,
+      dir: v.camera.position.clone().sub(v.controls.target).toArray() });
+    v3 = null; v.token = null; v.ac.abort();
+    v.ro.disconnect(); v.controls.dispose();
     v.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     v.mats.forEach(m => m.dispose());
-    $('v3dCanvas').replaceChildren();
-    document.querySelectorAll('.v3-morepop').forEach(x => x.remove()); closePicker();
+    document.querySelectorAll('.v3-morepop').forEach(x => x.remove());
   }
-  $('v3d').addEventListener('close', close3d);
+  // Put the view where it belongs and show the right model: step 1's unit, or the chosen stack of step 2. Called after
+  // every page render; a change of colour only repaints, a change of the unit or stack builds the model again.
+  let v3stack = null; // the stack step 2 shows
+  const noColors = x => JSON.stringify(x, (k, val) => k === 'colors' ? undefined : val);
+  function v3sync() {
+    const page = $('view-' + view), slot = page && !page.hidden ? page.querySelector('.v3-slot') : null, box = $('v3view'), big = $('v3d').open;
+    if (!big) {
+      if (!slot) { $('v3home').append(box); v3want = null; return; }
+      if (box.parentNode !== slot) slot.append(box);
+    }
+    let t, mode;
+    if (view === 'unit') {
+      t = { id: 'unit', name: unitCode(c), levels: [[clean(c)]], stack: { ...STACK_DEFAULT } };
+      mode = { global: true, key: 'unit|' + noColors(clean(c)) };
+    } else {
+      const tw = towers.find(x => x.id === v3stack && x.levels.length) || towers.find(x => x.id === lastTower && x.levels.length) || towers.find(x => x.levels.length);
+      if (!tw) return;
+      v3stack = tw.id; t = tw;
+      mode = { key: `stack|${tw.id}|${tw.name}|${noColors(tw.levels)}|${JSON.stringify(tw.stack)}`, cfgs: tw.levels.flat() };
+    }
+    const v = v3;
+    if (v && v.key === mode.key && (!mode.cfgs || (mode.cfgs.length === v.cfgs.length && mode.cfgs.every((x, i) => x === v.cfgs[i])))) {
+      if (v.global) v.units.forEach(x => { if (c.colors) x.cfg.colors = c.colors; else delete x.cfg.colors; }); // step 1's unit is drawn from a copy
+      if (vaultFolder && v.folder !== vaultFolder) loadParts(v); // the folder was chosen since
+      v.recolor(); v3tools(); v3side();
+      return;
+    }
+    if (v3want && v3want.key === mode.key) return; // already on its way
+    open3d(t, mode); v3want.key = mode.key;
+  }
+  // The panel the view sits in, in steps 1 and 2: a heading, the stack to show (step 2) and Enlarge
+  function v3panel() {
+    if (view === 'build' && !towers.some(t => t.levels.length)) return '';
+    const list = towers.filter(t => t.levels.length), cur = list.find(t => t.id === v3stack) || list.find(t => t.id === lastTower) || list[0];
+    return `<section class="panel v3-panel" aria-label="3D view"><div class="v3-phead"><h2>3D</h2>
+      ${view === 'build' && list.length > 1 ? `<label class="v3-pick">Stack <select data-v3stack>${list.map(t => `<option value="${t.id}" ${t === cur ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select></label>` : ''}
+      <button type="button" class="btn" data-v3big>Enlarge</button></div><div class="v3-slot"></div></section>`;
+  }
+  // (steps 1 and 2 each have this panel; only the shown step's holds the view)
+  function bindV3panel(root) {
+    const sel = root.querySelector('[data-v3stack]'); if (sel) sel.onchange = () => { v3stack = +sel.value; v3sync(); };
+    const big = root.querySelector('[data-v3big]'); if (big) big.onclick = v3enlarge;
+  }
+  // Before steps 1 and 2 redraw, the view steps out of the way, so the redraw doesn't take it with the old page
+  function v3park() { if (!$('v3d').open) $('v3home').append($('v3view')); }
+  // Enlarge: the same view in a dialog over the page; closing it puts it back
+  function v3enlarge() { $('v3dHost').append($('v3view')); $('v3d').showModal(); v3list(); }
+  $('v3d').addEventListener('close', () => v3sync());
   $('v3dClose').onclick = () => $('v3d').close();
   $('v3dPick').onclick = async () => {
     try {
@@ -4224,6 +4304,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (view === 'unit') renderControls();
     renderTabs();
     ({ unit: renderUnit, build: renderBuild, print: renderPrint, assemble: renderAssemble })[view]();
+    if (view !== 'unit' && view !== 'build') v3sync(); // steps 1 and 2 put the view back themselves
   }
 
   $('footnote').innerHTML = `Part rules come from the four PDF manuals in the Vault download and USSA\u2019s published component counts; anything worked out beyond them is marked <span class="badge inf">Inferred</span>. Sizes are measured from each STL (${FILES.length} files)${HAS_PREVIEWS ? ' and pictures are rendered from them' : ''}. Filament is a rough figure from part volume at standard settings, calibrated against USSA\u2019s own gram estimates. Progress and stacks are saved in this browser only.${window.VAULT_PUBLIC ? ' Free and open source, provided as is, with no support.' : ''}`;
