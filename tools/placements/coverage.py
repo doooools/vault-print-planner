@@ -146,7 +146,7 @@ if HW_REPORT:
           "| M6 x 50 countersunk, grid roof top handle | 2 (option) | x2 (p. 18) | 2 |", "",
           "Not placed, and why:", "",
           "| Hardware (planner) | Why |", "|---|---|",
-          "| Base, wheels and feet: M16 rod, M4 x 25, 6205ZZ bearings, SCSAW collars, M6 x 90, casters | the base and its parts have no placement yet (`stack|...` units) |",
+          "| Base, wheels and feet: M16 rod, M4 x 25, 6205ZZ bearings, SCSAW collars, M6 x 90, casters | the printed parts are placed (`stack|...` units); these bought parts are not drawn yet (their places are in README \"Stacks\") |",
           "| Stationary and pull-out handles: M4 x 60, M6 x 30, M6 x 35 hex, M6 heat inserts, M16 rods | same: tower parts, not placed yet |",
           "| Pegboard M4 x 40, backbone M4 x 60-100 | the mounts on the back of a unit are not placed yet |",
           "| Lock pins, hinge rods | printed parts, not bought hardware (the rods are placed with the hinges) |", "",

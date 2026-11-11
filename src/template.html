@@ -1266,7 +1266,7 @@ details.termfold[open] > summary { color: var(--ink); }
   const levelWidth = lv => lv.reduce((a, u) => a + R.WIDTH_MM[u.w], 0);
   // The unit whose roof setting covers a level: the first that has a roof. On two units side by side the roof can be
   // set on either one (it used to be read from the left one only, so a roof and handle set on the right one were lost).
-  const roofOf = lv => lv.find(u => u.type === 'drawer' && u.roof && u.roof !== 'none') || lv[0];
+  const roofOf = lv => lv.find(u => u.roof && u.roof !== 'none') || lv[0];
   const WNAME = { S: 'S', M: 'M', L: 'L', L2: 'L\u00b2', XL: 'XL', XL2: 'XL\u00b2' };
   const levelHeight = lv => Math.max(...lv.map(u => unitExt(u)[2]));
   function analyzeTower(t) {
@@ -1277,7 +1277,7 @@ details.termfold[open] > summary { color: var(--ink); }
       const pair = lv.length > 1;
       lv.forEach(u => {
         const k = clean(u);
-        if (!top || pair || k.type !== 'drawer') k.roof = 'none';
+        if (!top || pair) k.roof = 'none';
         parts.push(computeUnit(k));
       });
       if (pair) {
@@ -1754,7 +1754,7 @@ details.termfold[open] > summary { color: var(--ink); }
     // A heavyweight roof has its own carry handle. When it has to go (not made in this width, or too big for the
     // printer), the grid roof that replaces it keeps a handle: its top handle. Without this the handle silently
     // dropped out of the print list.
-    const roof0 = c.roof, handled = c.type === 'drawer' && (c.roof === 'heavy' || c.roof === 'heavycut');
+    const roof0 = c.roof, handled = c.roof === 'heavy' || c.roof === 'heavycut';
     const roofs = R.ROOFS.filter(r => r.widths.includes(c.w)).map(r => r.id);
     if (c.roof !== 'none' && !roofs.includes(c.roof)) c.roof = 'grid';
     if (onlyFits && unitTooBig({})) {
@@ -2008,7 +2008,7 @@ details.termfold[open] > summary { color: var(--ink); }
   const curTower = () => dsel && towers.find(t => t.id === dsel.t);
   // Does a unit have a part too big for the printer? (wall mount, pegboard and backbone parts are judged on their own)
   const tooBig = k => computeUnit(clean({ ...k, wallMount: false, pegboard: 'none', backbone: 'none' })).lines.some(l => l.fit.s === 'no' || l.fit.s === 'reorient');
-  const unitNoFit = (u, top) => { const k = clean(u); if (!top || k.type !== 'drawer') k.roof = 'none'; return computeUnit(k).lines.filter(l => l.fit.s === 'no' || l.fit.s === 'reorient'); };
+  const unitNoFit = (u, top) => { const k = clean(u); if (!top) k.roof = 'none'; return computeUnit(k).lines.filter(l => l.fit.s === 'no' || l.fit.s === 'reorient'); };
   const sizeFits = (w, d) => !tooBig({ type: 'drawer', w, d, h: 1, roof: 'none' });
   // Saved builds from before the redesign: each stack gets its footprint, and the roof lives on the top level only
   // (a roof set on a lower unit was never used, so planning doesn't change)
@@ -2336,7 +2336,7 @@ details.termfold[open] > summary { color: var(--ink); }
         <input class="tname" value="${esc(t.name)}" data-rename aria-label="Stack name"><div class="mono">${fpCode(fp)} · ${stackDims(t, a)}</div></div>
       <div class="ibody">
         <div class="ifp"><span><span class="v3-sec">Footprint, same for every level</span><b>${fpCode(fp)} · ${Math.round(R.WIDTH_MM[fp.w])} mm wide, x${fp.d} deep</b></span><button type="button" class="btn" data-fp>Change…</button></div>
-        <div class="field"><div class="lbl">Roof ${topIsDrawer ? '' : '<span class="hint">the top level is a case: it has its own lid</span>'}</div><div class="seg wrap">${segBtns(roofs, roof, 'data-roof')}</div></div>
+        <div class="field"><div class="lbl">Roof ${topIsDrawer ? '' : '<span class="hint">the top level is a case: the roof latches onto its lid</span>'}</div><div class="seg wrap">${segBtns(roofs, roof, 'data-roof')}</div></div>
         ${roof === 'grid' ? optRow('data-tophandle', 'Carry handle on the roof', '2 × M6 × 50 mm countersunk bolts', ru.topHandle) : ''}
         <div class="field"><div class="lbl">Base and handles</div>
           ${optRow('data-st="base"', 'Base', `${fpCode(fp)} base under level 1`, s.base)}
@@ -2983,10 +2983,10 @@ details.termfold[open] > summary { color: var(--ink); }
   // Where each unit of a stack goes: mm, three.js axes (+X right seen from the front, +Y up, +Z towards the viewer), the
   // floor at y = 0 and the middle of the units' front bottom edge at x = z = 0. Drawers stack by the rule measured on the
   // parts (52 mm for a 1F, plus 48 per extra level). That is 0.5 mm more than USSA's 51.5 / 99.5 / 195.5 in R.exterior,
-  // and it is what lines the real parts up, so the boxes use it too. Cases stack by R.exterior.
+  // and it is what lines the real parts up, so the boxes use it too. Cases stack by PLACE.stack.case (body + 15.6, measured), else R.exterior.
   function stackLayout(t) {
     const L = t.levels, s = t.stack || STACK_DEFAULT, P = PLACE.stack, units = [], extra = [];
-    const rise = u => u.type === 'drawer' ? P.first + P.per_level * (u.h - 1) : unitExt(u)[2];
+    const rise = u => u.type === 'drawer' ? P.first + P.per_level * (u.h - 1) : (P.case && P.case[u.h]) || unitExt(u)[2];
     const linesOf = r => r.lines.filter(l => l.alt !== 'whole'); // the one-piece version of split parts
     const bw = levelWidth(L[0]), bd = unitExt(L[0][0])[1], fam = R.familyForWidth(bw);
     const base = s.base && fam, wheels = base && s.wheels, casters = base && !wheels && s.casters, feet = base && s.feet && !casters;
@@ -3004,7 +3004,7 @@ details.termfold[open] > summary { color: var(--ink); }
       let x = -W / 2;
       lv.forEach(u => {
         const k = clean(u);
-        if (!top || pair || k.type !== 'drawer') k.roof = 'none';
+        if (!top || pair) k.roof = 'none';
         const [w, d] = unitExt(u), lines = linesOf(R.buildUnit(k, resolve)).map(l => ({ ...l, cfg: u }));
         const unit = { cfg: u, name: unitCode(u), key: `${u.type}|${u.w}|${u.d}|${u.h}`, level: i, x: x + w / 2, y, w, d, h: rise(u), drawer: u.type === 'drawer', lines: lines.filter(l => l.group !== 'Roof') };
         units.push(unit);

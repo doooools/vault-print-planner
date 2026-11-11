@@ -35,5 +35,13 @@
  "07. Universal/Label\\.stl": {
   "kind": "option",
   "why": "the drawer label the planner adds to a case: the case front has no slot for it (its own label is placed)"
+ },
+ "MODIFICATIONS/(Stationary Handle|Pull-out Handle)/|Backbone/.*(Pull-out Handle Lock|Handle Lock Knob)": {
+  "kind": "option",
+  "why": "tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet"
+ },
+ "MODIFICATIONS/Base/Base Connector": {
+  "kind": "option",
+  "why": "joins the two halves of a split base (6 and 7 deep); its place isn't shown in the manual. The whole base and both halves are placed"
  }
 }

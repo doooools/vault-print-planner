@@ -1,0 +1,294 @@
+{
+ "name": "S5_Stack",
+ "key": "stack|S|5",
+ "notes": [
+  "base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -200.1; wheels 0.00 mm clear of the base, rod 8.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.50 mm under the tires'"
+ ],
+ "parts": [
+  {
+   "name": "S5_Stack_Module",
+   "file": "01. DRAWERS/01. S Families/S5/Modules/S5 Module 1F.stl",
+   "role": "body",
+   "group": "module",
+   "ref": true,
+   "rot": [
+    -90.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -82.402
+    ],
+    "y": [
+     "min",
+     -230.1
+    ],
+    "z": [
+     "min",
+     -0.0
+    ]
+   }
+  },
+  {
+   "name": "S5_Stack_Base",
+   "file": "03. MODIFICATIONS/Base/S/S5 Base.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -82.4
+    ],
+    "y": [
+     "min",
+     -230.1
+    ],
+    "z": [
+     "min",
+     -52.207
+    ]
+   }
+  },
+  {
+   "name": "S5_Stack_Wheel_right_Bushing",
+   "file": "03. MODIFICATIONS/Wheels/Bushing.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -115.4
+    ],
+    "y": [
+     "min",
+     -215.7
+    ],
+    "z": [
+     "min",
+     -47.807
+    ]
+   }
+  },
+  {
+   "name": "S5_Stack_Wheel_left_Bushing",
+   "file": "03. MODIFICATIONS/Wheels/Bushing.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     82.4
+    ],
+    "y": [
+     "min",
+     -215.7
+    ],
+    "z": [
+     "min",
+     -47.807
+    ]
+   }
+  },
+  {
+   "name": "S5_Stack_Wheel_right_Disk",
+   "file": "03. MODIFICATIONS/Wheels/Disk.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -105.5
+    ],
+    "y": [
+     "min",
+     -271.1
+    ],
+    "z": [
+     "min",
+     -103.207
+    ]
+   }
+  },
+  {
+   "name": "S5_Stack_Wheel_left_Disk",
+   "file": "03. MODIFICATIONS/Wheels/Disk.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     85.4
+    ],
+    "y": [
+     "min",
+     -271.1
+    ],
+    "z": [
+     "min",
+     -103.207
+    ]
+   }
+  },
+  {
+   "name": "S5_Stack_Wheel_right_Cover",
+   "file": "03. MODIFICATIONS/Wheels/Cover.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -129.4
+    ],
+    "y": [
+     "min",
+     -270.101
+    ],
+    "z": [
+     "min",
+     -102.208
+    ]
+   }
+  },
+  {
+   "name": "S5_Stack_Wheel_left_Cover",
+   "file": "03. MODIFICATIONS/Wheels/Cover.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     105.5
+    ],
+    "y": [
+     "min",
+     -270.1
+    ],
+    "z": [
+     "min",
+     -102.208
+    ]
+   }
+  },
+  {
+   "name": "S5_Stack_Wheel_right_Tyre",
+   "file": "03. MODIFICATIONS/Wheels/Tyre (TPU).stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -126.0
+    ],
+    "y": [
+     "min",
+     -280.107
+    ],
+    "z": [
+     "min",
+     -112.21
+    ]
+   }
+  },
+  {
+   "name": "S5_Stack_Wheel_left_Tyre",
+   "file": "03. MODIFICATIONS/Wheels/Tyre (TPU).stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     85.4
+    ],
+    "y": [
+     "min",
+     -280.107
+    ],
+    "z": [
+     "min",
+     -112.21
+    ]
+   }
+  },
+  {
+   "name": "S5_Stack_Foot",
+   "file": "03. MODIFICATIONS/Feet/S Feet.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    180.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -52.41
+    ],
+    "y": [
+     "min",
+     -94.005
+    ],
+    "z": [
+     "min",
+     -112.705
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "S5_Stack_Module"
+ },
+ "floor": {
+  "base": -52.207,
+  "wheels": -112.21,
+  "foot": -112.71,
+  "note": "y of the floor under the base alone, under the wheels (tire bottom) and under the foot, in the first module's frame"
+ }
+}

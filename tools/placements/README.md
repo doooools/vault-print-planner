@@ -43,6 +43,8 @@ hardware_sizes = { button: { M4: { d, dk, k, s, t }, ... }, countersunk: {...}, 
   the unit's `motion` (a latch's two bodies: `"latch_1.link"`, `"latch_1.lever"`).
 - **motion** (every drawer and case): see "Motion" below.
 - **layouts** (2F and 4F drawers of S, M, L, L²): several drawers in the unit's module, see "Layouts" below.
+- **stack|w|d** units: a tower's base, wheels and foot, in the frame of the tower's first module (its parts have
+  y < 0), with `floor` = the y of the floor under the base alone, the tires and the foot; see "Stacks" below.
 - **hardware** (written by `hardware.py`, after the export): the unit's bolts. `spec` reads `<thread>x<length> <kind>`,
   e.g. `"M4x14 button"`, `"M6x50 countersunk"` (kinds: `button` ISO 7380-1, `countersunk` ISO 10642, `socket` ISO 4762,
   `hex` ISO 4017; `nut` ISO 4032 and `rod` are understood too, none placed yet). `m` maps the bolt's own frame to the
@@ -195,6 +197,40 @@ Checked:
   columns on an L²), 0.50–0.61 mm of room at the tip like the single drawers;
 - renders: `<name>_lay<heights>_{iso,front,secx}.png` next to each unit's.
 
+## Stacks
+
+`units["stack|L|7"] = { name, bbox, parts, floor: { base: -52.2, wheels: -112.21, foot: -112.71 } }`: the base (and the
+two halves of a split one, 6 and 7 deep), both wheels (bushing, disk, cover, tire each) and the foot, in the unit
+frame of the tower's first module: draw them with the first level at y = 0 and lift the whole tower by `-floor.wheels`
+(or `-floor.foot`, `-floor.base`). The variants work as in a unit (the stack's part list names the base or its halves,
+the wheels, the foot). Measured by `measure_stack.py` on the files (Modifications Assembly 1-7/15):
+
+- Base: its top is a module's top (latch pockets, "align to connect" ribs). Its print tilt removed (45° on L, 47.2° on
+  XL), it is turned so its top's pockets match a 1F module's top, x centred, top at y = 0, and slid front to back
+  until the pockets line up: on all 20 the back is flush with the module's and the base stands 10.00 mm proud at the
+  front. The split halves are in place relative to each other in the CAD file: they take the whole base's turn and
+  fill its box exactly.
+- Rod: the base's 16.6 mm hole runs across it 20.0 mm above its bottom and 30.0 mm in from its back (y −32.2), on
+  every size. The XL6 base's hole is closed by a skin 21 mm in (both its versions), the others go through.
+- Wheels (both the same, the left one the right one turned half a turn about the vertical): the bushing's flange
+  against the base's flat side; the 6205ZZ bearing (25 × 52 × 15) on its 15 mm seat against the shoulder; the disk
+  over the bearing, the bearing against the disk's shoulder 5 mm into its bore; the cover pushed onto the disk until
+  they touch (its bore takes the rest of the bearing: 17 mm for 15); the TPU tire on both rims, where its V-shaped
+  inside overlaps them least (0.26 mm² of section). Every wheel file is printed flat, axis along its z; one in-plane
+  map for all, so the disk's 6 bolt holes, the cover's 6 bosses and the tire's 6 lobes (all at 30 + 60 k°) line up.
+  The manual's rod lengths (248 / 338 / 414 / 504) leave 8.6 / 9.0 / 9.2 / 9.6 mm beyond the bushing for the 10 mm
+  collar the jig is meant to leave room for: rounded figures.
+- Foot: its flat full face against the base's underside, its two holes under the base's two blind M6 holes
+  (x ±21.5, 32 mm behind the module's front; within 0.01 mm), its rounded end to the front as outlined under the
+  base. The bolts (M6 × 90) go up from the floor face.
+- Floor: the tires reach y −112.21, the foot −112.71: the tower stands level within 0.5 mm. Without wheels there is
+  no foot: the base's underside is flat (one plane over 82-95 % of its footprint), so it stands at `floor.base`.
+
+Not placed yet: the handles (stationary and pull-out, with the pull-out handle's lock and knobs) bolt to the
+backbones on the back of the modules (Modifications Assembly 12-14/15), which are not placed either; the base
+connector of a split base (its place isn't shown); the bought parts (rod, bearings, collars, casters, bolts).
+The underside has 4 more blind holes (M8, x ±52.4, at z −10 and 22 mm in front of the back) for the casters.
+
 ## How it is measured
 
 The files are exported in print orientation (some at 45° to fit the bed) and scattered around one big CAD scene. Some parts are already in their assembled place relative to each other: the box, the baseplate, the stopper and the latch (X/Y). The rest is found by measurement in Blender:
@@ -217,6 +253,7 @@ The files are exported in print orientation (some at 45° to fit the bed) and sc
 | `hw_check.py` | Sections through the bolts' axes (parts in colour, the bolt's outline in black) and a clash test of every head against the parts. |
 | `blender_check_placements.py` | Rebuilds a stack from the JSON alone, as the page will, and renders it. |
 | `measure_levels.py` | Where each level of a 2F/4F shell is: its cut through the racks' channels against the 1F shell's, slid level by level (README "Layouts"). |
+| `measure_stack.py` | A tower's base, wheels and foot, measured on the files (README "Stacks"); `make_recipes.py STK` places them by its matrices. |
 | `check_layouts.py` | The layouts' motion, one drawer at a time with the others in place (kinematics.py's check). |
 | `kinematics.py` | The units' motion as the page runs it (every part's pose at t, 0 closed … 1 open), and a check that no part goes through another on the way (sections across the motion, shapely). |
 | `blender_motion.py` | Key frames of a unit opening, from the JSON alone with kinematics.py's pose: views and sections. |
@@ -235,7 +272,8 @@ export VAULT_ASSEMBLY="/path/to/VAULT_ASSEMBLY"   # index, orientations, feature
 python -I tools/placements/stl_index.py "/path/to/261021_VAULT_USSA_S" "$VAULT_ASSEMBLY/_stl_index.jsonl"
 python -I tools/placements/orient.py jobs.json "$VAULT_ASSEMBLY/_orient.json"   # jobs: target, reference, its matrix
 python -I tools/placements/measure_levels.py src/stl-placements.json "$VAULT_ASSEMBLY/_levels.json"   # the 2F/4F shells' levels
-python -I tools/placements/make_recipes.py "$VAULT_ASSEMBLY/recipes"              # S M L L2 XL XL2 CS CM CL CXL LAY
+python -I tools/placements/measure_stack.py src/stl-placements.json "$VAULT_ASSEMBLY/_stack.json"   # bases, wheels, feet (STK)
+python -I tools/placements/make_recipes.py "$VAULT_ASSEMBLY/recipes"              # S M L L2 XL XL2 CS CM CL CXL LAY STK
 python -I tools/placements/run_assemble.py "$VAULT_ASSEMBLY" "$VAULT_ASSEMBLY"/recipes/*_assembly.json --jobs 4
 blender -b --factory-startup --python tools/placements/blender_export_placements.py -- \
   src/stl-placements.json "$VAULT_RENDER/_decimate_log.jsonl" $(ls "$VAULT_ASSEMBLY"/*/*.blend | grep -v /towers/)
@@ -403,8 +441,14 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
 
 - On this machine the unzip turned `²` into `┬▓` (`04. L┬▓ Families/L3┬▓/...`). `R.norm` doesn't map it, so the
   planner can't find the L² and XL² files there. Mapping `┬▓` to `²` in `R.norm` would fix it.
-- Cases: the measured rise (66.4 / 100.4 / 196.4) is 0.9 mm above `R.exterior` (65.5 / 99.5 / 195.5); it is in
-  `stack.case.rise`, which `build.py` does not embed yet.
+- Cases: the measured rise (66.4 / 100.4 / 196.4) is 0.9 mm above `R.exterior` (65.5 / 99.5 / 195.5); `build.py`
+  embeds it as `stack.case` and `stackLayout` stacks cases by it.
+- Roofs on cases: a top-opening case's lid has the module top's latch frames on top (manual p. 17), so a roof latches
+  onto it like onto a module. `buildUnit` adds a case's roof lines and the page no longer clears a case's roof.
+- Feet: the planner listed 2 feet without wheels ("assumed"), but the base has holes for one foot only (two M6 at the
+  front; its other holes are the casters' 4 M8), and its underside is one flat plane (82-95 % of its footprint within
+  0.2 mm, front to back and nearly edge to edge, on S3, S7, M5, L7, XL3, XL6). The user's rule: two feet or none, never
+  one. So without wheels the base stands on its own underside (`floor.base`) and the planner lists no foot.
 - Now in the planner (`src/rules.js`, checked by `validate.js` "PLACEMENT COUNTS", where a file split into
   pieces counts once per set of its pieces):
   - latches per unit: S and M 1; L, L², XL and XL² 2, cases included (a case body has a module's latch frames);

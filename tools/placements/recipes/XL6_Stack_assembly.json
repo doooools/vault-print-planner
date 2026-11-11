@@ -1,0 +1,344 @@
+{
+ "name": "XL6_Stack",
+ "key": "stack|XL|6",
+ "notes": [
+  "base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -242.1; wheels 0.00 mm clear of the base, rod 9.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.49 mm under the tires'"
+ ],
+ "parts": [
+  {
+   "name": "XL6_Stack_Module",
+   "file": "01. DRAWERS/05. XL Families/XL6/Modules/XL6 Module 1F.stl",
+   "role": "body",
+   "group": "module",
+   "ref": true,
+   "rot": [
+    -90.0,
+    -42.8,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -209.405
+    ],
+    "y": [
+     "min",
+     -272.101
+    ],
+    "z": [
+     "min",
+     0.001
+    ]
+   }
+  },
+  {
+   "name": "XL6_Stack_Base",
+   "file": "03. MODIFICATIONS/Base/XL/XL6 Base Whole.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -42.8,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -209.403
+    ],
+    "y": [
+     "min",
+     -272.1
+    ],
+    "z": [
+     "min",
+     -52.206
+    ]
+   }
+  },
+  {
+   "name": "XL6_Stack_BasePart_1",
+   "file": "03. MODIFICATIONS/Base/XL/XL6 Base Part 1.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -42.8,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -209.403
+    ],
+    "y": [
+     "min",
+     -272.1
+    ],
+    "z": [
+     "min",
+     -52.206
+    ]
+   }
+  },
+  {
+   "name": "XL6_Stack_BasePart_2",
+   "file": "03. MODIFICATIONS/Base/XL/XL6 Base Part 2.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -42.8,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -209.401
+    ],
+    "y": [
+     "min",
+     -131.05
+    ],
+    "z": [
+     "min",
+     -52.205
+    ]
+   }
+  },
+  {
+   "name": "XL6_Stack_Wheel_right_Bushing",
+   "file": "03. MODIFICATIONS/Wheels/Bushing.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -242.4
+    ],
+    "y": [
+     "min",
+     -257.7
+    ],
+    "z": [
+     "min",
+     -47.806
+    ]
+   }
+  },
+  {
+   "name": "XL6_Stack_Wheel_left_Bushing",
+   "file": "03. MODIFICATIONS/Wheels/Bushing.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     209.4
+    ],
+    "y": [
+     "min",
+     -257.7
+    ],
+    "z": [
+     "min",
+     -47.806
+    ]
+   }
+  },
+  {
+   "name": "XL6_Stack_Wheel_right_Disk",
+   "file": "03. MODIFICATIONS/Wheels/Disk.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -232.5
+    ],
+    "y": [
+     "min",
+     -313.1
+    ],
+    "z": [
+     "min",
+     -103.206
+    ]
+   }
+  },
+  {
+   "name": "XL6_Stack_Wheel_left_Disk",
+   "file": "03. MODIFICATIONS/Wheels/Disk.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     212.4
+    ],
+    "y": [
+     "min",
+     -313.1
+    ],
+    "z": [
+     "min",
+     -103.206
+    ]
+   }
+  },
+  {
+   "name": "XL6_Stack_Wheel_right_Cover",
+   "file": "03. MODIFICATIONS/Wheels/Cover.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -256.4
+    ],
+    "y": [
+     "min",
+     -312.101
+    ],
+    "z": [
+     "min",
+     -102.207
+    ]
+   }
+  },
+  {
+   "name": "XL6_Stack_Wheel_left_Cover",
+   "file": "03. MODIFICATIONS/Wheels/Cover.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     232.5
+    ],
+    "y": [
+     "min",
+     -312.1
+    ],
+    "z": [
+     "min",
+     -102.207
+    ]
+   }
+  },
+  {
+   "name": "XL6_Stack_Wheel_right_Tyre",
+   "file": "03. MODIFICATIONS/Wheels/Tyre (TPU).stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -253.0
+    ],
+    "y": [
+     "min",
+     -322.107
+    ],
+    "z": [
+     "min",
+     -112.209
+    ]
+   }
+  },
+  {
+   "name": "XL6_Stack_Wheel_left_Tyre",
+   "file": "03. MODIFICATIONS/Wheels/Tyre (TPU).stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     212.4
+    ],
+    "y": [
+     "min",
+     -322.107
+    ],
+    "z": [
+     "min",
+     -112.209
+    ]
+   }
+  },
+  {
+   "name": "XL6_Stack_Foot",
+   "file": "03. MODIFICATIONS/Feet/XL Feet.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    180.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -179.409
+    ],
+    "y": [
+     "min",
+     -94.005
+    ],
+    "z": [
+     "min",
+     -112.705
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "XL6_Stack_Module"
+ },
+ "floor": {
+  "base": -52.206,
+  "wheels": -112.21,
+  "foot": -112.7,
+  "note": "y of the floor under the base alone, under the wheels (tire bottom) and under the foot, in the first module's frame"
+ }
+}

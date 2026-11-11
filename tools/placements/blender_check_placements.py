@@ -57,6 +57,8 @@ def bolt_mesh(spec):
 y = 0.0
 for key in keys:
     u = P["units"][key]
+    if key.startswith("stack|") and not y:   # a base first: its frame is the first module's, lifted by its wheels
+        y = -u["floor"]["wheels"]
     lid = mathutils.Matrix.Identity(4)
     if u.get("hinge") and float(os.environ.get("LID_DEG", "0")):
         hg = u["hinge"]

@@ -19,6 +19,7 @@ Config:
                                    # "vault_hinge" for blender_export_placements.py
   "layout": {"id", "drawers"}      # optional: several drawers in one module (README "Layouts"), written to the
                                    # root as "vault_layout"; a part's "tags" ({drawer, side}) go to "vault_tags"
+  part "ref": true                 # optional: a part assembled only to set the frame (the export leaves it out)
   "motion": {...}                  # optional: joints and opening steps (README "Motion"), written to the
                                    # root as "vault_motion"; a part's "joint" goes to the object as "vault_joint"
 }
@@ -123,6 +124,8 @@ for part in cfg["parts"]:
         o["vault_joint"] = part["joint"]
     if part.get("tags"):   # a layout's drawer index (and L² side), written to the part's 5th element
         o["vault_tags"] = json.dumps(part["tags"])
+    if part.get("ref"):    # placed only to set the unit frame (a stack's first module): not exported
+        o["vault_ref"] = 1
     objs.append(o)
 
 bpy.context.view_layer.update()
@@ -203,6 +206,8 @@ if fin:
         root["vault_motion"] = json.dumps(cfg["motion"])
     if cfg.get("layout"):
         root["vault_layout"] = json.dumps(cfg["layout"])
+    if cfg.get("floor"):
+        root["vault_floor"] = json.dumps(cfg["floor"])
     coll_root.objects.link(root)
     drawer = bpy.data.objects.new(cfg.get("name", "Assembly") + "_Drawer", None)
     drawer.empty_display_type = "SINGLE_ARROW"
