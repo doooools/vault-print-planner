@@ -152,7 +152,7 @@ Room left at the tip (from the bolt's end to the bottom of the hole it goes in, 
 | M4 x 10 button, hinge leaves to body | 400 | 0.01 / 0.02 |
 | M4 x 14 button, hinge tops to lid | 280 | 0.28 / 0.69 |
 | M4 x 14 button, lock holders to front | 280 | -0.00 / -0.00 |
-| M4 x 14 button, drawer front to box | 360 | 0.50 / 0.61 |
+| M4 x 14 button, drawer front to box | 1800 | 0.50 / 0.61 |
 | M6 x 50 countersunk, top handle to grid roof | 40 | 0.64 / 0.87 |
 
 Every bolt's head bears on its part (the counterbore's floor, the part's face, or the countersink for the M6),
@@ -183,6 +183,50 @@ Moving parts: a bolt carries the index of the part that holds it (`part`), and i
 hinge tops' bolts turn with the lid (group `lid`). The case locks' bolts are in the holder, which doesn't move;
 if an animation moves a part on its own (a key, a latch, a lock lever), its bolts should get the same motion
 through `part`. No bolt is in a moving lock part today.
+
+## Several drawers in one module
+
+`layouts` of the 2F and 4F drawers (README "Layouts"): the drawers' parts at their levels, 48 mm apart as
+`measure_levels.py` measured on every 2F/4F shell. Per family, height and layout: the depths placed, the parts
+(all drawers, every variant) and the drawer-front bolts per unit.
+
+| Unit | Layout | Depths | Drawers | Parts | Bolts |
+|---|---|---|---|---|---|
+| `drawer|L|*|2` | `1,1` | 3,4,5,6,7 | 2 | 30 | 8 |
+| `drawer|L|*|4` | `1,1,1,1` | 3,4,5,6,7 | 4 | 60 | 16 |
+| `drawer|L|*|4` | `1,1,2` | 3,4,5,6,7 | 3 | 49 | 14 |
+| `drawer|L|*|4` | `1,2,1` | 3,4,5,6,7 | 3 | 49 | 14 |
+| `drawer|L|*|4` | `2,1,1` | 3,4,5,6,7 | 3 | 49 | 14 |
+| `drawer|L|*|4` | `2,2` | 3,4,5,6,7 | 2 | 38 | 12 |
+| `drawer|L2|*|2` | `1,1` | 3,4,5,6,7 | 4 | 60 | 8 |
+| `drawer|L2|*|4` | `1,1,1,1` | 3,4,5,6,7 | 8 | 120 | 16 |
+| `drawer|L2|*|4` | `1,1,2` | 3,4,5,6,7 | 6 | 98 | 16 |
+| `drawer|L2|*|4` | `1,2,1` | 3,4,5,6,7 | 6 | 98 | 16 |
+| `drawer|L2|*|4` | `2,1,1` | 3,4,5,6,7 | 6 | 98 | 16 |
+| `drawer|L2|*|4` | `2,2` | 3,4,5,6,7 | 4 | 76 | 16 |
+| `drawer|M|*|2` | `1,1` | 3,4,5,6,7 | 2 | 32 | 8 |
+| `drawer|M|*|4` | `1,1,1,1` | 3,4,5,6,7 | 4 | 64 | 16 |
+| `drawer|M|*|4` | `1,1,2` | 3,4,5,6,7 | 3 | 52 | 14 |
+| `drawer|M|*|4` | `1,2,1` | 3,4,5,6,7 | 3 | 52 | 14 |
+| `drawer|M|*|4` | `2,1,1` | 3,4,5,6,7 | 3 | 52 | 14 |
+| `drawer|M|*|4` | `2,2` | 3,4,5,6,7 | 2 | 40 | 12 |
+| `drawer|S|*|2` | `1,1` | 3,4,5,6,7 | 2 | 30 | 4 |
+| `drawer|S|*|4` | `1,1,1,1` | 3,4,5,6,7 | 4 | 60 | 8 |
+| `drawer|S|*|4` | `1,1,2` | 3,4,5,6,7 | 3 | 49 | 8 |
+| `drawer|S|*|4` | `1,2,1` | 3,4,5,6,7 | 3 | 49 | 8 |
+| `drawer|S|*|4` | `2,1,1` | 3,4,5,6,7 | 3 | 49 | 8 |
+| `drawer|S|*|4` | `2,2` | 3,4,5,6,7 | 2 | 38 | 8 |
+
+Motion check (`check_layouts.py`, each drawer unlocked and pulled out with the others shut and locked in place, 21 steps): 53 drawers of `drawer|L2|3|4`, `drawer|L2|7|2`, `drawer|L|3|2`, `drawer|L|7|4`, `drawer|M|3|2`, `drawer|M|6|4`, `drawer|S|3|4`, `drawer|S|5|2`. Overlaps between parts of two different drawers: 0. Overlaps that grow on the way:
+
+| Parts | Drawers | Largest (mm² of section) |
+|---|---|---|
+| Module 4F.stl / Key (Turn On Supports).stl | 12 | 0.46 |
+| Module 2F.stl / Key (Turn On Supports).stl | 10 | 0.45 |
+| Module 4f.stl / Key (Turn On Supports).stl | 8 | 0.44 |
+
+The key's cam grazing the module's front notch as it turns is the same as in a single drawer (README "Motion");
+it only happens on the bottom and top drawers, the ones whose key finds the frame's notches.
 
 
 ## Units

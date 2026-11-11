@@ -221,6 +221,21 @@ def unit_bolts(key, entry, report):
     return out
 
 
+def layout_bolts(key, entry, lid, lay, report):
+    """The bolts of a layout's drawers (README "Layouts"): measured on the unit's module parts with the layout's
+    drawers in it. `part` is the index in the layout's own `parts`, and drawer (and side) are the part's."""
+    base = [p for p in entry["parts"] if p[2] != "drawer"]
+    hw = unit_bolts(f"{key}#{lid}", {"parts": base + lay["parts"]}, report)
+    out = []
+    for spec, group, m, x in hw:
+        i = x["part"] - len(base)
+        if i < 0:
+            continue
+        tag = lay["parts"][i][4] if len(lay["parts"][i]) > 4 else {}
+        out.append([spec, group, m, {"part": i, **{k: tag[k] for k in ("drawer", "side") if k in tag}, "why": x["why"]}])
+    return out
+
+
 def handle_bolts(key, parts, report):
     """The top handle's two M6 x 50 countersunk bolts: up from under the roof through its 45 deg holes."""
     roof = next((p for p in parts if re.search(r"Grid Roof\.stl$", p.path)), None)
@@ -304,6 +319,11 @@ if __name__ == "__main__":
             entry.pop("hardware", None)
         done[key] = hw
         print(key, len(hw), report["counts"].get(key), flush=True)
+        for lid, lay in (entry.get("layouts") or {}).items():
+            lhw = layout_bolts(key, entry, lid, lay, report)
+            lay["hardware"] = lhw
+            done[f"{key}#{lid}"] = lhw
+            print(f"{key}#{lid}", len(lhw), report["counts"].get(f"{key}#{lid}"), flush=True)
     for key, entry in data["units"].items():       # L2 / XL2 roofs: copies of the L / XL entries
         if entry.get("same_as") and entry["same_as"] in data["units"]:
             src = data["units"][entry["same_as"]]

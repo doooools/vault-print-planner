@@ -100,6 +100,11 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   `tools/placements/kinematics.py` (same pose, collision check on sections) and `blender_motion.py` (key frames).
   Measuring it moved every drawer part but the module and latches 1.2 mm up (`MODULE_UNDER_BOX` 9.8) and turned the
   case latch's link end for end.
+- Several drawers in one 2F/4F module (S, M, L, L²; `R.LAYOUTS`): `units[key].layouts["2,1,1"]` = drawers (index top
+  to bottom, height, lowest level, opening steps), their parts tagged `{drawer, side}`, per-drawer key/rack joints and
+  front bolts. `measure_levels.py` found the shells' levels exactly 48 mm apart; `make_recipes.py LAY` → Blender →
+  export; `check_layouts.py` checks each drawer's motion among the others (tools/placements/README.md "Layouts").
+  `build.py` embeds them: the page grew from 1.5 to 3.0 MB.
 - Checked: `tools/placements/blender_check_placements.py` rebuilt an L7 4F + 2F + 1F + grid roof tower from the
   JSON alone, and an S3 1F from the **original** download files. The matrices apply to the user's files as they are.
 - Bolts in 3D (branch `claude/hardware-3d-a9c94c`): `tools/placements/hardware.py` measures, on every assembled unit, the

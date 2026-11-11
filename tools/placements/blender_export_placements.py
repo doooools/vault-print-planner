@@ -64,6 +64,8 @@ for path in blends:
             extra["piece"] = [round(v, 3) for v in o["vault_piece"]]
         if "vault_joint" in o:   # the part moves with this joint of the unit's "motion"
             extra["joint"] = o["vault_joint"]
+        if "vault_tags" in o:    # a layout's drawer (index top to bottom, and side on an L²)
+            extra.update(json.loads(o["vault_tags"]))
         if extra:
             entry.append(extra)
         parts.append(entry)
@@ -75,7 +77,18 @@ for path in blends:
             lo = [min(a, b) for a, b in zip(lo, p)]
             hi = [max(a, b) for a, b in zip(hi, p)]
     key = root.get("vault_key") or unit_key(name)
-    units[key] = {"name": name, "bbox": [[round(x, 1) for x in lo], [round(x, 1) for x in hi]], "parts": parts}
+    if root.get("vault_layout"):
+        # several drawers in the unit's module: only the drawers' own parts (the module's guides, stoppers, latches
+        # and shell are the unit's), each tagged with its drawer; the unit's other entries stay
+        lay = json.loads(root["vault_layout"])
+        mot = json.loads(root["vault_motion"]) if root.get("vault_motion") else {}
+        units.setdefault(key, {}).setdefault("layouts", {})[lay["id"]] = {
+            "name": name, "drawers": lay["drawers"], "parts": [p for p in parts if p[2] == "drawer"],
+            "motion": {"joints": mot.get("joints", {})}}
+        print("EXPORTED", key, "layout", lay["id"], sum(p[2] == "drawer" for p in parts), "parts")
+        continue
+    keep = {k: v for k, v in units.get(key, {}).items() if k == "layouts"}   # written by the layout files
+    units[key] = {"name": name, "bbox": [[round(x, 1) for x in lo], [round(x, 1) for x in hi]], "parts": parts, **keep}
     if root.get("vault_hinge"):
         units[key]["hinge"] = json.loads(root["vault_hinge"])
     if root.get("vault_motion"):
@@ -99,7 +112,8 @@ data.update({
              "A 5th element {\"piece\": [x, y, z]} means: only the connected piece of the file (vertices welded) "
              "whose bounding-box centre is nearest to that point, in the file's own coordinates; {\"joint\": id} "
              "means the part moves with that joint of the unit's 'motion' (key locks, racks, case latches: "
-             "tools/placements/README.md, 'Motion').",
+             "tools/placements/README.md, 'Motion'). A 2F/4F drawer's 'layouts' hold several drawers in its module "
+             "(README 'Layouts'): their parts replace the unit's drawer-group parts, each tagged {drawer, side}.",
     "stack": {"note": "a module's underside rests on the top face of the one below: the next unit starts "
                       "first + per_level * (levels - 1) above the bottom of the one below (measured on L7)",
               "first": 52.0, "per_level": 48.0,
