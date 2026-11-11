@@ -218,31 +218,57 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13px; }
 .v3-list li { display: grid; gap: 2px; padding-top: 8px; border-top: 1px solid var(--line); }
 .v3-list small { color: var(--muted); }
-.v3-pop { position: absolute; z-index: 2; display: grid; gap: 6px; max-height: calc(100% - 16px); overflow-y: auto; padding: 14px 14px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--sheet); color: var(--ink); box-shadow: 0 8px 28px rgba(0, 0, 0, .25); font-size: 13px; }
+.v3-pop { position: absolute; z-index: 2; display: grid; gap: 8px; max-height: calc(100% - 16px); overflow-y: auto; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--sheet); color: var(--ink); box-shadow: 0 8px 28px rgba(0, 0, 0, .25); font-size: 13px; }
 .v3-pop[hidden] { display: none; }
-.v3-pop > b { padding-right: 24px; }
-.v3-pop .vclose { top: 6px; right: 8px; }
-.v3-pop .pop-sec { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-top: 4px; }
-.fm-scroll { max-height: 340px; overflow-y: auto; display: grid; gap: 1px; margin: 0 -6px; padding: 0 6px; }
-.fm-row { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; border-radius: 7px; background: none; padding: 4px 6px; text-align: left; font-size: 13px; cursor: pointer; }
-.fm-row:hover { background: var(--sheet-2); }
-.fm-row.on { background: var(--sheet-2); font-weight: 700; }
-.fm-row .swatch { width: 16px; height: 16px; border-radius: 4px; margin: 0; flex: none; }
-.fm-row small { margin-left: auto; color: var(--muted); font-size: 11px; }
 .vcolor { display: grid; gap: 6px; }
 .vcolor > span { font-weight: 600; font-size: 13.5px; display: grid; }
 .vcolor small { font-weight: 400; color: var(--muted); font-size: 12px; }
-.fmenu { position: relative; }
 .fmenu-btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--sheet-2); font-weight: 600; text-align: left; cursor: pointer; }
-.fmenu-btn:hover { border-color: var(--ink); }
+.fmenu-btn:hover, .fmenu-btn[aria-expanded=true] { border-color: var(--ink); }
 .fmenu-btn .swatch { width: 18px; height: 18px; border-radius: 5px; margin: 0; }
 .fmenu-caret { margin-left: auto; color: var(--muted); }
-.fmenu-list { position: absolute; z-index: 3; left: 0; right: 0; top: calc(100% + 4px); max-height: 320px; overflow-y: auto; display: grid; gap: 1px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet); box-shadow: 0 10px 30px rgba(0, 0, 0, .3); }
-.fmenu-list[hidden] { display: none; }
-.vinfo .fmenu-list { position: static; margin-top: 4px; max-height: 260px; box-shadow: none; } /* in the part preview it opens in place, inside the dialog */
-.fmenu-list .pop-sec, .fm-scroll .pop-sec { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 6px 6px 2px; }
-.pop-custom { display: flex; align-items: center; gap: 8px; }
-.pop-custom input[type=color] { width: 40px; height: 30px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); cursor: pointer; }
+/* The filament picker (filamentPicker): one for every place a part's filament is chosen */
+.fp { display: grid; gap: 10px; min-width: 0; font-size: 13px; color: var(--ink); text-align: left; }
+.fp-host { margin-top: 6px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--sheet); }
+.fp-pop { position: fixed; z-index: 30; width: min(420px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow-y: auto; box-sizing: border-box; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); box-shadow: 0 10px 30px rgba(0, 0, 0, .28); }
+.fp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.fp-head > div { display: grid; gap: 1px; min-width: 0; }
+.fp-head b { font-size: 15px; }
+.fp-head small { color: var(--muted); font-size: 12px; }
+.fp-head .vclose { position: static; padding: 0 2px; font-size: 22px; }
+.fp-scope { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 3px; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 10px; }
+.fp-scope button { border: 0; border-radius: 7px; background: transparent; color: var(--muted); padding: 7px 8px; font-size: 13px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fp-scope button[aria-pressed=true] { background: var(--sheet); color: var(--ink); font-weight: 650; box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
+.fp-sec { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: -4px; }
+.fp-sec small { font-size: 12px; letter-spacing: 0; text-transform: none; font-weight: 400; }
+.fp-tray { display: flex; gap: 6px; flex-wrap: wrap; }
+.fp-chip { display: flex; align-items: center; gap: 7px; padding: 5px 10px 5px 5px; border: 1px solid var(--line); border-radius: 9px; background: var(--sheet); font-size: 13px; cursor: pointer; max-width: 100%; }
+.fp-chip span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fp-chip .swatch { width: 18px; height: 18px; border-radius: 5px; margin: 0; flex: none; }
+.fp-chip[aria-pressed=true] { border: 2px solid var(--ink); padding: 4px 9px 4px 4px; font-weight: 650; }
+.fp-search { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--sheet); }
+.fp-search svg { flex: none; color: var(--muted); }
+.fp-search input { border: 0; outline: 0; background: transparent; color: var(--ink); font: inherit; font-size: 13px; flex: 1; min-width: 0; padding: 0; }
+.fp-lines { display: flex; gap: 5px; flex-wrap: wrap; }
+.fp-lines button { border: 1px solid var(--line); border-radius: 999px; background: var(--sheet); color: var(--ink); padding: 4px 10px; font-size: 12.5px; cursor: pointer; }
+.fp-lines button[aria-pressed=true] { background: var(--ink); border-color: var(--ink); color: var(--sheet); font-weight: 600; }
+.fp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(26px, 1fr)); gap: 6px; max-height: 196px; overflow-y: auto; padding: 2px; align-content: start; }
+.fp-grid button { position: relative; aspect-ratio: 1; border: 1px solid rgba(0, 0, 0, .15); border-radius: 7px; padding: 0; cursor: pointer; transition: transform .1s; }
+.fp-grid button:hover { transform: scale(1.12); }
+.fp-grid button[aria-pressed=true] { border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px var(--sheet); }
+.fp-grid button.have::after { content: ''; position: absolute; right: 2px; bottom: 2px; width: 6px; height: 6px; border-radius: 50%; background: var(--sheet); border: 1px solid var(--ink); }
+.fp-grid p { grid-column: 1 / -1; margin: 4px 0; color: var(--muted); }
+.fp-foot { display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet-2); }
+.fp-big { width: 38px; height: 38px; border-radius: 8px; border: 1px solid rgba(0, 0, 0, .15); flex: none; }
+.fp-foot > div { display: grid; gap: 1px; min-width: 0; flex: 1; }
+.fp-foot b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fp-foot small { color: var(--muted); font-size: 12px; font-family: var(--f-mono, ui-monospace, monospace); }
+.fp-foot .btn { white-space: nowrap; }
+.fp-foot .btn:disabled { background: transparent; border-color: var(--line); color: var(--muted); cursor: default; }
+.fp-note { display: flex; justify-content: space-between; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: -4px; }
+.fp-note .linkbtn { display: inline; margin: 0; padding: 0; }
+.fp-own { position: relative; cursor: pointer; }
+.fp-own input { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; }
 .ut-side { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
 .v3-colors { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
 .v3-colors h3 { margin: 0; font-size: 15px; }
@@ -253,7 +279,6 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .urole { display: grid; gap: 4px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 12.5px; }
 .urole .fmenu-btn { padding: 6px 8px; font-size: 13px; }
 .urole .fmenu-btn small { font-weight: 400; color: var(--muted); }
-.v3-side .fmenu-list { position: static; margin-top: 4px; max-height: 260px; box-shadow: none; }
 @media (max-width: 760px) { dialog#v3d[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } }
 .row.done { opacity: .45; }
 .row.done .pname { text-decoration: line-through; }
@@ -483,7 +508,6 @@ details.folded > summary .mini { min-width: 40px; }
 .croles { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 18px; padding: 0 18px 14px; }
 .crole { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; gap: 10px; font-size: 13.5px; padding: 5px 0; border-top: 1px solid var(--line); }
 .crole .fmenu-btn { padding: 5px 8px; font-size: 13px; }
-.crole .fmenu-list { min-width: 240px; }
 .v3-colors .crole { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 .csel { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
 .csel select { max-width: 16ch; padding: 3px 6px; border: 1px solid var(--line); border-radius: 7px; background: var(--sheet); }
@@ -1485,62 +1509,171 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (!l.file.sheet) return `<span class="thumb ${size} none"></span>`;
     return `<button type="button" class="thumb ${size}" data-view="${esc(l.file.path)}" style="${spriteStyle(l.file)}" aria-label="Preview ${esc(l.label)}"></button>`;
   }
-  // The filament choice for one part role: your colours, Bambu Lab's (PLA and PETG, plain and matte) and one of your
-  // own. For the whole project (cfg null: the part preview, the bubble of step 1's 3D view), or for one unit of a stack
-  // (cfg: that unit's settings, from the 3D view of its stack), where the first choice goes back to the stack's colour.
-  function filamentList(role, cfg) {
-    const own = cfg && cfg.colors && paletteOf(cfg.colors[role]) ? cfg.colors[role] : null;
-    const cur = cfg ? own : colorFor(role, null), curCode = (paletteOf(cur) || {}).code;
-    const row = (attr, hex, name, on, sub) => `<button type="button" role="option" aria-selected="${on}" ${attr} class="fm-row${on ? ' on' : ''}"><span class="swatch" style="background:${hex}"></span><span>${esc(name)}</span>${sub ? `<small>${esc(sub)}</small>` : ''}</button>`;
-    const lines = [...new Set(BAMBU_COLORS.map(c => c[0]))], proj = colorFor(role, null);
-    return `${cfg ? row('data-fm-pal=""', colorHex(proj), `Same as the project (${colorName(proj)})`, !own) : ''}
-      <div class="pop-sec">Your colors</div>${colorPrefs.palette.map(p => row(`data-fm-pal="${p.id}"`, p.hex, p.name, p.id === cur)).join('')}
-      ${lines.map(line => `<div class="pop-sec">Bambu Lab ${esc(line)}</div>${BAMBU_COLORS.map((c, i) => c[0] !== line ? '' : row(`data-fm-bbl="${i}"`, c[3], c[2], !!curCode && curCode === c[1], c[1])).join('')}`).join('')}
-      <div class="pop-sec">Your own</div><div class="pop-custom"><input type="color" value="${colorHex(colorFor(role, cfg))}" data-fm-hex aria-label="Pick a color"><button type="button" class="btn" data-fm-custom>Use this color</button></div>`;
-  }
-  // Wire a filament list: a choice sets the role's colour (the project's, or the unit's when cfg is given), then
-  // after() redraws whatever shows it
-  function bindFilamentList(root, role, after, cfg) {
-    const apply = id => {
-      if (cfg) {
-        cfg.colors = { ...(cfg.colors || {}) };
-        if (id) cfg.colors[role] = id; else delete cfg.colors[role];
-        if (!Object.keys(cfg.colors).length) delete cfg.colors;
-        saveColors(); save();
-      } else setRoleColor(role, id);
-      after();
+  // ---------- the filament picker ----------
+  // One picker wherever a part role's filament is chosen: the part preview, the Colors panel, the 3D views. It sets
+  // the colour for the whole project (colorPrefs.roles) or, when a unit is known, for that unit only (its cfg.colors).
+  // A colour from Bambu Lab's list or one of your own is a new filament: the button says so before it is added.
+  // o: { role, from (where it was opened, for the header), unit?: { cfg, name, save() }, scope?: 'project'|'unit',
+  //      after() (redraws whatever shows the colour), close?() (adds a close button) }
+  const fpSlot = i => i === 0 ? 1 : i + 2; // palette order → Bambu Studio filament slot (TPU keeps slot 2)
+  const fpHsl = hex => {
+    const n = parseInt(hex.slice(1, 7), 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+    if (!d) return [0, 0, l];
+    const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return [(h * 60 + 360) % 360, d / (1 - Math.abs(2 * l - 1)), l];
+  };
+  // Bambu Lab's colours by shade: neutrals light to dark, then round the hue wheel
+  let fpOrder = null;
+  const fpShade = () => fpOrder || (fpOrder = BAMBU_COLORS.map((c, i) => {
+    const [h, s, l] = fpHsl(c[3]); return [s < 0.12 ? -2 + (1 - l) : h / 360 + (1 - l) * 0.001, i];
+  }).sort((a, b) => a[0] - b[0]).map(x => x[1]));
+  const FP_SEARCH = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>';
+  function filamentPicker(host, o) {
+    const role = o.role, r = ROLE_BY_ID.get(role) || { label: role }, unit = o.unit;
+    const own = () => unit && unit.cfg.colors && paletteOf(unit.cfg.colors[role]) ? unit.cfg.colors[role] : null;
+    const st = { scope: unit ? (o.scope || (own() ? 'unit' : 'project')) : 'project', line: 'All', q: '' };
+    const cur = () => st.scope === 'unit' ? colorFor(role, unit.cfg) : colorFor(role, null);
+    st.sel = { pal: cur() };
+    // What is selected, as a palette id when it is already in the tray
+    const selPal = () => st.sel.pal || (st.sel.bbl != null ? (colorPrefs.palette.find(p => p.code && p.code === BAMBU_COLORS[st.sel.bbl][1]) || {}).id : null);
+    const grid = () => {
+      const q = st.q.trim().toLowerCase(), have = new Set(colorPrefs.palette.map(p => p.code).filter(Boolean));
+      const sp = selPal(), selCode = st.sel.bbl != null ? BAMBU_COLORS[st.sel.bbl][1] : sp ? paletteOf(sp).code : null;
+      const shown = fpShade().filter(i => { const [line, code, name] = BAMBU_COLORS[i]; return (st.line === 'All' || line === st.line) && (!q || name.toLowerCase().includes(q) || code.includes(q) || line.toLowerCase().includes(q)); });
+      return { n: shown.length, html: shown.map(i => { const [line, code, name, hex] = BAMBU_COLORS[i], t = `${name}, ${line} ${code}${have.has(code) ? ' (in your tray)' : ''}`;
+        return `<button type="button" data-fp-bbl="${i}" class="${have.has(code) ? 'have' : ''}" style="background:${hex}" title="${esc(t)}" aria-label="${esc(t)}" aria-pressed="${!!selCode && selCode === code}"></button>`; }).join('') || '<p>No Bambu Lab color matches.</p>' };
     };
-    root.querySelectorAll('[data-fm-pal]').forEach(x => x.onclick = () => apply(x.dataset.fmPal));
-    root.querySelectorAll('[data-fm-bbl]').forEach(x => x.onclick = () => {
-      const [line, code, name, hex] = BAMBU_COLORS[+x.dataset.fmBbl];
-      apply(addPaletteColor({ name: `${name} · ${line}`, hex: hex.toLowerCase(), line, code }));
+    const draw = () => {
+      const P = colorPrefs.palette, sp = selPal(), now = cur(), g = grid(), next = fpSlot(P.length);
+      let big, name, sub, act, note;
+      if (sp) {
+        const p = paletteOf(sp), i = P.indexOf(p);
+        big = p.hex; name = p.line && p.name.endsWith(' · ' + p.line) ? p.name.slice(0, -p.line.length - 3) : p.name; sub = `Slot ${fpSlot(i)} · ${p.code ? `${p.line} ${p.code}` : p.hex.toUpperCase()}`;
+        act = sp === now ? 'In use' : 'Use it';
+        note = sp === now ? (st.scope === 'unit' && own() ? `This ${unit.name} has it as its own color.` : `What ${r.label.toLowerCase()} print in now.`) : 'Already in your tray: no new filament.';
+      } else {
+        const b = st.sel.bbl != null ? BAMBU_COLORS[st.sel.bbl] : null;
+        big = b ? b[3] : st.sel.hex; name = b ? b[2] : 'Your own color'; sub = b ? `${b[0]} · ${b[1]}` : st.sel.hex.toUpperCase();
+        act = `Add as slot ${next}`; note = 'A new filament: one more slot and its own plates.';
+      }
+      if (st.scope === 'project' && own()) note += ` This ${unit.name} keeps its own, ${colorName(own())}.`;
+      const lines = ['All', ...new Set(BAMBU_COLORS.map(c => c[0]))];
+      host.innerHTML = `<div class="fp" role="group" aria-label="Filament for ${esc(r.label.toLowerCase())}">
+        <div class="fp-head"><div><b>${esc(r.label)}</b><small>${esc(o.from || '')}</small></div>${o.close ? '<button type="button" class="vclose" data-fp-close aria-label="Close">&times;</button>' : ''}</div>
+        ${unit ? `<div class="fp-scope" role="group" aria-label="Where this color applies">${[['project', 'Whole project'], ['unit', `Only this ${unit.name}`]].map(([id, t]) => `<button type="button" data-fp-scope="${id}" aria-pressed="${st.scope === id}" title="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}
+        <div class="fp-sec">In your tray</div>
+        <div class="fp-tray">${P.map((p, i) => `<button type="button" class="fp-chip" data-fp-pal="${p.id}" aria-pressed="${p.id === sp}" title="Slot ${fpSlot(i)}${p.id === now ? ', in use here' : ''}">${swatch(p.id)}<span>${esc(p.name)}</span></button>`).join('')}</div>
+        ${BAMBU_COLORS.length ? `<div class="fp-sec">Bambu Lab <small data-fp-count>${plural(g.n, 'color')}, by shade</small></div>
+        <label class="fp-search">${FP_SEARCH}<input type="search" data-fp-q value="${esc(st.q)}" placeholder="Name or code, e.g. blue, 11600" aria-label="Search Bambu Lab colors by name or code"></label>
+        <div class="fp-lines">${lines.map(l => `<button type="button" data-fp-line="${esc(l)}" aria-pressed="${st.line === l}">${esc(l)}</button>`).join('')}</div>
+        <div class="fp-grid" data-fp-grid>${g.html}</div>` : ''}
+        <div class="fp-foot"><span class="fp-big" style="background:${big}"></span><div><b>${esc(name)}</b><small>${esc(sub)}</small></div>
+          <button type="button" class="btn primary" data-fp-use ${act === 'In use' ? 'disabled' : ''}>${act}</button></div>
+        <div class="fp-note"><span>${esc(note)}</span><span>${st.scope === 'unit' && own() ? `<button type="button" class="linkbtn" data-fp-back>Back to the project color</button> · ` : ''}<label class="linkbtn fp-own">Your own color…<input type="color" data-fp-hex value="${colorHex(now)}"></label></span></div>
+      </div>`;
+      bind();
+    };
+    const regrid = () => { const g = grid(); host.querySelector('[data-fp-grid]').innerHTML = g.html; host.querySelector('[data-fp-count]').textContent = `${plural(g.n, 'color')}, by shade`; bindGrid(); };
+    const bindGrid = () => host.querySelectorAll('[data-fp-bbl]').forEach(b => b.onclick = () => {
+      const i = +b.dataset.fpBbl, inTray = colorPrefs.palette.find(p => p.code && p.code === BAMBU_COLORS[i][1]);
+      st.sel = inTray ? { pal: inTray.id } : { bbl: i }; draw();
     });
-    const custom = root.querySelector('[data-fm-custom]');
-    if (custom) custom.onclick = () => { const hex = root.querySelector('[data-fm-hex]').value; apply(addPaletteColor({ name: 'Custom ' + hex.toUpperCase(), hex })); };
-  }
-  // The drop-down: a button showing the current colour, opening the list under it. attrs: extra attributes, used to
-  // find which unit a menu is for.
-  function filamentMenu(role, cfg, attrs = '') {
-    const cur = colorFor(role, cfg), own = cfg && cfg.colors && paletteOf(cfg.colors[role]);
-    return `<div class="fmenu" data-fmenu="${role}" ${attrs}><button type="button" class="fmenu-btn" aria-haspopup="listbox" aria-expanded="false">${swatch(cur)}<span>${esc(colorName(cur))}${cfg && !own ? ' <small>(project)</small>' : ''}</span><span class="fmenu-caret" aria-hidden="true">▾</span></button>
-      <div class="fmenu-list" role="listbox" hidden>${filamentList(role, cfg)}</div></div>`;
-  }
-  // cfgOf(menu): the unit settings a menu is for, or nothing for the project's colours
-  function bindFilamentMenu(root, after, cfgOf) {
-    root.querySelectorAll('[data-fmenu]').forEach(m => {
-      const btn = m.querySelector('.fmenu-btn'), list = m.querySelector('.fmenu-list');
-      const show = on => {
-        list.hidden = !on; btn.setAttribute('aria-expanded', String(on));
-        if (on) { const sel = list.querySelector('.fm-row.on'); if (sel) sel.scrollIntoView({ block: 'nearest' }); }
+    const apply = () => {
+      let id = selPal();
+      if (!id) {
+        const b = st.sel.bbl != null ? BAMBU_COLORS[st.sel.bbl] : null;
+        id = addPaletteColor(b ? { name: `${b[2]} · ${b[0]}`, hex: b[3].toLowerCase(), line: b[0], code: b[1] } : { name: 'Custom ' + st.sel.hex.toUpperCase(), hex: st.sel.hex.toLowerCase() });
+      }
+      if (st.scope === 'unit') { unit.cfg.colors = { ...(unit.cfg.colors || {}), [role]: id }; unit.save(); saveColors(); }
+      else setRoleColor(role, id);
+      st.sel = { pal: id };
+      o.after();
+      if (host.isConnected) draw();
+    };
+    const bind = () => {
+      const on = (sel, f) => host.querySelectorAll(sel).forEach(x => x.onclick = () => f(x));
+      on('[data-fp-close]', () => o.close());
+      on('[data-fp-scope]', x => { st.scope = x.dataset.fpScope; draw(); }); // the colour picked so far stays picked
+      on('[data-fp-pal]', x => { st.sel = { pal: x.dataset.fpPal }; draw(); });
+      on('[data-fp-line]', x => { st.line = x.dataset.fpLine; draw(); });
+      on('[data-fp-use]', apply);
+      on('[data-fp-back]', () => {
+        const c = { ...unit.cfg.colors }; delete c[role];
+        if (Object.keys(c).length) unit.cfg.colors = c; else delete unit.cfg.colors;
+        unit.save(); st.sel = { pal: cur() }; o.after(); if (host.isConnected) draw();
+      });
+      bindGrid();
+      const q = host.querySelector('[data-fp-q]');
+      if (q) q.oninput = () => { st.q = q.value; regrid(); };
+      const hx = host.querySelector('[data-fp-hex]');
+      hx.onchange = () => {
+        const same = colorPrefs.palette.find(p => p.hex.toLowerCase() === hx.value.toLowerCase());
+        st.sel = same ? { pal: same.id } : { hex: hx.value }; draw();
       };
-      btn.onclick = () => show(list.hidden);
-      // A click elsewhere folds it
-      m.ownerDocument.addEventListener('pointerdown', function off(e) { if (!m.isConnected) { m.ownerDocument.removeEventListener('pointerdown', off, true); return; } if (!m.contains(e.target)) show(false); }, true);
-      bindFilamentList(list, m.dataset.fmenu, after, cfgOf ? cfgOf(m) : null);
-    });
+    };
+    draw();
+    // Keep the chosen colour in sight (scrolling the grid only: scrollIntoView would also move a dialog)
+    const g = host.querySelector('.fp-grid'), s = g && g.querySelector('[aria-pressed=true]');
+    if (s) g.scrollTop = s.offsetTop - g.offsetTop - g.clientHeight / 2;
   }
+  // Scroll el's nearest scrolling box (and only that one) to show it
+  function scrollNear(el) {
+    let p = el.parentElement;
+    while (p && !/(auto|scroll)/.test(getComputedStyle(p).overflowY)) p = p.parentElement;
+    if (!p) return;
+    const a = el.getBoundingClientRect(), b = p.getBoundingClientRect();
+    if (a.bottom > b.bottom) p.scrollTop += Math.min(a.bottom - b.bottom + 8, a.top - b.top - 8);
+    else if (a.top < b.top) p.scrollTop -= b.top - a.top + 8;
+  }
+  // A role's current colour as a button that opens the picker. cfg: the unit it is for (its own choice shows as is,
+  // the project's with "(project)").
+  function fpButton(role, cfg, attrs = '') {
+    const cur = colorFor(role, cfg), own = cfg && cfg.colors && paletteOf(cfg.colors[role]);
+    return `<button type="button" class="fmenu-btn" data-fp-role="${role}" ${attrs} aria-expanded="false">${swatch(cur)}<span>${esc(colorName(cur))}${cfg && !own ? ' <small>(project)</small>' : ''}</span><span class="fmenu-caret" aria-hidden="true">▾</span></button>`;
+  }
+  // The picker open as a popover or in place (only one at a time)
+  let fpOpen = null;
+  function closePicker() { if (fpOpen) { const f = fpOpen; fpOpen = null; f.close(); } }
+  // Opens the picker for a fpButton: in place under it inside a dialog (a popover there would sit under the dialog),
+  // as a popover elsewhere. A second click on the same button closes it.
+  function togglePicker(btn, o) {
+    const was = fpOpen && fpOpen.btn === btn;
+    closePicker(); if (was) return;
+    btn.setAttribute('aria-expanded', 'true');
+    const done = () => { if (btn.isConnected) btn.setAttribute('aria-expanded', 'false'); };
+    if (btn.closest('dialog')) {
+      const host = document.createElement('div'); host.className = 'fp-host';
+      (btn.closest('[data-fp-row]') || btn).after(host);
+      fpOpen = { btn, close: () => { host.remove(); done(); } };
+      filamentPicker(host, { ...o, close: closePicker });
+      scrollNear(host);
+      return;
+    }
+    const pop = document.createElement('div'); pop.className = 'fp-pop';
+    document.body.append(pop);
+    const off = e => { if (!pop.contains(e.target) && !btn.contains(e.target)) closePicker(); };
+    const key = e => { if (e.key === 'Escape') closePicker(); };
+    const moved = e => { if (!pop.contains(e.target)) closePicker(); }; // the page scrolled away from its button
+    document.addEventListener('pointerdown', off, true); document.addEventListener('keydown', key); document.addEventListener('scroll', moved, true);
+    fpOpen = { btn, close: () => { pop.remove(); document.removeEventListener('pointerdown', off, true); document.removeEventListener('keydown', key); document.removeEventListener('scroll', moved, true); done(); } };
+    filamentPicker(pop, { ...o, close: closePicker, after: () => { o.after(); closePicker(); } });
+    const b = btn.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+    pop.style.left = Math.max(12, Math.min(b.left, innerWidth - w - 12)) + 'px';
+    pop.style.top = (b.bottom + 6 + h <= innerHeight - 12 ? b.bottom + 6 : Math.max(12, innerHeight - h - 12)) + 'px';
+  }
+  // Wire every fpButton under root. ctx(btn): the picker's options for that button (role is read from it).
+  function bindPickers(root, ctx) {
+    root.querySelectorAll('[data-fp-role]').forEach(b => b.onclick = () => togglePicker(b, { role: b.dataset.fpRole, ...ctx(b) }));
+  }
+  // The unit being set up in step 1, for "Only this unit" in the picker
+  const editorUnit = v => ({ cfg: c, name: unitCode(c), save: () => {
+    store.set('config', c);
+    if (v) v.units.forEach(x => { if (c.colors) x.cfg.colors = c.colors; else delete x.cfg.colors; }); // step 1's 3D view draws a copy of it
+  } });
   function openViewer(path, menuOpen) {
     const l = viewMap.get(path); if (!l) return;
+    const inUnit = view === 'unit'; // step 1: the part is the unit's being set up, which can have its own colors
     $('viewerBody').innerHTML = `
       <div class="thumb lg" style="${spriteStyle(l.file)}" role="img" aria-label="${esc(l.label)}"></div>
       <div class="vinfo">
@@ -1548,8 +1681,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         ${l.total ? `<div class="qty" style="text-align:left">${l.total}<small>\u00d7 to print</small></div>` : ''}
         <div class="pfile mono">${esc(l.file.path)}</div>
         <div class="tags" style="justify-content:flex-start">${tagsFor(l).join('')}</div>
-        ${l.role && ROLE_BY_ID.has(l.role) ? `<div class="vcolor"><span>Filament<small>for ${esc(ROLE_BY_ID.get(l.role).label.toLowerCase())}, in the whole project</small></span>${filamentMenu(l.role)}</div>
-          ${l.color !== colorFor(l.role, null) && l.color !== 'tpu' ? `<p class="pnote" style="margin:0">${swatch(l.color)}This unit has its own color here, ${esc(colorName(l.color))} (from the 3D view of its stack).</p>` : ''}` : ''}
+        ${l.role && ROLE_BY_ID.has(l.role) ? `<div class="vcolor" data-fp-row><span>Filament<small>for ${esc(ROLE_BY_ID.get(l.role).label.toLowerCase())}${inUnit ? '' : ', in the whole project'}</small></span>${fpButton(l.role, inUnit ? c : null)}</div>
+          ${!inUnit && l.color !== colorFor(l.role, null) && l.color !== 'tpu' ? `<p class="pnote" style="margin:0">${swatch(l.color)}This unit has its own color here, ${esc(colorName(l.color))} (from the 3D view of its stack).</p>` : ''}` : ''}
         <div class="mono num">${dimStr(l.file.dims)}</div>
         ${l.note ? `<div class="pnote">${esc(l.note)}</div>` : ''}
         ${l.inferred ? `<div class="pnote"><span class="badge inf">Inferred</span> ${esc(l.inferred)}</div>` : ''}
@@ -1557,10 +1690,11 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <p class="pnote">Shown standing the way the file is exported, which is how it goes on the plate.</p>
         <div class="actions"><button class="btn primary" data-addextra="${esc(l.file.path)}">Print this part on its own</button></div>
       </div>`;
-    bindFilamentMenu($('viewerBody'), () => { renderAll(); openViewer(path); });
+    bindPickers($('viewerBody'), () => ({ from: inUnit ? `${unitCode(c)}, part preview` : 'Part preview', unit: inUnit ? editorUnit() : null,
+      after: () => { renderAll(); openViewer(path); } }));
     const d = $('viewer');
     if (!d.open) { if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
-    if (menuOpen && $('viewerBody').querySelector('.fmenu-btn')) $('viewerBody').querySelector('.fmenu-btn').click();
+    if (menuOpen && $('viewerBody').querySelector('[data-fp-role]')) $('viewerBody').querySelector('[data-fp-role]').click();
   }
   document.addEventListener('click', e => {
     const t = e.target.closest('[data-view]'); if (t) openViewer(t.dataset.view);
@@ -2310,7 +2444,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // in3d: the version in the 3D view's side column (always open, no panel frame)
   function colorsPanel(in3d) {
     const P = colorPrefs.palette;
-    const intro = in3d ? 'For the whole project: every stack follows these, and plates, filament totals and the Bambu Studio project too. To change one unit only, open its stack in 3D from step 2.'
+    const intro = in3d ? 'For the whole project: every stack follows these, and plates, filament totals and the Bambu Studio project too. To give this unit a color of its own, click the part and choose “Only this unit”.'
       : 'The filament colors you print with, and which parts get which. Plates, filament totals and the Bambu Studio project follow them. To change one unit only, like one drawer’s front, open its stack in 3D.';
     return `${in3d ? '<div class="v3-colors" data-colors-root><h3>Colors</h3>' : `<details class="panel fold" data-colors-root ${colorsOpen ? 'open' : ''}><summary>Colors <small>${P.map(p => swatch(p.id)).join('')}${plural(P.length, 'filament color')}</small></summary>`}
       <p class="pp">${intro}</p>
@@ -2320,7 +2454,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <button type="button" class="btn" data-pal-add>+ Add a color</button></div>
       <div class="cbbl">${bambuPicker()}</div>
       ${preset().bambu && P.some(p => /^PETG/.test(p.line || '')) ? '<p class="pp">PETG colors: the Bambu Studio project gives every color PLA settings. In Bambu Studio, set the PETG filaments to a PETG profile.</p>' : ''}
-      <div class="croles">${R.ROLES.map(r => `<div class="crole"><span>${esc(r.label)}</span>${filamentMenu(r.id, null)}</div>`).join('')}
+      <div class="croles">${R.ROLES.map(r => `<div class="crole" data-fp-row><span>${esc(r.label)}</span>${fpButton(r.id, null)}</div>`).join('')}
         <div class="crole"><span>Tires</span><span class="csel">${swatch('tpu')}TPU</span></div></div>
       ${colorsCustom() ? '<div class="actions"><button type="button" class="btn" data-colors-reset>Back to the render colors</button><span class="pnote" style="margin:0">Also clears the colors chosen for single units.</span></div>' : ''}
     ${in3d ? '</div>' : '</details>'}`;
@@ -2355,7 +2489,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       colorPrefs.palette.push({ id: 'c' + n, name: 'Color ' + (colorPrefs.palette.length + 1), hex: '#4f7fbf' });
       done();
     };
-    bindFilamentMenu(D, rerender);
+    bindPickers(D, () => ({ from: 'Colors, for the whole project', after: rerender }));
     if (D.querySelector('[data-colors-reset]')) D.querySelector('[data-colors-reset]').onclick = () => {
       colorPrefs = { palette: PALETTE_DEFAULT.map(p => ({ ...p })), roles: {} };
       towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { delete u.colors; })));
@@ -3319,22 +3453,24 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   function rolePicker(v, ev, role, u) {
     const box = $('v3dCanvas');
     if (!v.pop || !v.pop.isConnected) { v.pop = document.createElement('div'); v.pop.className = 'v3-pop'; box.append(v.pop); }
-    const pop = v.pop, r = ROLE_BY_ID.get(role), cur = colorFor(role, null);
+    const pop = v.pop, r = ROLE_BY_ID.get(role), from = `${u ? u.name : v.t.name}, clicked in 3D`;
     if (ev) v.popAt = [ev.clientX, ev.clientY];
-    pop.innerHTML = `<button type="button" class="vclose" data-pop-close aria-label="Close">&times;</button>
-      <b>${esc(r ? r.label : 'Tires')}</b><small>${swatch(cur)}${esc(colorName(cur))}${r ? ', for the whole project' : ''}</small>
-      ${u && u.travel ? `<button type="button" class="btn" data-pop-drawer>${u.open ? 'Close' : 'Open'} the drawer</button>` : ''}
-      ${!r ? '<p class="pnote">Tires print in TPU.</p>' : `<div class="fm-scroll" role="listbox">${filamentList(role)}</div>`}`;
+    pop.innerHTML = `<div data-pop-pick></div>${u && u.travel ? `<button type="button" class="btn" data-pop-drawer>${u.open ? 'Close' : 'Open'} the drawer</button>` : ''}`;
+    const host = pop.querySelector('[data-pop-pick]');
+    if (r) filamentPicker(host, { role, from, close: () => hidePicker(v),
+      unit: !u ? null : v.global ? editorUnit(v) : { cfg: u.cfg, name: u.name, save },
+      after: () => { v.recolor(); v3list(); v3colors(); renderAll(); } });
+    else {
+      host.innerHTML = `<div class="fp"><div class="fp-head"><div><b>Tires</b><small>${esc(from)}</small></div><button type="button" class="vclose" data-fp-close aria-label="Close">&times;</button></div><p class="pnote" style="margin:0">Tires print in TPU.</p></div>`;
+      host.querySelector('[data-fp-close]').onclick = () => hidePicker(v);
+    }
     pop.hidden = false;
-    const b = box.getBoundingClientRect(), w = Math.min(320, b.width - 16);
+    const b = box.getBoundingClientRect(), w = Math.min(380, b.width - 16);
     pop.style.width = w + 'px';
     pop.style.left = Math.max(8, Math.min(v.popAt[0] - b.left + 14, b.width - w - 8)) + 'px';
     pop.style.top = Math.max(8, Math.min(v.popAt[1] - b.top - 20, b.height - pop.offsetHeight - 8)) + 'px';
-    pop.querySelector('[data-pop-close]').onclick = () => hidePicker(v);
-    bindFilamentList(pop, role, () => { v.recolor(); v3list(); v3colors(); renderAll(); rolePicker(v, null, role, u); });
-    const on = pop.querySelector('.fm-row.on'); if (on && ev) on.scrollIntoView({ block: 'center' });
     const dr = pop.querySelector('[data-pop-drawer]');
-    if (dr) dr.onclick = () => { u.open = !u.open; v.glide(); rolePicker(v, null, role, u); };
+    if (dr) dr.onclick = () => { u.open = !u.open; v.glide(); dr.textContent = `${u.open ? 'Close' : 'Open'} the drawer`; };
   }
   // One unit's colours, role by role: its own choice or the stack's (step 2, Colors)
   function unitColors(u, ui) {
@@ -3342,7 +3478,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (!roles.length) return '';
     const own = (u.cfg && u.cfg.colors) || {}, n = roles.filter(r => own[r]).length;
     return `<details class="ucol" data-ucol="${ui}" ${v3.colorsOpen.has(ui) ? 'open' : ''}><summary>Colors${n ? ` \u00b7 ${n} of its own` : ''}</summary>${roles.map(r => {
-      return `<div class="urole"><span>${esc(ROLE_BY_ID.get(r).label)}</span>${filamentMenu(r, u.cfg, `data-unit="${ui}"`)}</div>`;
+      return `<div class="urole" data-fp-row><span>${esc(ROLE_BY_ID.get(r).label)}</span>${fpButton(r, u.cfg, `data-unit="${ui}"`)}</div>`;
     }).join('')}</details>`;
   }
   // The project's colours, in the side column of a 3D view opened from step 1
@@ -3363,7 +3499,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       return `<li><b>${esc(u.name)}</b><small>${esc(st)}</small>${un}${v.global ? '' : unitColors(u, ui)}</li>`;
     }).join('');
     $('v3dList').querySelectorAll('details[data-ucol]').forEach(d => d.ontoggle = () => { d.open ? v.colorsOpen.add(+d.dataset.ucol) : v.colorsOpen.delete(+d.dataset.ucol); });
-    bindFilamentMenu($('v3dList'), () => { v.recolor(); v3list(); renderAll(); }, m => v.units[+m.dataset.unit].cfg);
+    bindPickers($('v3dList'), b => { const u = v.units[+b.dataset.unit];
+      return { from: `${u.name}, in the stack's list`, unit: { cfg: u.cfg, name: u.name, save }, scope: 'unit', after: () => { v.recolor(); v3list(); renderAll(); } }; });
     $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder;
     $('v3dPick').textContent = vaultFolder ? 'Change folder' : 'Show the real parts…';
   }
