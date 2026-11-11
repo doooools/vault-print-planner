@@ -2914,7 +2914,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const pl = PLACE.units[unit.key];
     if (!pl) return null;
     const has = new Map([...(unit.shared || []), ...unit.lines].map(l => [R.norm(l.file.path), l]));
-    const parts = pl.parts.filter(([p]) => has.has(R.norm(p))).map(([path, , group, m]) => { const l = has.get(R.norm(path)); return { path, group, m, role: l.role, cfg: l.cfg }; });
+    const parts = pl.parts.filter(([p]) => has.has(R.norm(p))).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, piece: o && o.piece, role: l.role, cfg: l.cfg }; });
     const placed = new Set(pl.parts.map(([p]) => R.norm(p)));
     const unplaced = unit.lines.filter(l => !placed.has(R.norm(l.file.path))).map(l => l.label + (l.qty > 1 ? ' ×' + l.qty : ''));
     return { parts, unplaced };
@@ -2981,6 +2981,43 @@ details.termfold[open] > summary { color: var(--ink); }
     const opos = new Float32Array(m * 3);
     for (let v = 0; v < count; v++) if (remap[v] >= 0) opos.set(pts.subarray(v * 3, v * 3 + 3), remap[v] * 3);
     return { pos: opos, idx: oidx, src: nv / 3, kept: nt, tris: out.length / 3, err: e };
+  }
+  // A file's connected pieces (some files hold several parts printed side by side: a drawer's two racks, a case's two
+  // hinge leaves, two rods). Corners closer than 0.001 mm count as one, then triangles sharing a corner join a piece.
+  // Each piece keeps its bounding-box centre, in the file's own coordinates, which the placements pick it by.
+  function meshPieces({ pos, idx }) {
+    const nv = pos.length / 3, at = new Int32Array(nv), seen = new Map();
+    for (let i = 0; i < nv; i++) {
+      const k = Math.round(pos[i * 3] * 1000) + ',' + Math.round(pos[i * 3 + 1] * 1000) + ',' + Math.round(pos[i * 3 + 2] * 1000);
+      let j = seen.get(k); if (j === undefined) seen.set(k, j = i); at[i] = j;
+    }
+    const up = new Int32Array(nv).map((_, i) => i), root = i => { while (up[i] !== i) i = up[i] = up[up[i]]; return i; };
+    for (let t = 0; t < idx.length; t += 3) {
+      const a = root(at[idx[t]]), b = root(at[idx[t + 1]]); up[b] = a;
+      const c = root(at[idx[t + 2]]); up[c] = a;
+    }
+    const byRoot = new Map();
+    for (let t = 0; t < idx.length; t += 3) {
+      const r = root(at[idx[t]]);
+      let p = byRoot.get(r); if (!p) byRoot.set(r, p = { tris: [], lo: [Infinity, Infinity, Infinity], hi: [-Infinity, -Infinity, -Infinity] });
+      for (let k = 0; k < 3; k++) {
+        const v = idx[t + k]; p.tris.push(v);
+        for (let d = 0; d < 3; d++) { const x = pos[v * 3 + d]; if (x < p.lo[d]) p.lo[d] = x; if (x > p.hi[d]) p.hi[d] = x; }
+      }
+    }
+    return { pos, pieces: [...byRoot.values()].map(p => ({ tris: p.tris, c: p.lo.map((x, d) => (x + p.hi[d]) / 2) })) };
+  }
+  // The piece whose centre is nearest to `at`, as an indexed mesh of its own
+  function meshPiece({ pos, pieces }, at) {
+    const d2 = p => (p.c[0] - at[0]) ** 2 + (p.c[1] - at[1]) ** 2 + (p.c[2] - at[2]) ** 2;
+    const best = pieces.reduce((a, p) => d2(p) < d2(a) ? p : a);
+    const remap = new Map(), opos = [], oidx = new Uint32Array(best.tris.length);
+    best.tris.forEach((v, i) => {
+      let j = remap.get(v);
+      if (j === undefined) { remap.set(v, j = remap.size); opos.push(pos[v * 3], pos[v * 3 + 1], pos[v * 3 + 2]); }
+      oidx[i] = j;
+    });
+    return { pos: new Float32Array(opos), idx: oidx };
   }
   // Flat triangles out of an indexed mesh, each corner's normal averaged over the faces around it that turn less than
   // 30° from its own face: sharp CAD edges stay sharp, curved faces stay smooth
@@ -3077,7 +3114,7 @@ details.termfold[open] > summary { color: var(--ink); }
 
   // ---------- the 3D view: one view, three tools ----------
   // Turn (a click selects a part), Paint (a click gives the brush colour to that kind of part, in every unit or in the
-  // clicked unit only) and Drawers (a click opens or closes a drawer). Views from the front, at three quarters and
+  // clicked unit only) and Open (a click opens or closes a drawer or a case lid). Views from the front, at three quarters and
   // from the side; units can be spread apart and the roof hidden. Opened from step 1 it shows the unit being set up
   // The unit being set up (`c`) is drawn from a copy, `v.ghost`, where Add would put it (see v3sync).
   let v3 = null; // the open view: { t, T, renderer, scene, camera, controls, units: [...], token, tool, brush, ... }
@@ -3169,7 +3206,15 @@ details.termfold[open] > summary { color: var(--ink); }
       shell.position.set(0, u.h / 2, -u.d / 2); boxes.add(shell);
       const front = u.drawer ? painted(new T.BoxGeometry(u.w - 8, u.h - 8, 4), 'facade', u.cfg) : null;
       if (front) { front.position.set(0, u.h / 2, 2); drawer.add(front); }
-      v.units.push({ ...u, g, drawer, boxes, front, place: placeParts(u), travel: u.drawer ? Math.round(u.d * 0.6) : 0, open: false, ghost: !!ghost && u.cfg === ghost });
+      // A case's lid (and its hinge tops) turns about the hinge axis: a pivot on the axis holding the parts set back by it
+      const hinge = (PLACE.units[u.key] || {}).hinge;
+      let lid = null;
+      if (hinge) {
+        lid = new T.Group(); lid.position.set(...hinge.origin);
+        const inner = new T.Group(); inner.position.set(...hinge.origin.map(x => -x)); lid.add(inner); g.add(lid);
+        lid.userData = { inner, axis: new T.Vector3(...hinge.axis).normalize(), max: hinge.open_deg, deg: 0 };
+      }
+      v.units.push({ ...u, g, drawer, boxes, front, lid, place: placeParts(u), travel: u.drawer ? Math.round(u.d * 0.6) : 0, open: false, ghost: !!ghost && u.cfg === ghost });
     }
     // Spread units apart (each level lifted a little more) and hide the roofs
     v.arrange = () => {
@@ -3191,6 +3236,8 @@ details.termfold[open] > summary { color: var(--ink); }
       return { u, mesh: hit.object };
     };
     v.glide = () => glide();
+    // A drawer opens any time; a case once its lid's parts are in
+    const canOpen = u => !!u && (!!u.travel || (!!u.lid && u.lid.userData.inner.children.length > 0));
     // Drawers glide to where they should be, a few frames at a time
     const glide = () => {
       if (v3 !== v || v.gliding) return;
@@ -3199,6 +3246,14 @@ details.termfold[open] > summary { color: var(--ink); }
         if (v3 !== v) return;
         let moving = false;
         for (const u of v.units) {
+          if (u.lid) {
+            const L = u.lid.userData, to = u.open ? L.max : 0;
+            if (L.deg !== to) {
+              L.deg = Math.abs(to - L.deg) < 0.5 ? to : L.deg + (to - L.deg) * 0.22;
+              u.lid.quaternion.setFromAxisAngle(L.axis, L.deg * Math.PI / 180);
+              moving = true;
+            }
+          }
           const to = u.open ? u.travel : 0, z = u.drawer.position.z;
           if (z === to) continue;
           u.drawer.position.z = Math.abs(to - z) < 0.5 ? to : z + (to - z) * 0.22;
@@ -3222,7 +3277,7 @@ details.termfold[open] > summary { color: var(--ink); }
       if (!down || ev.button !== 0 || Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 5 || performance.now() - down.t > 500) { down = null; return; }
       down = null;
       const h = hitAt(ev);
-      if (v.tool === 'drawers') { if (h && h.u && h.u.travel) { h.u.open = !h.u.open; glide(); } return; }
+      if (v.tool === 'drawers') { if (h && canOpen(h.u)) { h.u.open = !h.u.open; glide(); } return; }
       if (!h || !h.mesh.userData.role) { if (v.tool === 'turn') { v.sel = null; v3side(); } return; }
       v.sel = { role: h.mesh.userData.role, cfg: h.mesh.userData.cfg, u: h.u || null, name: h.mesh.userData.name };
       if (v.tool === 'paint') v3paint(v, h.mesh);
@@ -3234,7 +3289,7 @@ details.termfold[open] > summary { color: var(--ink); }
       requestAnimationFrame(() => {
         hoverQueued = false; if (v3 !== v) return;
         const h = hitAt(ev);
-        el.style.cursor = !h ? '' : v.tool === 'drawers' ? (h.u && h.u.travel ? 'pointer' : '') : h.mesh.userData.role ? 'pointer' : '';
+        el.style.cursor = !h ? '' : v.tool === 'drawers' ? (canOpen(h.u) ? 'pointer' : '') : h.mesh.userData.role ? 'pointer' : '';
         if (v.tool !== 'paint' || !h) { hotKey = ''; setHot(null); return; }
         const { role, cfg } = h.mesh.userData, key = role + '|' + (v.pscope === 'unit' ? v.units.indexOf(v.units.find(u => u.cfg === cfg)) : '');
         if (key !== hotKey) { hotKey = key; setHot(paintsWith(h.mesh)); }
@@ -3279,7 +3334,7 @@ details.termfold[open] > summary { color: var(--ink); }
     if (!paletteOf(v.brush)) v.brush = P[0].id;
     const seg = (items, cur, attr) => items.map(([id, label]) => `<button type="button" ${attr}="${id}" aria-pressed="${cur === id}">${label}</button>`).join('');
     const roof = v.units.some(u => u.roof);
-    $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool">${seg([['turn', 'Turn'], ['paint', 'Paint'], ['drawers', 'Drawers']], v.tool, 'data-v3tool')}</div>
+    $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool">${seg([['turn', 'Turn'], ['paint', 'Paint'], ['drawers', 'Open']], v.tool, 'data-v3tool')}</div>
       <div class="v3-right"><div class="v3-seg" role="group" aria-label="View">${seg(V3_VIEWS.map(x => [x[0], x[1]]), v.view, 'data-v3view')}</div>
         ${v.canPreview ? `<button type="button" class="v3-tog" data-v3preview aria-pressed="${v3preview}" title="Show the unit you’re setting up where Add would put it, or the stack as it is">Preview</button>` : ''}
         ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}">Spread units</button>` : ''}
@@ -3295,7 +3350,7 @@ details.termfold[open] > summary { color: var(--ink); }
     `;
     } else {
       B.hidden = false; B.className = 'v3-hintbar';
-      B.textContent = v.tool === 'drawers' ? 'Click a drawer to open or close it. Drag to turn, scroll to zoom, right-drag to move.' : 'Click a part to select it. Drag to turn, scroll to zoom, right-drag to move.';
+      B.textContent = v.tool === 'drawers' ? 'Click a drawer or a case lid to open or close it. Drag to turn, scroll to zoom, right-drag to move.' : 'Click a part to select it. Drag to turn, scroll to zoom, right-drag to move.';
     }
     const on = (sel, f) => document.querySelectorAll(sel).forEach(b => b.onclick = () => f(b));
     on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; v.hot = null; v.recolor(); v3tools(); v3side(); });
@@ -3376,8 +3431,8 @@ details.termfold[open] > summary { color: var(--ink); }
       const [ui, role] = b.dataset.v3pick.split('|'), u = v.units[+ui], l = u.lines.find(x => x.role === role);
       v.sel = { role, cfg: l ? l.cfg : u.cfg, u }; v3side();
     });
-    $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder || (!!vaultFolder && $('v3d').open); // enlarged, only to show the real parts
-    $('v3dPick').textContent = vaultFolder ? 'Change folder' : 'Show the real parts…';
+    // Only to show the real parts: the folder is changed from step 1 (unitFolderBar), not here
+    $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder || !!vaultFolder;
   }
   function setRoleColor(role, id) {
     const r = ROLE_BY_ID.get(role); if (!r) return;
@@ -3405,25 +3460,38 @@ details.termfold[open] > summary { color: var(--ink); }
       if (u.parts) u.g.remove(u.parts); // parts from a folder chosen before
       u.parts = new T.Group(); u.g.add(u.parts);
       u.drawer.clear(); if (u.front) u.drawer.add(u.front); u.boxes.visible = true;
+      if (u.lid) u.lid.userData.inner.clear();
     });
     say(); v3list();
     // Each file's copies go in as soon as it's ready, and a unit's box goes with its first part
-    const put = (path, g) => {
+    const geom = ({ pos, idx }) => {
+      const { P, N } = creased(pos, idx), g = new T.BufferGeometry();
+      g.setAttribute('position', new T.BufferAttribute(P, 3)); g.setAttribute('normal', new T.BufferAttribute(N, 3));
+      return g;
+    };
+    // A part that is one piece of its file (`piece`: a rack, a hinge leaf, a rod) gets only that piece's triangles
+    const put = (path, data) => {
+      let whole = null, split = null;
+      const byPiece = new Map();
+      const geomFor = at => {
+        if (!at) return whole || (whole = geom(data));
+        const k = at.join(',');
+        if (!byPiece.has(k)) byPiece.set(k, geom(meshPiece(split || (split = meshPieces(data)), at)));
+        return byPiece.get(k);
+      };
       for (const u of todo) for (const p of u.place.parts) {
         if (p.path !== path) continue;
         if (!u.loaded) { u.boxes.visible = false; if (u.front) u.drawer.remove(u.front); }
-        const mesh = v.painted(g, p.role, p.cfg), m = p.m;
+        const mesh = v.painted(geomFor(p.piece), p.role, p.cfg), m = p.m;
         mesh.matrixAutoUpdate = false;
         mesh.matrix.set(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], 0, 0, 0, 1);
-        (p.group === 'drawer' ? u.drawer : u.parts).add(mesh);
+        (p.group === 'drawer' ? u.drawer : p.group === 'lid' && u.lid ? u.lid.userData.inner : u.parts).add(mesh);
         u.loaded++;
       }
     };
     await Promise.all(paths.map(p => partMesh(p).then(m => {
       if (!live()) return;
-      const { P, N } = creased(m.pos, m.idx), g = new T.BufferGeometry();
-      g.setAttribute('position', new T.BufferAttribute(P, 3)); g.setAttribute('normal', new T.BufferAttribute(N, 3));
-      put(p, g); tris += m.tris; src += m.src; v.render();
+      put(p, m); tris += m.tris; src += m.src; v.render();
     }, e => {
       (e.message === 'not in the folder' ? missing : failed).push([p, e.message]);
       todo.forEach(u => { u.failed += u.place.parts.filter(x => x.path === p).length; });
@@ -3499,7 +3567,7 @@ details.termfold[open] > summary { color: var(--ink); }
   $('v3dClose').onclick = () => $('v3d').close();
   $('v3dPick').onclick = async () => {
     try {
-      vaultFolder = await pickVaultFolder(!!vaultFolder); rememberedFolder = '';
+      vaultFolder = await pickVaultFolder(false); rememberedFolder = '';
       meshMemo.clear();
       if (v3) loadParts(v3);
     } catch (e) { if (e.name !== 'AbortError') v3status(e.message || String(e)); }
