@@ -702,6 +702,9 @@ details.folded > summary .mini { min-width: 40px; }
 .iacts { display: flex; gap: 4px; }
 .iacts .iconbtn.sq { width: 40px; height: 40px; }
 .ipair { margin: 12px 16px 0; }
+.seg.lays { grid-auto-columns: minmax(0, 1fr); }
+.seg.lays button { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; }
+.seg.lays button svg { color: var(--muted); } .seg.lays button[aria-pressed=true] svg { color: inherit; }
 .seg.across button { display: grid; justify-items: center; gap: 2px; padding: 8px 4px; }
 .seg.across button svg { color: var(--muted); }
 .seg.across button[aria-pressed=true] svg { color: inherit; }
@@ -2043,6 +2046,7 @@ details.termfold[open] > summary { color: var(--ink); }
     if (!hs.includes(u.h)) u.h = hs.reduce((a, h) => Math.abs(h - u.h) < Math.abs(a - u.h) ? h : a, hs[0]);
     if (u.roof && u.roof !== 'none' && !R.ROOFS.find(r => r.id === u.roof).widths.includes(u.w)) { if (u.roof === 'heavy' || u.roof === 'heavycut') u.topHandle = true; u.roof = 'grid'; }
     if (u.h > 2) { u.pegboard = 'none'; u.backbone = 'none'; }
+    if (u.drawers && (u.type !== 'drawer' || R.drawersOf(u).join() !== u.drawers.join() || u.drawers.length < 2)) delete u.drawers;
   }
   // The footprint: written on every level. A pair that doesn't make the new width becomes one module of that width.
   function setFootprint(t, w, d) {
@@ -2239,6 +2243,10 @@ details.termfold[open] > summary { color: var(--ink); }
     const title = lv.length > 1 ? `${lv.map(x => WNAME[x.w]).join(' + ')} \u00b7 x${u.d} \u00b7 ${u.h}F` : unitCode(u);
     let o = '';
     if (u.type === 'drawer') {
+      const lay = R.drawersOf(u), layOpts = layoutsReady(u) ? R.LAYOUTS[u.h] || [] : [];
+      if (layOpts.length > 1) o += `<div class="field"><div class="lbl">Drawers in this module <span class="hint">${lay.map(x => x + 'F').join(' + ')}${lay.length > 1 ? ', top to bottom' : ''}</span></div>
+        <div class="seg lays" role="group" aria-label="Drawers in this module, top to bottom">${layOpts.map(l => `<button type="button" data-lay="${l.join(',')}" aria-pressed="${l.join() === lay.join()}" aria-label="${l.length === 1 ? `One ${l[0]}F drawer` : l.map(x => x + 'F').join(', ') + ', top to bottom'}">${layIcon(l, u.h)}<small>${l.length === 1 ? l[0] + 'F' : new Set(l).size === 1 ? l.length + '\u00d7' + l[0] + 'F' : l.map(x => x + 'F').join('+')}</small></button>`).join('')}</div>
+        ${new Set(lay).size > 1 ? '<span class="badge inf" title="USSA\u2019s manuals don\u2019t show a 2F with two 1F in one 4F module">Inferred</span>' : ''}</div>`;
       o += `<div class="field"><div class="lbl">Inside</div><div class="seg">${useg('interior', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], u.interior)}</div></div>`;
       if (u.interior === 'gridfinity' && ['S', 'M', 'L2', 'XL2'].includes(u.w))
         o += selRow('data-usel="baseplateHandles"', 'Baseplate cut-outs <span class="hint">for lifting it out</span>', [['0', 'None'], ...(u.w === 'M' ? [] : [['1', '1 handle']]), ['2', '2 handles']], u.baseplateHandles);
@@ -2248,7 +2256,7 @@ details.termfold[open] > summary { color: var(--ink); }
         o += selRow('data-usel="gridEdge"', 'Edge pieces', [['straight', 'Straight'], ['rounded', 'Rounded']], u.gridEdge);
       }
       o += `<div class="field"><div class="lbl">Lock</div><div class="seg">${useg('lock', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], u.lock)}</div></div>`;
-      o += optRow('data-ucheck="gearedRails"', 'Geared rails', 'Optional in the manual. Recommended for 2F and 4F, and for extra locking force.', u.gearedRails);
+      o += optRow('data-ucheck="gearedRails"', 'Geared rails', lay.length > 1 ? 'USSA: use them when a module holds more than one drawer.' : 'Optional in the manual. Recommended for 2F and 4F, and for extra locking force.', u.gearedRails);
     } else {
       if (u.w === 'L' || u.w === 'XL') o += selRow('data-usel="caseInterior"', 'Case body style', [['flat', 'Flat (open box)'], ['dividers', 'Dividers (slotted walls)'], ['sealed', 'Sealed (slots for seal dividers)']], u.caseInterior);
       o += optRow('data-ucheck="caseBaseplate"', 'Gridfinity baseplate inside', '', u.caseBaseplate);
@@ -2297,6 +2305,8 @@ details.termfold[open] > summary { color: var(--ink); }
     box.querySelectorAll('[data-lop]').forEach(b => b.onclick = () => levelOp(t, b.dataset.lop, i));
     box.querySelectorAll('[data-umod]').forEach(b => b.onclick = () => { dsel.u = +b.dataset.umod; saveSel(); renderInspector(); v3mark(); });
     bindUnitSeg(box, u, set);
+    // Several drawers in one module: geared rails on, as Drawer Assembly 4/8 advises
+    box.querySelectorAll('[data-lay]').forEach(b => b.onclick = () => { const l = b.dataset.lay.split(',').map(Number); set(l.length > 1 ? { drawers: l, gearedRails: true } : { drawers: undefined }); });
     box.querySelectorAll('[data-usel]').forEach(el => el.onchange = () => set({ [el.dataset.usel]: el.value }));
     box.querySelectorAll('[data-ucheck]').forEach(el => el.onchange = () => set({ [el.dataset.ucheck]: el.checked }));
     box.querySelectorAll('[data-ustep]').forEach(b => b.onclick = () => {
@@ -2305,6 +2315,9 @@ details.termfold[open] > summary { color: var(--ink); }
       else set({ [id]: Math.max(0, Math.min(12, (u[id] || 0) + d)) });
     });
   }
+  // The measured placements a shell's drawer layouts need before the inspector offers them
+  const layoutsReady = u => !!((PLACE.units[`drawer|${u.w}|${u.d}|${u.h}`] || {}).layouts);
+  const layIcon = (l, h) => `<svg width="26" height="34" viewBox="0 0 26 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">${(() => { let y = 2; return l.map(dh => { const hh = 30 * dh / h, r = `<rect x="2" y="${y + 0.75}" width="22" height="${hh - 1.5}" rx="1.5"/><path d="M10 ${y + hh / 2}h6"/>`; y += hh; return r; }).join(''); })()}</svg>`;
   // Segmented settings of a module: buttons read "key=value" from data-useg
   function bindUnitSeg(box, u, set) {
     box.querySelectorAll('[data-useg]').forEach(b => b.onclick = () => {
@@ -4217,7 +4230,7 @@ details.termfold[open] > summary { color: var(--ink); }
   // count how many are built ("Drawer 3 of 8"): "done, next one" clears the ticks and counts one more.
   let asmSec = store.get('asmSec', null);
   let asmBuilt = store.get('asmBuilt', {});
-  const ASM_UNIT = { drawer: ['Drawer', u => u.type === 'drawer'], case: ['Case', u => u.type === 'case'] };
+  const ASM_UNIT = { drawer: ['Drawer', u => u.type !== 'drawer' ? 0 : R.drawersOf(u).length * (u.w === 'L2' || u.w === 'XL2' ? 2 : 1)], case: ['Case', u => u.type === 'case' ? 1 : 0] };
   function renderAssemble() {
     const b = computeBuild();
     if (b.empty) return emptyStep('view-assemble', 'to assemble');
@@ -4228,7 +4241,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const per = b.list.map(t => ({ t, b: { ...withSpares(merge(analyzeTower(t).parts)), list: [t] } }));
     const scopeOf = g => { const ts = per.filter(x => g.when(x.b)).map(x => x.t.name); return ts.length > 1 && ts.length === b.list.length ? (ts.length === 2 ? 'Both stacks' : 'All stacks') : ts.join(', ') || 'Loose parts'; };
     const units = b.list.flatMap(t => t.levels.flat());
-    const repeatOf = g => ASM_UNIT[g.id] ? units.filter(ASM_UNIT[g.id][1]).length : 0;
+    const repeatOf = g => ASM_UNIT[g.id] ? units.reduce((a, u) => a + ASM_UNIT[g.id][1](u), 0) : 0;
     const stepsOf = g => g.steps.filter(s => !s.when || s.when(b));
     const doneOf = g => stepsOf(g).filter(s => stepsDone[g.id + ':' + s.t]).length;
     const g = sections.find(x => x.id === asmSec), steps = stepsOf(g), rep = repeatOf(g), built = Math.min(asmBuilt[g.id] || 0, rep);
