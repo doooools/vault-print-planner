@@ -94,6 +94,13 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   The old `mech` role was split into `runners`, `lock`, `hinge` (saved choices are carried over on load).
 - Checked: `tools/placements/blender_check_placements.py` rebuilt an L7 4F + 2F + 1F + grid roof tower from the
   JSON alone, and an S3 1F from the **original** download files. The matrices apply to the user's files as they are.
+- Bolts in 3D (branch `claude/hardware-3d-a9c94c`): `tools/placements/hardware.py` measures, on every assembled unit, the
+  holes each bolt goes in and writes `hardware: [[spec, group, m, {part, why}]]` per unit plus `hardware_sizes` (ISO
+  sizes) into `stl-placements.json`; rerun it after every export. The page makes the bolts from the sizes
+  (`hwProfile`/`hwRevolve`, section "hardware" in `src/template.html`), draws each with the part that holds it (`part`),
+  in its group; toolbar toggle "Bolts" (`v3hw`, saved), metal colour in `colorPrefs.hardware` (not a filament role:
+  plates and the tray ignore it), set from the "Selected" card (`v3selHw`). The grid roof's top handle now stands
+  (it was flat). Counts that differ from the planner: `tools/placements/COVERAGE.md`, "Hardware".
 
 ## Where things are on this machine
 - Vault download: `X:/Download/261021_VAULT_USSA_S/261021_VAULT_USSA_S` (733 STL, 24 GB).

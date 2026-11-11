@@ -1,6 +1,6 @@
 """Write tools/placements/COVERAGE.md: for every unit the planner can build, is each of its files placed?
 
-  python coverage.py <_units.json> <stl-placements.json> <_checks.json> <recipes_dir> <out.md>
+  python coverage.py <_units.json> <stl-placements.json> <_checks.json> <recipes_dir> <out.md> [hardware_report.json]
 
 _units.json  : from coverage.js (the planner's own unit list and files)
 unplaced_reasons.json (next to this script): why some files are left out (path regex -> reason).
@@ -8,6 +8,8 @@ _checks.json : what was looked at, per unit key or family prefix ("drawer|S|" co
                {"drawer|S|": {"status": "verified", "render": "...", "note": "..."}, ...}
                The longest matching prefix wins.
 recipes_dir  : the recipes' "notes" (orientation fallbacks, latch counts) are copied into the report.
+hardware_report.json (from hardware.py): adds the "Hardware" section, the bolts placed per family and why the
+rest of the planner's hardware isn't.
 A unit is "missing" when it has no placement, "doubtful" when its check or its recipe says so, or when
 one of its files is neither placed nor explained, and "verified" otherwise.
 """
@@ -15,6 +17,7 @@ import collections, json, os, re, sys
 sys.stdout.reconfigure(encoding="utf-8")
 
 units_path, pl_path, checks_path, recipes_dir, out = sys.argv[1:6]
+HW_REPORT = json.load(open(sys.argv[6], encoding="utf-8")) if len(sys.argv) > 6 else None
 UNITS = json.load(open(units_path, encoding="utf-8"))
 PL = json.load(open(pl_path, encoding="utf-8"))["units"]
 CHECKS = json.load(open(checks_path, encoding="utf-8")) if os.path.exists(checks_path) else {}
@@ -98,6 +101,54 @@ L += ["## Files not placed, and why", "",
       "| File (label) | Units | Kind | Why |", "|---|---|---|---|"]
 for (lab, (kind, why)), n in sorted(shared.items(), key=lambda x: (x[0][1][0], -x[1])):
     L.append(f"| {lab} | {n} | {kind} | {why} |")
+
+# Hardware: the bolts hardware.py placed, per family and height, against the planner's list and the manual
+if HW_REPORT:
+    WHY = {"front": "M4 x 14 button, drawer front to box", "case_front": "M4 x 20 button, case front to body",
+           "hinge": "M4 x 10 button, hinge leaves to body", "hinge_top": "M4 x 14 button, hinge tops to lid",
+           "lock": "M4 x 14 button, lock holders to front", "top_handle": "M6 x 50 countersunk, top handle to grid roof"}
+    by = collections.defaultdict(collections.Counter)
+    room = collections.defaultdict(list)
+    for b in HW_REPORT["bolts"]:
+        room[b["rule"]].append(b["room"])
+    for k, c in HW_REPORT["counts"].items():
+        t, w, d, h = k.split("|")
+        by[(t, w, h)][tuple(sorted((r, n) for r, n in c.items()))] += 1
+    L += ["## Hardware (bolts)", "",
+          "`hardware.py` finds, on every assembled unit, the holes each kind of bolt goes in and writes `hardware` into",
+          "the placements; the page draws the bolts from their standard sizes (no USSA geometry). Counts per unit, the",
+          "same on every depth of a family (one row per family and height):", "",
+          "| Unit | Bolts placed per unit |", "|---|---|"]
+    for (t, w, h), cs in sorted(by.items()):
+        for combo, n in cs.items():
+            L.append(f"| `{t}|{w}|*|{h}` ({n}) | " + ", ".join(f"{q} x {WHY[r]}" for r, q in combo if q) + " |")
+    L += ["", "Room left at the tip (from the bolt's end to the bottom of the hole it goes in, on the axis), all units:", "",
+          "| Bolt | Bolts | Room, mm (min / max) |", "|---|---|---|"]
+    for r, v in room.items():
+        v = [x for x in v if x is not None]
+        L.append(f"| {WHY[r]} | {len(v)} | {min(v):.2f} / {max(v):.2f} |")
+    L += ["",
+          "Every bolt's head bears on its part (the counterbore's floor, the part's face, or the countersink for the M6),",
+          "its shank goes down a hole into the next part, and no tip goes past the bottom of its hole (the hinge M4 x 10",
+          "and the lock M4 x 14 are exactly as long as their holes are deep). `hw_check.py` cut S, M, L, L2, XL, XL2",
+          "drawers, S, M, L, XL cases and S, L, XL grid roofs through their bolts and found no head inside a part.", "",
+          "Planner, manual and files (counts per unit; the planner's counts were left as they are):", "",
+          "| Bolt | Planner (`rules.js`) | Manual | Holes in the files |", "|---|---|---|---|",
+          "| M4 x 14, drawer front | S 2/4, M and L 4/6, XL 4 (1F / 2F-4F), L2 and XL2 the sum of their drawers | x4 for 1F, x6 for 2F/4F (p. 18, drawn on an M) | same as the planner |",
+          "| M4 x 20, case front | 7 on every case | x7 per module (p. 17, drawn on an L 4F) | S and M: 4 (1F, 2F), 6 (4F); L: 5 (1F, 2F), 7 (4F); XL: 5. Only the L 4F has 7 |",
+          "| M4 x 14, case hinge tops and locks | 16 on every case | x16 per module (p. 17, an L: 2 tops, 2 locks) | L and XL 16; S and M 8 (one hinge top with 4 holes, one lock) |",
+          "| M4 x 10, case hinges | 8 | x8 | 8 |",
+          "| M6 x 50 countersunk, grid roof top handle | 2 (option) | x2 (p. 18) | 2 |", "",
+          "Not placed, and why:", "",
+          "| Hardware (planner) | Why |", "|---|---|",
+          "| Base, wheels and feet: M16 rod, M4 x 25, 6205ZZ bearings, SCSAW collars, M6 x 90, casters | the base and its parts have no placement yet (`stack|...` units) |",
+          "| Stationary and pull-out handles: M4 x 60, M6 x 30, M6 x 35 hex, M6 heat inserts, M16 rods | same: tower parts, not placed yet |",
+          "| Pegboard M4 x 40, backbone M4 x 60-100 | the mounts on the back of a unit are not placed yet |",
+          "| Lock pins, hinge rods | printed parts, not bought hardware (the rods are placed with the hinges) |", "",
+          "Moving parts: a bolt carries the index of the part that holds it (`part`), and its group is that part's. The",
+          "hinge tops' bolts turn with the lid (group `lid`). The case locks' bolts are in the holder, which doesn't move;",
+          "if an animation moves a part on its own (a key, a latch, a lock lever), its bolts should get the same motion",
+          "through `part`. No bolt is in a moving lock part today.", ""]
 L += ["", "## Units", ""]
 for key, status, pl, unplaced, explained, ck, notes in rows:
     head = f"- `{key}` **{status}**"

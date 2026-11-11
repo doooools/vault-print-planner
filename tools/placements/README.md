@@ -6,10 +6,12 @@ from the user's own Vault files. It holds numbers only, no geometry, like `src/s
 ## The data
 
 ```
-units["drawer|L|7|2"] = { name, bbox, parts: [[path, role, group, m], [path, role, group, m, {piece}], ...] }
+units["drawer|L|7|2"] = { name, bbox, parts: [[path, role, group, m], [path, role, group, m, {piece}], ...],
+                          hardware: [[spec, group, m, {part, why}], ...] }
 units["case|S|3|1"]  = { ..., hinge: { origin: [0, 50.8, -153.59], axis: [-1, 0, 0], open_deg: 105 } }
 units["roof|L|7|grid"] = ...
 stack = { first: 52, per_level: 48 }
+hardware_sizes = { button: { M4: { d, dk, k, s, t }, ... }, countersunk: {...}, socket, hex, nut }
 ```
 
 - **key**: the 3D view's own keys, with the planner's ids: `drawer|<w>|<d>|<h>` (w = S, M, L, L2, XL, XL2),
@@ -37,11 +39,23 @@ stack = { first: 52, per_level: 48 }
   with the body's top, 7.49 mm behind its back face. `open_deg` is 105, the manual's open view (p. 17).
   Swept in steps on the exported parts, nothing meets the body, the leaves or the rods before 180°.
 - **m**: a 3×4 row-major matrix that takes the file's own coordinates (as downloaded) to the unit frame. The unit frame uses three.js axes: +X right seen from the front, +Y up, +Z towards the viewer, in mm. Its origin is the middle of the module's front bottom edge.
+- **hardware** (written by `hardware.py`, after the export): the unit's bolts. `spec` reads `<thread>x<length> <kind>`,
+  e.g. `"M4x14 button"`, `"M6x50 countersunk"` (kinds: `button` ISO 7380-1, `countersunk` ISO 10642, `socket` ISO 4762,
+  `hex` ISO 4017; `nut` ISO 4032 and `rod` are understood too, none placed yet). `m` maps the bolt's own frame to the
+  unit frame: +Y along the bolt from its tip to its head, origin on its axis where the head bears (the top face of a
+  countersunk head, which sits flush), the shank from y = 0 to y = -length. `part` is the index in `parts` of the part
+  whose hole the head bears on, and `group` is that part's: a bolt is drawn with its part (not at all when the unit's
+  list doesn't name it) and moves with it (a drawer front's bolts slide out with the drawer, a hinge top's turn with
+  the lid). An animation that moves one part on its own should move the bolts whose `part` is that part. `why` says
+  what it holds (not embedded in the page).
+- **hardware_sizes**: the standard sizes the page and `hw_shapes.py` make the bolts from (mm; d thread, dk head
+  diameter or hex across flats, k head height, s hex key, t key depth). No bolt geometry is stored.
 - **stack**: a unit starts `first + per_level × (levels − 1)` mm above the bottom of the unit below it (52 / 100 / 196 for 1F / 2F / 4F). Roofs sit like a module.
 
   `stack.case.rise` gives the same for a case: body height + 15.6 (66.4 / 100.4 / 196.4).
 
-Done: every drawer (S, M, L, L², XL, XL², all depths and heights), every roof, every case. Not yet: bases,
+Done: every drawer (S, M, L, L², XL, XL², all depths and heights), every roof, every case, and their bolts
+(drawer fronts, case fronts, hinges, hinge tops, lock holders, the grid roof's top handle). Not yet: bases,
 wheels, feet, handles, the mounts on the back of a unit and a few small or optional parts.
 `COVERAGE.md` lists every unit the planner can build, its status and the files left out, with the reason.
 
@@ -62,6 +76,9 @@ The files are exported in print orientation (some at 45° to fit the bed) and sc
 | `coverage.js` + `coverage.py` | The planner's own unit list (`src/rules.js` run on the download's file list) against the JSON: `COVERAGE.md`. `unplaced_reasons.json` says why files are left out. |
 | `blender_assemble.py` | Builds a unit from a recipe, renders check views (including sections) and saves a `.blend` with the root and drawer empties. |
 | `blender_export_placements.py` | `.blend` files → `src/stl-placements.json`. |
+| `hardware.py` + `hw_geom.py` | The bolts: on every assembled unit (rebuilt from the JSON and the decimated copy), the through holes of the part a bolt's head bears on, seen from its side (depth maps, cached per file); rays along each hole give the seat (highest point under the head), the part the shank goes into and the bottom of its hole. Writes `hardware` and `hardware_sizes` into the JSON and a report (seat, grip, engagement, room at the tip) for `coverage.py`. |
+| `hw_shapes.py` | A bolt's shape from its standard sizes (plain Python, as the page makes it): for the Blender check. |
+| `hw_check.py` | Sections through the bolts' axes (parts in colour, the bolt's outline in black) and a clash test of every head against the parts. |
 | `blender_check_placements.py` | Rebuilds a stack from the JSON alone, as the page will, and renders it. |
 | `blender_tower.py`, `blender_showcase.py`, `blender_render.py`, `blender_check_views.py` | Towers, side-by-side scenes, Cycles renders, section views. |
 
@@ -82,10 +99,13 @@ python -I tools/placements/run_assemble.py "$VAULT_ASSEMBLY" "$VAULT_ASSEMBLY"/r
 blender -b --factory-startup --python tools/placements/blender_export_placements.py -- \
   src/stl-placements.json "$VAULT_RENDER/_decimate_log.jsonl" $(ls "$VAULT_ASSEMBLY"/*/*.blend | grep -v /towers/)
 # (the tower files are not units: given to the export, they stop it before it writes)
+# the bolts: after every export (the export rewrites a unit without its `hardware`)
+python -I tools/placements/hardware.py src/stl-placements.json "$VAULT_ASSEMBLY/_hardware/hardware_report.json"
+python -I tools/placements/hw_check.py src/stl-placements.json "$VAULT_ASSEMBLY/_hardware/check" "case|L|7|4" "drawer|S|3|1"
 blender -b --factory-startup --python tools/placements/blender_check_placements.py -- \
   src/stl-placements.json "/path/to/261021_VAULT_USSA_S" check.png "drawer|L|7|4" "drawer|L|7|2" "roof|L|7|grid"
 node tools/placements/coverage.js "$VAULT_ASSEMBLY/_stl_index.jsonl" "$VAULT_ASSEMBLY/_units.json"
-python -I tools/placements/coverage.py "$VAULT_ASSEMBLY/_units.json" src/stl-placements.json "$VAULT_ASSEMBLY/_checks.json" "$VAULT_ASSEMBLY/recipes" tools/placements/COVERAGE.md
+python -I tools/placements/coverage.py "$VAULT_ASSEMBLY/_units.json" src/stl-placements.json "$VAULT_ASSEMBLY/_checks.json" "$VAULT_ASSEMBLY/recipes" tools/placements/COVERAGE.md "$VAULT_ASSEMBLY/_hardware/hardware_report.json"
 ```
 
 Do not commit the decimated STLs, the `.blend` files or the renders: they are USSA's geometry.
@@ -143,8 +163,13 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
   Heavyweight (and cut) roofs: the handle is a bar across the middle slot, in the pockets of its walls (156 mm
   apart for a 156.5 mm bar; its axis 59.8 mm above the roof's bottom, the middle of the pockets, which run from
   44.7 to 74.9 mm on every heavyweight roof, measured on sections of all 30; manual p. 10). Grid roofs: the
-  optional top handle lies on the grid, in the middle, long side across (manual p. 18); the page shows it when
-  the unit's list has it (option `topHandle`). Each pocket has a wedge-shaped entry groove (back on the right,
+  optional top handle (option `topHandle`, manual p. 18) **stands** on the grid, long side across, its hole running
+  front to back (it was set lying flat until the bolts showed it). Its bottom has two notches over the grid's pegs at
+  x = ±21 and two 6 mm channels that run up and out at 45° to its ends; each continues a 45° hole through the grid
+  under it (x = ±22.4, in the middle of the roof's depth; 10 mm further back on S3 and M3, measured on all 20 grid
+  roofs). Its feet sit between two cross ribs, which leaves it one depth (the one where it comes down furthest,
+  0.05 mm from the holes'), and it comes down 3.54 mm from the roof's highest point onto the ribs (3.21 on XL3,
+  whose decimated grid is off by up to 1.2 mm). Its channels are then 0.4 to 0.7 mm off the grid's hole axes. Each pocket has a wedge-shaped entry groove (back on the right,
   front on the left) closed by an insert once the bar is in: two inserts per heavyweight roof. The right one is
   where USSA's CAD scene has it, against the bar's end (0.5 mm off the groove's back wall, its peg in the groove's
   hole); the left one is the same turned half a turn about the bar's vertical axis.
@@ -201,6 +226,23 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
   The hinge tops' plates stop 0.85 mm under the lid's bosses on every height: the lid's push-fit height and
   the hinge disagree by that much. The lid stays where the push fit puts it, since the locks and the stacking
   height were measured from there.
+- **Bolts** (`hardware.py`; manual p. 3 "Hardware List", p. 17 and 18 "Required Hardware", Drawer Assembly 6/8):
+  - drawer front to box, M4 × 14 button head: from the front through each bolt hole of the facade, the head on the
+    counterbore's floor 4.1 mm under the facade's face (the facade cap closes it, 0.6 mm over the head), into the
+    box's front wall; 0.5 mm left at the tip (0.6 on XL);
+  - case front to body, M4 × 20 button: through the front panel's holes (its face, no counterbore) into the body's
+    side walls (and a floor rib in the middle on L and XL); 3.0 mm left;
+  - case hinge leaves, M4 × 10 button: from inside, through each leaf into the back wall; the hole is exactly 10 mm
+    deep under the head;
+  - case hinge tops, M4 × 14 button: from under the back of the lid, through each top into the lid's bosses; they
+    turn with the lid (group `lid`); 0.3 to 0.7 mm left;
+  - case lock holders, M4 × 14 button: from inside the case, through the holder into the front panel's blind holes,
+    exactly as deep;
+  - grid roof top handle, M6 × 50 countersunk: up from under the roof, the head in the 45° hole's countersink (its
+    cone fitted from r = 3.5 to 6 mm, carried on to the head's diameter: the hole's mouth opens on a slope, so its
+    rim isn't square to the bolt), through the grid into the handle's channel; 0.7 mm left (0.9 on XL3).
+  Parts held in several variants (key / hidden key, baseplates, case body styles) take the same bolts: the bolts are
+  measured on the default variant and carry the index of the part that holds them, which every variant shares.
 - **Checks against USSA's renders**: `compare_board.py` puts a crop of a PDF page next to our render, for a phone
   (boards in `VAULT_ASSEMBLY/_compare/`, outside the repo: they hold USSA's renders).
 - **Checks**: every unit is assembled with front, iso, side-section, top-section (runner level) and bottom
@@ -209,6 +251,12 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
   The regenerated S3 1F and L7 entries match the first session's checked ones (within 0.3 mm).
 
 ## Findings for the page (src/rules.js, src/template.html)
+
+- Bolt counts, planner (`unitHardware`) against the files' holes (left as they are, to decide): case fronts take
+  7 M4 × 20 in the planner and in the manual (drawn on an L 4F), but the panels have 4 holes on S and M 1F/2F, 6 on S
+  and M 4F, 5 on L 1F/2F and XL, 7 only on L 4F. Cases take 16 M4 × 14 in the planner and the manual (an L: 2 hinge
+  tops, 2 locks); S and M have one hinge top with 4 holes and one lock, so 8. M4 × 10 (8), drawer fronts and the
+  top handle's M6 × 50 agree.
 
 - On this machine the unzip turned `²` into `┬▓` (`04. L┬▓ Families/L3┬▓/...`). `R.norm` doesn't map it, so the
   planner can't find the L² and XL² files there. Mapping `┬▓` to `²` in `R.norm` would fix it.
