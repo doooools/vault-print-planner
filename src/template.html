@@ -702,6 +702,10 @@ details.folded > summary .mini { min-width: 40px; }
 .iacts { display: flex; gap: 4px; }
 .iacts .iconbtn.sq { width: 40px; height: 40px; }
 .ipair { margin: 12px 16px 0; }
+.seg.across button { display: grid; justify-items: center; gap: 2px; padding: 8px 4px; }
+.seg.across button svg { color: var(--muted); }
+.seg.across button[aria-pressed=true] svg { color: inherit; }
+.seg.across button small { line-height: 1.2; }
 .dinsp > .alert { margin: 12px 16px 0; }
 .ibody { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 14px 16px 18px; }
 .imore .ibody { padding: 12px 0 4px; }
@@ -743,6 +747,40 @@ details.folded > summary .mini { min-width: 40px; }
 dialog#tplDlg { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px 22px; width: min(980px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; }
 dialog#tplDlg::backdrop { background: rgba(10, 12, 12, .45); }
 dialog#tplDlg h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 22px; }
+/* 1b · Paint tool: filaments as brushes, part types, catalogue under the view */
+.dinsp .ihead h2 { margin-top: 0; }
+.dinsp .cstart { padding-left: 0; margin-top: 6px; }
+.ptray { display: grid; gap: 6px; }
+.pfil { position: relative; display: flex; align-items: center; gap: 10px; }
+.pfil.fixed { padding: 6px 10px 6px 8px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); }
+.pfil.fixed > span:last-child, .pbrush > span:last-child, .prole > span:last-child { display: grid; line-height: 1.2; min-width: 0; text-align: left; }
+.pfil small, .prole small { font-size: 12px; color: var(--muted); }
+.pbrush { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 36px 6px 8px; border: 2px solid var(--line); border-radius: 10px; background: var(--sheet); }
+.pbrush:hover { border-color: var(--muted); }
+.pbrush[aria-pressed=true] { border-color: var(--ink); background: var(--raised); }
+.pbrush b, .prole b { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pdel { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 6px; background: transparent; color: var(--muted); }
+.pdel:hover { background: var(--bad-soft); color: var(--bad); }
+.padd { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-style: dashed; }
+.padd[aria-expanded=true] { border-style: solid; border-color: var(--ink); }
+.pgrp { display: grid; gap: 2px; border-top: 1px solid var(--line); padding-top: 10px; }
+.pgrp-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.pgrp-h h3 { margin: 0; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+.pgrp-h .linkbtn { display: inline; margin: 0; padding: 0; font-size: 12.5px; }
+.prole { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 8px; border: 0; border-radius: 8px; background: transparent; text-align: left; }
+button.prole:hover { background: var(--sheet-2); }
+.prole .dot2.big { width: 24px; height: 24px; }
+.prole.fixed { color: var(--muted); }
+.pown { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 0; font-size: 13px; }
+.pown > span:nth-child(2) { flex: 1 1 160px; min-width: 0; }
+.pown .linkbtn { margin: 0; padding: 0; font-size: 12.5px; }
+.dcat { padding: 14px 16px 16px; border-top: 1px solid var(--line); background: var(--sheet-2); }
+.dcat .fp-grid { max-height: 260px; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); }
+.v3-bnow { display: inline-flex; align-items: center; gap: 8px; }
+.v3-bnow > span:last-child { display: grid; line-height: 1.15; }
+.v3-bnow small { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+.v3-bnow b { font-size: 14px; }
+.v3-brush kbd { display: inline-block; padding: 0 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 11px var(--f-mono); color: var(--ink); background: var(--sheet); }
 /* Step 2 · Print: progress and export, filament chips, the plate sheet and the selected plate */
 .ptop { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; padding: 18px 20px; }
 .ptop-prog { flex: 999 1 420px; min-width: 0; display: grid; gap: 8px; }
@@ -1457,7 +1495,8 @@ details.termfold[open] > summary { color: var(--ink); }
     const regrid = () => { const g = grid(); host.querySelector('[data-fp-grid]').innerHTML = g.html; host.querySelector('[data-fp-count]').textContent = `${plural(g.n, 'color')}, by shade`; bindGrid(); };
     const bindGrid = () => host.querySelectorAll('[data-fp-bbl]').forEach(b => b.onclick = () => {
       const i = +b.dataset.fpBbl, inTray = colorPrefs.palette.find(p => p.code && p.code === BAMBU_COLORS[i][1]);
-      st.sel = inTray ? { pal: inTray.id } : { bbl: i }; draw();
+      st.sel = inTray ? { pal: inTray.id } : { bbl: i };
+      if (o.quick && !role) apply(); else draw();
     });
     const apply = () => {
       let id = selPal();
@@ -1465,7 +1504,7 @@ details.termfold[open] > summary { color: var(--ink); }
         const b = st.sel.bbl != null ? BAMBU_COLORS[st.sel.bbl] : null;
         id = addPaletteColor(b ? { name: `${b[2]} · ${b[0]}`, hex: b[3].toLowerCase(), line: b[0], code: b[1] } : { name: 'Custom ' + st.sel.hex.toUpperCase(), hex: st.sel.hex.toLowerCase() });
       }
-      if (!role) saveColors();
+      if (!role) { saveColors(); if (o.quick) { st.sel = { pal: id }; o.after(id); if (host.isConnected) draw(); return; } }
       else if (st.scope === 'unit') { unit.cfg.colors = { ...(unit.cfg.colors || {}), [role]: id }; unit.save(); saveColors(); }
       else setRoleColor(role, id);
       st.sel = { pal: id };
@@ -1490,7 +1529,8 @@ details.termfold[open] > summary { color: var(--ink); }
       const hx = host.querySelector('[data-fp-hex]');
       hx.onchange = () => {
         const same = colorPrefs.palette.find(p => p.hex.toLowerCase() === hx.value.toLowerCase());
-        st.sel = same ? { pal: same.id } : { hex: hx.value }; draw();
+        st.sel = same ? { pal: same.id } : { hex: hx.value };
+        if (o.quick && !role) apply(); else draw();
       };
     };
     draw();
@@ -1838,11 +1878,6 @@ details.termfold[open] > summary { color: var(--ink); }
     if ($('xclear')) $('xclear').onclick = () => { extras = []; saveExtras(); renderTabs(); renderBuild(); };
   }
 
-  // ---------- colors (step 2, and the 3D view opened from step 1) ----------
-  // The filament tray (the palette, numbered like the Bambu Studio project's filament slots) and a map of which parts
-  // get which. Plates, filament totals and the Bambu Studio project follow them. One unit's own choices are made in
-  // the 3D views or the part preview, with the picker's "Only this unit".
-  let colorsOpen = false;
   // Bambu Lab's own PLA and PETG colours (src/bambu-colors.tsv): [line, colour code, name, hex]
   const BAMBU_COLORS = window.BAMBU_COLORS || [];
   // How the project uses each tray colour: roles of the project, units of the stacks with it as their own, and the
@@ -1883,57 +1918,79 @@ details.termfold[open] > summary { color: var(--ink); }
     for (const r of R.ROLES) setRoleColor(r.id, id === 'one' || r.def === 'body' ? a : b);
     saveColors();
   }
-  // in3d: the version in the 3D view's side column (always open, no panel frame)
-  function colorsPanel(in3d) {
-    const P = colorPrefs.palette, use = trayUse();
-    const intro = in3d ? 'Your filament tray and which parts get which, for the whole project: plates, filament totals and the Bambu Studio project follow it. To give this unit a color of its own, click the part and choose “Only this unit”.'
-      : 'Your filament tray, then which parts get which. Plates, filament totals and the Bambu Studio project follow it. To give one unit its own color, like one drawer’s front, click the part in its stack’s 3D view.';
-    const usedTxt = p => { const r = use.roles.get(p.id) || 0, u = use.units.get(p.id) || 0; return r || u ? [r && plural(r, 'part type'), u && plural(u, 'unit')].filter(Boolean).join(' · ') : 'unused'; };
-    const card = p => `<div class="ctray-card${use.slot.has(p.id) ? '' : ' unused'}">
-        <div class="ctray-top"><span>${use.slot.has(p.id) ? 'Slot ' + use.slot.get(p.id) : 'No slot'}</span>${P.length > 1 ? `<button type="button" class="iconbtn" data-pal-del="${p.id}" aria-label="Remove ${esc(p.name)} from the tray" title="Remove from the tray">✕</button>` : ''}</div>
-        <label class="ctray-sw" style="background:${p.hex}" title="Change this color"><input type="color" value="${p.hex}" data-pal-hex="${p.id}" aria-label="${esc(p.name)}: color"></label>
-        <input type="text" class="ctray-name" value="${esc(p.name)}" data-pal-name="${p.id}" maxlength="40" aria-label="Name of this filament">
-        <small>${esc(p.code ? `${p.line} ${p.code}` : p.hex.toUpperCase())}</small><small>${usedTxt(p)}</small></div>`;
-    const cell = (role, p, on) => `<td><button type="button" class="cdot${on ? ' on' : ''}" ${on ? `style="background:${p.hex}"` : ''} data-cmap="${role}" data-cmap-pal="${p.id}" aria-pressed="${on}" aria-label="${esc(ROLE_BY_ID.get(role).label)}: ${esc(p.name)}" title="${esc(p.name)}"></button></td>`;
-    const head = `<tr><th scope="col"><span class="sr">Parts</span></th>${P.map(p => `<th scope="col" title="${esc(p.name)}"><span class="cmap-h">${swatch(p.id)}${use.slot.get(p.id) || '–'}</span></th>`).join('')}</tr>`;
-    const section = ([title, ids]) => `<tbody><tr class="cmap-sec"><th colspan="${P.length + 1}" scope="rowgroup">${title}</th></tr>${ids.map(id => {
-      const r = ROLE_BY_ID.get(id), cur = colorFor(id, null), n = use.owned.get(id) || 0;
-      return `<tr><th scope="row"><span class="cmap-role"><span class="cmap-bar" style="background:${colorHex(cur)}"></span><span>${esc(r.label)}</span>${id === 'label' && labelsApart ? '<span class="cmap-note" title="Step 2 puts labels on a plate of their own, in a filament of their own">own plate</span>' : ''}${n ? `<span class="cmap-own" title="${plural(n, 'unit')} of your stacks ${n > 1 ? 'have' : 'has'} a color of ${n > 1 ? 'their' : 'its'} own here">${plural(n, 'unit')}</span>` : ''}</span></th>${P.map(p => cell(id, p, p.id === cur)).join('')}</tr>`;
-    }).join('')}${title === 'Other' ? `<tr><th scope="row"><span class="cmap-role"><span class="cmap-bar" style="background:${colorHex('tpu')}"></span><span>Tires</span></span></th><td colspan="${P.length}" class="cmap-fixed">TPU, slot 2</td></tr>` : ''}</tbody>`;
-    // Two tables side by side when there is room: outside and inside, mechanics and the rest
-    const table = groups => `<div class="cmap-box"><table class="cmap"><caption class="sr">Which filament each kind of part prints in</caption><thead>${head}</thead>${groups.map(section).join('')}</table></div>`;
-    return `${in3d ? '<div class="v3-colors" data-colors-root><h3>Colors</h3>' : `<details class="panel fold" data-colors-root ${colorsOpen ? 'open' : ''}><summary>Colors <small>${P.map(p => swatch(p.id)).join('')}${plural(P.length, 'filament')}</small></summary>`}
-      <div class="chead"><p class="pp">${intro}</p>
-        <div class="cstart" role="group" aria-label="Start from"><span>Start from</span>${COLOR_PRESETS.map(([id, t, why]) => `<button type="button" class="chip" data-cpreset="${id}" title="${esc(why)}">${t}</button>`).join('')}</div></div>
-      <div class="ctray" data-fp-row>${P.map(card).join('')}
-        <div class="ctray-card tpu"><div class="ctray-top"><span>Slot 2 · fixed</span></div><span class="ctray-sw"></span><b>TPU</b><small>Tires only</small></div>
-        <button type="button" class="ctray-add" data-fp-add>${'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'}Add a filament</button></div>
-      ${preset().bambu && P.some(p => /^PETG/.test(p.line || '')) ? '<p class="pp">PETG colors: the Bambu Studio project gives every color PLA settings. In Bambu Studio, set the PETG filaments to a PETG profile.</p>' : ''}
-      <div class="cmap-wrap">${table(ROLE_GROUPS.slice(0, 2))}${table(ROLE_GROUPS.slice(2))}</div>
-      ${P.some(p => !use.slot.has(p.id)) ? '<p class="pp">A filament no part uses gets no slot in the Bambu Studio project.</p>' : ''}
-    ${in3d ? '</div>' : '</details>'}`;
+  // ---------- 1b · Paint tool: filaments as brushes, the part types, the catalogue under the view ----------
+  // The panel on the right while the 3D view's Paint tool is on. A filament card is also the brush; a part type's line
+  // paints that type everywhere (and drops the modules' own colours for it); a click in the view paints what was clicked,
+  // everywhere or in that module only (v3paint). Slot numbers stay out of sight: trayUse and buildProject still set them.
+  let fpAdding = false; // "Add a filament": the catalogue under the view
+  const brushId = () => { const id = (v3 && v3.brush) || v3ui.brush; return paletteOf(id) ? id : colorPrefs.palette[0].id; };
+  function setBrush(id) { v3ui.brush = id; if (v3) { v3.brush = id; v3tools(); } renderInspector(); }
+  const painting = () => view === 'build' && !!v3 && v3.tool === 'paint';
+  function paintRole(role, id) {
+    setRoleColor(role, id);
+    towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => {
+      if (u.colors && u.colors[role]) { const x = { ...u.colors }; delete x[role]; if (Object.keys(x).length) u.colors = x; else delete u.colors; }
+    })));
+    save(); saveColors();
   }
-  function bindColors(root, rerender) {
-    const D = root && root.querySelector('[data-colors-root]'); if (!D) return;
-    if (D.tagName === 'DETAILS') D.ontoggle = () => { colorsOpen = D.open; };
-    const done = () => { saveColors(); rerender(); };
-    D.querySelectorAll('[data-pal-hex]').forEach(i => i.onchange = () => { const p = paletteOf(i.dataset.palHex); p.hex = i.value; delete p.code; delete p.line; done(); }); // no longer Bambu's exact colour
-    D.querySelectorAll('[data-pal-name]').forEach(i => i.onchange = () => { paletteOf(i.dataset.palName).name = i.value.trim() || 'Color'; done(); });
-    D.querySelectorAll('[data-pal-del]').forEach(b => b.onclick = () => {
+  // Every module colour that differs from the project's, for the exceptions list
+  function ownColors() {
+    const out = [];
+    towers.forEach(t => t.levels.forEach((lv, i) => lv.forEach((u, j) => {
+      if (!u.colors) return;
+      for (const [role, id] of Object.entries(u.colors)) if (paletteOf(id) && ROLE_BY_ID.has(role))
+        out.push({ t, u, role, id, where: `${t.name}, level ${i + 1}${lv.length > 1 ? (j ? ' right' : ' left') : ''} (${unitCode(u)})` });
+    })));
+    return out;
+  }
+  function paintPanel(box) {
+    const P = colorPrefs.palette, use = trayUse(), brush = brushId(), own = ownColors();
+    const usedTxt = p => { const r = use.roles.get(p.id) || 0, u = use.units.get(p.id) || 0; return r || u ? [r && plural(r, 'part type'), u && plural(u, 'module')].filter(Boolean).join(' · ') : 'not used yet'; };
+    const inUse = P.filter(p => use.slot.has(p.id)).length;
+    const roleRow = id => { const r = ROLE_BY_ID.get(id), cur = colorFor(id, null), n = use.owned.get(id) || 0;
+      return `<button type="button" class="prole" data-prole="${id}" title="Paint ${esc(r.label.toLowerCase())} with the brush"><span class="dot2 big" style="background:${colorHex(cur)}"></span><span><b>${esc(r.label)}</b><small>${esc(colorName(cur))}${n ? ` · ${plural(n, 'module')} with ${n === 1 ? 'its' : 'their'} own` : ''}${id === 'label' && labelsApart ? ' · own plate' : ''}</small></span></button>`; };
+    box.innerHTML = `<div class="ihead"><h2>Colors</h2>
+        <div class="cstart" role="group" aria-label="Start from"><span>Start from</span>${COLOR_PRESETS.map(([id, t, why]) => `<button type="button" class="chip" data-cpreset="${id}" title="${esc(why)}">${t}</button>`).join('')}</div></div>
+      <div class="ibody">
+        <div class="field"><div class="lbl">Your filaments · pick the brush <span class="hint">${inUse} in use</span></div>
+          <div class="ptray">${P.map(p => `<div class="pfil"><button type="button" class="pbrush" data-brush="${p.id}" aria-pressed="${p.id === brush}"><span class="dot2 big" style="background:${p.hex}"></span><span><b>${esc(p.name)}</b><small>${esc(usedTxt(p))}</small></span></button>${P.length > 1 ? `<button type="button" class="pdel" data-pal-del="${p.id}" aria-label="Remove ${esc(p.name)}" title="Remove this filament"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</div>`).join('')}
+            <div class="pfil fixed"><span class="dot2 big" style="background:${colorHex('tpu')}"></span><span><b>TPU</b><small>tires only, fixed</small></span></div>
+            <button type="button" class="btn padd" data-padd aria-expanded="${fpAdding}">${icon('plus')} Add a filament</button></div></div>
+        ${ROLE_GROUPS.map(([title, ids]) => `<div class="pgrp"><div class="pgrp-h"><h3>${esc(title)}</h3><button type="button" class="linkbtn" data-pall="${ids.join(',')}">Paint all</button></div>
+          ${ids.map(roleRow).join('')}${title === 'Other' ? `<div class="prole fixed"><span class="dot2 big" style="background:${colorHex('tpu')}"></span><span><b>Tires</b><small>TPU, fixed</small></span></div>` : ''}</div>`).join('')}
+        ${own.length ? `<div class="pgrp"><div class="pgrp-h"><h3>Modules with their own color</h3></div>${own.map((x, k) => `<div class="pown"><span class="dot2" style="background:${colorHex(x.id)}"></span><span><b>${esc(ROLE_BY_ID.get(x.role).label)}</b> in ${esc(x.where)}</span><button type="button" class="linkbtn" data-pown="${k}">Back to the project color</button></div>`).join('')}</div>` : ''}
+        ${preset().bambu && P.some(p => /^PETG/.test(p.line || '')) ? '<p class="pnote" style="margin:0">PETG colors: the Bambu Studio project gives every color PLA settings. In Bambu Studio, set the PETG filaments to a PETG profile.</p>' : ''}
+        <p class="pnote" style="margin:0">Each filament prints on its own plates. Fewer filaments, fewer plates. <button type="button" class="linkbtn" data-go="print" style="display:inline;margin:0;padding:0">See the plates</button></p>
+      </div>`;
+    const done = () => { saveColors(); renderAll(); };
+    box.querySelectorAll('[data-brush]').forEach(b => b.onclick = () => setBrush(b.dataset.brush));
+    box.querySelectorAll('[data-prole]').forEach(b => b.onclick = () => { paintRole(b.dataset.prole, brushId()); done(); });
+    box.querySelectorAll('[data-pall]').forEach(b => b.onclick = () => { b.dataset.pall.split(',').forEach(r => paintRole(r, brushId())); done(); });
+    box.querySelectorAll('[data-pown]').forEach(b => b.onclick = () => {
+      const x = own[+b.dataset.pown], c = { ...x.u.colors }; delete c[x.role];
+      if (Object.keys(c).length) x.u.colors = c; else delete x.u.colors;
+      save(); done();
+    });
+    box.querySelectorAll('[data-pal-del]').forEach(b => b.onclick = () => {
       const id = b.dataset.palDel;
       colorPrefs.palette = colorPrefs.palette.filter(p => p.id !== id);
       for (const k of Object.keys(colorPrefs.roles)) if (colorPrefs.roles[k] === id) delete colorPrefs.roles[k];
-      // Parts that used it go back to their role's color; a default it was falls back to the first color left
-      towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { if (u.colors) for (const k of Object.keys(u.colors)) if (u.colors[k] === id) delete u.colors[k]; })));
+      // Parts that used it go back to their role's colour; module colours using it are dropped
+      towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { if (u.colors) { for (const k of Object.keys(u.colors)) if (u.colors[k] === id) delete u.colors[k]; if (!Object.keys(u.colors).length) delete u.colors; } })));
       save(); done();
     });
-    D.querySelectorAll('[data-cmap]').forEach(b => b.onclick = () => { setRoleColor(b.dataset.cmap, b.dataset.cmapPal); rerender(); });
-    D.querySelectorAll('[data-cpreset]').forEach(b => b.onclick = () => {
-      if (b.dataset.cpreset === 'render' && colorsCustom() && !confirm('Go back to USSA’s render colors? This removes the filaments you added and the colors chosen for single units.')) return;
-      applyColorPreset(b.dataset.cpreset); rerender();
+    box.querySelectorAll('[data-cpreset]').forEach(b => b.onclick = () => {
+      if (b.dataset.cpreset === 'render' && colorsCustom() && !confirm('Go back to USSA’s render colors? This removes the filaments you added and the colors chosen for single modules.')) return;
+      applyColorPreset(b.dataset.cpreset); renderAll();
     });
-    const add = D.querySelector('[data-fp-add]');
-    add.onclick = () => togglePicker(add, { role: null, from: 'Your filament tray', after: rerender });
+    box.querySelector('[data-padd]').onclick = () => { fpAdding = !fpAdding; renderAll(); const c = $('dCat'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
+    box.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { view = b.dataset.go; renderAll(); });
+  }
+  // The catalogue under the view: a click adds the colour to the filaments and takes it as the brush
+  function bindCatalog() {
+    const host = $('dCat'); if (!host) return;
+    filamentPicker(host, { role: null, quick: true, from: 'Bambu Lab colors on sale in the EU store. A click adds the color to your filaments and takes it as the brush.',
+      close: () => { fpAdding = false; renderAll(); }, after: id => { if (id) { v3ui.brush = id; if (v3) { v3.brush = id; v3tools(); } } renderInspector(); } });
   }
   // ---------- 1 · Design: stacks rail, the stack in 3D, the inspector ----------
   // A stack owns its footprint (t.fp: width family and depth, the same for every level), its roof (kept on the top
@@ -1990,14 +2047,34 @@ details.termfold[open] > summary { color: var(--ink); }
   // The footprint: written on every level. A pair that doesn't make the new width becomes one module of that width.
   function setFootprint(t, w, d) {
     t.fp = { w, d };
+    let split = 0;
     t.levels = t.levels.map(lv => {
       if (lv.length > 1 && R.familyForWidth(levelWidth(lv)) === w) { lv.forEach(u => { u.d = d; fixUnit(u); }); return lv; }
       const u = lv[0];
-      u.w = (u.w === 'L2' && w === 'L') || (u.w === 'XL2' && w === 'XL') ? u.w : w; u.d = d; fixUnit(u);
+      u.d = d;
+      if (w === 'XL' && u.h > 1) { split++; return acrossLevel(lv, 'SM', u); }
+      u.w = (u.w === 'L2' && w === 'L') || (u.w === 'XL2' && w === 'XL') ? u.w : w; fixUnit(u);
       return [u];
     });
     fixTower(t); save();
+    if (split) toast(`XL modules only come in 1F: ${plural(split, 'taller level')} ${split === 1 ? 'is' : 'are'} now an S and an M side by side.`);
   }
+  // Across the width, on L and XL stacks: one module, one shell holding two drawers (L\u00b2, XL\u00b2), or two modules side by side
+  const ACROSS = { L: [['L', 'L', 'one module'], ['L2', 'L\u00b2', 'two drawers, one shell'], ['SS', 'S + S', 'two modules']],
+    XL: [['XL', 'XL', 'one module, 1F only'], ['XL2', 'XL\u00b2', 'S and M drawers in one shell, 1F'], ['SM', 'S + M', 'two modules']] };
+  const acrossOf = lv => lv.length > 1 ? (lv.every(u => u.w === 'S') ? 'SS' : 'SM') : lv[0].w;
+  // The level rebuilt across the width, with the settings of `from` (the module selected in the inspector)
+  function acrossLevel(lv, v, from) {
+    if ((v === 'SS' || v === 'SM') && acrossOf(lv) === v) return lv;
+    const one = w => { const u = JSON.parse(JSON.stringify(from)); u.w = w; return u; };
+    const out = v === 'SS' ? [one('S'), one('S')] : v === 'SM' ? [one('S'), one('M')] : [one(v)];
+    out.forEach((u, j) => { if (j) u.roof = 'none'; fixUnit(u); });
+    return out;
+  }
+  const acrossIcon = v => `<svg width="44" height="26" viewBox="0 0 44 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6">${
+    v === 'L' || v === 'XL' ? '<rect x="2" y="3" width="40" height="20" rx="2"/><path d="M18 13h8"/>'
+    : v === 'L2' || v === 'XL2' ? `<rect x="2" y="3" width="40" height="20" rx="2"/><path d="M${v === 'L2' ? 22 : 18} 6v14M${v === 'L2' ? 9 : 7} 13h6M${v === 'L2' ? 29 : 27} 13h8"/>`
+    : `<rect x="2" y="3" width="${v === 'SS' ? 19 : 16}" height="20" rx="2"/><rect x="${v === 'SS' ? 23 : 20}" y="3" width="${v === 'SS' ? 19 : 22}" height="20" rx="2"/><path d="M${v === 'SS' ? 8 : 7} 13h6M${v === 'SS' ? 29 : 27} 13h8"/>`}</svg>`;
   function newUnit(t, from) {
     const fp = fpOf(t), u = from ? clean(JSON.parse(JSON.stringify(from))) : clean({ type: 'drawer', w: fp.w, d: fp.d, h: 1 });
     delete u.colors; u.roof = 'none'; u.w = from ? u.w : fp.w; u.d = fp.d; fixUnit(u);
@@ -2131,6 +2208,7 @@ details.termfold[open] > summary { color: var(--ink); }
         <p class="pnote">Applies to every level of ${esc(t.name)}. Sizes too big for the ${esc(printerName())} aren’t offered.</p></div>` : ''}
       ${t.levels.length ? '<div class="v3-slot"></div>' : `<div class="dempty"><p>This stack has no level yet.</p><button type="button" class="btn primary big" data-addtop>${icon('plus')} Add a level</button></div>`}
       ${colorStrip()}
+      ${fpAdding && painting() ? '<div class="dcat" id="dCat"></div>' : ''}
     </section>`;
   }
   function bindCenter(t) {
@@ -2141,18 +2219,24 @@ details.termfold[open] > summary { color: var(--ink); }
     V.querySelectorAll('[data-fpd]').forEach(b => b.onclick = () => { setFootprint(t, fpOf(t).w, +b.dataset.fpd); renderAll(); });
     V.querySelectorAll('[data-addtop]').forEach(b => b.onclick = () => levelOp(t, 'top'));
     V.querySelectorAll('[data-paint]').forEach(b => b.onclick = () => { if (v3) { v3.tool = 'paint'; v3.hot = null; v3.recolor(); v3tools(); v3side(); } });
+    bindCatalog();
   }
   // The inspector: the selected level, or the stack's settings
   function renderInspector() {
     const box = $('dInsp'), t = curTower(); if (!box || !t) return;
+    if (painting()) return paintPanel(box);
     if (dsel.l == null || !t.levels[dsel.l]) return stackInspector(box, t);
     const i = dsel.l, L = t.levels, lv = L[i], ui = Math.min(dsel.u || 0, lv.length - 1), u = lv[ui], top = i === L.length - 1;
     const k = clean(u); if (!top) k.roof = 'none';
     const res = withSpares(computeUnit(k)), s = summary(res.lines), ext = unitExt(u), nf = unitNoFit(u, top);
     const trial = patch => { const x = clean({ ...u, ...patch, roof: 'none' }); fixUnit(x); return !tooBig(x); };
     const typeOpts = [{ v: 'drawer', label: 'Drawer', sub: 'pulls out' }, { v: 'case', label: 'Case', sub: 'opens on top' }].filter(o => o.v === u.type || trial({ type: o.v }));
-    const hs = R.HEIGHTS[u.type][u.w] || [1];
-    const hOpts = [1, 2, 4].filter(h => hs.includes(h) && (h === u.h || trial({ h }))).map(h => ({ v: h, label: h + 'F', sub: Math.round(R.exterior(u.type, u.w, u.d, h)[2]) + ' mm' }));
+    // Heights: on an XL or XL\u00b2 level, 2F and 4F make it an S and an M side by side
+    const xl = u.w === 'XL' || u.w === 'XL2', hs = xl ? [1, 2, 4] : R.HEIGHTS[u.type][u.w] || [1];
+    const hTrial = h => xl && h > 1 ? trial({ h, w: 'M' }) : trial({ h });
+    const hOpts = [1, 2, 4].filter(h => hs.includes(h) && (h === u.h || hTrial(h))).map(h => ({ v: h, label: h + 'F', sub: Math.round(R.exterior(u.type, xl && h > 1 ? 'M' : u.w, u.d, h)[2]) + ' mm' }));
+    const fw = fpOf(t).w, across = ACROSS[fw] ? ACROSS[fw].filter(([v]) => (u.type === 'drawer' || !v.endsWith('2')) && (v === acrossOf(lv) || acrossLevel(lv, v, { ...u, h: v === 'XL' || v === 'XL2' ? 1 : u.h }).every(x => !tooBig({ ...x, roof: 'none' })))) : null;
+    const title = lv.length > 1 ? `${lv.map(x => WNAME[x.w]).join(' + ')} \u00b7 x${u.d} \u00b7 ${u.h}F` : unitCode(u);
     let o = '';
     if (u.type === 'drawer') {
       o += `<div class="field"><div class="lbl">Inside</div><div class="seg">${useg('interior', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], u.interior)}</div></div>`;
@@ -2181,18 +2265,35 @@ details.termfold[open] > summary { color: var(--ink); }
     const moreOn = (u.manualSupports ? 1 : 0) + (u.wallMount ? 1 : 0) + (u.pegboard && u.pegboard !== 'none' ? 1 : 0) + (u.backbone && u.backbone !== 'none' ? 1 : 0);
     box.innerHTML = `<div class="ihead"><div class="ipos"><span class="v3-sec">Level ${i + 1} of ${L.length}</span>
         <div class="iacts"><button type="button" class="iconbtn sq" data-lop="up" aria-label="Move this level up" ${top ? 'disabled' : ''}>${icon('up')}</button><button type="button" class="iconbtn sq" data-lop="down" aria-label="Move this level down" ${i ? '' : 'disabled'}>${icon('down')}</button><button type="button" class="iconbtn sq" data-lop="dup" aria-label="Duplicate this level">${icon('dup')}</button><button type="button" class="iconbtn sq" data-lop="del" aria-label="Remove this level">${icon('del')}</button></div></div>
-        <h2>${esc(unitCode(u))}</h2><div class="mono">${ext.map(Math.round).join(' × ')} mm${lv.length > 1 ? ' · one of two side by side' : ''}</div></div>
-      ${lv.length > 1 ? `<div class="seg ipair" role="group" aria-label="Module">${lv.map((x, j) => `<button type="button" data-umod="${j}" aria-pressed="${j === ui}">${j ? 'Right' : 'Left'}<small>${esc(unitCode(x))}</small></button>`).join('')}</div>` : ''}
+        <h2>${esc(title)}</h2><div class="mono">${Math.round(levelWidth(lv))} × ${Math.round(ext[1])} × ${Math.round(levelHeight(lv))} mm · ${s.prints} parts · ≈ ${gramsStr(s.g)}</div></div>
+      ${lv.length > 1 ? `<div class="seg ipair" role="group" aria-label="Module to set up">${lv.map((x, j) => `<button type="button" data-umod="${j}" aria-pressed="${j === ui}">${j ? 'Right' : 'Left'}<small>${esc(unitCode(x))}</small></button>`).join('')}</div>` : ''}
       ${nf.length ? `<div class="alert warn" role="alert"><strong>${plural(nf.length, 'part')} of this level no longer ${nf.length === 1 ? 'fits' : 'fit'} the ${esc(printerName())}</strong><span class="mono">${[...new Set(nf.map(l => esc(l.label) + ' · ' + dimStr(l.file.dims)))].join('<br>')}</span><span>${nf.length === 1 ? 'It is' : 'They are'} left out of the plates. Print ${nf.length === 1 ? 'it' : 'them'} on a bigger printer, or change this level.</span></div>` : ''}
       <div class="ibody">
+        ${across && across.length > 1 ? `<div class="field"><div class="lbl">Across the width</div><div class="seg across" role="group" aria-label="Across the width">${across.map(([v, label, sub]) => `<button type="button" data-across="${v}" aria-pressed="${acrossOf(lv) === v}">${acrossIcon(v)}<span>${label}</span><small>${sub}</small></button>`).join('')}</div></div>` : ''}
         <div class="field"><div class="lbl">Type</div><div class="seg">${useg('type', typeOpts, u.type)}</div></div>
         <div class="field"><div class="lbl">Module height</div><div class="seg">${useg('h', hOpts, u.h)}</div></div>
         ${o}
         <details class="imore" ${moreOn ? 'open' : ''}><summary>More options: print aid, wall mount, pegboard${moreOn ? ` <span class="mono">${moreOn} on</span>` : ''}</summary><div class="ibody">${more}</div></details>
         <details class="imore iparts"><summary>Parts and bolts of this level <span class="mono">${s.prints} parts · ≈ ${gramsStr(s.g)}</span></summary>
           <div class="parts">${partRows(res.lines)}</div>${hwTable(res.hardware, 'Hardware', 'For this level. Not printed.')}</details>
+        ${lv.length > 1 ? '<p class="pnote" style="margin:0">With two modules side by side, each is set up on its own (pick it above or click it in the view). Their height stays the same.</p>' : u.w === 'L2' || u.w === 'XL2' ? '<p class="pnote" style="margin:0">Both drawers of this shell share these settings.</p>' : ''}
       </div>`;
-    const set = patch => { Object.assign(u, patch); fixUnit(u); fixTower(t); save(); renderAll(); };
+    const set = patch => {
+      if ('h' in patch && xl && patch.h > 1) {
+        L[i] = acrossLevel(lv, 'SM', { ...u, h: patch.h }); dsel.u = 0;
+        toast(`XL modules only come in 1F: level ${i + 1} is now an S and an M side by side, ${patch.h}F.`);
+      } else {
+        Object.assign(u, patch); fixUnit(u);
+        if ('h' in patch) lv.forEach(x => { if (x !== u) { x.h = u.h; fixUnit(x); } });
+      }
+      fixTower(t); saveSel(); save(); renderAll();
+    };
+    box.querySelectorAll('[data-across]').forEach(b => b.onclick = () => {
+      const v = b.dataset.across, one = v === 'XL' || v === 'XL2';
+      if (one && u.h > 1) toast(`${WNAME[v]} modules only come in 1F: level ${i + 1} is now 1F.`);
+      L[i] = acrossLevel(lv, v, { ...u, h: one ? 1 : u.h }); dsel.u = 0;
+      fixTower(t); saveSel(); save(); renderAll();
+    });
     box.querySelectorAll('[data-lop]').forEach(b => b.onclick = () => levelOp(t, b.dataset.lop, i));
     box.querySelectorAll('[data-umod]').forEach(b => b.onclick = () => { dsel.u = +b.dataset.umod; saveSel(); renderInspector(); v3mark(); });
     bindUnitSeg(box, u, set);
@@ -2268,8 +2369,13 @@ details.termfold[open] > summary { color: var(--ink); }
     }
     v.render();
   }
-  let v3lastPick = null;
+  let v3lastPick = null, v3lastTool = null;
   function v3picked() {
+    if (v3 && v3.tool !== v3lastTool) {
+      v3lastTool = v3.tool;
+      if (v3.tool !== 'paint' && fpAdding) { fpAdding = false; const c = $('dCat'); if (c) c.remove(); }
+      if (view === 'build') renderInspector();
+    }
     const v = v3; if (!v || view !== 'build' || !v.sel || v.sel === v3lastPick) { v3mark(); return; }
     v3lastPick = v.sel;
     const t = curTower(); if (!t || !v.sel.u) { v3mark(); return; }
@@ -3390,8 +3496,9 @@ details.termfold[open] > summary { color: var(--ink); }
   // The toolbar over the view, and the brush bar while painting
   function v3tools() {
     const v = v3; if (!v) return;
-    const P = colorPrefs.palette, use = trayUse();
+    const P = colorPrefs.palette;
     if (!paletteOf(v.brush)) v.brush = P[0].id;
+    v3ui.brush = v.brush;
     const seg = (items, cur, attr) => items.map(([id, label]) => `<button type="button" ${attr}="${id}" aria-pressed="${cur === id}">${label}</button>`).join('');
     const roof = v.units.some(u => u.roof);
     $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool">${seg([['turn', 'Select'], ['paint', 'Paint']], v.tool, 'data-v3tool')}</div>
@@ -3402,12 +3509,10 @@ details.termfold[open] > summary { color: var(--ink); }
     const B = $('v3dBrush');
     if (v.tool === 'paint') {
       B.hidden = false; B.className = 'v3-brush';
-      B.innerHTML = `<span class="v3-brush-l">Brush</span><div class="v3-brushes">${P.map(p => `<button type="button" class="bsw" data-v3brush="${p.id}" aria-pressed="${v.brush === p.id}" title="${esc(p.name)}" aria-label="Brush: ${esc(p.name)}"><span style="background:${p.hex}"></span><small>${use.slot.get(p.id) || '–'}</small></button>`).join('')}
-          <button type="button" class="bsw more" data-v3more aria-expanded="false">More…</button></div>
-        <div class="v3-seg" role="group" aria-label="Paint where">${seg([['project', 'Same part everywhere'], ['unit', 'This unit only']], v.pscope, 'data-v3scope')}</div>
-        <span class="v3-brush-hint">${v.pscope === 'project' ? 'A click paints that kind of part in every unit of the project.' : 'A click paints that kind of part in the clicked unit only.'}</span>
-        <button type="button" class="btn" data-v3allcolors title="Your filament tray and which parts get which">All colors</button>
-    `;
+      const bp = paletteOf(v.brush);
+      B.innerHTML = `<span class="v3-bnow"><span class="dot2 big" style="background:${bp.hex}"></span><span><small>Brush</small><b>${esc(bp.name)}</b></span></span>
+        <span class="v3-brush-hint">Click a part in the view, or a line on the right. <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click opens a drawer, to paint its box.</span>
+        <div class="v3-seg" role="group" aria-label="What a click in the view paints">${seg([['project', 'Same part everywhere'], ['unit', 'Only this module']], v.pscope, 'data-v3scope')}</div>`;
     } else {
       B.hidden = false; B.className = 'v3-hintbar';
       B.innerHTML = '<kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click opens or closes a drawer or a case. A click selects a level. Drag to turn, scroll to zoom, right-drag to move.';
@@ -3416,7 +3521,6 @@ details.termfold[open] > summary { color: var(--ink); }
     on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; v.hot = null; v.recolor(); v3tools(); v3side(); });
     on('[data-v3view]', b => { v.view = b.dataset.v3view; v.aim(V3_VIEWS.find(x => x[0] === v.view)[2]); v3tools(); });
     on('[data-v3tog]', b => { v[b.dataset.v3tog] = !v[b.dataset.v3tog]; v.arrange(); v3tools(); v3side(); });
-    on('[data-v3brush]', b => { v.brush = b.dataset.v3brush; v3tools(); });
     on('[data-v3scope]', b => { v.pscope = b.dataset.v3scope; v3tools(); });
     on('[data-v3hw]', () => {
       v3hw = !v3hw; store.set('v3hardware', v3hw);
@@ -3424,24 +3528,6 @@ details.termfold[open] > summary { color: var(--ink); }
       if (!v3hw && v.sel && v.sel.role === 'hardware') v.sel = null;
       v.render(); v3tools(); v3side();
     });
-    on('[data-v3allcolors]', () => v3showColors());
-    // More…: the filament picker in a panel above the brush bar; what it adds becomes the brush
-    document.querySelectorAll('.v3-morepop').forEach(x => x.remove());
-    const more = B.querySelector('[data-v3more]');
-    if (more) more.onclick = () => {
-      const was = document.querySelector('.v3-morepop'); if (was) { was.remove(); more.setAttribute('aria-expanded', 'false'); return; }
-      const pop = document.createElement('div'); pop.className = 'v3-morepop'; B.after(pop);
-      pop.style.bottom = (B.offsetHeight + 20) + 'px'; more.setAttribute('aria-expanded', 'true');
-      const shut = () => { pop.remove(); if (more.isConnected) more.setAttribute('aria-expanded', 'false'); };
-      filamentPicker(pop, { role: null, from: 'A new brush, added to your tray', close: shut, after: id => { shut(); if (id) v.brush = id; v3refresh(v); } });
-    };
-  }
-  // "All colors": the Colors panel, at the foot of the side column when enlarged, else on the page under the 3D
-  function v3showColors() {
-    if ($('v3d').open) { const box = $('v3dColors'); if (box.firstChild) box.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
-    const d = document.querySelector('#view-' + view + ' details[data-colors-root]');
-    if (!d) { const box = $('v3dColors'); if (box.firstChild) box.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; } // other steps: it's in the side column
-    d.open = colorsOpen = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   // The side column: what is selected, then the units top to bottom, then the project's colours
   function v3side() { v3sel(); v3list(); v3colors(); v3picked(); }
@@ -3480,12 +3566,7 @@ details.termfold[open] > summary { color: var(--ink); }
     box.querySelector('[data-v3hwx]').onchange = e => set(e.target.value);
   }
   // The project's colours (tray and map), at the foot of the side column
-  function v3colors() {
-    const v = v3, box = $('v3dColors'); if (!v) return;
-    if (view === 'build' && !$('v3d').open) { box.replaceChildren(); return; } // step 1 has it on the page
-    box.innerHTML = colorsPanel(true);
-    bindColors(box, () => v3refresh(v));
-  }
+  function v3colors() { const box = $('v3dColors'); if (box) box.replaceChildren(); } // colours are set with the Paint tool
   // The units, top to bottom: how far their parts are, their colours (ringed when the unit has its own), and what
   // the measured assemblies don't place yet
   function v3list() {
