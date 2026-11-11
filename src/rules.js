@@ -183,7 +183,9 @@
     if (kind === 'grid' && topHandle) add('Roof', 'Top handle', U + 'Top Handle (Turn On Supports).stl', 1, { supports: true });
     if (kind === 'heavy' || kind === 'heavycut') {
       add('Roof', 'Heavyweight roof handle', U + 'Heawyweight Roof Handle.stl', 1);
-      add('Roof', 'Heavyweight roof insert', U + 'Heawyweight Roof Insert.stl', 1);
+      // The bar drops into a pocket at each end, through an entry groove that the insert then closes: two per roof
+      add('Roof', 'Heavyweight roof insert', U + 'Heawyweight Roof Insert.stl', 2,
+        { inferred: 'The manual doesn’t count them. The roof has two handle pockets, each with an entry groove that one insert closes, so two are listed.' });
     }
   }
 

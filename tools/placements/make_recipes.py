@@ -273,9 +273,17 @@ def roof_sml(w, d, kind, ref_mod=None):
     yc, top = yf + 0.06 - ey / 2, zb - 8.6 + ez
     if kind in ("heavy", "heavycut"):
         # A bar from one pocket of the middle slot's walls to the other: the pockets are 156 mm apart, the bar
-        # 156.5 long, at 45 mm above the roof's bottom (section of the L7 heavyweight roof; manual p. 10)
+        # 156.5 long. Its axis is 59.8 mm above the roof's bottom: the middle of the pockets, which run from 44.7 to
+        # 74.9 mm on every heavyweight roof (sections at x = +-74 mm; manual p. 10). 45 mm put it a radius too low.
         r.part("Handle", U + "Heawyweight Roof Handle.stl", "roof", "module", [0, 0, 90],
-               {"x": ["center", cx], "y": ["center", yc], "z": ["center", zb - 8.6 + 45.0]})
+               {"x": ["center", cx], "y": ["center", yc], "z": ["center", zb - 8.6 + 59.8]})
+        # Each pocket has an entry groove (a wedge running back on the right, forward on the left) that an insert
+        # closes once the bar is in. USSA's CAD scene has the insert against the bar's right end: that is the right
+        # one (0.5 mm off the groove's back wall, its peg in the groove's hole); the left one is it turned half a
+        # turn about the bar's vertical axis. Offsets are bounding-box centre to the bar's.
+        for i, (sx, rz) in enumerate(((1, 90), (-1, 270)), 1):
+            r.part(f"Insert_{i}", U + "Heawyweight Roof Insert.stl", "roof", "module", [0, 0, rz],
+                   {"x": ["center", cx + sx * 68.414], "y": ["center", yc - sx * 27.056], "z": ["center", zb - 8.6 + 59.8 - 0.25]})
     if kind == "grid":
         # option "top handle": lying on the grid, in the middle, long side across (manual p. 18)
         r.part("TopHandle", U + "Top Handle (Turn On Supports).stl", "roof", "module", [90, 0, 90],

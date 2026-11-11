@@ -37,9 +37,11 @@ for (const w of ['S', 'M', 'L', 'XL']) for (const d of R.DEPTHS)
 const HANDLE = { top: 'Top Handle (Turn On Supports).stl', heavy: 'Heawyweight Roof Handle.stl', insert: 'Heawyweight Roof Insert.stl' };
 const roofClash = [];
 const checkRoof = (r, kind, th, what) => {
-  const has = f => r.lines.some(l => l.file.path.endsWith('/' + f));
-  const want = { top: kind === 'grid' && th, heavy: kind === 'heavy' || kind === 'heavycut', insert: kind === 'heavy' || kind === 'heavycut' };
-  for (const k of Object.keys(HANDLE)) if (has(HANDLE[k]) !== want[k]) roofClash.push(`${what} ${kind}${th ? ' + top handle' : ''}: ${HANDLE[k]} ${want[k] ? 'missing' : 'listed but not wanted'}`);
+  const qty = f => r.lines.filter(l => l.file.path.endsWith('/' + f)).reduce((a, l) => a + l.qty, 0);
+  const heavy = kind === 'heavy' || kind === 'heavycut';
+  // one insert per pocket: the bar has a pocket at each end
+  const want = { top: kind === 'grid' && th ? 1 : 0, heavy: heavy ? 1 : 0, insert: heavy ? 2 : 0 };
+  for (const k of Object.keys(HANDLE)) if (qty(HANDLE[k]) !== want[k]) roofClash.push(`${what} ${kind}${th ? ' + top handle' : ''}: ${qty(HANDLE[k])} × ${HANDLE[k]}, want ${want[k]}`);
   const bolts = r.hardware.filter(h => /M6 × 50/.test(h.item)).reduce((a, h) => a + h.qty, 0);
   if (bolts !== (want.top ? 2 : 0)) roofClash.push(`${what} ${kind}${th ? ' + top handle' : ''}: ${bolts} M6 × 50 bolts`);
 };

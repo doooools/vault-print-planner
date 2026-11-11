@@ -101,9 +101,13 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
 - **Roofs** (S, M, L, XL): turned so their latch frames are underneath, 12 mm from the back (on some roofs the
   frame's rim runs into the next relief, so only its back edge counts); otherwise placed like a module.
   Heavyweight (and cut) roofs: the handle is a bar across the middle slot, in the pockets of its walls (156 mm
-  apart for a 156.5 mm bar, 45 mm above the roof's bottom: section of the L7 roof; manual p. 10). Grid roofs: the
+  apart for a 156.5 mm bar; its axis 59.8 mm above the roof's bottom, the middle of the pockets, which run from
+  44.7 to 74.9 mm on every heavyweight roof, measured on sections of all 30; manual p. 10). Grid roofs: the
   optional top handle lies on the grid, in the middle, long side across (manual p. 18); the page shows it when
-  the unit's list has it (option `topHandle`). The handle's insert is not placed.
+  the unit's list has it (option `topHandle`). Each pocket has a wedge-shaped entry groove (back on the right,
+  front on the left) closed by an insert once the bar is in: two inserts per heavyweight roof. The right one is
+  where USSA's CAD scene has it, against the bar's end (0.5 mm off the groove's back wall, its peg in the groove's
+  hole); the left one is the same turned half a turn about the bar's vertical axis.
 - **L²**: two S drawers. A section of the L3² module is two S modules side by side, with a double wall in the
   middle that has the same stopper holes, so each S drawer goes in its half (centre ±82.4) as in an S module.
   Two latches, like L.

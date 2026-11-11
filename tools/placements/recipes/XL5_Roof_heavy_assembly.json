@@ -91,7 +91,57 @@
     ],
     "z": [
      "center",
-     41.4
+     56.2
+    ]
+   }
+  },
+  {
+   "name": "XL5_Roof_heavy_Insert_1",
+   "file": "01. DRAWERS/07. Universal/Heawyweight Roof Insert.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    0,
+    0,
+    90
+   ],
+   "align": {
+    "x": [
+     "center",
+     68.414
+    ],
+    "y": [
+     "center",
+     -141.98
+    ],
+    "z": [
+     "center",
+     55.95
+    ]
+   }
+  },
+  {
+   "name": "XL5_Roof_heavy_Insert_2",
+   "file": "01. DRAWERS/07. Universal/Heawyweight Roof Insert.stl",
+   "role": "roof",
+   "group": "module",
+   "rot": [
+    0,
+    0,
+    270
+   ],
+   "align": {
+    "x": [
+     "center",
+     -68.414
+    ],
+    "y": [
+     "center",
+     -87.868
+    ],
+    "z": [
+     "center",
+     55.95
     ]
    }
   }
