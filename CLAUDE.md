@@ -99,6 +99,11 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   memory and the workers died silently: keep the byte budget and the timeout in `meshRunner`.
 - The planner lists 1 latch and 1 facade cap per L7 unit; the measured assembly places 2 latches and a cap in every
   counterbore. Not checked against USSA's docs yet.
+- Roof handles (manual p.10 "Roof Types", p.18 "Required Hardware – Drawers"): only the grid roof (Top Handle, opt-in
+  `topHandle`, 2 × M6 × 50) and the heavyweight roofs (handle + insert) have one; `validate.js` checks it ("ROOF
+  HANDLES"). `normalize()` swaps a heavyweight roof for the grid one when it isn't made in that width or is too big for
+  the printer (any XL heavyweight roof on an H2S): it now ticks the top handle so the handle doesn't vanish. A level of
+  two units takes its roof from `roofOf(lv)` (the first unit with one), not just the left unit.
 
 ## Gotchas met while measuring
 - Parts are exported in print orientation, scattered in one CAD scene. Some are printed on edge at 45° (L 1F

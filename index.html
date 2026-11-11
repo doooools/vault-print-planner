@@ -1292,6 +1292,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // ---------- towers ----------
   // A tower is levels from the bottom up. Each level is one unit, or two side by side (S+S = L wide, S+M = XL wide).
   const levelWidth = lv => lv.reduce((a, u) => a + R.WIDTH_MM[u.w], 0);
+  // The unit whose roof setting covers a level: the first that has a roof. On two units side by side the roof can be
+  // set on either one (it used to be read from the left one only, so a roof and handle set on the right one were lost).
+  const roofOf = lv => lv.find(u => u.type === 'drawer' && u.roof && u.roof !== 'none') || lv[0];
   // Where step 1's Add puts the unit, and the stack check for a unit there
   function currentDest() {
     if (editing) return { v: 'edit', t: towers.find(t => t.id === editing.t) };
@@ -1352,8 +1355,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         if (lv.some(u => unitExt(u)[2] !== unitExt(lv[0])[2])) issues.push({ k: 'bad', m: `Level ${i + 1}: the two units are different heights, so the next level won't sit flat.` });
         if (!R.familyForWidth(levelWidth(lv))) issues.push({ k: 'bad', m: `Level ${i + 1}: ${lv.map(u => u.w).join(' + ')} side by side isn't a Vault width. Pairs that work: S + S (as wide as L) and S + M (as wide as XL).` });
         if (top && lv.every(u => u.type === 'drawer')) {
-          const fam = R.familyForWidth(levelWidth(lv)), kind = lv[0].roof;
-          if (fam && kind !== 'none') parts.push(paintLines(finish(R.buildRoof(fam, d0, kind, lv[0].topHandle, resolve)), lv[0]));
+          const fam = R.familyForWidth(levelWidth(lv)), ru = roofOf(lv), kind = ru.roof;
+          if (fam && kind !== 'none') parts.push(paintLines(finish(R.buildRoof(fam, d0, kind, ru.topHandle, resolve)), ru));
         }
       }
       if (i > 0) {
@@ -1363,7 +1366,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       }
     });
     const topLv = L[L.length - 1];
-    if (topLv.every(u => u.type === 'drawer') && topLv[0].roof === 'none') issues.push({ k: 'warn', m: 'The top drawer has no roof. Pick a roof for it in the editor, unless something else sits on top.' });
+    if (topLv.every(u => u.type === 'drawer') && roofOf(topLv).roof === 'none') issues.push({ k: 'warn', m: 'The top drawer has no roof. Pick a roof for it in the editor, unless something else sits on top.' });
     const fam = R.familyForWidth(levelWidth(L[0])), s = t.stack || STACK_DEFAULT;
     const usesStack = s.base || s.stationaryHandle || s.pullHandle;
     if (usesStack) {
@@ -1699,11 +1702,16 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     return computeUnit(k).lines.some(l => l.fit.s === 'no' || l.fit.s === 'reorient');
   }
   function set(patch) { Object.assign(c, patch); normalize(); store.set('config', c); renderAll(); }
-  function normalize() {
+  // say: tell the user when a roof with a carry handle had to be swapped (not at start-up)
+  function normalize(say = true) {
     const widths = Object.keys(R.HEIGHTS[c.type]);
     if (!widths.includes(c.w)) c.w = c.w === 'L2' ? 'L' : c.w === 'XL2' ? 'XL' : 'S';
     let hs = R.HEIGHTS[c.type][c.w];
     if (!hs.includes(c.h)) c.h = hs[0];
+    // A heavyweight roof has its own carry handle. When it has to go (not made in this width, or too big for the
+    // printer), the grid roof that replaces it keeps a handle: its top handle. Without this the handle silently
+    // dropped out of the print list.
+    const roof0 = c.roof, handled = c.type === 'drawer' && (c.roof === 'heavy' || c.roof === 'heavycut');
     const roofs = R.ROOFS.filter(r => r.widths.includes(c.w)).map(r => r.id);
     if (c.roof !== 'none' && !roofs.includes(c.roof)) c.roof = 'grid';
     if (onlyFits && unitTooBig({})) {
@@ -1715,6 +1723,11 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         if (p.w && !(R.HEIGHTS[c.type][p.w] || []).includes(p.h)) continue;
         if (!unitTooBig(p)) { Object.assign(c, p); break; }
       }
+    }
+    if (handled && c.roof !== roof0) {
+      if (c.roof === 'grid') c.topHandle = true;
+      const why = roofs.includes(roof0) ? `is too big for your printer at ${WNAME[c.w]}${c.d}` : `isn’t made for ${WNAME[c.w]} units`;
+      if (say) toast(`The heavyweight roof ${why}: switched to the ${c.roof === 'grid' ? 'grid roof, with its top handle' : R.ROOFS.find(r => r.id === c.roof).label.toLowerCase() + ' (no handle)'}.`);
     }
   }
 
@@ -2016,7 +2029,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (!L.length) return null;
     const fam = R.familyForWidth(levelWidth(L[0]));
     const base = s.base, wheels = base && s.wheels, casters = base && !wheels && s.casters, feet = base && s.feet && !casters;
-    const top = L[L.length - 1], roof = top.every(u => u.type === 'drawer') && top[0].roof !== 'none';
+    const top = L[L.length - 1], roof = top.every(u => u.type === 'drawer') && roofOf(top).roof !== 'none';
     const has = f => L.some(lv => lv.some(f));
     const bb = has(u => u.backbone && u.backbone !== 'none'), peg = has(u => u.pegboard && u.pegboard !== 'none');
     let w = Math.max(...L.map(levelWidth));
@@ -2047,7 +2060,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const L = t.levels, s = t.stack || STACK_DEFAULT, sx = o.sx, sy = o.sy;
     if (!L.length) return '';
     const base = s.base, wheels = base && s.wheels, casters = base && !wheels && s.casters, feet = base && s.feet && !casters;
-    const top = L[L.length - 1], roof = top.every(u => u.type === 'drawer') && top[0].roof !== 'none';
+    const top = L[L.length - 1], roof = top.every(u => u.type === 'drawer') && roofOf(top).roof !== 'none';
     const bw = levelWidth(L[0]) * sx, maxw = Math.max(...L.map(levelWidth)) * sx;
     const r = Math.max(o.labels ? 11 : 3, 55 * sy);                          // wheel radius
     const accH = wheels ? r * 1.15 : casters ? Math.max(4, 40 * sy) : feet ? Math.max(3, 22 * sy) : 0;
@@ -2125,7 +2138,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const L = t.levels, s = t.stack || STACK_DEFAULT, sx = o.sx, sy = o.sy;
     if (!L.length) return '';
     const base = s.base, wheels = base && s.wheels, casters = base && !wheels && s.casters, feet = base && s.feet && !casters;
-    const top = L[L.length - 1], roof = top.every(u => u.type === 'drawer') && top[0].roof !== 'none';
+    const top = L[L.length - 1], roof = top.every(u => u.type === 'drawer') && roofOf(top).roof !== 'none';
     const depth = Math.max(...L.map(lv => unitExt(lv[0])[1])) * sx;
     const r = Math.max(11, 55 * sy);
     const accH = wheels ? r * 1.15 : casters ? Math.max(4, 40 * sy) : feet ? Math.max(3, 22 * sy) : 0;
@@ -2422,7 +2435,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const bits = [];
     if (k.type === 'drawer') {
       bits.push({ empty: 'empty', gridfinity: 'Gridfinity baseplate', grid: 'grid dividers' }[k.interior]);
-      if (top && k.roof !== 'none') bits.push(R.ROOFS.find(r => r.id === k.roof).label.replace(/ \(.*\)/, '').toLowerCase());
+      if (top && k.roof !== 'none') bits.push(R.ROOFS.find(r => r.id === k.roof).label.replace(/ \(.*\)/, '').toLowerCase() + (k.roof === 'grid' && k.topHandle ? ' with top handle' : ''));
     } else bits.push((k.w === 'L' || k.w === 'XL') ? k.caseInterior + ' body' : 'case');
     if (k.wallMount) bits.push('wall mount');
     if (k.backbone && k.backbone !== 'none') bits.push('backbone');
@@ -2987,11 +3000,12 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
           x: unit.x, y: y + unit.h, w, d, h: 14.8, lines: lines.filter(l => l.group === 'Roof'), shared: unit.lines });
         x += w;
       });
-      if (pair && top && lv.every(u => u.type === 'drawer') && lv[0].roof !== 'none' && R.familyForWidth(W)) {
+      const ru = roofOf(lv);
+      if (pair && top && lv.every(u => u.type === 'drawer') && ru.roof !== 'none' && R.familyForWidth(W)) {
         const rf = R.familyForWidth(W), lvUnits = units.filter(u => u.level === i);
-        units.push({ cfg: lv[0], name: `${rf}${lv[0].d} · ` + R.ROOFS.find(r => r.id === lv[0].roof).label, key: `roof|${rf}|${lv[0].d}|${lv[0].roof}`, level: i + 1, roof: true,
+        units.push({ cfg: ru, name: `${rf}${lv[0].d} · ` + R.ROOFS.find(r => r.id === ru.roof).label, key: `roof|${rf}|${lv[0].d}|${ru.roof}`, level: i + 1, roof: true,
           x: 0, y: y + Math.max(...lv.map(rise)), w: W, d: unitExt(lv[0])[1], h: 14.8,
-          lines: linesOf(R.buildRoof(rf, lv[0].d, lv[0].roof, lv[0].topHandle, resolve)).map(l => ({ ...l, cfg: lv[0] })), shared: lvUnits.flatMap(u => u.lines) });
+          lines: linesOf(R.buildRoof(rf, lv[0].d, ru.roof, ru.topHandle, resolve)).map(l => ({ ...l, cfg: ru })), shared: lvUnits.flatMap(u => u.lines) });
       }
       y += Math.max(...lv.map(rise));
     });
@@ -3855,7 +3869,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
 
   $('footnote').innerHTML = `Part rules come from the four PDF manuals in the Vault download and USSA\u2019s published component counts; anything worked out beyond them is marked <span class="badge inf">Inferred</span>. Sizes are measured from each STL (${FILES.length} files)${HAS_PREVIEWS ? ' and pictures are rendered from them' : ''}. Filament is a rough figure from part volume at standard settings, calibrated against USSA\u2019s own gram estimates. Progress and stacks are saved in this browser only.${window.VAULT_PUBLIC ? ' Free and open source, provided as is, with no support.' : ''}`;
 
-  normalize();
+  normalize(false);
   renderAll();
 })();
 </script>

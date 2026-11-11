@@ -31,6 +31,24 @@ for (const type of ['drawer', 'case']) for (const w of Object.keys(R.HEIGHTS[typ
 for (const w of ['S', 'M', 'L', 'XL']) for (const d of R.DEPTHS)
   for (const s of [{ base: true, wheels: true, feet: true, stationaryHandle: true, pullHandle: true }, { base: true, feet: true }])
     note(R.buildStack({ w, d, ...s }, resolve), `stack ${w}${d}`);
+// Roof handles (manual: Roof Types, Required Hardware - Drawers): the grid roof takes the top handle and 2 M6 x 50
+// bolts when asked, the heavyweight roofs always come with their handle and insert, and no other roof has one. Checked
+// on a unit's own roof and on the wide roof over two units side by side (buildRoof).
+const HANDLE = { top: 'Top Handle (Turn On Supports).stl', heavy: 'Heawyweight Roof Handle.stl', insert: 'Heawyweight Roof Insert.stl' };
+const roofClash = [];
+const checkRoof = (r, kind, th, what) => {
+  const has = f => r.lines.some(l => l.file.path.endsWith('/' + f));
+  const want = { top: kind === 'grid' && th, heavy: kind === 'heavy' || kind === 'heavycut', insert: kind === 'heavy' || kind === 'heavycut' };
+  for (const k of Object.keys(HANDLE)) if (has(HANDLE[k]) !== want[k]) roofClash.push(`${what} ${kind}${th ? ' + top handle' : ''}: ${HANDLE[k]} ${want[k] ? 'missing' : 'listed but not wanted'}`);
+  const bolts = r.hardware.filter(h => /M6 × 50/.test(h.item)).reduce((a, h) => a + h.qty, 0);
+  if (bolts !== (want.top ? 2 : 0)) roofClash.push(`${what} ${kind}${th ? ' + top handle' : ''}: ${bolts} M6 × 50 bolts`);
+};
+for (const w of Object.keys(R.HEIGHTS.drawer)) for (const d of R.DEPTHS) for (const rf of R.ROOFS.filter(x => x.widths.includes(w))) for (const th of [false, true]) {
+  const c = { type: 'drawer', w, d, h: R.HEIGHTS.drawer[w][0], lock: 'std', interior: 'empty', roof: rf.id, topHandle: th };
+  checkRoof(R.buildUnit(c, resolve), rf.id, th, `drawer ${w}${d}`);
+  if (!/2$/.test(w)) checkRoof(R.buildRoof(w, d, rf.id, th, resolve), rf.id, th, `roof over a pair, ${w}${d}`);
+}
+console.log('ROOF HANDLES:'); roofClash.slice(0, 20).forEach(m => console.log(' ', m)); if (roofClash.length > 20) console.log(`  (+${roofClash.length - 20})`);
 if (process.argv[3]) fs.writeFileSync(process.argv[3], [...used].sort().join('\n') + '\n');
 console.log('ROLE COLOURS:'); roleClash.forEach(m => console.log(' ', m));
 console.log('MISSING:'); for (const [m, w] of bad) console.log(' ', m, '<-', w.slice(0, 3).join(', '), w.length > 3 ? `(+${w.length - 3})` : '');
