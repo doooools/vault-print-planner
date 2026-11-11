@@ -93,8 +93,8 @@ for path in blends:
         units[key]["hinge"] = json.loads(root["vault_hinge"])
     if root.get("vault_motion"):
         units[key]["motion"] = json.loads(root["vault_motion"])
-    if root.get("vault_floor"):
-        units[key]["floor"] = json.loads(root["vault_floor"])
+    if root.get("vault_unit_data"):   # a stack's floor and caster holes
+        units[key].update(json.loads(root["vault_unit_data"]))
     print("EXPORTED", key, len(parts), "parts")
 
 # A single L² or XL² unit on top of a stack gets the L or XL roof (rules.js), keyed by its own width
