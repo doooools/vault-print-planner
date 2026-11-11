@@ -149,14 +149,27 @@
     }
   }
 
+  // Drawers inside a 2F or 4F module, top to bottom. USSA's fronts are 47, 95 and 191 mm (1F, 2F, 4F on a 48 mm pitch,
+  // 1 mm apart), so shorter drawers stacked up fill a taller opening exactly; the geared-rail advice covers "more than
+  // one box in a 2F/4F module". c.drawers (and c.drawersR for the right half of an L²) is a string such as '112'
+  // (two 1F drawers above a 2F).
+  const DRAWER_SPLITS = { 1: ['1'], 2: ['2', '11'], 4: ['4', '22', '112', '1111'] };
+  function drawersOf(c, right) {
+    const v = right ? c.drawersR : c.drawers;
+    return (DRAWER_SPLITS[c.h] || []).includes(v) ? [...v].map(Number) : [c.h];
+  }
+  const splitTag = (hs, i, side) => hs.length === 1 ? side : [side, hs[i] + 'F'].filter(Boolean).join(', ');
+
   function drawer(add, c) {
     const { w, d, h } = c;
     const fam = D + DRAWER_FAM_DIR[w] + '/';
     if (w === 'L2') {
       const why = 'The manual doesn’t list L² contents. L = S + S, so this assumes two S drawers side by side.';
       add('Module', 'Module shell', fam + `L${d}²/L${d}² Module ${h}F.stl`, 1);
-      drawerInsert(add, 'S', d, h, c, 'left', why);
-      drawerInsert(add, 'S', d, h, c, 'right', why);
+      for (const [right, side] of [[false, 'left'], [true, 'right']]) {
+        const hs = drawersOf(c, right);
+        hs.forEach((dh, i) => drawerInsert(add, 'S', d, dh, c, splitTag(hs, i, side), why));
+      }
       add('Module', 'L² accessory, 1st', U + `L² Accessories/x${d} Accessory 1st.stl`, 1, { inferred: 'One of each accessory per module is assumed.' });
       add('Module', 'L² accessory, 2nd', U + `L² Accessories/x${d} Accessory 2nd.stl`, 1, { inferred: 'One of each accessory per module is assumed.' });
     } else if (w === 'XL2') {
@@ -166,7 +179,8 @@
       drawerInsert(add, 'M', d, 1, c, 'M side', why);
     } else {
       add('Module', 'Module shell', fam + `${w}${d}/Modules/${w}${d} Module ${h}F.stl`, 1);
-      drawerInsert(add, w, d, h, c, '');
+      const hs = drawersOf(c);
+      hs.forEach((dh, i) => drawerInsert(add, w, d, dh, c, splitTag(hs, i, '')));
     }
     if (c.roof && c.roof !== 'none') roof(add, w === 'L2' ? 'L' : w === 'XL2' ? 'XL' : w, d, c.roof, c.topHandle);
   }
@@ -283,7 +297,8 @@
       // Front to box: one bolt per hole in the drawer front, counted in the STLs (Drawer Assembly 6/8 shows the 2 on an S 1F).
       // S: 2 at 1F, 4 at 2F/4F. M and L: 4 at 1F, 6 at 2F/4F. XL (1F only): 4. L² is two S drawers, XL² an S and an M (both 1F).
       const front = (w, h) => w === 'S' ? (h === 1 ? 2 : 4) : w === 'XL' ? 4 : (h === 1 ? 4 : 6);
-      const bolts = c.w === 'L2' ? 2 * front('S', c.h) : c.w === 'XL2' ? front('S', 1) + front('M', 1) : front(c.w, c.h);
+      const sum = (w, hs) => hs.reduce((n, h) => n + front(w, h), 0);
+      const bolts = c.w === 'L2' ? sum('S', drawersOf(c)) + sum('S', drawersOf(c, true)) : c.w === 'XL2' ? front('S', 1) + front('M', 1) : sum(c.w, drawersOf(c));
       push('M4 × 14 mm button-head bolt', bolts, 'Drawer front to box');
       if (c.roof === 'grid' && c.topHandle) push('M6 × 50 mm countersunk bolt', 2, 'Roof top handle');
     } else {
@@ -352,6 +367,6 @@
     return { lines: k.lines, missing: k.missing, hardware: kind === 'grid' && topHandle ? [{ item: 'M6 × 50 mm countersunk bolt', qty: 2, why: 'Roof top handle' }] : [] };
   }
 
-  const api = { buildUnit, buildStack, buildRoof, makeResolver, exterior, familyForWidth, HEIGHTS, DEPTHS, ROOFS, WIDTH_MM, norm };
+  const api = { drawersOf, DRAWER_SPLITS, buildUnit, buildStack, buildRoof, makeResolver, exterior, familyForWidth, HEIGHTS, DEPTHS, ROOFS, WIDTH_MM, norm };
   if (typeof module !== 'undefined') module.exports = api; else root.VaultRules = api;
 })(this);

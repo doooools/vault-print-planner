@@ -3,6 +3,7 @@
 Changes to the Vault Print Planner at [vault.romy.io](https://vault.romy.io), newest first.
 
 ## 2026-11-10
+- **Shorter drawers in taller modules:** a 2F or 4F drawer module can now hold shorter drawers, like two 1F drawers in a 2F, or two 1F drawers above a 2F in a 4F. Pick them under "Drawers inside" in step 1 (each half on its own for L²). The parts list, front bolts and stack picture follow. Thanks to the viewer who pointed out they fit.
 - **Supports only where USSA asks for them:** Out of an abundance of caution, supports are now only added if USSA says "Turn On Supports" (plus the XL drawer front, which has the same lock pocket as the fronts USSA labels) since there are some facets that could use supports but aren't mandatory. The onus is on you to think through what makes sense with the part you're building.
 
 ## 2026-11-09

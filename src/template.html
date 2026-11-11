@@ -355,6 +355,7 @@ details.folded > summary .mini { min-width: 40px; }
 .sv .sv-grip { fill: var(--ink); opacity: .7; }
 .sv .sv-back-fill { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 3; opacity: .8; }
 .sv-mini .sv-back-fill { stroke-width: 1; stroke-dasharray: 2 1.5; }
+.sv .sv-split { stroke: var(--line); stroke-width: 1; }
 .sv .sv-floor { stroke: var(--line); stroke-width: 1.5; }
 .stackviz .views { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 6px 14px; }
 .stackviz figure { margin: 0; display: grid; justify-items: center; gap: 2px; }
@@ -742,9 +743,19 @@ details.termfold[open] > summary { color: var(--ink); }
 
   // ---------- computing part lists ----------
   // Fit-check each line and choose whole vs split versions (whole when it fits this printer)
+  // Two lines for the same file (the left and right drawer of an L², or several 1F drawers in a 4F module) become one,
+  // keeping only the label tags they share: "Drawer box (left, 1F)" + "Drawer box (right, 1F)" = "Drawer box (1F)".
+  function sameLabel(a, b) {
+    if (a === b) return a;
+    const m = s => s.match(/^(.*?)(?: \(([^()]*)\))?$/), [, an, at] = m(a), [, bn, bt] = m(b);
+    if (an !== bn) return an;
+    const bs = (bt || '').split(', '), keep = (at || '').split(', ').filter(t => t && bs.includes(t));
+    return an + (keep.length ? ' (' + keep.join(', ') + ')' : '');
+  }
   function finish(r) {
-    const V = printer.v, notes = [];
-    let lines = r.lines.map(l => ({ ...l, fit: fitOf(l.file.dims, V, l.file.ex), total: l.qty }));
+    const V = printer.v, notes = [], byPath = new Map();
+    for (const l of r.lines) { const m = byPath.get(l.file.path); if (m && m.group === l.group) { m.qty += l.qty; m.label = sameLabel(m.label, l.label); } else byPath.set(l.file.path, { ...l }); }
+    let lines = [...byPath.values()].map(l => ({ ...l, fit: fitOf(l.file.dims, V, l.file.ex), total: l.qty }));
     for (const wl of lines.filter(l => l.alt === 'split')) {
       const wholeOk = wl.fit.s === 'ok' || wl.fit.s === 'diag' || wl.fit.s === 'asis';
       lines = lines.filter(l => l.group !== wl.group || !l.alt || (wholeOk ? l.alt === 'split' : l.alt === 'whole'));
@@ -764,7 +775,7 @@ details.termfold[open] > summary { color: var(--ink); }
   function merge(parts) {
     const lines = new Map(), hw = new Map(), notes = [];
     for (const p of parts) {
-      p.lines.forEach(l => { const k = pkey(l); const m = lines.get(k); if (m) { m.total += l.total; if (l.inferred && !m.inferred) m.inferred = l.inferred; } else lines.set(k, { ...l }); });
+      p.lines.forEach(l => { const k = pkey(l); const m = lines.get(k); if (m) { m.total += l.total; m.label = sameLabel(m.label, l.label); if (l.inferred && !m.inferred) m.inferred = l.inferred; } else lines.set(k, { ...l }); });
       p.hardware.forEach(h => { const m = hw.get(h.item); if (m) { m.total += h.total; if (!m.why.includes(h.why)) m.why += ', ' + h.why.toLowerCase(); } else hw.set(h.item, { ...h }); });
       (p.notes || []).forEach(n => notes.includes(n) || notes.push(n));
     }
@@ -1194,12 +1205,22 @@ details.termfold[open] > summary { color: var(--ink); }
 
     let o = '';
     if (c.type === 'drawer') {
+      if (c.h > 1) {
+        const SPLIT_TXT = { 2: 'One 2F drawer', 22: 'Two 2F drawers', 4: 'One 4F drawer', 11: 'Two 1F drawers', 112: 'Two 1F drawers above a 2F', 1111: 'Four 1F drawers' };
+        const opts = R.DRAWER_SPLITS[c.h].map(v => [v, SPLIT_TXT[v]]), cur = k => R.drawersOf(c, k).join('');
+        const hint = 'shorter drawers fill the same opening';
+        if (c.w === 'L2') {
+          o += selectField('drawers', 'Drawers inside, left half', hint, opts, cur(false));
+          o += selectField('drawersR', 'Drawers inside, right half', '', opts, cur(true));
+        } else o += selectField('drawers', 'Drawers inside', hint, opts, cur(false));
+      }
       o += selectField('interior', 'Inside the drawer', '', [['empty', 'Empty (perforated floor)'], ['gridfinity', 'Gridfinity baseplate'], ['grid', 'Grid dividers']], c.interior);
       if (c.interior === 'gridfinity' && (c.w === 'S' || c.w === 'M' || c.w === 'L2' || c.w === 'XL2'))
         o += selectField('baseplateHandles', 'Baseplate cut-outs', 'for lifting it out', [['0', 'None'], ...(c.w === 'M' ? [] : [['1', '1 handle']]), ['2', '2 handles']], c.baseplateHandles);
       if (c.interior === 'grid') {
         o += `<div class="field"><div class="lbl">Grid dividers <span class="hint">per drawer, full-span pieces</span></div><div class="steppers">${stepper('gridAcross', 'Side to side', c.gridAcross)}${stepper('gridAlong', 'Front to back', c.gridAlong)}</div></div>`;
-        o += selectField('gridHeight', 'Divider height', '', [['20', '20 mm (low)'], ['full', c.h === 1 ? 'Full height, 34.5 mm' : 'Tall, 82.5 mm']], c.gridHeight);
+        const dhs = new Set([...R.drawersOf(c), ...(c.w === 'L2' ? R.drawersOf(c, true) : [])].map(h => h === 1 ? 1 : 2));
+        o += selectField('gridHeight', 'Divider height', '', [['20', '20 mm (low)'], ['full', dhs.size > 1 ? 'Tall: 34.5 mm in 1F drawers, 82.5 mm in the others' : dhs.has(1) ? 'Full height, 34.5 mm' : 'Tall, 82.5 mm']], c.gridHeight);
         o += selectField('gridEdge', 'Edge pieces', '', [['straight', 'Straight'], ['rounded', 'Rounded']], c.gridEdge);
       }
       const roofOpts = R.ROOFS.filter(r => r.widths.includes(c.w)).filter(r => !onlyFits || !unitTooBig({ roof: r.id })).map(r => [r.id, r.label + (!onlyFits && unitTooBig({ roof: r.id }) ? ' \u2014 too big' : '')]);
@@ -1227,7 +1248,7 @@ details.termfold[open] > summary { color: var(--ink); }
     $('mountOpts').innerHTML = m;
 
     const bind = (id, key) => { const el = $(id); if (el) el.onchange = () => set({ [key]: el.type === 'checkbox' ? el.checked : el.value }); };
-    ['interior', 'baseplateHandles', 'gridHeight', 'gridEdge', 'roof', 'lock', 'caseInterior', 'pegboard', 'backbone'].forEach(k => bind(k, k));
+    ['drawers', 'drawersR', 'interior', 'baseplateHandles', 'gridHeight', 'gridEdge', 'roof', 'lock', 'caseInterior', 'pegboard', 'backbone'].forEach(k => bind(k, k));
     ['topHandle', 'gearedRails', 'manualSupports', 'caseBaseplate', 'wallMount'].forEach(k => bind(k, k));
     document.querySelectorAll('#config [data-step]').forEach(b => b.onclick = () => {
       const id = b.dataset.step, d = +b.dataset.d;
@@ -1460,6 +1481,12 @@ details.termfold[open] > summary { color: var(--ink); }
       lv.forEach((u, ui) => {
         const w = R.WIDTH_MM[u.w] * sx - (lv.length > 1 ? gap / 2 : 0);
         out.push(`<rect class="sv-u${u.type === 'case' ? ' case' : ''}${bad ? ' bad' : ''}" x="${x}" y="${y}" width="${w}" height="${h}" rx="${o.labels ? 3 : 1.5}"><title>${esc(unitCode(u))}</title></rect>`);
+        // Drawer fronts inside a 2F/4F module, on USSA's 48 mm pitch (each half of an L² on its own)
+        if (u.type === 'drawer' && u.h > 1) (u.w === 'L2' ? [[x, w / 2, false], [x + w / 2, w / 2, true]] : [[x, w, false]]).forEach(([sx0, sw, right]) => {
+          let f = 0; const hs = R.drawersOf(u, right);
+          hs.slice(0, -1).forEach(dh => { f += dh; const ly = y + h * f / u.h; out.push(`<line class="sv-split" x1="${sx0 + 2}" y1="${ly}" x2="${sx0 + sw - 2}" y2="${ly}"/>`); });
+        });
+        if (u.type === 'drawer' && u.w === 'L2' && R.drawersOf(u).length + R.drawersOf(u, true).length > 2) out.push(`<line class="sv-split" x1="${x + w / 2}" y1="${y + 2}" x2="${x + w / 2}" y2="${y + h - 2}"/>`);
         if (o.labels && h >= 12) out.push(`<text class="sv-t${bad ? ' bad' : ''}" x="${x + w / 2}" y="${y + h / 2 + 3.5}" text-anchor="middle">${esc(unitCode(u).split(' · ')[0])}·${u.h}F</text>`);
         x += w + (lv.length > 1 ? gap : 0);
       });
@@ -1724,6 +1751,9 @@ details.termfold[open] > summary { color: var(--ink); }
   function optSummary(k, top) {
     const bits = [];
     if (k.type === 'drawer') {
+      const sp = v => v.length > 1 ? v.map(h => h + 'F').join(' + ') : '';
+      const sl = sp(R.drawersOf(k)), sr = k.w === 'L2' ? sp(R.drawersOf(k, true)) : sl;
+      if (sl || sr) bits.push(sl === sr ? sl + ' drawers' : `${sl || k.h + 'F'} left, ${sr || k.h + 'F'} right`);
       bits.push({ empty: 'empty', gridfinity: 'Gridfinity baseplate', grid: 'grid dividers' }[k.interior]);
       if (top && k.roof !== 'none') bits.push(R.ROOFS.find(r => r.id === k.roof).label.replace(/ \(.*\)/, '').toLowerCase());
     } else bits.push((k.w === 'L' || k.w === 'XL') ? k.caseInterior + ' body' : 'case');
