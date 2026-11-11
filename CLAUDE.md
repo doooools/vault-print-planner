@@ -92,6 +92,14 @@ and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
   `viewerInUnit`). Opening the Vault folder is step 1's first thing: a big card in the middle (`renderFolderHero`, "Not now"
   hides it for the visit), then a one-line status (`unitFolderBar`).
   The old `mech` role was split into `runners`, `lock`, `hinge` (saved choices are carried over on load).
+- Opening and closing (branch claude/open-close-kinematics-…): every drawer and case has `motion` in the JSON
+  (README "Motion"): the key turns a quarter turn and its 20-tooth pinion moves both racks 20 mm (a closed drawer is
+  locked: key back, then slide); a case's toggle latch is a linkage (link about pin A, lever on pin B, tooth sliding
+  out of the lid's groove through the dead centre, then the lever stands up) before the lid turns. Parts carry
+  `{"joint": …}`; the page's `v3joint` / `v3pose` / `latchPose` run the steps (`u.t` 0 closed … 1 open, ~1 s).
+  `tools/placements/kinematics.py` (same pose, collision check on sections) and `blender_motion.py` (key frames).
+  Measuring it moved every drawer part but the module and latches 1.2 mm up (`MODULE_UNDER_BOX` 9.8) and turned the
+  case latch's link end for end.
 - Checked: `tools/placements/blender_check_placements.py` rebuilt an L7 4F + 2F + 1F + grid roof tower from the
   JSON alone, and an S3 1F from the **original** download files. The matrices apply to the user's files as they are.
 

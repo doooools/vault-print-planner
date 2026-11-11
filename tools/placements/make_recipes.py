@@ -12,12 +12,14 @@ Rules (measured on S3 and L7, then checked per family, see README):
   - The box is in place in the CAD file; everything else is set relative to the box's own bbox
     (centre x `cx`, front `yf`, bottom `zb`). The CAD file has S4-S6 boxes 1 mm higher than the
     others; relative to their box the parts are the same.
-  - Module: turned as orient.py says, x centred, front at yf + 0.06, bottom at zb - 8.6.
+  - Module: turned as orient.py says, x centred, front at yf + 0.06, bottom at zb - 9.8 (MODULE_UNDER_BOX).
   - Levels: k = 0..h-1 at z = zb + 18.5 + 48 k (runners, stoppers); key, rails and label on level 0.
   - Stopper: centre 0.29 mm behind the module's side hole, 0.16 mm proud of the wall.
   - Latches: in the latch frames under the module (53.5 mm long, back edge 12 mm from the module's
     back), the latch's front edge 1.94 mm behind the frame's.
   - Facade caps: in every counterbore but the one under the label; label at the facade's left end.
+  - Motion (recipe "motion", parts' "joint"): the key lock of every drawer and the toggle latches of every case,
+    see KEY_* and LATCH_* below and the README ("Motion").
 """
 import json, os, re, sys
 import numpy as np
@@ -50,6 +52,32 @@ WIDTH = {"S": 164.8, "M": 254.0, "L": 329.6, "L2": 329.6, "XL": 418.8, "XL2": 41
 LABEL_IN = {"S": 49.75, "M": 49.7, "L": 49.61}   # label's left end, from the module's right edge (CAD x)
 ROOFS = {"bowl": "Bowl Roof", "grid": "Grid Roof", "heavy": "Heawyweight Roof", "table": "Table Roof",
          "undertable": "Under Table Mount Roof", "heavycut": "Heavyweight Roof Cut"}
+
+
+# A drawer's box sits 9.8 mm above its module's bottom (8.6 until the key lock was measured): only there do the
+# key's cam lobes (45.0 mm tip to tip) fill the module's two front notches (5.8 and 50.8 mm up) when the key is
+# locked, and the racks' tabs enter the module's side pockets (11.3-14.3 mm up; the tabs are 2.7 mm high). The same
+# 1.2 mm puts the runner guides in the middle of the module's recesses (0.5 mm each side, they stuck 0.7 mm out),
+# the stoppers in the middle of the module's side holes (28.3 mm up) and the facade flush with the module's front
+# frame (4.8 and 51.8 mm up). Every drawer family has the same notches (kinematics.py, README "Motion").
+MODULE_UNDER_BOX = 9.8
+# Key lock (every drawer, manual "Drawer Assembly" 6/8: the key goes in "open"): the key is a 20-tooth pinion
+# (4 mm pitch) between the two racks. Placed open (knob across, its dot at the facade's open padlock). Locked:
+# a quarter turn anticlockwise seen from the front (dot at the tick above), each rack 20 mm out, the bottom one
+# to the right, the top one to the left, their tabs in the module's side pockets, the cam's lobes in its notches.
+KEY_UP = MODULE_UNDER_BOX + 18.5     # the key's axis above the module's bottom (unit y)
+KEY_TURN = 90.0
+RACK_TRAVEL = 20.0                   # 5 teeth: a quarter of 20 teeth of 4 mm
+
+
+def key_lock(r, t, ux):
+    """A drawer's key and racks as joints, in the unit frame (ux: the key's x). Each joint goes from 0 (as placed,
+    unlocked) to 1 (locked). A closed drawer is locked: opening turns the key back, then pulls the drawer."""
+    r.joints[f"key{t}"] = {"turn": {"origin": [round(ux, 3), KEY_UP, 0.0], "axis": [0, 0, 1], "deg": KEY_TURN}}
+    r.joints[f"rack_lo{t}"] = {"slide": [RACK_TRAVEL, 0.0, 0.0]}
+    r.joints[f"rack_hi{t}"] = {"slide": [-RACK_TRAVEL, 0.0, 0.0]}
+    lock = [j for j in r.joints if j.startswith(("key", "rack_"))]
+    r.steps = [{"joints": lock, "from": 1, "to": 0, "s": 0.35}, {"joints": ["drawer"], "from": 0, "to": 1, "s": 0.55}]
 
 
 def find(rel):
@@ -119,9 +147,12 @@ def feat(kind, rel, rot):
 class Recipe:
     def __init__(self, name, key):
         self.name, self.key, self.parts, self.notes, self.hinge = name, key, [], [], None
+        self.joints, self.steps = {}, None
 
-    def part(self, nm, file, role, group, rot=None, align=None, move=None, pick=None):
+    def part(self, nm, file, role, group, rot=None, align=None, move=None, pick=None, joint=None):
         d = {"name": f"{self.name}_{nm}", "file": file, "role": role, "group": group}
+        if joint:
+            d["joint"] = joint
         if rot and any(rot):
             d["rot"] = rot
         if align:
@@ -132,7 +163,7 @@ class Recipe:
             d["pick"] = [round(float(v), 3) for v in pick]
         self.parts.append(d)
 
-    def placed(self, nm, file, role, group, R_unit, src, dst, piece=None, origin=(0.0, 0.0, 0.0)):
+    def placed(self, nm, file, role, group, R_unit, src, dst, piece=None, origin=(0.0, 0.0, 0.0), joint=None):
         """A part (or one piece of its file) turned by R_unit (file axes -> unit axes) with the file
         point `src` on the unit point `dst`. origin: the unit frame's origin in recipe (CAD) coordinates.
         Written as the recipe's rot + align (by the real vertices' bbox, as blender_assemble.py does)."""
@@ -142,13 +173,15 @@ class Recipe:
         P = P @ vg.C.T + np.asarray(origin)          # unit -> CAD (C is its own inverse)
         lo = P.min(0)
         self.part(nm, file, role, group, vg.euler_xyz(vg.C @ R_unit), {a: ["min", float(lo[i])] for i, a in enumerate("xyz")},
-                  pick=piece["centre"] if piece else None)
+                  pick=piece["centre"] if piece else None, joint=joint)
 
     def json(self, anchor="Module"):
         out = {"name": self.name, "key": self.key, "notes": self.notes, "parts": self.parts,
                "finalize": {"anchor": f"{self.name}_{anchor}"}}
         if self.hinge:
             out["hinge"] = self.hinge
+        if self.joints:
+            out["motion"] = {"joints": self.joints, "open": self.steps}
         return out
 
 
@@ -180,6 +213,7 @@ RAIL_END = {"S": (-65.87, 66.21), "M": (-65.87, 66.57), "L": (-66.77, 66.57), "X
 
 
 def rails(r, w, cx, yf, zb, t="", depth=3.10):
+    """Both racks of a drawer, retracted (unlocked); joints rack_lo / rack_hi (+ tag) slide them out to lock."""
     rel = need(U + f"Geared Rails/{w} Rails.stl")
     ps = file_pieces(rel)
     top = max(ps, key=lambda p: p["max"][1] - p["min"][1])   # the fin makes it wider
@@ -187,9 +221,9 @@ def rails(r, w, cx, yf, zb, t="", depth=3.10):
     eb, et = RAIL_END[w]
     # bottom rack: file axes = unit axes (teeth up, rounded end at file x min); top rack: turned 180 deg about z
     r.part(f"Rail_bottom{t}", rel, "accent", "drawer", vg.euler_xyz(vg.C),
-           {"x": ["max", cx - eb], "y": ["center", yf - depth], "z": ["center", zb + 4.21]}, pick=bot["centre"])
+           {"x": ["max", cx - eb], "y": ["center", yf - depth], "z": ["center", zb + 4.21]}, pick=bot["centre"], joint=f"rack_lo{t}")
     r.part(f"Rail_top{t}", rel, "accent", "drawer", vg.euler_xyz(vg.C @ np.diag([-1.0, -1.0, 1.0])),
-           {"x": ["min", cx - et], "y": ["center", yf - depth], "z": ["min", zb + 30.39]}, pick=top["centre"])
+           {"x": ["min", cx - et], "y": ["center", yf - depth], "z": ["min", zb + 30.39]}, pick=top["centre"], joint=f"rack_hi{t}")
 
 
 def hidden_key(r, cx, yf, z0, t=""):
@@ -201,7 +235,7 @@ def hidden_key(r, cx, yf, z0, t=""):
     A unit's part list has either these two files or the key and its cap, so the page draws one lock only."""
     hk = U + "Hidden Key (Turn On Supports).stl"
     rot = [-90, 0, 0]
-    r.part(f"HiddenKey{t}", hk, "mech", "drawer", rot, {"x": ["center", cx], "y": ["min", yf - 8.55], "z": ["center", z0]})
+    r.part(f"HiddenKey{t}", hk, "mech", "drawer", rot, {"x": ["center", cx], "y": ["min", yf - 8.55], "z": ["center", z0]}, joint=f"key{t}")
     # the same pose by numbers, to carry part 2 along with it
     R = vg.from_euler_xyz(rot)
     H = vg.read_stl(os.path.join(F.ROOT, hk)).reshape(-1, 3)
@@ -221,7 +255,7 @@ def hidden_key(r, cx, yf, z0, t=""):
     Rz = vg.rot_axis("z", spin)
     P2p = ((P2 - c2) @ Rz.T + hc) @ R.T + th
     lo2 = P2p.min(0)
-    r.part(f"HiddenKey2{t}", p2, "mech", "drawer", vg.euler_xyz(R @ Rz), {k: ["min", float(lo2[i])] for i, k in enumerate("xyz")})
+    r.part(f"HiddenKey2{t}", p2, "mech", "drawer", vg.euler_xyz(R @ Rz), {k: ["min", float(lo2[i])] for i, k in enumerate("xyz")}, joint=f"key{t}")
 
 
 def slide_front(rel):
@@ -240,7 +274,7 @@ def slide_front(rel):
     return FEAT[key]
 
 
-def insert_sml(r, w, d, h, box, cx, yf, zb, mod_rot, mod_file, tag="", box_rel=None):
+def insert_sml(r, w, d, h, box, cx, yf, zb, mod_rot, mod_file, tag="", box_rel=None, ux=0.0):
     """Box, facade, lock, runners, stoppers, latches, caps and label of one S/M/L drawer, relative to
     its box (cx, yf, zb). mod_file/mod_rot: the module whose holes and frames we read."""
     W = WIDTH[w]
@@ -262,9 +296,10 @@ def insert_sml(r, w, d, h, box, cx, yf, zb, mod_rot, mod_file, tag="", box_rel=N
     r.part(f"Facade{t}", fac, "facade", "drawer", [-90, 0, 0], {"x": ["center", cx], "y": ["min", yf], "z": ["min", zb - 5]})
     z0 = zb + 18.5
     r.part(f"Key{t}", U + "Key (Turn On Supports).stl", "mech", "drawer", [-90, 0, 0],
-           {"x": ["center", cx], "y": ["center", yf + 8.16], "z": ["center", z0]})
+           {"x": ["center", cx], "y": ["center", yf + 8.16], "z": ["center", z0]}, joint=f"key{t}")
     r.part(f"KeyCap{t}", U + "Key Cap.stl", "facade", "drawer", [90, 0, 0],
-           {"x": ["center", cx], "y": ["center", yf + 25.16], "z": ["center", z0]})
+           {"x": ["center", cx], "y": ["center", yf + 25.16], "z": ["center", z0]}, joint=f"key{t}")
+    key_lock(r, t, ux)
     hidden_key(r, cx, yf, z0, t)
     rails(r, w, cx, yf, zb, t)
     side = feat("side", mod_file, mod_rot)
@@ -309,13 +344,13 @@ def frames_of(fe):
     return [f for f in fe["frames"] + fe["others"] if 80 < su(f) < 95 and 35 < sw(f)]
 
 
-def latches(r, mod_file, mod_rot, cx, yf, zb, tag="", depth=None):
-    """One latch per frame under the module."""
+def latches(r, mod_file, mod_rot, cx, yf, zb, tag="", depth=None, below=8.6):
+    """One latch per frame under the module, whose bottom is `below` under zb."""
     fr = [f for f in frames_of(feat("under", mod_file, mod_rot)) if depth is None or abs(f["w_rng"][0] + depth - 12.0) < 2.0]
     for i, f in enumerate(sorted(fr, key=lambda f: f["u"])):
         u = (f["u_rng"][0] + f["u_rng"][1]) / 2
         r.part(f"Latch_{i+1}{tag}", U + "Latch.stl", "accent", "module", None,
-               {"x": ["center", cx - u], "y": ["max", yf + 0.06 + f["w_rng"][0] + FRAME_LEN - 1.94], "z": ["min", zb - 8.3]})
+               {"x": ["center", cx - u], "y": ["max", yf + 0.06 + f["w_rng"][0] + FRAME_LEN - 1.94], "z": ["min", zb - below + 0.3]})
     return len(fr)
 
 
@@ -329,9 +364,9 @@ def drawer_sml(w, d, h):
     mrot, why = rot_checked(mod, frames_at_back(mod, 146.1 + 42 * (d - 3)), "module")
     if why:
         r.notes.append(why)
-    r.part("Module", mod, "body", "module", mrot, {"x": ["center", cx], "y": ["max", yf + 0.06], "z": ["min", zb - 8.6]})
+    r.part("Module", mod, "body", "module", mrot, {"x": ["center", cx], "y": ["max", yf + 0.06], "z": ["min", zb - MODULE_UNDER_BOX]})
     insert_sml(r, w, d, h, box, cx, yf, zb, mrot, mod)
-    nl = latches(r, mod, mrot, cx, yf, zb, depth=146.1 + 42 * (d - 3))
+    nl = latches(r, mod, mrot, cx, yf, zb, depth=146.1 + 42 * (d - 3), below=MODULE_UNDER_BOX)
     r.notes.append(f"{nl} latch frame(s) found under the module")
     return r.json()
 
@@ -349,10 +384,10 @@ def drawer_l2(d, h):
     mrot, why = rot_checked(mod, frames_at_back(mod, 146.1 + 42 * (d - 3)), "module")
     if why:
         r.notes.append(why)
-    r.part("Module", mod, "body", "module", mrot, {"x": ["center", cx], "y": ["max", yf + 0.06], "z": ["min", zb - 8.6]})
+    r.part("Module", mod, "body", "module", mrot, {"x": ["center", cx], "y": ["max", yf + 0.06], "z": ["min", zb - MODULE_UNDER_BOX]})
     for tag, dx in (("_left", 82.4), ("_right", -82.4)):   # CAD +x is the viewer's left
-        insert_sml(r, "S", d, h, box, cx + dx, yf, zb, mrot, mod, tag)
-    nl = latches(r, mod, mrot, cx, yf, zb, depth=146.1 + 42 * (d - 3))
+        insert_sml(r, "S", d, h, box, cx + dx, yf, zb, mrot, mod, tag, ux=-dx)
+    nl = latches(r, mod, mrot, cx, yf, zb, depth=146.1 + 42 * (d - 3), below=MODULE_UNDER_BOX)
     r.notes.append(f"{nl} latch frame(s) found under the module")
     r.notes.append("L² accessories (x%d Accessory 1st/2nd) not placed: their place is not shown in the manual or the CAD file" % d)
     return r.json()
@@ -410,11 +445,11 @@ def drawer_xl2(d):
     cx, zb = 0.0, 5.0
     sbox = need(D + FAM["S"] + f"/S{d}/Boxes/S{d} Box 1F.stl")
     yf = bbox(sbox)[1][1]
-    r.part("Module", mod, "body", "module", mrot, {"x": ["center", cx], "y": ["max", yf + 0.06], "z": ["min", zb - 8.6]})
-    insert_sml(r, "S", d, 1, sbox, cx + 127.0, yf, zb, mrot, mod, "_S")   # CAD +x is the viewer's left
+    r.part("Module", mod, "body", "module", mrot, {"x": ["center", cx], "y": ["max", yf + 0.06], "z": ["min", zb - MODULE_UNDER_BOX]})
+    insert_sml(r, "S", d, 1, sbox, cx + 127.0, yf, zb, mrot, mod, "_S", ux=-127.0)   # CAD +x is the viewer's left
     mbox = need(D + FAM["M"] + f"/M{d}/Boxes/M{d} Box 1F.stl")
-    insert_sml(r, "M", d, 1, mbox, cx - 82.4, yf, zb, mrot, mod, "_M")
-    nl = latches(r, mod, mrot, cx, yf, zb, depth=depth)
+    insert_sml(r, "M", d, 1, mbox, cx - 82.4, yf, zb, mrot, mod, "_M", ux=82.4)
+    nl = latches(r, mod, mrot, cx, yf, zb, depth=depth, below=MODULE_UNDER_BOX)
     r.notes.append(f"{nl} latch frame(s) found under the module")
     return r.json()
 
@@ -448,7 +483,7 @@ def drawer_xl(d):
     cx, yf, zb = 0.0, 0.0, 5.0
     W, BW = WIDTH["XL"], 377.7
     mxmin, mxmax = cx - W / 2, cx + W / 2
-    r.part("Module", mod, "body", "module", mrot, {"x": ["center", cx], "y": ["max", yf + 0.06], "z": ["min", zb - 8.6]})
+    r.part("Module", mod, "body", "module", mrot, {"x": ["center", cx], "y": ["max", yf + 0.06], "z": ["min", zb - MODULE_UNDER_BOX]})
     if d <= 5:
         box = need(fam + f"Boxes/XL{d} Box 1F.stl")
         r.part("Box", box, "drawer", "drawer", tray_rot(box, {"back": True, "front": False}),
@@ -468,9 +503,10 @@ def drawer_xl(d):
     fac = need(D + FAM["XL"] + "/XL Facade 1F.stl")
     r.part("Facade", fac, "facade", "drawer", [-90, 0, 0], {"x": ["center", cx], "y": ["min", yf], "z": ["min", zb - 5]})
     z0 = zb + 18.5
-    r.part("Key", U + "Key (Turn On Supports).stl", "mech", "drawer", [-90, 0, 0], {"x": ["center", cx], "y": ["center", yf + 8.16], "z": ["center", z0]})
-    r.part("KeyCap", U + "Key Cap.stl", "facade", "drawer", [90, 0, 0], {"x": ["center", cx], "y": ["center", yf + 25.16], "z": ["center", z0]})
+    r.part("Key", U + "Key (Turn On Supports).stl", "mech", "drawer", [-90, 0, 0], {"x": ["center", cx], "y": ["center", yf + 8.16], "z": ["center", z0]}, joint="key")
+    r.part("KeyCap", U + "Key Cap.stl", "facade", "drawer", [90, 0, 0], {"x": ["center", cx], "y": ["center", yf + 25.16], "z": ["center", z0]}, joint="key")
     hidden_key(r, cx, yf, z0)
+    key_lock(r, "", 0.0)
     rails(r, "XL", cx, yf, zb, depth=3.20)
     side = feat("side", mod, mrot)
     holes = [hh for hh in side["holes"] if 20 < hh["u"] < 36 and hh["area"] < 200]
@@ -497,7 +533,7 @@ def drawer_xl(d):
     for i, (u, wv) in enumerate(c for c in caps if c is not under_label):
         r.part(f"FacadeCap_{i+1}", U + "Facade Cap.stl", "facade", "drawer", [-90, 0, 0],
                {"x": ["center", cx - u], "y": ["min", yf + 5.92], "z": ["center", zb - 5 + wv]})
-    nl = latches(r, mod, mrot, cx, yf, zb, depth=depth)
+    nl = latches(r, mod, mrot, cx, yf, zb, depth=depth, below=MODULE_UNDER_BOX)
     r.notes.append(f"{nl} latch frame(s) found under the module")
     return r.json()
 
@@ -526,6 +562,20 @@ ROD_HEAD = 5.0          # rod head thickness: the rod's end is this far beyond t
 # How far the page opens a lid: the manual's open view (p. 17). Swept on the exported parts, neither the lid nor
 # the hinge tops meet the body, the leaves or the rods before 180 deg.
 LID_OPEN = 105.0
+# Toggle latch (a "double throw" latch, manual p. 17), measured on every case (kinematics.py): the same on every
+# size and height, relative to the holder's pin A. The link's fork (15.3 mm gap) straddles the holder's lug (30 mm
+# wide) on pin A; its solid end sits between the lever's ears on pin B, 15.0 mm below A and 0.99 mm in front (the
+# link leans 3.8 deg forward). The lever's tooth tip C is 30.19 mm above B (36.19 on the 6 mm longer 2-4F lever)
+# and 10.30 mm behind it, in the lid's groove. Closed, the link is past the toggle's dead centre (about 30 deg forward, where the tooth bites deepest),
+# held there by the lever's ears on the front panel's seat; the tooth presses 0.8 mm into the groove's ramp (the
+# latch's preload: the parts flex, rigid copies overlap). Opening: phase 1, the link turns forward about A, B
+# follows and the tooth slides straight up out of the groove (an inverted slider-crank) until it has risen
+# LATCH_OUT mm, clear of the lid's lip; phase 2, the tooth free, the link comes back to LATCH_PHI and the lever
+# swings forward to LATCH_THETA: the latch hangs open, leaning 40 deg out in front of the panel, and the lid can turn.
+# The link can only turn 0 to 80 deg against the lever (its pocket): LATCH_PHI - LATCH_THETA stays under that.
+LATCH_B = (-15.0, 0.99)       # B - A (unit y, z)
+LATCH_C = {1: (30.19, -10.30), 2: (36.19, -10.30), 4: (36.19, -10.30)}     # C - B, by height (1F / 2-4F lever)
+LATCH_OUT, LATCH_PHI, LATCH_THETA = 4.0, 30.0, -40.0
 
 
 def case(w, d, h):
@@ -576,7 +626,7 @@ def case(w, d, h):
     # - holder: the "UP" plate, lying across behind the front panel, bolted into the 4 blind holes beside the
     #   panel's top notch (61.4 x 9 mm apart; their centre 11.7 mm under the top on 1F, 17.7 mm on 2-4F),
     #   its lug forward through the notch; turned so "UP" reads upright from inside.
-    # - link (LOCK INNER PART, holes 15 mm apart): hangs from the lug's pin, in the lever's back pocket.
+    # - link (LOCK INNER PART, holes 15 mm apart): its fork on the lug's pin, in the lever's back pocket (LATCH_*).
     # - lever (LOCK OUTER PART, the 2-4F one is 6 mm longer): pinned to the link's lower hole, lying in the
     #   panel's seat recess, its hook at the top over the lid's front edge (its "UP" reads upright from
     #   inside, as in the manual). Its top comes out at T + 15.0 on every height. 1 mm forward of the
@@ -588,11 +638,27 @@ def case(w, d, h):
     for i, x in enumerate([0.0] if not lock_x else [lock_x, -lock_x]):
         r.part(f"LockHolder_{i+1}", SUU + "Locks/LOCK HOLDER.stl", "mech", "module", [0, 90, 0],
                {"x": ["center", x], "y": ["min", 1849.24 - 1854.838], "z": ["min", yb - 11.07]})
-        r.part(f"LockLink_{i+1}", SUU + "Locks/LOCK INNER PART.stl", "mech", "module", [0, 90, 0],
-               {"x": ["center", x], "y": ["min", lug_z - 4.31], "z": ["min", lug_y - 19.30]})
+        # the link: end for end (the CAD file has its fork down), fork on pin A, leaning forward to pin B
+        A = np.array([-x, lug_y, lug_z])                       # unit frame
+        B = A + np.array([0.0, *LATCH_B])
+        C = B + np.array([0.0, *LATCH_C[h]])
+        lk = SUU + "Locks/LOCK INNER PART.stl"
+        R0 = vg.from_euler_xyz([0, 90, 0])
+        V0 = vg.read_stl(os.path.join(F.ROOT, lk)).reshape(-1, 3)
+        P0 = V0 @ R0.T
+        lo, hi = P0.min(0), P0.max(0)
+        fork = R0.T @ np.array([(lo[0] + hi[0]) / 2, lo[1] + 4.31, lo[2] + 4.30])   # fork hole, file coordinates
+        lean = np.degrees(np.arcsin(LATCH_B[1] / 15.0))
+        R_cad = vg.rot_axis("x", lean) @ vg.rot_axis("y", 180) @ R0
+        r.placed(f"LockLink_{i+1}", lk, "mech", "module", vg.C @ R_cad, fork, A, joint=f"latch_{i+1}.link")
+        r.joints[f"latch_{i+1}"] = {"latch": {"axis": [-1, 0, 0], "A": [round(v, 3) for v in A], "B": [round(v, 3) for v in B],
+                                              "C": [round(v, 3) for v in C], "slide": [0, 1, 0], "out": LATCH_OUT,
+                                              "phi": LATCH_PHI, "theta": LATCH_THETA, "split": 0.5}}
         outer = "LOCK OUTER PART 1F.stl" if h == 1 else "LOCK OUTER PART 2-4F.stl"
         r.part(f"LockOuter_{i+1}", SUU + "Locks/" + outer, "accent", "module", [0, -90, 0],
-               {"x": ["center", x], "y": ["min", 1852.14 - 1854.838 + 1.0], "z": ["min", lug_y - 15.0 - 10.29]})
+               {"x": ["center", x], "y": ["min", 1852.14 - 1854.838 + 1.0], "z": ["min", lug_y - 15.0 - 10.29]},
+               joint=f"latch_{i+1}.lever")
+    r.steps = [{"joints": list(r.joints), "from": 0, "to": 1, "s": 0.45}, {"joints": ["lid"], "from": 0, "to": 1, "s": 0.6}]
     # case label: 1F panels have a closed recess, its centre 10 mm under the panel's top (x from CASE_SEATS);
     # 2F/4F panels a slot open on the left edge, 43.6 mm under the top, closed 50.1 mm in: the label
     # (38.1 mm long) is pushed to its end
@@ -692,5 +758,8 @@ if __name__ == "__main__":
             raise SystemExit("unknown family " + w)
         for rc in recs:
             p = os.path.join(out, f"{rc['name']}_assembly.json")
-            json.dump(rc, open(p, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
-            print(p, len(rc["parts"]), "parts", "; ".join(rc["notes"]))
+            txt = json.dumps(rc, indent=1, ensure_ascii=False)
+            same = os.path.exists(p) and open(p, encoding="utf-8").read() == txt
+            if not same:   # an unchanged recipe keeps its date, so run_assemble.py skips it
+                open(p, "w", encoding="utf-8").write(txt)
+            print(p, "(same)" if same else "", len(rc["parts"]), "parts", "; ".join(rc["notes"]))

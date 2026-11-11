@@ -15,8 +15,10 @@ Config:
                                    # is nearest to this point (file coordinates), see blender_pieces.py
     }, ...
   ],
-  "hinge": {...}                   # optional (cases): the lid's hinge axis, written to the root as
+  "hinge": {...},                  # optional (cases): the lid's hinge axis, written to the root as
                                    # "vault_hinge" for blender_export_placements.py
+  "motion": {...}                  # optional: joints and opening steps (README "Motion"), written to the
+                                   # root as "vault_motion"; a part's "joint" goes to the object as "vault_joint"
 }
 Groups: "module" parts stay, "drawer" parts slide out with the drawer, "lid" parts turn with a case lid.
 Coordinates stay in the source CAD frame (mm, Blender units = mm), which for
@@ -115,6 +117,8 @@ for part in cfg["parts"]:
     o["vault_file"] = part["file"]
     o["vault_role"] = part.get("role", "body")
     o["vault_group"] = part.get("group", "module")
+    if part.get("joint"):
+        o["vault_joint"] = part["joint"]
     objs.append(o)
 
 bpy.context.view_layer.update()
@@ -191,6 +195,8 @@ if fin:
         root["vault_key"] = cfg["key"]  # the planner's unit key, read by blender_export_placements.py
     if cfg.get("hinge"):
         root["vault_hinge"] = json.dumps(cfg["hinge"])
+    if cfg.get("motion"):
+        root["vault_motion"] = json.dumps(cfg["motion"])
     coll_root.objects.link(root)
     drawer = bpy.data.objects.new(cfg.get("name", "Assembly") + "_Drawer", None)
     drawer.empty_display_type = "SINGLE_ARROW"

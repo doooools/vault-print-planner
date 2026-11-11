@@ -66,7 +66,7 @@ catalog += "window.PRINTER_BEDS=" + json.dumps([[b, m, int(w), int(d), int(h)] f
 pf = here / "stl-placements.json"
 if pf.exists():
     pl = json.loads(pf.read_text(encoding="utf-8"))
-    catalog += "window.VAULT_PLACEMENTS=" + json.dumps({"stack": {k: pl["stack"][k] for k in ("first", "per_level")}, "units": {k: {"parts": u["parts"], **({"hinge": {x: u["hinge"][x] for x in ("origin", "axis", "open_deg")}} if "hinge" in u else {})} for k, u in pl["units"].items()}}, ensure_ascii=False, separators=(",", ":")) + ";"
+    catalog += "window.VAULT_PLACEMENTS=" + json.dumps({"stack": {k: pl["stack"][k] for k in ("first", "per_level")}, "units": {k: {"parts": u["parts"], **({"hinge": {x: u["hinge"][x] for x in ("origin", "axis", "open_deg")}} if "hinge" in u else {}), **({"motion": u["motion"]} if "motion" in u else {})} for k, u in pl["units"].items()}}, ensure_ascii=False, separators=(",", ":")) + ";"
 # Bambu Lab's PLA and PETG colours (src/bambu-colors.tsv, from tools/bambu_colors.py): line, code, name, hex
 bc = here / "bambu-colors.tsv"
 if bc.exists():
