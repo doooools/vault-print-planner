@@ -674,7 +674,9 @@ details.folded > summary .mini { min-width: 40px; }
 .dst b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dst small { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
 .dfile { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-top: 4px; }
-.dfile .v3-sec { grid-column: 1 / -1; padding: 0 2px; }
+.dfile .v3-sec { grid-column: 1 / -1; padding: 0 2px; display: flex; gap: 6px; min-width: 0; }
+.dfile .dfname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: none; letter-spacing: 0; color: var(--ink); }
+.dfile .dsave { grid-column: 1 / -1; }
 .dfile .btn { min-height: 40px; }
 .drail > .btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .dloose { display: grid; gap: 4px; margin-top: 8px; padding: 12px; text-align: left; background: transparent; border: 1px dashed var(--edge); border-radius: 10px; font-size: 13px; color: var(--muted); }
@@ -2192,40 +2194,66 @@ details.termfold[open] > summary { color: var(--ink); }
     return out;
   }
   // ---------- designs saved to a file ----------
-  // The stacks, loose parts and colours as JSON. Chrome and Edge ask where (starting in the downloads folder, where
-  // the print files go, then wherever the last design went); other browsers download it. Opening one replaces the
-  // stacks and loose parts here; what was marked printed stays.
+  // The stacks, loose parts and colours as JSON. Save writes it straight into the Vault folder, next to the part files,
+  // when that folder was opened with its handle (Chrome, Edge: they ask once to let the page write there); the design
+  // open (opened or saved there before) is written over, another name never is. Save as… and Open… ask, starting in the
+  // Vault folder. Without a folder handle (other browsers, or write refused) Save asks too, or downloads the file.
+  // Opening one replaces the stacks and loose parts here; what was marked printed stays.
   const DESIGN_TYPES = [{ description: 'Vault Print Planner design', accept: { 'application/json': ['.json'] } }];
-  async function saveDesign() {
-    const data = { app: 'vault-print-planner', kind: 'design', version: 1, saved: new Date().toISOString(), towers, extras, seq, colors: colorPrefs };
-    const text = JSON.stringify(data, null, 1);
-    const name = (towers.length === 1 ? towers[0].name : 'Vault design').replace(/[\\/:*?"<>|]+/g, '-').trim() + '.vault.json';
+  let designName = store.get('designName', null); // the design file open in the Vault folder (opened or saved there)
+  const setDesignName = n => { designName = n; store.set('designName', n); };
+  // The Vault folder's handle: the one open, else the one this browser remembers
+  async function vaultDir() {
+    if (vaultFolder && vaultFolder.handle && typeof vaultFolder.handle === 'object') return vaultFolder.handle;
+    if (!('showDirectoryPicker' in window)) return null;
+    try { return (await idb('readonly', st => st.get('folder'))) || null; } catch (e) { return null; }
+  }
+  const designText = () => JSON.stringify({ app: 'vault-print-planner', kind: 'design', version: 1, saved: new Date().toISOString(), towers, extras, seq, colors: colorPrefs }, null, 1);
+  const designFileName = () => (towers.length === 1 ? towers[0].name : 'Vault design').replace(/[\\/:*?"<>|]+/g, '-').trim() + '.vault.json';
+  const fileIn = async (dir, name) => { try { await dir.getFileHandle(name); return true; } catch (e) { return false; } };
+  // Whether a file the user picked sits right in the Vault folder (then it is the design open there)
+  const inVault = async (dir, h) => { try { const at = dir && await dir.resolve(h); return !!at && at.length === 1; } catch (e) { return false; } };
+  async function saveDesign(as) {
+    const text = designText(), dir = await vaultDir();
+    if (!as && dir) {
+      try {
+        if ((await dir.queryPermission({ mode: 'readwrite' })) !== 'granted' && (await dir.requestPermission({ mode: 'readwrite' })) !== 'granted') throw new Error('refused');
+        let name = designName && await fileIn(dir, designName) ? designName : designFileName();
+        if (name !== designName) for (let k = 2, stem = name.replace(/\.vault\.json$/, ''); await fileIn(dir, name); k++) name = `${stem} ${k}.vault.json`;
+        const fh = await dir.getFileHandle(name, { create: true }), w = await fh.createWritable();
+        await w.write(text); await w.close();
+        setDesignName(name); toast(`Saved to ${dir.name}/${name}`); renderBuild(); return;
+      } catch (e) { /* write refused or failed: ask where, as below */ }
+    }
     if (window.showSaveFilePicker) {
       try {
-        const h = await window.showSaveFilePicker({ id: 'vault-design', startIn: 'downloads', suggestedName: name, types: DESIGN_TYPES });
+        const h = await window.showSaveFilePicker({ id: 'vault-design', startIn: dir || 'downloads', suggestedName: designName || designFileName(), types: DESIGN_TYPES });
         const w = await h.createWritable(); await w.write(text); await w.close();
-        toast(`Saved ${h.name}`); return;
+        setDesignName(await inVault(dir, h) ? h.name : null); toast(`Saved ${h.name}`); renderBuild(); return;
       } catch (e) { if (e.name === 'AbortError') return; }
     }
-    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([text], { type: 'application/json' })), download: name });
+    const name = designFileName(), a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([text], { type: 'application/json' })), download: name });
     document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     toast(`Saved ${name} to your downloads`);
   }
   async function openDesign() {
     if (window.showOpenFilePicker) {
+      const dir = await vaultDir();
       try {
-        const [h] = await window.showOpenFilePicker({ id: 'vault-design', startIn: 'downloads', types: DESIGN_TYPES });
-        const f = await h.getFile(); loadDesign(await f.text(), f.name); return;
+        const [h] = await window.showOpenFilePicker({ id: 'vault-design', startIn: dir || 'downloads', types: DESIGN_TYPES });
+        const f = await h.getFile();
+        if (loadDesign(await f.text(), f.name)) { setDesignName(await inVault(dir, h) ? f.name : null); renderBuild(); }
+        return;
       } catch (e) { if (e.name === 'AbortError') return; }
     }
     const inp = Object.assign(document.createElement('input'), { type: 'file', accept: '.json,application/json' });
-    inp.onchange = async () => { const f = inp.files[0]; if (f) loadDesign(await f.text(), f.name); };
+    inp.onchange = async () => { const f = inp.files[0]; if (f && loadDesign(await f.text(), f.name)) { setDesignName(null); renderBuild(); } };
     inp.click();
   }
   function loadDesign(text, name) {
     let d = null; try { d = JSON.parse(text); } catch (e) { /* not JSON */ }
-    if (!d || d.app !== 'vault-print-planner' || !Array.isArray(d.towers)) { toast(`${name} isn’t a design saved by this planner`); return; }
-    if ((towers.length || extras.length) && !confirm(`Open “${name}”? It replaces the stacks and loose parts here. What you marked printed stays.`)) return;
+    if (!d || d.app !== 'vault-print-planner' || !Array.isArray(d.towers)) { toast(`${name} isn’t a design saved by this planner`); return false; }
+    if ((towers.length || extras.length) && !confirm(`Open “${name}”? It replaces the stacks and loose parts here. What you marked printed stays.`)) return false;
     if (d.colors && Array.isArray(d.colors.palette) && d.colors.palette.length) { colorPrefs = { ...d.colors, roles: d.colors.roles || {} }; saveColors(); }
     towers = d.towers.filter(t => t && Array.isArray(t.levels)).map(t => ({ ...t, levels: t.levels.map(lv => lv.map(u => clean(u))), stack: { ...STACK_DEFAULT, ...(t.stack || {}) } }));
     towers.forEach(t => { t.fp = fpOf(t); if (!t.roles) t.roles = { ...colorPrefs.roles }; t.levels.flat().forEach(fixUnit); fixTower(t); });
@@ -2234,6 +2262,7 @@ details.termfold[open] > summary { color: var(--ink); }
     printSkip = []; savePrintSkip();
     dsel = towers[0] ? { t: towers[0].id, l: null, u: 0 } : extras.length ? { t: 'loose' } : null;
     saveSel(); save(); saveExtras(); view = 'build'; renderAll(); toast(`Opened ${name}`);
+    return true;
   }
   // First launch: printer, Vault folder, first stack
   function renderStart() {
@@ -2280,7 +2309,8 @@ details.termfold[open] > summary { color: var(--ink); }
       <aside class="drail" aria-label="Stacks"><div class="v3-sec">Stacks</div>${rail}
         <button type="button" class="btn dnew" id="dNew">${icon('plus')} New stack</button>
         <button type="button" class="btn" id="dTpl">Start from a template…</button>
-        <div class="dfile" role="group" aria-label="Design file"><span class="v3-sec">Design file</span><button type="button" class="btn" id="dSave" title="Save these stacks, loose parts and colors to a file">Save…</button><button type="button" class="btn" id="dOpen" title="Open a design saved before">Open…</button></div>
+        <div class="dfile" role="group" aria-label="Design file"><span class="v3-sec">Design file${designName ? ` <span class="mono dfname" title="${esc(designName)}">${esc(designName.replace(/\.vault\.json$/, ''))}</span>` : ''}</span>
+          <button type="button" class="btn dsave" id="dSave" title="${vaultFolder && typeof vaultFolder.handle === 'object' ? `Save into ${esc(vaultFolder.name)}, next to the part files` : 'Save these stacks, loose parts and colors to a file'}">Save</button><button type="button" class="btn" id="dSaveAs" title="Save a copy somewhere else, or under another name">Save as…</button><button type="button" class="btn" id="dOpen" title="Open a design saved before">Open…</button></div>
         <button type="button" class="dloose" data-loose aria-pressed="${loose}"><span class="v3-sec">Loose parts</span><span>${nx ? `${plural(nx, 'part')} outside any stack` : 'Spares or single parts outside any stack. None yet.'}</span></button>
       </aside>
       ${loose ? `<section class="dcenter loose">${extrasPanel(true)}</section>` : designCenter(t, info.find(x => x.t === t).a)}
@@ -2294,7 +2324,7 @@ details.termfold[open] > summary { color: var(--ink); }
     V.querySelector('[data-loose]').onclick = () => { dsel = { t: 'loose' }; saveSel(); renderAll(); };
     $('dNew').onclick = () => { newStack(); renderAll(); };
     $('dTpl').onclick = () => $('tplDlg').showModal();
-    $('dSave').onclick = saveDesign; $('dOpen').onclick = openDesign;
+    $('dSave').onclick = () => saveDesign(false); $('dSaveAs').onclick = () => saveDesign(true); $('dOpen').onclick = openDesign;
     V.querySelector('[data-tpl-close]').onclick = () => $('tplDlg').close();
     $('tplDlg').querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => { $('tplDlg').close(); addPreset(PRESETS[+b.dataset.tpl]); });
     if (loose) { bindExtras(); v3sync(); return; }
@@ -3082,7 +3112,7 @@ details.termfold[open] > summary { color: var(--ink); }
         h = await window.showDirectoryPicker({ id: 'vault', mode: 'read', startIn: 'downloads' });
         try { await idb('readwrite', s => s.put(h, 'folder')); } catch (e) { /* remembering it is only a convenience */ }
       }
-      return { name: h.name, files: await filesFromHandle(h), handle: true };
+      return { name: h.name, files: await filesFromHandle(h), handle: h };
     }
     // Safari and Firefox: a folder upload field. Files stay on this computer; the page only reads them.
     return new Promise((res, rej) => {
@@ -3586,13 +3616,21 @@ details.termfold[open] > summary { color: var(--ink); }
         motion, steps, t: 0, jn: new Map(), dur: dur(steps) });
     }
     v.units.forEach(v3pose);
+    // A roof on a case latches onto its lid: it rides the lid's hinge, held by the pivot itself (the lid's inner group is
+    // emptied when the parts are read again), at its place in the case's frame
+    v.units.forEach(u => { const c = u.roof && v.units.find(x => x.lid && !x.roof && x.cfg === u.cfg); if (c) { u.on = c; c.lid.add(u.g); } });
+    const placeUnit = u => {
+      if (u.on) { const o = u.on.lid.position; u.g.position.set(u.x - u.on.x - o.x, u.y + spreadOf(u) - u.on.y - spreadOf(u.on) - o.y, -o.z); }
+      else u.g.position.y = u.y + spreadOf(u);
+      u.g.visible = !(u.roof && v.hideRoof);
+    };
     // Spread units apart (each level lifted a little more) and hide the roofs
     v.arrange = () => {
-      v.units.forEach(u => { u.g.position.y = u.y + spreadOf(u); u.g.visible = !(u.roof && v.hideRoof); });
+      v.units.forEach(placeUnit);
       if (v.sel && v.sel.u && !v.sel.u.g.visible) v.sel = null;
       v.aim(null);
     };
-    v.units.forEach(u => { u.g.position.y = u.y + spreadOf(u); u.g.visible = !(u.roof && v.hideRoof); });
+    v.units.forEach(placeUnit);
     const el = renderer.domElement, ray = new T.Raycaster(), ndc = new T.Vector2();
     const shown = o => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
     // The part under the pointer, and the unit it belongs to (none for the base shapes)
@@ -3602,7 +3640,8 @@ details.termfold[open] > summary { color: var(--ink); }
       ray.setFromCamera(ndc, camera);
       const hit = ray.intersectObjects([...v.units.map(u => u.g), ...v.extras], true).find(h => shown(h.object));
       if (!hit) return null;
-      const u = v.units.find(x => { for (let o = hit.object; o; o = o.parent) if (o === x.g) return true; return false; });
+      // the nearest unit up the tree (a roof on a case sits inside the case's lid)
+      let u = null; for (let o = hit.object; o && !u; o = o.parent) u = v.units.find(x => x.g === o) || null;
       return { u, mesh: hit.object, point: hit.point };
     };
     // What a click opens: the unit, or in a module holding several drawers the one clicked (its parts, or the shell's
