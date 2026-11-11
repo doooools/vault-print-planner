@@ -2651,8 +2651,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     v3park();
     const unitSum = '<section class="panel unit-head" id="unitSum" aria-label="The unit being set up"></section>';
     if (!towers.length) {
-      $('view-build').innerHTML = `${v3panel()}${unitSum}${presetsBlock(!extras.length)}${extrasPanel()}<div class="panel empty">No stacks yet. Pick a starting point above, or set up a unit on the left and press <b>Add</b>.${stackExplainer()}</div>`;
-      bindPresets($('view-build')); bindExtras(); renderUnit(); bindV3panel($('view-build')); v3sync();
+      $('view-build').innerHTML = `${v3panel()}${colorsPanel()}${unitSum}${presetsBlock(!extras.length)}${extrasPanel()}<div class="panel empty">No stacks yet. Pick a starting point above, or set up a unit on the left and press <b>Add</b>.${stackExplainer()}</div>`;
+      bindPresets($('view-build')); bindExtras(); bindColors($('view-build'), renderAll); renderUnit(); bindV3panel($('view-build')); v3sync();
       return;
     }
     const info = towers.map(t => { const a = analyzeTower(t); return { t, a, st: towerStats(t, a) }; });
@@ -2693,7 +2693,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
           </div>
         </div>${fold ? '</details>' : '</div>'}`;
     }).join('');
-    $('view-build').innerHTML = `${v3panel()}${unitSum}${overviewPanel(info)}${colorsPanel()}${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
+    $('view-build').innerHTML = `${v3panel()}${colorsPanel()}${unitSum}${overviewPanel(info)}${presetsBlock(false)}${extrasPanel()}<div class="towers">${html}</div>
       <div class="actions"><button class="btn" id="newTower">New empty stack</button><button class="btn primary" id="toPrint">Next: print plates \u2192</button></div>`;
     bindPresets($('view-build')); bindExtras(); bindColors($('view-build'), renderAll);
     const V = $('view-build'), find = id => towers.find(t => t.id === +id);
@@ -3686,6 +3686,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
           <button type="button" class="bsw more" data-v3more aria-expanded="false">More…</button></div>
         <div class="v3-seg" role="group" aria-label="Paint where">${seg([['project', 'Same part everywhere'], ['unit', 'This unit only']], v.pscope, 'data-v3scope')}</div>
         <span class="v3-brush-hint">${v.pscope === 'project' ? 'A click paints that kind of part in every unit of the project.' : 'A click paints that kind of part in the clicked unit only.'}</span>
+        <button type="button" class="btn" data-v3allcolors title="Your filament tray and which parts get which">All colors</button>
     `;
     } else {
       B.hidden = false; B.className = 'v3-hintbar';
@@ -3698,6 +3699,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     on('[data-v3brush]', b => { v.brush = b.dataset.v3brush; v3tools(); });
     on('[data-v3preview]', () => { v3preview = !v3preview; store.set('v3preview', v3preview); v3sync(); });
     on('[data-v3scope]', b => { v.pscope = b.dataset.v3scope; v3tools(); });
+    on('[data-v3allcolors]', () => v3showColors());
     // More…: the filament picker in a panel above the brush bar; what it adds becomes the brush
     document.querySelectorAll('.v3-morepop').forEach(x => x.remove());
     const more = B.querySelector('[data-v3more]');
@@ -3708,6 +3710,13 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       const shut = () => { pop.remove(); if (more.isConnected) more.setAttribute('aria-expanded', 'false'); };
       filamentPicker(pop, { role: null, from: 'A new brush, added to your tray', close: shut, after: id => { shut(); if (id) v.brush = id; v3refresh(v); } });
     };
+  }
+  // "All colors": the Colors panel, at the foot of the side column when enlarged, else on the page under the 3D
+  function v3showColors() {
+    if ($('v3d').open) { const box = $('v3dColors'); if (box.firstChild) box.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    const d = document.querySelector('#view-' + view + ' details[data-colors-root]');
+    if (!d) { const box = $('v3dColors'); if (box.firstChild) box.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; } // other steps: it's in the side column
+    d.open = colorsOpen = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   // The side column: what is selected, then the units top to bottom, then the project's colours
   function v3side() { v3sel(); v3list(); v3colors(); }
@@ -3880,7 +3889,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // Before steps 1 and 2 redraw, the view steps out of the way, so the redraw doesn't take it with the old page
   function v3park() { if (!$('v3d').open) $('v3home').append($('v3view')); }
   // Enlarge: the same view in a dialog over the page; closing it puts it back
-  function v3enlarge() { $('v3dHost').append($('v3view')); $('v3d').showModal(); v3list(); }
+  function v3enlarge() { $('v3dHost').append($('v3view')); $('v3d').showModal(); v3side(); }
   $('v3d').addEventListener('close', () => v3sync());
   $('v3dClose').onclick = () => $('v3d').close();
   $('v3dPick').onclick = async () => {
