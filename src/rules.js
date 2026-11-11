@@ -337,8 +337,10 @@
         add('Wheels', 'Tire', MO + 'Wheels/Tyre (TPU).stl', 2, { tpu: true, note: 'Print in TPU.' });
         add('Wheels', 'Bushing jig (tool)', MO + 'Wheels/Jig.stl', 1, { aid: true, note: 'Tool for pressing bushings onto the rod. Print once.' });
       }
-      if (s.feet && (s.wheels || !s.casters)) add('Base', 'Foot', MO + `Feet/${w} Feet.stl`, s.wheels ? 1 : 2,
-        s.wheels ? { note: 'One foot opposite the wheels.' } : { inferred: 'Without wheels, two feet are assumed. The manual only shows the wheeled version.' });
+      // One foot, opposite the wheels (Modifications Assembly 6/15), on the base's two M6 holes at the front. Without
+      // wheels the base stands on its own flat underside (one plane over 82-95 % of its footprint; there are no holes
+      // for a second foot): no foot.
+      if (s.feet && s.wheels) add('Base', 'Foot', MO + `Feet/${w} Feet.stl`, 1, { note: 'One foot opposite the wheels.' });
     }
     if (s.stationaryHandle) add('Handles', 'Stationary handle', MO + `Stationary Handle/${w} Stationary Handle.stl`, 1);
     if (s.pullHandle) {
@@ -360,12 +362,12 @@
       const lay = drawersOf(c), per = w => lay.reduce((a, dh) => a + front(w, dh), 0);
       const bolts = c.w === 'L2' ? 2 * per('S') : c.w === 'XL2' ? front('S', 1) + front('M', 1) : per(c.w);
       push('M4 × 14 mm button-head bolt', bolts, 'Drawer front to box');
-      if (c.roof === 'grid' && c.topHandle) push('M6 × 50 mm countersunk bolt', 2, 'Roof top handle');
     } else {
       push('M4 × 14 mm button-head bolt', 16, 'Case hinge tops and locks');
       push('M4 × 10 mm button-head bolt', 8, 'Case hinges');
       push('M4 × 20 mm button-head bolt', 7, 'Case front and body');
     }
+    if (c.roof === 'grid' && c.topHandle) push('M6 × 50 mm countersunk bolt', 2, 'Roof top handle');
     if (c.pegboard && c.pegboard !== 'none' && c.h <= 2) push('M4 × 40 mm button-head bolt', 4, 'Pegboard attachment');
     if (c.backbone && c.backbone !== 'none' && c.h <= 2) push('M4 button-head bolt, 60–100 mm (to fit)', 4, 'Backbone');
     return hw;
@@ -380,7 +382,7 @@
       push('6205ZZ bearing (25 × 52 × 15 mm)', 2, 'Wheels');
       push('SCSAW shaft collar (16 mm bore)', 2, 'Wheels');
     }
-    if (s.base && s.feet && (s.wheels || !s.casters)) push('M6 × 90 mm button-head bolt', 2 * (s.wheels ? 1 : 2), 'Feet');
+    if (s.base && s.feet && s.wheels) push('M6 × 90 mm button-head bolt', 2, 'Feet');
     if (s.base && !s.wheels && s.casters) push('Caster with M8 bolt', 4, 'Casters (instead of wheels)');
     if (s.stationaryHandle) push('M4 × 60 mm button-head bolt', 8, 'Stationary handle');
     if (s.pullHandle) {
@@ -409,6 +411,8 @@
   function buildUnit(c, resolve) {
     const k = collector(resolve);
     if (c.type === 'drawer') drawer(k.add, c); else sustainer(k.add, c, resolve);
+    // A roof latches onto a case's lid as onto a module: the lid's top has the module top's latch frames (manual p. 17)
+    if (c.type !== 'drawer' && c.roof && c.roof !== 'none') roof(k.add, c.w, c.d, c.roof, c.topHandle);
     mounts(k.add, c);
     return { lines: k.lines, missing: k.missing, hardware: unitHardware(c) };
   }

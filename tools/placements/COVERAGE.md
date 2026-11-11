@@ -29,12 +29,12 @@ something is a guess (see the unit's notes);
 | `roof|S` | 20 | 0 | 0 |
 | `roof|XL` | 30 | 0 | 0 |
 | `roof|XL2` | 30 | 0 | 0 |
-| `stack|L` | 0 | 0 | 5 |
-| `stack|M` | 0 | 0 | 5 |
-| `stack|S` | 0 | 0 | 5 |
-| `stack|XL` | 0 | 0 | 5 |
+| `stack|L` | 5 | 0 | 0 |
+| `stack|M` | 5 | 0 | 0 |
+| `stack|S` | 5 | 0 | 0 |
+| `stack|XL` | 5 | 0 | 0 |
 
-Total: 290 units, 270 verified, 0 doubtful, 20 missing.
+Total: 290 units, 290 verified, 0 doubtful, 0 missing.
 
 ## Files not placed, and why
 
@@ -72,8 +72,6 @@ part whose place was not measured in this pass; the units that list it can still
 | Divider pin (S side) | 10 | by design | grid dividers: how many and where is the user's choice |
 | Grid divider, full width (32-XL) | 10 | by design | grid dividers: how many and where is the user's choice |
 | Grid divider, full width (18-M) (M side) | 8 | by design | grid dividers: how many and where is the user's choice |
-| Base, part 1 | 8 | by design | split version of a part: the 3D view draws the one-piece version |
-| Base, part 2 | 8 | by design | split version of a part: the 3D view draws the one-piece version |
 | Base connector | 8 | by design | split version of a part: the 3D view draws the one-piece version |
 | Grid divider, full depth (14) (left) | 6 | by design | grid dividers: how many and where is the user's choice |
 | Grid divider, full depth (18-M) (left) | 6 | by design | grid dividers: how many and where is the user's choice |
@@ -98,10 +96,16 @@ part whose place was not measured in this pass; the units that list it can still
 | Front label | 50 | option, not measured | the drawer label the planner adds to a case: the case front has no slot for it (its own label is placed) |
 | Springs (pair) | 50 | option, not measured | inside the key lock, not assembled in the CAD file |
 | Gridfinity baseplate | 48 | option, not measured | case baseplates: not placed yet |
+| Stationary handle | 20 | option, not measured | tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet |
+| Pull-out handle | 20 | option, not measured | tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet |
+| Pull-out handle lock | 20 | option, not measured | tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet |
+| Handle lock knob, part 1 | 20 | option, not measured | tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet |
+| Handle lock knob, part 2 | 20 | option, not measured | tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet |
 | Springs (pair) (left) | 15 | option, not measured | inside the key lock, not assembled in the CAD file |
 | L² accessory, 1st | 15 | option, not measured | L² accessories: neither the manual nor the CAD file shows where they go |
 | L² accessory, 2nd | 15 | option, not measured | L² accessories: neither the manual nor the CAD file shows where they go |
 | Springs (pair) (S side) | 5 | option, not measured | inside the key lock, not assembled in the CAD file |
+| Pull-out handle lock, part 2 | 5 | option, not measured | tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet |
 | Gridfinity baseplate | 3 | option, not measured | XL baseplates are printed tilted and were not placed yet |
 | Gridfinity baseplate, part 1 | 2 | option, not measured | case baseplates: not placed yet |
 | Gridfinity baseplate, part 2 | 2 | option, not measured | case baseplates: not placed yet |
@@ -174,7 +178,7 @@ Not placed, and why:
 
 | Hardware (planner) | Why |
 |---|---|
-| Base, wheels and feet: M16 rod, M4 x 25, 6205ZZ bearings, SCSAW collars, M6 x 90, casters | the base and its parts have no placement yet (`stack|...` units) |
+| Base, wheels and feet: M16 rod, M4 x 25, 6205ZZ bearings, SCSAW collars, M6 x 90, casters | the printed parts are placed (`stack|...` units); these bought parts are not drawn yet (their places are in README "Stacks") |
 | Stationary and pull-out handles: M4 x 60, M6 x 30, M6 x 35 hex, M6 heat inserts, M16 rods | same: tower parts, not placed yet |
 | Pegboard M4 x 40, backbone M4 x 60-100 | the mounts on the back of a unit are not placed yet |
 | Lock pins, hinge rods | printed parts, not bought hardware (the rods are placed with the hinges) |
@@ -682,138 +686,138 @@ it only happens on the bottom and top drawers, the ones whose key finds the fram
 - `roof|L2|7|undertable` **verified**, 3 parts placed
   - same entry as the L roof of that depth (the planner gives a single L² unit the L roof)
 - `roof|L|3|bowl` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|3|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|3|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|3|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|3|undertable` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|4|bowl` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|4|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|4|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|4|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|4|undertable` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|5|bowl` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|5|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|5|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|5|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|5|undertable` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|6|bowl` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|6|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|6|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|6|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|6|undertable` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|7|bowl` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|7|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|7|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|7|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|L|7|undertable` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|3|bowl` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|3|grid` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|3|table` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|3|undertable` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|4|bowl` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|4|grid` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|4|table` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|4|undertable` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|5|bowl` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|5|grid` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|5|table` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|5|undertable` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|6|bowl` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
   - roof: orientation #2+ chosen ([-90.0, -45.0, 0.0], score 0.473) because the best one failed the check
 - `roof|M|6|grid` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|6|table` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|6|undertable` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|7|bowl` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|7|grid` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|7|table` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|M|7|undertable` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|3|bowl` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|3|grid` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|3|table` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|3|undertable` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|4|bowl` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|4|grid` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|4|table` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|4|undertable` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|5|bowl` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|5|grid` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|5|table` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|5|undertable` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|6|bowl` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
   - roof: orientation #2+ chosen ([-90.0, -45.0, 0.0], score 0.482) because the best one failed the check
 - `roof|S|6|grid` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|6|table` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|6|undertable` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|7|bowl` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
   - roof: orientation #2+ chosen ([-90.0, -45.0, 0.0], score 0.497) because the best one failed the check
 - `roof|S|7|grid` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|7|table` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|S|7|undertable` **verified**, 2 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL2|3|bowl` **verified**, 3 parts placed
   - same entry as the XL roof of that depth
 - `roof|XL2|3|grid` **verified**, 4 parts placed
@@ -875,327 +879,122 @@ it only happens on the bottom and top drawers, the ones whose key finds the fram
 - `roof|XL2|7|undertable` **verified**, 3 parts placed
   - same entry as the XL roof of that depth
 - `roof|XL|3|bowl` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|3|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|3|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|3|heavycut` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|3|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|3|undertable` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|4|bowl` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|4|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|4|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|4|heavycut` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|4|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|4|undertable` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|5|bowl` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|5|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|5|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|5|heavycut` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|5|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|5|undertable` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|6|bowl` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|6|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|6|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|6|heavycut` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|6|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|6|undertable` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|7|bowl` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|7|grid` **verified**, 4 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|7|heavy` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|7|heavycut` **verified**, 6 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|7|table` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
 - `roof|XL|7|undertable` **verified**, 3 parts placed, check: `VAULT_ASSEMBLY/<fam>/<fam>_Roof_<id>_{iso,bottom}.png and the towers`
-  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18)
-- `stack|L|3` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (`L3 Base.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`L Feet.stl`)
-  - not placed: Stationary handle (`L Stationary Handle.stl`)
-  - not placed: Pull-out handle (`L Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`L Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|L|4` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (`L4 Base.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`L Feet.stl`)
-  - not placed: Stationary handle (`L Stationary Handle.stl`)
-  - not placed: Pull-out handle (`L Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`L Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|L|5` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (`L5 Base.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`L Feet.stl`)
-  - not placed: Stationary handle (`L Stationary Handle.stl`)
-  - not placed: Pull-out handle (`L Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`L Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|L|6` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (one piece) (`L6 Base Whole.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`L Feet.stl`)
-  - not placed: Stationary handle (`L Stationary Handle.stl`)
-  - not placed: Pull-out handle (`L Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`L Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|L|7` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (one piece) (`L7 Base Whole.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`L Feet.stl`)
-  - not placed: Stationary handle (`L Stationary Handle.stl`)
-  - not placed: Pull-out handle (`L Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`L Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|M|3` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (`M3 Base.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`M Feet.stl`)
-  - not placed: Stationary handle (`M Stationary Handle.stl`)
-  - not placed: Pull-out handle (`M Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`M Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|M|4` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (`M4 Base.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`M Feet.stl`)
-  - not placed: Stationary handle (`M Stationary Handle.stl`)
-  - not placed: Pull-out handle (`M Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`M Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|M|5` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (`M5 Base.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`M Feet.stl`)
-  - not placed: Stationary handle (`M Stationary Handle.stl`)
-  - not placed: Pull-out handle (`M Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`M Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|M|6` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (one piece) (`M6 Base Whole.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`M Feet.stl`)
-  - not placed: Stationary handle (`M Stationary Handle.stl`)
-  - not placed: Pull-out handle (`M Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`M Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|M|7` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (one piece) (`M7 Base Whole.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`M Feet.stl`)
-  - not placed: Stationary handle (`M Stationary Handle.stl`)
-  - not placed: Pull-out handle (`M Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`M Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|S|3` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (`S3 Base.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`S Feet.stl`)
-  - not placed: Stationary handle (`S Stationary Handle.stl`)
-  - not placed: Pull-out handle (`S Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`S Pull-out Handle Lock.stl`)
-  - not placed: Pull-out handle lock, part 2 (`S Pull-out Handle Lock Part 2.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|S|4` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (`S4 Base.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`S Feet.stl`)
-  - not placed: Stationary handle (`S Stationary Handle.stl`)
-  - not placed: Pull-out handle (`S Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`S Pull-out Handle Lock.stl`)
-  - not placed: Pull-out handle lock, part 2 (`S Pull-out Handle Lock Part 2.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|S|5` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (`S5 Base.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`S Feet.stl`)
-  - not placed: Stationary handle (`S Stationary Handle.stl`)
-  - not placed: Pull-out handle (`S Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`S Pull-out Handle Lock.stl`)
-  - not placed: Pull-out handle lock, part 2 (`S Pull-out Handle Lock Part 2.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|S|6` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (one piece) (`S6 Base Whole.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`S Feet.stl`)
-  - not placed: Stationary handle (`S Stationary Handle.stl`)
-  - not placed: Pull-out handle (`S Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`S Pull-out Handle Lock.stl`)
-  - not placed: Pull-out handle lock, part 2 (`S Pull-out Handle Lock Part 2.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|S|7` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (one piece) (`S7 Base Whole.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`S Feet.stl`)
-  - not placed: Stationary handle (`S Stationary Handle.stl`)
-  - not placed: Pull-out handle (`S Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`S Pull-out Handle Lock.stl`)
-  - not placed: Pull-out handle lock, part 2 (`S Pull-out Handle Lock Part 2.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|XL|3` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (`XL3 Base.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`XL Feet.stl`)
-  - not placed: Stationary handle (`XL Stationary Handle.stl`)
-  - not placed: Pull-out handle (`XL Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`XL Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|XL|4` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (`XL4 Base.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`XL Feet.stl`)
-  - not placed: Stationary handle (`XL Stationary Handle.stl`)
-  - not placed: Pull-out handle (`XL Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`XL Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|XL|5` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (`XL5 Base.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`XL Feet.stl`)
-  - not placed: Stationary handle (`XL Stationary Handle.stl`)
-  - not placed: Pull-out handle (`XL Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`XL Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|XL|6` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (one piece) (`XL6 Base Whole.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`XL Feet.stl`)
-  - not placed: Stationary handle (`XL Stationary Handle.stl`)
-  - not placed: Pull-out handle (`XL Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`XL Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
-- `stack|XL|7` **missing**
-  - bases, wheels, feet and handles were not measured in this pass; the 3D view draws plain shapes for them
-  - not placed: Base (one piece) (`XL7 Base Whole.stl`)
-  - not placed: Wheel disk (`Disk.stl`)
-  - not placed: Bushing (`Bushing.stl`)
-  - not placed: Wheel cover (`Cover.stl`)
-  - not placed: Tire (`Tyre (TPU).stl`)
-  - not placed: Foot (`XL Feet.stl`)
-  - not placed: Stationary handle (`XL Stationary Handle.stl`)
-  - not placed: Pull-out handle (`XL Pull-out Handle.stl`)
-  - not placed: Pull-out handle lock (`XL Pull-out Handle Lock.stl`)
-  - not placed: Handle lock knob, part 1 (`Handle Lock Knob Part 1.stl`)
-  - not placed: Handle lock knob, part 2 (`Handle Lock Knob Part 2.stl`)
+  - turned so its latch frames are underneath, 12 mm from the back, like a module's; L7 roofs identical to the first session's; heavyweight handle bar between the slot-wall pockets and the grid roof's top handle checked against the manual (p. 10, p. 18); heavyweight inserts in their entry grooves (sections at x = +-68: 6 of 733 mm² in the roof, was 97 %); a roof on a case lid (the lid's top has the module top's latch frames, p. 17)
+- `stack|L|3` **verified**, 10 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -116.1; wheels 0.00 mm clear of the base, rod 9.2 mm beyond the bushings; foot on the base's M6 holes (0.00 mm), its floor 0.50 mm under the tires'
+- `stack|L|4` **verified**, 10 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -158.1; wheels 0.00 mm clear of the base, rod 9.2 mm beyond the bushings; foot on the base's M6 holes (0.00 mm), its floor 0.50 mm under the tires'
+- `stack|L|5` **verified**, 10 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -200.1; wheels 0.00 mm clear of the base, rod 9.2 mm beyond the bushings; foot on the base's M6 holes (0.00 mm), its floor 0.50 mm under the tires'
+- `stack|L|6` **verified**, 12 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -242.1; wheels 0.00 mm clear of the base, rod 9.2 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.50 mm under the tires'
+- `stack|L|7` **verified**, 12 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -284.1; wheels 0.00 mm clear of the base, rod 9.2 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.50 mm under the tires'
+- `stack|M|3` **verified**, 10 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -116.1; wheels 0.00 mm clear of the base, rod 9.0 mm beyond the bushings; foot on the base's M6 holes (0.00 mm), its floor 0.50 mm under the tires'
+- `stack|M|4` **verified**, 10 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -158.1; wheels 0.00 mm clear of the base, rod 9.0 mm beyond the bushings; foot on the base's M6 holes (0.00 mm), its floor 0.50 mm under the tires'
+- `stack|M|5` **verified**, 10 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -200.1; wheels 0.00 mm clear of the base, rod 9.0 mm beyond the bushings; foot on the base's M6 holes (0.00 mm), its floor 0.50 mm under the tires'
+- `stack|M|6` **verified**, 12 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -242.1; wheels 0.00 mm clear of the base, rod 9.0 mm beyond the bushings; foot on the base's M6 holes (0.00 mm), its floor 0.50 mm under the tires'
+- `stack|M|7` **verified**, 12 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -284.1; wheels 0.00 mm clear of the base, rod 9.0 mm beyond the bushings; foot on the base's M6 holes (0.00 mm), its floor 0.50 mm under the tires'
+- `stack|S|3` **verified**, 10 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -116.1; wheels 0.00 mm clear of the base, rod 8.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.50 mm under the tires'
+- `stack|S|4` **verified**, 10 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -158.1; wheels 0.00 mm clear of the base, rod 8.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.50 mm under the tires'
+- `stack|S|5` **verified**, 10 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -200.1; wheels 0.00 mm clear of the base, rod 8.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.50 mm under the tires'
+- `stack|S|6` **verified**, 12 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -242.1; wheels 0.00 mm clear of the base, rod 8.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.50 mm under the tires'
+- `stack|S|7` **verified**, 12 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -284.1; wheels 0.00 mm clear of the base, rod 8.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.50 mm under the tires'
+- `stack|XL|3` **verified**, 10 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -116.1; wheels 0.00 mm clear of the base, rod 9.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.50 mm under the tires'
+- `stack|XL|4` **verified**, 10 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -158.1; wheels 0.00 mm clear of the base, rod 9.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.50 mm under the tires'
+- `stack|XL|5` **verified**, 10 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -200.1; wheels 0.00 mm clear of the base, rod 9.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.49 mm under the tires'
+- `stack|XL|6` **verified**, 12 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -242.1; wheels 0.00 mm clear of the base, rod 9.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.49 mm under the tires'
+- `stack|XL|7` **verified**, 12 parts placed, check: `VAULT_ASSEMBLY/<fam><d>/<fam><d>_Stack_{iso,front,secx}.png, _compare/stack/tower_*.png, _compare/base_roues.jpg`
+  - measure_stack.py: base top = a module's top (pockets matched), back flush, 10 mm proud at the front on all 20; wheels on the rod's hole (20 mm up, 30 mm in from the back), bushing against the base's side, bearing on its shoulder, disk, cover touching it, tire on both rims (0.26 mm² of section overlap); foot on the base's two M6 holes (0.01 mm); tire and foot bottoms 0.5 mm apart. Handles not placed (backbones first)
+  - base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -284.1; wheels 0.00 mm clear of the base, rod 9.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.50 mm under the tires'

@@ -151,8 +151,10 @@ class Recipe:
         self.joints, self.steps = {}, None
         self.layout, self.tags = None, None   # a layout recipe: its id and drawers; tags put on the parts made now
 
-    def part(self, nm, file, role, group, rot=None, align=None, move=None, pick=None, joint=None):
+    def part(self, nm, file, role, group, rot=None, align=None, move=None, pick=None, joint=None, ref=False):
         d = {"name": f"{self.name}_{nm}", "file": file, "role": role, "group": group}
+        if ref:
+            d["ref"] = True
         if joint:
             d["joint"] = joint
         if self.tags:
@@ -167,7 +169,7 @@ class Recipe:
             d["pick"] = [round(float(v), 3) for v in pick]
         self.parts.append(d)
 
-    def placed(self, nm, file, role, group, R_unit, src, dst, piece=None, origin=(0.0, 0.0, 0.0), joint=None):
+    def placed(self, nm, file, role, group, R_unit, src, dst, piece=None, origin=(0.0, 0.0, 0.0), joint=None, ref=False):
         """A part (or one piece of its file) turned by R_unit (file axes -> unit axes) with the file
         point `src` on the unit point `dst`. origin: the unit frame's origin in recipe (CAD) coordinates.
         Written as the recipe's rot + align (by the real vertices' bbox, as blender_assemble.py does)."""
@@ -177,7 +179,7 @@ class Recipe:
         P = P @ vg.C.T + np.asarray(origin)          # unit -> CAD (C is its own inverse)
         lo = P.min(0)
         self.part(nm, file, role, group, vg.euler_xyz(vg.C @ R_unit), {a: ["min", float(lo[i])] for i, a in enumerate("xyz")},
-                  pick=piece["centre"] if piece else None, joint=joint)
+                  pick=piece["centre"] if piece else None, joint=joint, ref=ref)
 
     def json(self, anchor="Module"):
         out = {"name": self.name, "key": self.key, "notes": self.notes, "parts": self.parts,
@@ -188,6 +190,8 @@ class Recipe:
             out["motion"] = {"joints": self.joints, "open": self.steps}
         if self.layout:
             out["layout"] = self.layout
+        if getattr(self, "floor", None):
+            out["floor"] = self.floor
         return out
 
 
@@ -503,6 +507,38 @@ def family_layouts():
     return out
 
 
+# A tower's base, wheels and foot: measure_stack.py measures them on the files and writes their matrices (unit frame
+# of the tower's first module) to $VAULT_ASSEMBLY/_stack.json; the recipe places them by those matrices, with the
+# first module (1F, as in its own entry) as the frame's reference, assembled but not exported.
+STACK_JSON = os.path.join(ASM, "_stack.json")
+
+
+def stack_unit(w, d):
+    st = json.load(open(STACK_JSON, encoding="utf-8"))[f"stack|{w}|{d}"]
+    pl = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "src", "stl-placements.json"), encoding="utf-8"))
+    r = Recipe(f"{w}{d}_Stack", f"stack|{w}|{d}")
+    mod = next(p for p in pl["units"][f"drawer|{w}|{d}|1"]["parts"] if re.search(r"(?i)Module 1F\.stl$", p[0]))
+
+    def put(nm, f, role, m, ref=False):
+        M = np.array(m, float).reshape(3, 4)
+        r.placed(nm, f, role, "module", M[:, :3], (0.0, 0.0, 0.0), M[:, 3], ref=ref)
+    put("Module", mod[0], "body", mod[3], ref=True)
+    put("Base", st["base"]["file"], "body", st["base"]["m"])
+    for i, bp in enumerate(st["base_parts"], 1):
+        put(f"BasePart_{i}", bp["file"], "body", bp["m"])
+    for wp in st["wheels"]:
+        put(f"Wheel_{wp['side']}_{os.path.splitext(os.path.basename(wp['file']))[0].split(' ')[0]}", wp["file"], wp["role"], wp["m"])
+    put("Foot", st["foot"]["file"], st["foot"]["role"], st["foot"]["m"])
+    wn, fn, fe = st["wheel_notes"], st["foot_notes"], st["features"]
+    r.floor = {"base": fe["bottom"], "wheels": wn["wheel_bottom"], "foot": fn["foot_bottom"],
+               "note": "y of the floor under the base alone, under the wheels (tire bottom) and under the foot, in the first module's frame"}
+    r.notes.append("base: top on the module's underside, back flush, 10 mm proud at the front; rod at y %.1f z %.1f; "
+                   "wheels %.2f mm clear of the base, rod %.1f mm beyond the bushings; foot on the base's M6 holes (%.2f mm), "
+                   "its floor %.2f mm under the tires'" % (fe["rod"][0], fe["rod"][1], wn["clear_of_base"], wn["rod_beyond_bushing"],
+                                                          fn["hole_error"], wn["wheel_bottom"] - fn["foot_bottom"]))
+    return r.json("Module")
+
+
 def roof_sml(w, d, kind, ref_mod=None):
     """Roofs are printed on edge at 45 deg, with a module's underside: placed like a module, with a
     latch in each of their own latch frames."""
@@ -529,10 +565,13 @@ def roof_sml(w, d, kind, ref_mod=None):
         # Each pocket has an entry groove (a wedge running back on the right, forward on the left) that an insert
         # closes once the bar is in. USSA's CAD scene has the insert against the bar's right end: that is the right
         # one (0.5 mm off the groove's back wall, its peg in the groove's hole); the left one is it turned half a
-        # turn about the bar's vertical axis. Offsets are bounding-box centre to the bar's.
+        # turn about the bar's vertical axis. Offsets are bounding-box centre to the bar's. Right and left are seen
+        # from the front: the right one is at CAD -x (CAD +x is the viewer's left), behind the bar; the left one at
+        # CAD +x, in front of it. (They were set the other way round, each in the solid wall on the other side of the
+        # bar from its groove: hidden, the grooves left open. Sections at x = +-68 mm, roof|L|7|heavy.)
         for i, (sx, rz) in enumerate(((1, 90), (-1, 270)), 1):
             r.part(f"Insert_{i}", U + "Heawyweight Roof Insert.stl", "roof", "module", [0, 0, rz],
-                   {"x": ["center", cx + sx * 68.414], "y": ["center", yc - sx * 27.056], "z": ["center", zb - 8.6 + 59.8 - 0.25]})
+                   {"x": ["center", cx - sx * 68.414], "y": ["center", yc - sx * 27.056], "z": ["center", zb - 8.6 + 59.8 - 0.25]})
     if kind == "grid":
         top_handle(r, rel, rr, (cx, yf + 0.06, zb - 8.6))
     r.notes.append(f"{n} latch(es)")
@@ -938,6 +977,8 @@ if __name__ == "__main__":
                 mod1 = need(D + FAM["XL"] + f"/XL{d}/Modules/XL{d} Module 1F.stl")
                 ref = (mod1, rot_checked(mod1, frames_at_back(mod1, 146.1 + 42 * (d - 3)), "module")[0])
                 recs += [rc for kind in ROOFS for rc in [roof_sml("XL", d, kind, ref)] if rc]
+        elif w == "STK":          # a tower's base, wheels and foot (measure_stack.py first)
+            recs = [stack_unit(sw, d) for sw in ("S", "M", "L", "XL") for d in range(3, 8)]
         elif w == "LAY":          # several drawers in one 2F/4F module (S, M, L, L²)
             recs = family_layouts()
         elif w.startswith("C"):   # cases: CS CM CL CXL

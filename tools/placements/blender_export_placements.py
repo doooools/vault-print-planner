@@ -54,7 +54,7 @@ for path in blends:
     root = next(o for o in bpy.data.objects if o.type == "EMPTY" and o.parent is None)
     inv = root.matrix_world.inverted()
     parts, lo, hi = [], [1e9] * 3, [-1e9] * 3
-    for o in sorted((o for o in bpy.data.objects if o.type == "MESH" and "vault_file" in o), key=lambda o: o.name):
+    for o in sorted((o for o in bpy.data.objects if o.type == "MESH" and "vault_file" in o and "vault_ref" not in o), key=lambda o: o.name):
         f = o["vault_file"]
         M = C @ inv @ o.matrix_world @ mathutils.Matrix.Translation(-centre[f])
         rows = [[round(M[i][j], 6) for j in range(3)] + [round(M[i][3], 3)] for i in range(3)]
@@ -93,6 +93,8 @@ for path in blends:
         units[key]["hinge"] = json.loads(root["vault_hinge"])
     if root.get("vault_motion"):
         units[key]["motion"] = json.loads(root["vault_motion"])
+    if root.get("vault_floor"):
+        units[key]["floor"] = json.loads(root["vault_floor"])
     print("EXPORTED", key, len(parts), "parts")
 
 # A single L² or XL² unit on top of a stack gets the L or XL roof (rules.js), keyed by its own width

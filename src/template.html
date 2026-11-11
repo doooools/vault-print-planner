@@ -104,7 +104,7 @@ dialog#news h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stret
 .panel { background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r); }
 .config { padding: 16px; display: grid; gap: 18px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); overflow: auto; }
 @media (max-width: 860px) { .config { position: static; max-height: none; } }
-.field { display: grid; gap: 8px; }
+.field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .field > .lbl { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 .field > .lbl .hint { text-transform: none; letter-spacing: 0; font-weight: 400; }
 .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; background: var(--sheet-2); padding: 4px; border-radius: 9px; }
@@ -745,7 +745,8 @@ details.folded > summary .mini { min-width: 40px; }
 .ifp { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
 .ifp > span { display: grid; gap: 2px; }
 .ialerts { display: grid; gap: 6px; }
-.seg.wrap { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
+.seg.wrap { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); width: 100%; box-sizing: border-box; min-width: 0; }
+.seg.wrap button { min-width: 0; padding-left: 4px; padding-right: 4px; font-size: 13px; overflow-wrap: break-word; }
 .dinsp .field .seg button { min-height: 40px; }
 /* First launch */
 .start { width: 100%; max-width: 1080px; margin: 0 auto; display: grid; gap: 16px; padding: 12px 0 24px; }
@@ -1305,7 +1306,7 @@ details.termfold[open] > summary { color: var(--ink); }
   const levelWidth = lv => lv.reduce((a, u) => a + R.WIDTH_MM[u.w], 0);
   // The unit whose roof setting covers a level: the first that has a roof. On two units side by side the roof can be
   // set on either one (it used to be read from the left one only, so a roof and handle set on the right one were lost).
-  const roofOf = lv => lv.find(u => u.type === 'drawer' && u.roof && u.roof !== 'none') || lv[0];
+  const roofOf = lv => lv.find(u => u.roof && u.roof !== 'none') || lv[0];
   const WNAME = { S: 'S', M: 'M', L: 'L', L2: 'L\u00b2', XL: 'XL', XL2: 'XL\u00b2' };
   const levelHeight = lv => Math.max(...lv.map(u => unitExt(u)[2]));
   function analyzeTower(t) { const was = colorStack; colorStack = t; try { return analyzeStack(t); } finally { colorStack = was; } }
@@ -1317,7 +1318,7 @@ details.termfold[open] > summary { color: var(--ink); }
       const pair = lv.length > 1;
       lv.forEach(u => {
         const k = clean(u);
-        if (!top || pair || k.type !== 'drawer') k.roof = 'none';
+        if (!top || pair) k.roof = 'none';
         parts.push(computeUnit(k));
       });
       if (pair) {
@@ -1810,7 +1811,7 @@ details.termfold[open] > summary { color: var(--ink); }
     // A heavyweight roof has its own carry handle. When it has to go (not made in this width, or too big for the
     // printer), the grid roof that replaces it keeps a handle: its top handle. Without this the handle silently
     // dropped out of the print list.
-    const roof0 = c.roof, handled = c.type === 'drawer' && (c.roof === 'heavy' || c.roof === 'heavycut');
+    const roof0 = c.roof, handled = c.roof === 'heavy' || c.roof === 'heavycut';
     const roofs = R.ROOFS.filter(r => r.widths.includes(c.w)).map(r => r.id);
     if (c.roof !== 'none' && !roofs.includes(c.roof)) c.roof = 'grid';
     if (onlyFits && unitTooBig({})) {
@@ -1867,7 +1868,7 @@ details.termfold[open] > summary { color: var(--ink); }
       levels: [[U('drawer', 'S', 4, 2)], [U('drawer', 'S', 4, 1)], [U('drawer', 'S', 4, 1)], [U('drawer', 'S', 4, 1, { roof: 'grid', topHandle: true })]] },
     { name: 'Under-desk drawers', why: 'Three shallow drawers hung from the underside of a desk.',
       levels: [[U('drawer', 'S', 3, 1)], [U('drawer', 'S', 3, 1)], [U('drawer', 'S', 3, 1, { roof: 'undertable' })]] },
-    { name: 'Workbench stack', why: 'M drawers with a top-opening case on top, on a base with feet.',
+    { name: 'Workbench stack', why: 'M drawers with a top-opening case on top, on a base.',
       levels: [[U('drawer', 'M', 5, 2)], [U('drawer', 'M', 5, 1)], [U('drawer', 'M', 5, 1)], [U('case', 'M', 5, 2)]], stack: { base: true, feet: true } },
     { name: 'Rolling tool cart', why: 'M drawers with backbones, wheels and a pull-out trolley handle.',
       levels: [[U('drawer', 'M', 5, 2, { backbone: 'family' })], [U('drawer', 'M', 5, 1, { backbone: 'family' })], [U('drawer', 'M', 5, 1, { backbone: 'family' })], [U('drawer', 'M', 5, 2, { backbone: 'family', roof: 'table' })]],
@@ -2071,7 +2072,7 @@ details.termfold[open] > summary { color: var(--ink); }
   const curTower = () => dsel && towers.find(t => t.id === dsel.t);
   // Does a unit have a part too big for the printer? (wall mount, pegboard and backbone parts are judged on their own)
   const tooBig = k => computeUnit(clean({ ...k, wallMount: false, pegboard: 'none', backbone: 'none' })).lines.some(l => l.fit.s === 'no' || l.fit.s === 'reorient');
-  const unitNoFit = (u, top) => { const k = clean(u); if (!top || k.type !== 'drawer') k.roof = 'none'; return computeUnit(k).lines.filter(l => l.fit.s === 'no' || l.fit.s === 'reorient'); };
+  const unitNoFit = (u, top) => { const k = clean(u); if (!top) k.roof = 'none'; return computeUnit(k).lines.filter(l => l.fit.s === 'no' || l.fit.s === 'reorient'); };
   const sizeFits = (w, d) => !tooBig({ type: 'drawer', w, d, h: 1, roof: 'none' });
   // Saved builds from before the redesign: each stack gets its footprint, and the roof lives on the top level only
   // (a roof set on a lower unit was never used, so planning doesn't change)
@@ -2458,13 +2459,13 @@ details.termfold[open] > summary { color: var(--ink); }
         <input class="tname" value="${esc(t.name)}" data-rename aria-label="Stack name"><div class="mono">${fpCode(fp)} · ${stackDims(t, a)}</div></div>
       <div class="ibody">
         <div class="ifp"><span><span class="v3-sec">Footprint, same for every level</span><b>${fpCode(fp)} · ${Math.round(R.WIDTH_MM[fp.w])} mm wide, x${fp.d} deep</b></span><button type="button" class="btn" data-fp>Change…</button></div>
-        <div class="field"><div class="lbl">Roof ${topIsDrawer ? '' : '<span class="hint">the top level is a case: it has its own lid</span>'}</div><div class="seg wrap">${segBtns(roofs, roof, 'data-roof')}</div></div>
+        <div class="field"><div class="lbl">Roof ${topIsDrawer ? '' : '<span class="hint">the top level is a case: the roof latches onto its lid</span>'}</div><div class="seg wrap">${segBtns(roofs, roof, 'data-roof')}</div></div>
         ${roof === 'grid' ? optRow('data-tophandle', 'Carry handle on the roof', '2 × M6 × 50 mm countersunk bolts', ru.topHandle) : ''}
         <div class="field"><div class="lbl">Base and handles</div>
           ${optRow('data-st="base"', 'Base', `${fpCode(fp)} base under level 1`, s.base)}
           ${s.base ? optRow('data-st="wheels"', 'Wheels, with TPU tires', 'bearings and an M16 axle', s.wheels) : ''}
-          ${s.base && (s.wheels || !s.casters) ? optRow('data-st="feet"', s.wheels ? 'Foot bar at the front' : 'Feet', s.wheels ? 'opposite the wheels' : 'two bars, front and back', s.feet) : ''}
-          ${s.base && !s.wheels ? optRow('data-st="casters"', 'Casters instead', '4 × M8, bought; replace the feet', s.casters) : ''}
+          ${s.base && s.wheels ? optRow('data-st="feet"', 'Foot bar at the front', 'opposite the wheels', s.feet) : ''}
+          ${s.base && !s.wheels ? optRow('data-st="casters"', 'Casters', '4 × M8, bought, under the base', s.casters) : ''}
           ${optRow('data-st="pullHandle"', 'Pull-out trolley handle', 'Adds a backbone to every 1F and 2F level', s.pullHandle)}
           ${optRow('data-st="stationaryHandle"', 'Stationary handle', 'Adds a backbone to every 1F and 2F level', s.stationaryHandle)}</div>
         <div class="ialerts">${alerts.length ? alerts.map(x => `<div class="issue ${x.k}">${esc(x.m)}</div>`).join('') : `<div class="issue ok">Everything in this stack fits together and fits the ${esc(printerName())}.</div>`}</div>
@@ -2498,7 +2499,7 @@ details.termfold[open] > summary { color: var(--ink); }
       const u0 = t.levels[dsel.l][dsel.u || 0], col = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#d9622b';
       // the module's own parts once they are in (shell, guides, latches: not its drawers, lid or roof, which move or
       // stand over it), else its box
-      v3markObj = v.units.filter(u => u.cfg === u0 && !u.roof && u.g.visible).map(u => {
+      v3markObj = v.units.filter(u => u.cfg === u0 && !u.roof && !u.stack && u.g.visible).map(u => {
         const y = u.g.position.y, solid = u.parts && u.parts.children.length ? new v.T.Box3().setFromObject(u.parts) : null;
         const box = solid && !solid.isEmpty() ? solid.expandByScalar(1) : new v.T.Box3(new v.T.Vector3(u.x - u.w / 2 - 1, y - 1, -u.d - 1), new v.T.Vector3(u.x + u.w / 2 + 1, y + u.h + 1, 1));
         const h = new v.T.Box3Helper(box, col); v.scene.add(h); return h;
@@ -2518,7 +2519,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const t = curTower(); if (!t || !v.sel.u) { v3mark(); return; }
     const cfg = v.sel.u.cfg, i = t.levels.findIndex(lv => lv.includes(cfg));
     if (i < 0) { v3mark(); return; }
-    if (v.sel.u.roof) dsel.l = null; else { dsel.l = i; dsel.u = t.levels[i].indexOf(cfg); }
+    if (v.sel.u.roof || v.sel.u.stack) dsel.l = null; else { dsel.l = i; dsel.u = t.levels[i].indexOf(cfg); }
     saveSel(); renderInspector(); v3mark();
     const sb = document.querySelector('[data-dstack]'); if (sb) sb.setAttribute('aria-pressed', String(dsel.l == null));
   }
@@ -3113,16 +3114,31 @@ details.termfold[open] > summary { color: var(--ink); }
   // Where each unit of a stack goes: mm, three.js axes (+X right seen from the front, +Y up, +Z towards the viewer), the
   // floor at y = 0 and the middle of the units' front bottom edge at x = z = 0. Drawers stack by the rule measured on the
   // parts (52 mm for a 1F, plus 48 per extra level). That is 0.5 mm more than USSA's 51.5 / 99.5 / 195.5 in R.exterior,
-  // and it is what lines the real parts up, so the boxes use it too. Cases stack by R.exterior.
+  // and it is what lines the real parts up, so the boxes use it too. Cases stack by PLACE.stack.case (body + 15.6, measured), else R.exterior.
+  // A bought caster as drawn: a 50 mm wheel, 70 mm from the plate's top to the floor
+  const CASTER_H = 70;
   function stackLayout(t) {
     const L = t.levels, s = t.stack || STACK_DEFAULT, P = PLACE.stack, units = [], extra = [];
-    const rise = u => u.type === 'drawer' ? P.first + P.per_level * (u.h - 1) : unitExt(u)[2];
+    const rise = u => u.type === 'drawer' ? P.first + P.per_level * (u.h - 1) : (P.case && P.case[u.h]) || unitExt(u)[2];
     const linesOf = r => r.lines.filter(l => l.alt !== 'whole'); // the one-piece version of split parts
     const bw = levelWidth(L[0]), bd = unitExt(L[0][0])[1], fam = R.familyForWidth(bw);
-    const base = s.base && fam, wheels = base && s.wheels, casters = base && !wheels && s.casters, feet = base && s.feet && !casters;
+    const base = s.base && fam, wheels = base && s.wheels, casters = base && !wheels && s.casters, feet = wheels && s.feet; // without wheels the base stands on its flat underside: no foot
     let y = 0;
-    // Base, feet and wheels: plain shapes at the sizes the 2D drawing uses (no measured placements for them yet)
-    if (base) {
+    // Base, wheels and feet: their measured parts (stl-placements.json "stack|<family>|<depth>", in the first level's
+    // frame, below it) as a unit of their own, matched to the stack's part list by file like a unit's. The first level
+    // stands on them: its floor is the lowest of what is there (tyres, foot bar, the base alone). Casters are bought
+    // Casters (Modifications, "Casters Mode": four, bought, each held by an M8 bolt in the base's underside) are drawn
+    // as plain shapes under the base, at its caster holes (sp.casters, measured on every base).
+    const sp = base ? PLACE.units[`stack|${fam}|${L[0][0].d}`] : null;
+    if (sp && sp.floor) {
+      const f = sp.floor, lift = casters ? -f.base + CASTER_H : -Math.min(f.base, wheels ? f.wheels : 0, feet ? f.foot : 0);
+      // the base's four caster holes: { at (the mouth, on the underside), axis (up into the base), d, depth }
+      const holes = !casters ? null : sp.casters ? sp.casters.map(h => Array.isArray(h) ? { at: h } : h)
+        : [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => ({ at: [sx * (bw / 2 - 30), f.base, sz < 0 ? -30 : -(bd - 30)] }));
+      units.push({ cfg: L[0][0], name: `${fam}${L[0][0].d} · base${wheels ? ' and wheels' : ''}${feet ? ' and foot' : ''}${casters ? ' on casters' : ''}`, key: `stack|${fam}|${L[0][0].d}`, level: -1, stack: true, casters: holes,
+        x: 0, y: lift, w: bw, d: bd, h: 0, lines: linesOf(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)).map(l => ({ ...l, cfg: null })) });
+      y = lift;
+    } else if (base) {
       const under = wheels || feet ? 60.5 : 0;
       if (feet) for (const z of wheels ? [-20] : [-20, -bd + 20]) extra.push({ name: 'Foot', size: [bw - 10, under, 30], at: [0, under / 2, z], role: 'fittings' });
       if (wheels) for (const x of [-1, 1]) extra.push({ name: 'Wheel', wheel: 80, at: [x * (bw / 2 + 12), 80, -bd + 70], role: 'tpu' });
@@ -3134,7 +3150,7 @@ details.termfold[open] > summary { color: var(--ink); }
       let x = -W / 2;
       lv.forEach(u => {
         const k = clean(u);
-        if (!top || pair || k.type !== 'drawer') k.roof = 'none';
+        if (!top || pair) k.roof = 'none';
         const [w, d] = unitExt(u), lines = linesOf(R.buildUnit(k, resolve)).map(l => ({ ...l, cfg: u }));
         const unit = { cfg: u, name: unitCode(u), key: `${u.type}|${u.w}|${u.d}|${u.h}`, level: i, x: x + w / 2, y, w, d, h: rise(u), drawer: u.type === 'drawer', lines: lines.filter(l => l.group !== 'Roof') };
         units.push(unit);
@@ -3469,7 +3485,7 @@ details.termfold[open] > summary { color: var(--ink); }
     // Materials by colour; a highlighted copy for what a click would paint
     const hiCol = new T.Color(css.getPropertyValue('--accent').trim() || '#d9622b');
     const mats = new Map(), mat = (role, cfg, hi) => {
-      const hw = role === 'hardware', hex = hw ? hwColor() : colorHex(colorFor(role, cfg)), see = !!(seeThrough && cfg === ghost), k = (hw ? 'hw' : '') + hex + (hi ? '*' : '') + (see ? '~' : '');
+      const hw = role === 'hardware', hex = hw ? hwColor() : role === 'caster' ? '#2a2c2e' : colorHex(colorFor(role, cfg)), see = !!(seeThrough && cfg === ghost), k = (hw ? 'hw' : '') + hex + (hi ? '*' : '') + (see ? '~' : '');
       // Highlighted: tinted halfway to the accent colour and lit from within a little, so it shows on white and on black
       if (!mats.has(k)) {
         const m = new T.MeshStandardMaterial({ color: hi ? new T.Color(hex).lerp(hiCol, 0.5) : hex, roughness: hw ? 0.4 : 0.72, metalness: hw ? 0.5 : 0 });
@@ -3492,13 +3508,29 @@ details.termfold[open] > summary { color: var(--ink); }
       }
       return v.hwGeo.get(spec);
     };
+    // A stem caster: its M8 threaded stem screwed up the base's hole from `at` (the hole's mouth, shown with the bolts),
+    // the swivel's top race against the underside, a fork trailing 15 mm and a 50 mm wheel, CASTER_H tall.
+    // Bought, so it takes the bolts' finish and a rubber wheel, never a filament.
+    v.caster = hole => {
+      const c = new T.Group(); c.position.set(...hole.at);
+      if (hole.axis) c.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), new T.Vector3(...hole.axis).normalize());
+      const add = (geo, role, x, y, z, name) => { const m = painted(geo, role, null); m.position.set(x, y, z); m.userData.name = name; c.add(m); return m; };
+      add(new T.CylinderGeometry(18, 18, 3, 32), 'hardware', 0, -1.5, 0, 'Caster (bought)');
+      add(new T.CylinderGeometry(20, 20, 6, 32), 'hardware', 0, -6, 0, 'Caster (bought)');
+      add(new T.BoxGeometry(28, 3, 34), 'hardware', 0, -10.5, -6, 'Caster (bought)');
+      for (const sx of [-1, 1]) add(new T.BoxGeometry(2.5, 38, 22), 'hardware', sx * 12.25, -29, -12, 'Caster (bought)');
+      add(new T.CylinderGeometry(25, 25, 20, 40).rotateZ(Math.PI / 2), 'caster', 0, -CASTER_H + 25, -15, 'Caster wheel (bought)');
+      const bg = v.hwGeom('M8x25 rod');
+      if (bg) { const b = painted(bg, 'hardware', null); b.rotation.x = Math.PI; Object.assign(b.userData, { name: 'Caster stem, M8 × 25 mm', hw: true }); b.visible = v3hw; c.add(b); }
+      return c;
+    };
     const sig = { signal: v.ac.signal };
     const render = () => renderer.render(scene, camera);
     v.render = render;
     v.recolor = () => { scene.traverse(o => { if (o.isMesh && o.userData.role) o.material = mat(o.userData.role, o.userData.cfg, !!(v.hot && v.hot(o))); }); render(); };
     controls.addEventListener('change', render);
     // Aim at the whole stack (taller when spread) from a direction, far enough back for it to fit the view
-    const hasBase = lay.extra.length > 0, spreadOf = u => v.explode ? (u.level + (hasBase ? 1 : 0)) * V3_SPREAD : 0;
+    const hasBase = lay.extra.length > 0 || lay.units.some(u => u.stack), spreadOf = u => v.explode ? (u.level + (hasBase ? 1 : 0)) * V3_SPREAD : 0;
     v.aim = dir => {
       const top = Math.max(lay.height, ...v.units.filter(u => u.g.visible).map(u => u.y + u.h + spreadOf(u)));
       const target = new T.Vector3(0, top / 2, (out - lay.depth) / 2), radius = Math.hypot(lay.width, top, lay.depth + out) / 2;
@@ -3523,8 +3555,11 @@ details.termfold[open] > summary { color: var(--ink); }
     for (const u of lay.units) {
       const g = new T.Group(), drawer = new T.Group(), boxes = new T.Group();
       g.position.set(u.x, u.y, 0); g.add(boxes, drawer); scene.add(g);
-      const shell = painted(new T.BoxGeometry(u.w - 1, u.h - 1, u.d), u.roof ? 'roof' : 'shell', u.cfg);
-      shell.position.set(0, u.h / 2, -u.d / 2); boxes.add(shell);
+      // its box until the parts are in (the base's own: it lies under the unit's floor)
+      const shell = u.stack ? painted(new T.BoxGeometry(u.w, 52.2, u.d), 'base', null) : painted(new T.BoxGeometry(u.w - 1, u.h - 1, u.d), u.roof ? 'roof' : 'shell', u.cfg);
+      if (u.stack) shell.position.set(0, -26.1, -u.d / 2); else shell.position.set(0, u.h / 2, -u.d / 2);
+      boxes.add(shell);
+      if (u.casters) u.casters.forEach(at => g.add(v.caster(at)));
       const place = placeParts(u), lay = place && place.lay;
       const front = u.drawer && !lay ? painted(new T.BoxGeometry(u.w - 8, u.h - 8, 4), 'facade', u.cfg) : null;
       if (front) { front.position.set(0, u.h / 2, 2); drawer.add(front); }
@@ -3650,7 +3685,7 @@ details.termfold[open] > summary { color: var(--ink); }
   // the clicked unit only
   function v3paint(v, mesh) {
     const { role, cfg } = mesh.userData;
-    if (!ROLE_BY_ID.has(role)) { toast(role === 'hardware' ? 'Bolts aren\u2019t printed. Click one with Turn to change their color.' : 'Tires print in TPU.'); return; }
+    if (!ROLE_BY_ID.has(role)) { toast(role === 'hardware' || role === 'caster' ? 'Bolts and casters are bought, not printed. Click one with Select to change their finish.' : 'Tires print in TPU.'); return; }
     const id = v.brush;
     if (v.pscope === 'unit' && cfg) {
       const o = v3owner(v, cfg);
@@ -3711,7 +3746,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const v = v3, box = $('v3dSel'); if (!v) return;
     const s = v.sel;
     if (!s) { box.innerHTML = `<div class="v3-card"><div class="v3-sec">Selected</div><p class="pnote">${v.tool === 'paint' ? 'Pick a brush, then click a part: every part the click would paint lights up first.' : 'Click a part to see its color here.'}</p></div>`; return; }
-    if (s.role === 'hardware') { v3selHw(v, box, s); return; }
+    if (s.role === 'hardware' || s.role === 'caster') { v3selHw(v, box, s); return; }
     const r = ROLE_BY_ID.get(s.role), name = s.u ? s.u.name : s.name || 'Stack';
     if (!r) { box.innerHTML = `<div class="v3-card"><div class="v3-sec">Selected</div><div class="v3-selrow">${swatch('tpu')}<div><b>Tires</b><small>TPU, slot 2</small></div></div></div>`; return; }
     const cur = colorFor(s.role, s.cfg), own = s.cfg && s.cfg.colors && paletteOf(s.cfg.colors[s.role]);
@@ -3734,7 +3769,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const cur = hwColor();
     box.innerHTML = `<div class="v3-card"><div class="v3-sec">Selected</div>
       <div class="v3-selrow"><span class="v3-selsw" style="background:${cur}"></span><div><b>${esc(s.name || 'Bolt')}${s.u ? ` \u00b7 ${esc(s.u.name)}` : ''}</b>
-        <small>Bought, not printed. Bolts: ${esc(hwName(cur))}, in this view only.</small></div></div>
+        <small>Bought, not printed. Bolts and casters: ${esc(hwName(cur))}, in this view only.</small></div></div>
       <div class="v3-selact">${HW_FINISHES.map(([hex, n]) => `<button type="button" class="btn" data-v3hwc="${hex}" aria-pressed="${cur === hex}">${n}</button>`).join('')}
         <label class="btn" style="position:relative">Other\u2026<input type="color" data-v3hwx value="${cur}" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer"></label></div></div>`;
     const set = hex => { if (hex === HW_STEEL) delete colorPrefs.hardware; else colorPrefs.hardware = hex; saveColors(); v.recolor(); v3selHw(v, box, s); };

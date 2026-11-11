@@ -1,0 +1,344 @@
+{
+ "name": "M7_Stack",
+ "key": "stack|M|7",
+ "notes": [
+  "base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -284.1; wheels 0.00 mm clear of the base, rod 9.0 mm beyond the bushings; foot on the base's M6 holes (0.00 mm), its floor 0.50 mm under the tires'"
+ ],
+ "parts": [
+  {
+   "name": "M7_Stack_Module",
+   "file": "01. DRAWERS/02. M Families/M7/Modules/M7 Module 1F.stl",
+   "role": "body",
+   "group": "module",
+   "ref": true,
+   "rot": [
+    -90.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -127.004
+    ],
+    "y": [
+     "min",
+     -314.1
+    ],
+    "z": [
+     "min",
+     -0.0
+    ]
+   }
+  },
+  {
+   "name": "M7_Stack_Base",
+   "file": "03. MODIFICATIONS/Base/M/M7 Base Whole.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -127.003
+    ],
+    "y": [
+     "min",
+     -314.1
+    ],
+    "z": [
+     "min",
+     -52.208
+    ]
+   }
+  },
+  {
+   "name": "M7_Stack_BasePart_1",
+   "file": "03. MODIFICATIONS/Base/M/M7 Base Part 1.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -127.003
+    ],
+    "y": [
+     "min",
+     -314.1
+    ],
+    "z": [
+     "min",
+     -52.208
+    ]
+   }
+  },
+  {
+   "name": "M7_Stack_BasePart_2",
+   "file": "03. MODIFICATIONS/Base/M/M7 Base Part 2.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -127.001
+    ],
+    "y": [
+     "min",
+     -152.05
+    ],
+    "z": [
+     "min",
+     -52.208
+    ]
+   }
+  },
+  {
+   "name": "M7_Stack_Wheel_right_Bushing",
+   "file": "03. MODIFICATIONS/Wheels/Bushing.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -160.0
+    ],
+    "y": [
+     "min",
+     -299.7
+    ],
+    "z": [
+     "min",
+     -47.808
+    ]
+   }
+  },
+  {
+   "name": "M7_Stack_Wheel_left_Bushing",
+   "file": "03. MODIFICATIONS/Wheels/Bushing.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     127.0
+    ],
+    "y": [
+     "min",
+     -299.7
+    ],
+    "z": [
+     "min",
+     -47.808
+    ]
+   }
+  },
+  {
+   "name": "M7_Stack_Wheel_right_Disk",
+   "file": "03. MODIFICATIONS/Wheels/Disk.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -150.1
+    ],
+    "y": [
+     "min",
+     -355.1
+    ],
+    "z": [
+     "min",
+     -103.208
+    ]
+   }
+  },
+  {
+   "name": "M7_Stack_Wheel_left_Disk",
+   "file": "03. MODIFICATIONS/Wheels/Disk.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     130.0
+    ],
+    "y": [
+     "min",
+     -355.1
+    ],
+    "z": [
+     "min",
+     -103.208
+    ]
+   }
+  },
+  {
+   "name": "M7_Stack_Wheel_right_Cover",
+   "file": "03. MODIFICATIONS/Wheels/Cover.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -174.0
+    ],
+    "y": [
+     "min",
+     -354.101
+    ],
+    "z": [
+     "min",
+     -102.209
+    ]
+   }
+  },
+  {
+   "name": "M7_Stack_Wheel_left_Cover",
+   "file": "03. MODIFICATIONS/Wheels/Cover.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     150.1
+    ],
+    "y": [
+     "min",
+     -354.1
+    ],
+    "z": [
+     "min",
+     -102.209
+    ]
+   }
+  },
+  {
+   "name": "M7_Stack_Wheel_right_Tyre",
+   "file": "03. MODIFICATIONS/Wheels/Tyre (TPU).stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -170.6
+    ],
+    "y": [
+     "min",
+     -364.107
+    ],
+    "z": [
+     "min",
+     -112.211
+    ]
+   }
+  },
+  {
+   "name": "M7_Stack_Wheel_left_Tyre",
+   "file": "03. MODIFICATIONS/Wheels/Tyre (TPU).stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     130.0
+    ],
+    "y": [
+     "min",
+     -364.107
+    ],
+    "z": [
+     "min",
+     -112.211
+    ]
+   }
+  },
+  {
+   "name": "M7_Stack_Foot",
+   "file": "03. MODIFICATIONS/Feet/M Feet.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    180.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -96.995
+    ],
+    "y": [
+     "min",
+     -94.01
+    ],
+    "z": [
+     "min",
+     -112.707
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "M7_Stack_Module"
+ },
+ "floor": {
+  "base": -52.208,
+  "wheels": -112.21,
+  "foot": -112.71,
+  "note": "y of the floor under the base alone, under the wheels (tire bottom) and under the foot, in the first module's frame"
+ }
+}

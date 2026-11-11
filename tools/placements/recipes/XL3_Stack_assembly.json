@@ -1,0 +1,294 @@
+{
+ "name": "XL3_Stack",
+ "key": "stack|XL|3",
+ "notes": [
+  "base: top on the module's underside, back flush, 10 mm proud at the front; rod at y -32.2 z -116.1; wheels 0.00 mm clear of the base, rod 9.6 mm beyond the bushings; foot on the base's M6 holes (0.01 mm), its floor 0.50 mm under the tires'"
+ ],
+ "parts": [
+  {
+   "name": "XL3_Stack_Module",
+   "file": "01. DRAWERS/05. XL Families/XL3/Modules/XL3 Module 1F.stl",
+   "role": "body",
+   "group": "module",
+   "ref": true,
+   "rot": [
+    -90.0,
+    -42.8,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -209.404
+    ],
+    "y": [
+     "min",
+     -146.111
+    ],
+    "z": [
+     "min",
+     0.002
+    ]
+   }
+  },
+  {
+   "name": "XL3_Stack_Base",
+   "file": "03. MODIFICATIONS/Base/XL/XL3 Base.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    -90.0,
+    -42.8,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -209.401
+    ],
+    "y": [
+     "min",
+     -146.1
+    ],
+    "z": [
+     "min",
+     -52.207
+    ]
+   }
+  },
+  {
+   "name": "XL3_Stack_Wheel_right_Bushing",
+   "file": "03. MODIFICATIONS/Wheels/Bushing.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -242.4
+    ],
+    "y": [
+     "min",
+     -131.7
+    ],
+    "z": [
+     "min",
+     -47.807
+    ]
+   }
+  },
+  {
+   "name": "XL3_Stack_Wheel_left_Bushing",
+   "file": "03. MODIFICATIONS/Wheels/Bushing.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     209.4
+    ],
+    "y": [
+     "min",
+     -131.7
+    ],
+    "z": [
+     "min",
+     -47.807
+    ]
+   }
+  },
+  {
+   "name": "XL3_Stack_Wheel_right_Disk",
+   "file": "03. MODIFICATIONS/Wheels/Disk.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -232.5
+    ],
+    "y": [
+     "min",
+     -187.1
+    ],
+    "z": [
+     "min",
+     -103.207
+    ]
+   }
+  },
+  {
+   "name": "XL3_Stack_Wheel_left_Disk",
+   "file": "03. MODIFICATIONS/Wheels/Disk.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     212.4
+    ],
+    "y": [
+     "min",
+     -187.1
+    ],
+    "z": [
+     "min",
+     -103.207
+    ]
+   }
+  },
+  {
+   "name": "XL3_Stack_Wheel_right_Cover",
+   "file": "03. MODIFICATIONS/Wheels/Cover.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -256.4
+    ],
+    "y": [
+     "min",
+     -186.101
+    ],
+    "z": [
+     "min",
+     -102.208
+    ]
+   }
+  },
+  {
+   "name": "XL3_Stack_Wheel_left_Cover",
+   "file": "03. MODIFICATIONS/Wheels/Cover.stl",
+   "role": "body",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     232.5
+    ],
+    "y": [
+     "min",
+     -186.1
+    ],
+    "z": [
+     "min",
+     -102.208
+    ]
+   }
+  },
+  {
+   "name": "XL3_Stack_Wheel_right_Tyre",
+   "file": "03. MODIFICATIONS/Wheels/Tyre (TPU).stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -253.0
+    ],
+    "y": [
+     "min",
+     -196.107
+    ],
+    "z": [
+     "min",
+     -112.21
+    ]
+   }
+  },
+  {
+   "name": "XL3_Stack_Wheel_left_Tyre",
+   "file": "03. MODIFICATIONS/Wheels/Tyre (TPU).stl",
+   "role": "accent",
+   "group": "module",
+   "rot": [
+    90.0,
+    0.0,
+    -90.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     212.4
+    ],
+    "y": [
+     "min",
+     -196.107
+    ],
+    "z": [
+     "min",
+     -112.21
+    ]
+   }
+  },
+  {
+   "name": "XL3_Stack_Foot",
+   "file": "03. MODIFICATIONS/Feet/XL Feet.stl",
+   "role": "mech",
+   "group": "module",
+   "rot": [
+    180.0,
+    0.0,
+    0.0
+   ],
+   "align": {
+    "x": [
+     "min",
+     -179.399
+    ],
+    "y": [
+     "min",
+     -94.005
+    ],
+    "z": [
+     "min",
+     -112.706
+    ]
+   }
+  }
+ ],
+ "finalize": {
+  "anchor": "XL3_Stack_Module"
+ },
+ "floor": {
+  "base": -52.207,
+  "wheels": -112.21,
+  "foot": -112.71,
+  "note": "y of the floor under the base alone, under the wheels (tire bottom) and under the foot, in the first module's frame"
+ }
+}
