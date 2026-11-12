@@ -47,9 +47,19 @@ for (const w of ['S', 'M', 'L', 'XL']) for (const d of R.DEPTHS) for (const h of
       dividers: { plain: 1, depth: 1, width: 1, seal: 1 }, wallMount: true, pegboard: 'ikea', backbone: 'family' }, resolve));
   merge(`case|${w}|${d}|${h}`, R.buildUnit({ type: 'case', w, d, h, pegboard: 'ussa', backbone: 'universal' }, resolve));
 }
+// The handles go with the backbone column (column|w, measure_column.py), the base, wheels and foot with stack|w|d
+const handles = res => ({ lines: res.lines.filter(l => l.group === 'Handles'), missing: [] });
+const noHandles = res => ({ lines: res.lines.filter(l => l.group !== 'Handles'), missing: res.missing });
 for (const w of ['S', 'M', 'L', 'XL']) for (const d of R.DEPTHS) {
-  merge(`stack|${w}|${d}`, R.buildStack({ w, d, base: true, wheels: true, feet: true, stationaryHandle: true, pullHandle: true }, resolve));
+  const all = R.buildStack({ w, d, base: true, wheels: true, feet: true, stationaryHandle: true, pullHandle: true }, resolve);
+  merge(`stack|${w}|${d}`, noHandles(all));
   merge(`stack|${w}|${d}`, R.buildStack({ w, d, base: true, wheels: false, feet: true, casters: false }, resolve));
+  merge(`column|${w}`, handles(all));
+}
+// The backbone column: family backbones per width, the universal ones (one per rod) on their own
+for (const w of ['S', 'M', 'L', 'XL']) for (const heights of [[2, 1], [1, 1, 1]]) {
+  merge(`column|${w}`, R.buildBackbones({ w, base: true, heights, upTo: heights.length - 1, universal: false }, resolve));
+  merge('column|U', R.buildBackbones({ w, base: true, heights, upTo: heights.length - 1, universal: true }, resolve));
 }
 const res = {};
 for (const [k, u] of Object.entries(units)) res[k] = { lines: u.lines, missing: [...u.missing] };

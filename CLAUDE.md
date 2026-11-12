@@ -120,6 +120,15 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
   in its group; toolbar toggle "Bolts" (`v3hw`, saved), metal colour in `colorPrefs.hardware` (not a filament role:
   plates and the tray ignore it), set from the "Selected" card (`v3selHw`). The grid roof's top handle now stands
   (it was flat). Counts that differ from the planner: `tools/placements/COVERAGE.md`, "Hardware".
+- Backbone column and handles in 3D: `tools/placements/measure_column.py` (numpy, on the files) writes `column|<w>`
+  (S, M, L, XL; `column|U` the universal backbones): backbones, pull-out handle lock + knobs, stationary and pull-out
+  handles, each in a column frame (x = 0 between the M16 rods, y = 0 at its bottom, z = 0 on the modules' back).
+  The page's `columnPlan` (shared with `analyzeStack`) and `stackColumn` turn the stack's backbone and handle lines into
+  a unit of its own (`column: true`, `stack: true`) stacked up the back: it shows with or without a base, as boxes
+  before the folder is picked, hidden when spread. The base unit no longer carries the handles' lines. Rules and
+  what is inferred (the manual's Modifications Assembly 7-19 wasn't at hand): tools/placements/README.md
+  "Backbone column and handles". Differences with the part list: 1 knob on S (the planner says 2), 2 universal
+  backbones per F pair (one per rod; the planner counts 1).
 
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the

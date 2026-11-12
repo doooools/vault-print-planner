@@ -1040,20 +1040,24 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (L[0].some(u => u.h !== 2)) issues.push({ k: 'info', m: 'USSA recommends a 2F unit directly on the base when you use a base, wheels or handles.' });
       if (L.length > 1 && topLv.some(u => u.h !== 2)) issues.push({ k: 'info', m: 'USSA also recommends a 2F unit at the top, just under the roof.' });
     }
-    // The backbone column on the back (Modifications Assembly 7-15): the handles bolt onto it, pegboards hang on it. It
-    // runs from the base to the module under the top one (the pull-out handle lock goes there), or up to the highest
-    // level with a pegboard or a backbone chosen in the editor.
+    const col = columnPlan(t);
+    if (col) parts.push(paintLines(finish(R.buildBackbones(col, resolve)), null));
+    const height = L.reduce((a, lv) => a + levelHeight(lv), 0);
+    return { issues, parts, height, fam };
+  }
+  // The backbone column on the back (Modifications Assembly 7-15): the handles bolt onto it, pegboards hang on it. It
+  // runs from the base to the module under the top one (the pull-out handle lock goes there), or up to the highest
+  // level with a pegboard or a backbone chosen in the editor. R.buildBackbones' options, or null for no column.
+  function columnPlan(t) {
+    const L = t.levels, s = t.stack || STACK_DEFAULT, fam = L.length ? R.familyForWidth(levelWidth(L[0])) : null;
     const handles = s.stationaryHandle || s.pullHandle;
     const own = u => (u.backbone && u.backbone !== 'none') || (u.pegboard && u.pegboard !== 'none');
     let upTo = handles ? L.length - 2 : -1;
     L.forEach((lv, i) => { if (lv.some(own)) upTo = Math.max(upTo, i); });
-    if (fam && (handles || upTo >= 0)) {
-      const chosen = L.flat().filter(u => u.backbone && u.backbone !== 'none');
-      parts.push(paintLines(finish(R.buildBackbones({ w: fam, base: !!s.base, heights: L.map(lv => Math.max(...lv.map(u => u.h))), upTo,
-        universal: chosen.length > 0 && chosen.every(u => u.backbone === 'universal') }, resolve)), null));
-    }
-    const height = L.reduce((a, lv) => a + levelHeight(lv), 0);
-    return { issues, parts, height, fam };
+    if (!fam || !(handles || upTo >= 0)) return null;
+    const chosen = L.flat().filter(u => u.backbone && u.backbone !== 'none');
+    return { w: fam, base: !!s.base, heights: L.map(lv => Math.max(...lv.map(u => u.h))), upTo,
+      universal: chosen.length > 0 && chosen.every(u => u.backbone === 'universal') };
   }
 
   // ---------- extra parts: any single STL, printed on its own ----------
@@ -2905,7 +2909,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const holes = !casters ? null : sp.casters ? sp.casters.map(h => Array.isArray(h) ? { at: h } : h)
         : [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => ({ at: [sx * (bw / 2 - 30), f.base, sz < 0 ? -30 : -(bd - 30)] }));
       units.push({ cfg: L[0][0], name: `${fam}${L[0][0].d} · base${wheels ? ' and wheels' : ''}${feet ? ' and foot' : ''}${casters ? ' on casters' : ''}`, key: `stack|${fam}|${L[0][0].d}`, level: -1, stack: true, casters: holes,
-        x: 0, y: lift, w: bw, d: bd, h: 0, lines: linesOf(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)).map(l => ({ ...l, cfg: null })) });
+        x: 0, y: lift, w: bw, d: bd, h: 0, lines: linesOf(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)).filter(l => l.group !== 'Handles').map(l => ({ ...l, cfg: null })) });
       y = lift;
     } else if (base) {
       const under = wheels || feet ? 60.5 : 0;
@@ -2914,7 +2918,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       extra.push({ name: 'Base', size: [bw, 52.2, bd], at: [0, under + 26.1, -bd / 2], role: 'base' });
       y = under + 52.2;
     }
+    const baseBottom = base ? y - 52.2 : null, levelAt = [];
     L.forEach((lv, i) => {
+      levelAt.push({ y, f: Math.max(...lv.map(u => u.h)), drawer: lv.every(u => u.type === 'drawer') });
       const top = i === L.length - 1, pair = lv.length > 1, W = levelWidth(lv);
       let x = -W / 2;
       lv.forEach(u => {
@@ -2939,6 +2945,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // The stack's one removable hidden key: shown in the top hidden lock
     const hk = units.filter(u => u.drawer && !u.roof && !u.stack && u.cfg.lock === 'hidden').pop();
     if (hk) hk.lines = hk.lines.concat(linesOf(R.buildHiddenKey(resolve)).filter(l => /Hidden Key Part 2/i.test(l.file.path)).map(l => ({ ...l, cfg: hk.cfg })));
+    // The backbone column on the back, with the handles and the pull-out handle's lock (stackColumn)
+    const col = columnPlan(t);
+    if (col) units.push(stackColumn(t, col, { baseBottom, levelAt, back: -(bd - 10), cfg: L[0][0],
+      lines: [...linesOf(R.buildBackbones(col, resolve)), ...linesOf(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)).filter(l => l.group === 'Handles')].map(l => ({ ...l, cfg: null })) }));
     return { units, extra, height: units.reduce((m, u) => Math.max(m, u.y + u.h), y), width: Math.max(...L.map(levelWidth)), depth: Math.max(...L.map(lv => unitExt(lv[0])[1])) };
   }
   // A unit's measured parts that its part list uses, matched by file. A file in the list gets every copy the assembly
@@ -2947,9 +2957,81 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // place comes back in `unplaced`. The hidden key's removable key (Part 2) is printed but left out of the view: the
   // lock is shown as it is meant to be seen, flush with the front and the key taken out.
   const NOT_DRAWN = /\/hidden key part 2/i;
+  // The backbone column up the back of a stack, as a unit of its own (stl-placements.json "column|<w>", measured by
+  // tools/placements/measure_column.py: each piece in a frame with x = 0 between the two M16 rods, y = 0 at its bottom,
+  // z = 0 on the modules' back face). Backbones, as many as the part list has (2F first, then a 1F), go up from the
+  // bottom, each over the F it ties together (the base counts as one, then every level of every unit): centred on
+  // those levels, never overlapping the one below. A 2F's two sections are 52 mm apart, a module's levels 48, so this
+  // is the best fit, not a measured fit (Modifications Assembly 7-19 isn't at hand). The stationary handle bolts onto
+  // the top backbone's top section; the pull-out handle's lock goes on the next level up, the handle stands on it, and
+  // its two M16 rods run from the column's foot up into its legs. Universal backbones are one pad each: one per rod.
+  function stackColumn(t, col, o) {
+    const C = PLACE.units['column|' + col.w], U = col.universal ? PLACE.units['column|U'] : null;
+    const s = t.stack || STACK_DEFAULT;
+    const name = `${col.w} backbone column` + (s.pullHandle ? ' · pull-out handle' : s.stationaryHandle ? ' · handle' : '');
+    const unit = { cfg: o.cfg, name, key: 'column|' + col.w, level: 0, stack: true, column: true, x: 0, y: 0, w: R.WIDTH_MM[col.w], d: 40, h: 0, lines: o.lines };
+    if (!C || !C.column) return unit; // not measured: the part list still lists the pieces as not placed
+    const K = C.column, back = o.back;
+    // the levels the column can reach, bottom to top: the base's middle, then each unit's levels (28.2 mm above its
+    // bottom, 48 apart: the middle of each level's own back holes)
+    const slots = [];
+    if (o.baseBottom != null) slots.push(o.baseBottom + 23.5);
+    o.levelAt.forEach(lv => { for (let k = 0; k < lv.f; k++) slots.push(lv.y + 28.2 + 48 * k); });
+    const count = re => o.lines.filter(l => re.test(l.label)).reduce((a, l) => a + l.qty, 0);
+    const pieces = [...Array(count(/backbone 2F$/i)).fill(2), ...Array(count(/backbone 1F$/i)).fill(1)];
+    const P = [], boxes = [];
+    // a piece: its matrix moved by (dx, dy, back) and, for the left universal one, turned half a turn about z first
+    const put = (q, dx, dy, turn = false, H = 0) => {
+      const m = q[3], r = turn ? [-1, -1, 1] : [1, 1, 1];
+      P.push([q[0], q[1], q[2], [r[0] * m[0], r[0] * m[1], r[0] * m[2], r[0] * m[3] + dx, r[1] * m[4], r[1] * m[5], r[1] * m[6], r[1] * m[7] + dy + (turn ? H : 0),
+        m[8], m[9], m[10], m[11] + back]]);
+    };
+    const of = (E, what) => E.parts.filter(q => q[4] && q[4].as === what);
+    let slot = 0, top = -Infinity, bottom = null, last = null;
+    for (const f of pieces) {
+      const H = (U || C).column['h' + f] || K.h1, ys = slots.slice(slot, slot + f);
+      const mid = ys.length ? ys.reduce((a, y) => a + y, 0) / ys.length : top + 1 + H / 2;
+      const y0 = Math.max(mid - H / 2, top + 1);
+      if (U) for (const q of of(U, 'backbone' + f)) { put(q, K.rod_x, y0); put(q, -K.rod_x, y0, true, H); }
+      else for (const q of of(C, 'backbone' + f)) put(q, 0, y0);
+      boxes.push({ y: y0, h: H, d: 33, w: unit.w, role: 'fittings' });
+      if (bottom == null) bottom = y0;
+      last = { y: y0, f }; top = y0 + H; slot += f;
+    }
+    if (s.stationaryHandle && last) {
+      const y0 = last.y + (last.f === 2 ? K.section : 0);
+      for (const q of of(C, 'stationary')) put(q, 0, y0);
+      boxes.push({ y: y0, h: 47, d: 80, w: unit.w - 42, role: 'body' });
+    }
+    if (s.pullHandle) {
+      const y0 = Math.max(slot < slots.length ? slots[slot] - K.lock_h / 2 : top + 1, top + 1), rest = y0 + K.rest;
+      for (const q of of(C, 'lock')) put(q, 0, y0);
+      for (const q of of(C, 'pullout')) put(q, 0, rest);
+      boxes.push({ y: y0, h: K.lock_h, d: 35, w: unit.w, role: 'fittings' }, { y: rest, h: 61.5, d: 35, w: unit.w - 52, role: 'body' });
+      // the rods: bought, drawn as bolts from the column's foot up into the handle's legs
+      const rodTop = rest + K.rod_in, from = bottom == null ? y0 : bottom, len = Math.round(rodTop - from);
+      unit.rods = [-1, 1].map(sx => ({ spec: `M16x${len} rod`, group: 'module', m: [1, 0, 0, sx * K.rod_x, 0, 1, 0, rodTop, 0, 0, 1, back + K.rod_z] }));
+      top = rest + 61.5;
+    }
+    unit.h = top; unit.boxes = boxes.map(b => ({ ...b, z: back - b.d / 2 }));
+    unit.placed = P;
+    return unit;
+  }
+  // The column's measured pieces that its part list uses, like placeParts for a unit (rods with the pull-out handle)
+  function placeColumn(unit) {
+    if (!unit.placed) return null;
+    const has = new Map(unit.lines.map(l => [R.norm(l.file.path), l]));
+    const parts = unit.placed.filter(([p]) => has.has(R.norm(p))).map(([path, , group, m]) => { const l = has.get(R.norm(path)); return { path, group, m, role: l.role, cfg: l.cfg }; });
+    const placed = new Set(parts.map(p => R.norm(p.path)));
+    const unplaced = unit.lines.filter(l => !placed.has(R.norm(l.file.path))).map(l => l.label + (l.qty > 1 ? ' ×' + l.qty : ''));
+    const pull = parts.find(p => /pull-out handle\.stl$/i.test(p.path));
+    const bolts = pull ? (unit.rods || []).map(r => ({ ...r, path: pull.path, cfg: null })) : [];
+    return { parts, unplaced, bolts, lay: null };
+  }
   // A module holding several drawers (R.drawersOf; README "Layouts"): the shell's own parts (shell, guides, stoppers,
   // latches) and each drawer's parts from the layout, tagged with their drawer (`mv`: side + index) and its joints.
   function placeParts(unit) {
+    if (unit.column) return placeColumn(unit);
     let pl = PLACE.units[unit.key];
     if (!pl) return null;
     const lay = unit.cfg.type === 'drawer' && pl.layouts ? pl.layouts[R.drawersOf(unit.cfg).join()] || null : null;
@@ -3297,7 +3379,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     v.recolor = () => { scene.traverse(o => { if (o.isMesh && o.userData.role) o.material = mat(o.userData.role, o.userData.cfg, !!(v.hot && v.hot(o))); }); render(); };
     controls.addEventListener('change', render);
     // Aim at the whole stack (taller when spread) from a direction, far enough back for it to fit the view
-    const hasBase = lay.extra.length > 0 || lay.units.some(u => u.stack), spreadOf = u => v.explode ? (u.level + (hasBase ? 1 : 0)) * V3_SPREAD : 0;
+    const hasBase = lay.extra.length > 0 || lay.units.some(u => u.stack && !u.column), spreadOf = u => v.explode ? (u.level + (hasBase ? 1 : 0)) * V3_SPREAD : 0;
     v.aim = dir => {
       const top = Math.max(lay.height, ...v.units.filter(u => u.g.visible).map(u => u.y + u.h + spreadOf(u)));
       const target = new T.Vector3(0, top / 2, -lay.depth / 2), radius = Math.hypot(lay.width, top, lay.depth) / 2;
@@ -3323,9 +3405,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const g = new T.Group(), drawer = new T.Group(), boxes = new T.Group();
       g.position.set(u.x, u.y, 0); g.add(boxes, drawer); scene.add(g);
       // its box until the parts are in (the base's own: it lies under the unit's floor)
-      const shell = u.stack ? painted(new T.BoxGeometry(u.w, 52.2, u.d), 'base', null) : painted(new T.BoxGeometry(u.w - 1, u.h - 1, u.d), u.roof ? 'roof' : 'shell', u.cfg);
-      if (u.stack) shell.position.set(0, -26.1, -u.d / 2); else shell.position.set(0, u.h / 2, -u.d / 2);
-      boxes.add(shell);
+      if (u.column) for (const b of u.boxes || []) { const m = painted(new T.BoxGeometry(b.w, b.h, b.d), b.role, null); m.position.set(0, b.y + b.h / 2, b.z); boxes.add(m); }
+      else {
+        const shell = u.stack ? painted(new T.BoxGeometry(u.w, 52.2, u.d), 'base', null) : painted(new T.BoxGeometry(u.w - 1, u.h - 1, u.d), u.roof ? 'roof' : 'shell', u.cfg);
+        if (u.stack) shell.position.set(0, -26.1, -u.d / 2); else shell.position.set(0, u.h / 2, -u.d / 2);
+        boxes.add(shell);
+      }
       if (u.casters) u.casters.forEach(at => g.add(v.caster(at)));
       const place = placeParts(u), lay = place && place.lay;
       const front = u.drawer && !lay ? painted(new T.BoxGeometry(u.w - 8, u.h - 8, 4), 'facade', u.cfg) : null;
@@ -3359,7 +3444,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const placeUnit = u => {
       if (u.on) { const o = u.on.lid.position; u.g.position.set(u.x - u.on.x - o.x, u.y + spreadOf(u) - u.on.y - spreadOf(u.on) - o.y, -o.z); }
       else u.g.position.y = u.y + spreadOf(u);
-      u.g.visible = !(u.roof && v.hideRoof);
+      u.g.visible = !(u.roof && v.hideRoof) && !(u.column && v.explode); // the column runs up the whole stack: not when spread
     };
     // Spread units apart (each level lifted a little more) and hide the roofs
     v.arrange = () => {
