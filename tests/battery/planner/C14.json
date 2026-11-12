@@ -1,0 +1,762 @@
+{
+ "name": "C14",
+ "meta": {
+  "cfg": "C14",
+  "printer": "p1s",
+  "towers": "[{\"name\":\"Stack 1\",\"fp\":{\"w\":\"S\",\"d\":4},\"st\":\"feet\",\"L\":[[\"drawer S 4 1F roof=grid std empty\"]]},{\"name\":\"Stack 2\",\"fp\":{\"w\":\"M\",\"d\":5},\"st\":\"feet\",\"L\":[[\"case M 5 2F roof=grid rails std empty ci=flat\"]]}]",
+  "rerun": "after fix"
+ },
+ "when": "2026-11-12T10:20:31.791Z",
+ "printer": {
+  "id": "p1s"
+ },
+ "towers": [
+  {
+   "id": 1,
+   "name": "Stack 1",
+   "fp": {
+    "w": "S",
+    "d": 4
+   },
+   "levels": [
+    [
+     {
+      "type": "drawer",
+      "w": "S",
+      "d": 4,
+      "h": 1,
+      "lock": "std",
+      "gearedRails": false,
+      "interior": "empty",
+      "baseplateHandles": "0",
+      "gridAcross": 1,
+      "gridAlong": 0,
+      "gridHeight": "20",
+      "gridEdge": "straight",
+      "gridPin": "tight",
+      "roof": "grid",
+      "topHandle": false,
+      "caseInterior": "flat",
+      "caseBaseplate": false,
+      "dividers": {
+       "plain": 0,
+       "depth": 0,
+       "width": 0,
+       "seal": 0
+      },
+      "manualSupports": false,
+      "wallMount": false,
+      "pegboard": "none",
+      "backbone": "none"
+     }
+    ]
+   ],
+   "stack": {
+    "base": false,
+    "wheels": false,
+    "feet": true,
+    "casters": false,
+    "stationaryHandle": false,
+    "pullHandle": false
+   },
+   "roles": {}
+  },
+  {
+   "id": 2,
+   "name": "Stack 2",
+   "fp": {
+    "w": "M",
+    "d": 5
+   },
+   "levels": [
+    [
+     {
+      "type": "case",
+      "w": "M",
+      "d": 5,
+      "h": 2,
+      "lock": "std",
+      "gearedRails": true,
+      "interior": "empty",
+      "baseplateHandles": "0",
+      "gridAcross": 1,
+      "gridAlong": 0,
+      "gridHeight": "20",
+      "gridEdge": "straight",
+      "gridPin": "tight",
+      "roof": "grid",
+      "topHandle": false,
+      "caseInterior": "flat",
+      "caseBaseplate": false,
+      "dividers": {
+       "plain": 0,
+       "depth": 0,
+       "width": 0,
+       "seal": 0
+      },
+      "manualSupports": false,
+      "wallMount": false,
+      "pegboard": "none",
+      "backbone": "none"
+     }
+    ]
+   ],
+   "stack": {
+    "base": false,
+    "wheels": false,
+    "feet": true,
+    "casters": false,
+    "stationaryHandle": false,
+    "pullHandle": false
+   },
+   "roles": {}
+  }
+ ],
+ "printSkip": [],
+ "stackAlerts": [
+  "Everything in this stack fits together and fits the Bambu Lab P1S."
+ ],
+ "stackCard": [
+  "SStack 1S4 · 1 level",
+  "MStack 2M5 · 1 level"
+ ],
+ "levels": [
+  {
+   "unit": "M5 · 2F case",
+   "head": "Level 1 of 1 M5 · 2F case254 × 240 × 100 mm · 15 parts · ≈ 960 g",
+   "alerts": [],
+   "parts": [
+    {
+     "q": 1,
+     "label": "Case body",
+     "file": "02. SUSTAINERS/02. M Families/M5/Modules/M5 2F Module .stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Case front (facade)",
+     "file": "02. SUSTAINERS/02. M Families/Facades/M2F Facade.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Lid",
+     "file": "02. SUSTAINERS/02. M Families/M5/Roofs/M5 Roof.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Hinge",
+     "file": "02. SUSTAINERS/05. Universal/Hinges/S-M 2-4F Hinge.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Hinge top",
+     "file": "02. SUSTAINERS/05. Universal/Hinges/M Hinge Top.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Hinge rods (pair) incl. 1 spare",
+     "file": "02. SUSTAINERS/05. Universal/Rods/S-M Rods.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Lock holder",
+     "file": "02. SUSTAINERS/05. Universal/Locks/LOCK HOLDER.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Lock inner part",
+     "file": "02. SUSTAINERS/05. Universal/Locks/LOCK INNER PART.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Lock outer part",
+     "file": "02. SUSTAINERS/05. Universal/Locks/LOCK OUTER PART 2-4F.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Lock pin set incl. 1 spare",
+     "file": "02. SUSTAINERS/05. Universal/Locks/1 SET OF PINS FOR 1 LOCK.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Latch inferred",
+     "file": "01. DRAWERS/07. Universal/Latch.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Case label",
+     "file": "01. DRAWERS/07. Universal/Label.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Grid roof (Gridfinity top)",
+     "file": "01. DRAWERS/02. M Families/M5/Roofs/M5 Grid Roof.stl",
+     "bad": false
+    },
+    {
+     "q": 18,
+     "label": "M4 × 14 mm button-head bolt",
+     "file": "",
+     "bad": false
+    },
+    {
+     "q": 9,
+     "label": "M4 × 10 mm button-head bolt",
+     "file": "",
+     "bad": false
+    },
+    {
+     "q": 8,
+     "label": "M4 × 20 mm button-head bolt",
+     "file": "",
+     "bad": false
+    }
+   ]
+  }
+ ],
+ "scope": [
+  {
+   "label": "Stack 1S4 · 1 level",
+   "on": true
+  },
+  {
+   "label": "Stack 2M5 · 1 level",
+   "on": true
+  }
+ ],
+ "top": "0% printed 0 of 35 parts · 7 of 7 plates left · ≈ 0 g of 1.42 kg",
+ "alerts": [],
+ "parts": [
+  {
+   "q": 1,
+   "label": "Module shell",
+   "file": "01. DRAWERS/01. S Families/S4/Modules/S4 Module 1f.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "165 × 57 × 188 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Case body",
+   "file": "02. SUSTAINERS/02. M Families/M5/Modules/M5 2F Module .stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "254 × 85 × 230 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Case front (facade)",
+   "file": "02. SUSTAINERS/02. M Families/Facades/M2F Facade.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "254 × 80 × 10 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Drawer box",
+   "file": "01. DRAWERS/01. S Families/S4/Boxes/S4 Box 1F.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "186 × 134 × 38 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Drawer front (facade)",
+   "file": "01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "165 × 47 × 10 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Runner guide",
+   "file": "01. DRAWERS/07. Universal/Runners/x4 Runner Guide.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "186 × 27 × 9 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Runner slide",
+   "file": "01. DRAWERS/07. Universal/Runners/x4 Runner Slide.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "160 × 18 × 9 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 3,
+   "label": "Runner stopper incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "18 × 8 × 8 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Key lock",
+   "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "45 × 37 × 33 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Key cap incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "38 × 13 × 12 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Springs (pair) incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Springs.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls"
+   ],
+   "dims": "76 × 48 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Latch",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls",
+    "Inferred"
+   ],
+   "dims": "97 × 75 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Label",
+   "file": "01. DRAWERS/07. Universal/Label.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "48 × 21 × 2 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Facade cap incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "10 × 10 × 4 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Grid roof (Gridfinity top)",
+   "file": "01. DRAWERS/01. S Families/S4/Roofs/S4 Grid Roof.stl",
+   "tags": [
+    "Fits",
+    "Brim",
+    "Exported at 45°"
+   ],
+   "dims": "165 × 15 × 188 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Grid roof (Gridfinity top)",
+   "file": "01. DRAWERS/02. M Families/M5/Roofs/M5 Grid Roof.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "Exported at 45°"
+   ],
+   "dims": "254 × 15 × 230 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Lid",
+   "file": "02. SUSTAINERS/02. M Families/M5/Roofs/M5 Roof.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "Exported at 43°"
+   ],
+   "dims": "254 × 28 × 240 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Hinge",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/S-M 2-4F Hinge.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "67 × 56 × 40 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Hinge top",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/M Hinge Top.stl",
+   "tags": [
+    "Fits",
+    "3 walls",
+    "Brim"
+   ],
+   "dims": "57 × 14 × 99 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Hinge rods (pair) incl. 1 spare",
+   "file": "02. SUSTAINERS/05. Universal/Rods/S-M Rods.stl",
+   "tags": [
+    "Fits",
+    "Exported at 86°"
+   ],
+   "dims": "84 × 21 × 13 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Lock holder",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK HOLDER.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "22 × 20 × 75 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Lock inner part",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK INNER PART.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "24 × 9 × 40 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Lock outer part",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK OUTER PART 2-4F.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "55 × 18 × 50 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Lock pin set incl. 1 spare",
+   "file": "02. SUSTAINERS/05. Universal/Locks/1 SET OF PINS FOR 1 LOCK.stl",
+   "tags": [
+    "Fits",
+    "Exported at 87°"
+   ],
+   "dims": "41 × 12 × 5 mm",
+   "bed": "var(--ok)"
+  }
+ ],
+ "groups": [
+  "Module3 prints",
+  "Drawer2 prints",
+  "Runners7 prints",
+  "Lock11 prints",
+  "Roof2 prints",
+  "Lid1 print",
+  "Hinges & locks9 prints"
+ ],
+ "plates": [
+  {
+   "n": 1,
+   "head": "Plate 014 parts · ≈ 420 g · 230 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Case body",
+     "file": "M5 2F Module .stl"
+    },
+    {
+     "count": 1,
+     "label": "Case front (facade)",
+     "file": "M2F Facade.stl"
+    },
+    {
+     "count": 1,
+     "label": "Runner guide",
+     "file": "x4 Runner Guide.stl"
+    },
+    {
+     "count": 1,
+     "label": "Key cap",
+     "file": "Key Cap.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 4,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 2,
+   "head": "Plate 026 parts · ≈ 310 g · 188 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Runner guide",
+     "file": "x4 Runner Guide.stl"
+    },
+    {
+     "count": 1,
+     "label": "Grid roof (Gridfinity top)",
+     "file": "S4 Grid Roof.stl"
+    },
+    {
+     "count": 1,
+     "label": "Module shell",
+     "file": "S4 Module 1f.stl"
+    },
+    {
+     "count": 1,
+     "label": "Key cap",
+     "file": "Key Cap.stl"
+    },
+    {
+     "count": 2,
+     "label": "Facade cap",
+     "file": "Facade Cap.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 6,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 3,
+   "head": "Plate 033 parts · ≈ 500 g · 240 mm tall",
+   "tags": "Light greySupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Lid",
+     "file": "M5 Roof.stl"
+    },
+    {
+     "count": 1,
+     "label": "Grid roof (Gridfinity top)",
+     "file": "M5 Grid Roof.stl"
+    },
+    {
+     "count": 1,
+     "label": "Drawer front (facade)",
+     "file": "S1F (Turn On Supports).stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 3,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 4,
+   "head": "Plate 048 parts · ≈ 140 g · 99 mm tall",
+   "tags": "Charcoal",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Drawer box",
+     "file": "S4 Box 1F.stl"
+    },
+    {
+     "count": 2,
+     "label": "Runner slide",
+     "file": "x4 Runner Slide.stl"
+    },
+    {
+     "count": 1,
+     "label": "Hinge",
+     "file": "S-M 2-4F Hinge.stl"
+    },
+    {
+     "count": 1,
+     "label": "Hinge top",
+     "file": "M Hinge Top.stl"
+    },
+    {
+     "count": 1,
+     "label": "Lock outer part",
+     "file": "LOCK OUTER PART 2-4F.stl"
+    },
+    {
+     "count": 2,
+     "label": "Lock pin set",
+     "file": "1 SET OF PINS FOR 1 LOCK.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 8,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 5,
+   "head": "Plate 053 parts · ≈ 20 g · 75 mm tall",
+   "tags": "CharcoalSupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Key lock",
+     "file": "Key (Turn On Supports).stl"
+    },
+    {
+     "count": 1,
+     "label": "Lock inner part",
+     "file": "LOCK INNER PART.stl"
+    },
+    {
+     "count": 1,
+     "label": "Lock holder",
+     "file": "LOCK HOLDER.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 3,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 6,
+   "head": "Plate 069 parts · ≈ 30 g · 13 mm tall",
+   "tags": "Orange",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Latch",
+     "file": "Latch.stl"
+    },
+    {
+     "count": 2,
+     "label": "Hinge rods (pair)",
+     "file": "S-M Rods.stl"
+    },
+    {
+     "count": 2,
+     "label": "Springs (pair)",
+     "file": "Springs.stl"
+    },
+    {
+     "count": 3,
+     "label": "Runner stopper",
+     "file": "Runner Stopper.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 9,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 7,
+   "head": "Plate 072 parts · ≈ 0 g · 2 mm tall",
+   "tags": "Labels",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Label",
+     "file": "Label.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 2,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  }
+ ],
+ "hardware": "Hardware to buy0 of 3 lines bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts3 lines 20× M4 × 14 mm button-head boltincl. 2 spare Drawer front to box, case hinge tops and locksBoth stacks Amazon 9× M4 × 10 mm button-head boltincl. 1 spare Case hingesStack 2 Amazon 8× M4 × 20 mm button-head boltincl. 1 spare Case front and bodyStack 2 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Include spares10% more of the bolts and inserts, at least one Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
+}

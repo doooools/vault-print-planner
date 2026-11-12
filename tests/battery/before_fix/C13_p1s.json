@@ -1,0 +1,641 @@
+{
+ "name": "C13_p1s",
+ "meta": {
+  "cfg": "C13 after switching to P1S",
+  "printer": "p1s"
+ },
+ "when": "2026-11-12T08:01:16.790Z",
+ "printer": {
+  "id": "p1s",
+  "v": [
+   256,
+   256,
+   250
+  ]
+ },
+ "towers": [
+  {
+   "id": 1,
+   "name": "Stack 1",
+   "fp": {
+    "w": "L",
+    "d": 4
+   },
+   "levels": [
+    [
+     {
+      "type": "drawer",
+      "w": "L2",
+      "d": 4,
+      "h": 1,
+      "lock": "std",
+      "gearedRails": false,
+      "interior": "empty",
+      "baseplateHandles": "0",
+      "gridAcross": 1,
+      "gridAlong": 0,
+      "gridHeight": "20",
+      "gridEdge": "straight",
+      "gridPin": "tight",
+      "roof": "table",
+      "topHandle": false,
+      "caseInterior": "flat",
+      "caseBaseplate": false,
+      "dividers": {
+       "plain": 0,
+       "depth": 0,
+       "width": 0,
+       "seal": 0
+      },
+      "manualSupports": false,
+      "wallMount": false,
+      "pegboard": "none",
+      "backbone": "none"
+     }
+    ]
+   ],
+   "stack": {
+    "base": false,
+    "wheels": false,
+    "feet": true,
+    "casters": false,
+    "stationaryHandle": false,
+    "pullHandle": false
+   },
+   "roles": {}
+  }
+ ],
+ "printSkip": [],
+ "stackAlerts": [
+  "Level 1 (L4² · 1F drawer): 1 part no longer fits the Bambu Lab P1S (Module shell). Print it on a bigger printer, or change the level."
+ ],
+ "stackCard": [
+  "LStack 1L4 · 1 level"
+ ],
+ "levels": [
+  {
+   "unit": "L4² · 1F drawer",
+   "head": "Level 1 of 1 L4² · 1F drawer330 × 198 × 52 mm · 40 parts · ≈ 920 g",
+   "alerts": [
+    "1 part of this level no longer fits the Bambu Lab P1SModule shell · 330 × 57 × 188 mmIt is left out of the plates. Print it on a bigger printer, or change this level."
+   ],
+   "parts": [
+    {
+     "q": 1,
+     "label": "Module shell",
+     "file": "01. DRAWERS/04. L² Families/L4²/L4² Module 1F.stl",
+     "bad": true
+    },
+    {
+     "q": 1,
+     "label": "L² accessory, 1st inferred",
+     "file": "01. DRAWERS/07. Universal/L² Accessories/x4 Accessory 1st.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "L² accessory, 2nd inferred",
+     "file": "01. DRAWERS/07. Universal/L² Accessories/x4 Accessory 2nd.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Drawer box (left) inferred",
+     "file": "01. DRAWERS/01. S Families/S4/Boxes/S4 Box 1F.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Drawer front (facade) (left) inferred",
+     "file": "01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Drawer box (right) inferred",
+     "file": "01. DRAWERS/01. S Families/S4/Boxes/S4 Box 1F.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Drawer front (facade) (right) inferred",
+     "file": "01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Runner guide (left) inferred",
+     "file": "01. DRAWERS/07. Universal/Runners/x4 Runner Guide.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Runner slide (left) inferred",
+     "file": "01. DRAWERS/07. Universal/Runners/x4 Runner Slide.stl",
+     "bad": false
+    },
+    {
+     "q": 3,
+     "label": "Runner stopper (left) incl. 1 spare inferred",
+     "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Runner guide (right) inferred",
+     "file": "01. DRAWERS/07. Universal/Runners/x4 Runner Guide.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Runner slide (right) inferred",
+     "file": "01. DRAWERS/07. Universal/Runners/x4 Runner Slide.stl",
+     "bad": false
+    },
+    {
+     "q": 3,
+     "label": "Runner stopper (right) incl. 1 spare inferred",
+     "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Key lock (left) inferred",
+     "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Key cap (left) incl. 1 spare inferred",
+     "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Springs (pair) (left) incl. 1 spare inferred",
+     "file": "01. DRAWERS/07. Universal/Springs.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Latch (left) inferred",
+     "file": "01. DRAWERS/07. Universal/Latch.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Label (left) inferred",
+     "file": "01. DRAWERS/07. Universal/Label.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Facade cap (left) incl. 1 spare inferred",
+     "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Key lock (right) inferred",
+     "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Key cap (right) incl. 1 spare inferred",
+     "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Springs (pair) (right) incl. 1 spare inferred",
+     "file": "01. DRAWERS/07. Universal/Springs.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Latch (right) inferred",
+     "file": "01. DRAWERS/07. Universal/Latch.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Label (right) inferred",
+     "file": "01. DRAWERS/07. Universal/Label.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Facade cap (right) incl. 1 spare inferred",
+     "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Table roof (flat top)",
+     "file": "01. DRAWERS/03. L Families/L4/Roofs/L4 Table Roof.stl",
+     "bad": false
+    },
+    {
+     "q": 5,
+     "label": "M4 × 14 mm button-head bolt",
+     "file": "",
+     "bad": false
+    }
+   ]
+  }
+ ],
+ "scope": [],
+ "top": "0% printed 0 of 35 parts · 8 of 8 plates left · ≈ 0 g of 920 g",
+ "alerts": [
+  "1 part no longer fits the Bambu Lab P1S and is left out of the platesModule shell · 330 × 57 × 188 mmPrint it on a bigger printer, or change that level in Design. Show it in Design"
+ ],
+ "parts": [
+  {
+   "q": 1,
+   "label": "Module shell",
+   "file": "01. DRAWERS/04. L² Families/L4²/L4² Module 1F.stl",
+   "tags": [
+    "Doesn't fit",
+    "Exported at 45°"
+   ],
+   "dims": "330 × 57 × 188 mm",
+   "bed": "var(--bad)"
+  },
+  {
+   "q": 1,
+   "label": "L² accessory, 1st",
+   "file": "01. DRAWERS/07. Universal/L² Accessories/x4 Accessory 1st.stl",
+   "tags": [
+    "Fits",
+    "Inferred"
+   ],
+   "dims": "138 × 13 × 3 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "L² accessory, 2nd",
+   "file": "01. DRAWERS/07. Universal/L² Accessories/x4 Accessory 2nd.stl",
+   "tags": [
+    "Fits",
+    "Inferred"
+   ],
+   "dims": "141 × 4 × 11 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Drawer box (left)",
+   "file": "01. DRAWERS/01. S Families/S4/Boxes/S4 Box 1F.stl",
+   "tags": [
+    "Fits",
+    "Inferred"
+   ],
+   "dims": "186 × 134 × 38 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Drawer front (facade) (left)",
+   "file": "01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls",
+    "Inferred"
+   ],
+   "dims": "165 × 47 × 10 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 4,
+   "label": "Runner guide (left)",
+   "file": "01. DRAWERS/07. Universal/Runners/x4 Runner Guide.stl",
+   "tags": [
+    "Fits",
+    "3 walls",
+    "Inferred"
+   ],
+   "dims": "186 × 27 × 9 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 4,
+   "label": "Runner slide (left)",
+   "file": "01. DRAWERS/07. Universal/Runners/x4 Runner Slide.stl",
+   "tags": [
+    "Fits",
+    "3 walls",
+    "Inferred"
+   ],
+   "dims": "160 × 18 × 9 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 5,
+   "label": "Runner stopper (left) incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "tags": [
+    "Fits",
+    "Inferred"
+   ],
+   "dims": "18 × 8 × 8 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Key lock (left)",
+   "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls",
+    "Inferred"
+   ],
+   "dims": "45 × 37 × 33 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 3,
+   "label": "Key cap (left) incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+   "tags": [
+    "Fits",
+    "Inferred"
+   ],
+   "dims": "38 × 13 × 12 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 3,
+   "label": "Springs (pair) (left) incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Springs.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls",
+    "Inferred"
+   ],
+   "dims": "76 × 48 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Latch (left)",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls",
+    "Inferred"
+   ],
+   "dims": "97 × 75 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Label (left)",
+   "file": "01. DRAWERS/07. Universal/Label.stl",
+   "tags": [
+    "Fits",
+    "Inferred"
+   ],
+   "dims": "48 × 21 × 2 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 3,
+   "label": "Facade cap (left) incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "tags": [
+    "Fits",
+    "Inferred"
+   ],
+   "dims": "10 × 10 × 4 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Table roof (flat top)",
+   "file": "01. DRAWERS/03. L Families/L4/Roofs/L4 Table Roof.stl",
+   "tags": [
+    "Fits diagonally",
+    "Exported at 45°"
+   ],
+   "dims": "330 × 15 × 188 mm",
+   "bed": "var(--warn)"
+  }
+ ],
+ "groups": [
+  "Module3 prints",
+  "Drawer4 prints",
+  "Runners13 prints",
+  "Lock15 prints",
+  "Roof1 print"
+ ],
+ "plates": [
+  {
+   "n": 1,
+   "head": "Plate 011 part · ≈ 200 g · 188 mm tall",
+   "tags": "Light grey",
+   "care": "Too long to lie straight, so it’s placed diagonally, the way USSA exported it.",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Table roof (flat top)",
+     "file": "L4 Table Roof.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 2,
+   "head": "Plate 0212 parts · ≈ 50 g · 12 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 4,
+     "label": "Runner guide (left)",
+     "file": "x4 Runner Guide.stl"
+    },
+    {
+     "count": 1,
+     "label": "L² accessory, 2nd",
+     "file": "x4 Accessory 2nd.stl"
+    },
+    {
+     "count": 1,
+     "label": "L² accessory, 1st",
+     "file": "x4 Accessory 1st.stl"
+    },
+    {
+     "count": 3,
+     "label": "Key cap (left)",
+     "file": "Key Cap.stl"
+    },
+    {
+     "count": 3,
+     "label": "Facade cap (left)",
+     "file": "Facade Cap.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 12,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 3,
+   "head": "Plate 032 parts · ≈ 30 g · 10 mm tall",
+   "tags": "Light greySupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Drawer front (facade) (left)",
+     "file": "S1F (Turn On Supports).stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 2,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 4,
+   "head": "Plate 045 parts · ≈ 110 g · 38 mm tall",
+   "tags": "Charcoal",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Drawer box (left)",
+     "file": "S4 Box 1F.stl"
+    },
+    {
+     "count": 4,
+     "label": "Runner slide (left)",
+     "file": "x4 Runner Slide.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 5,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 5,
+   "head": "Plate 051 part · ≈ 90 g · 38 mm tall",
+   "tags": "Charcoal",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Drawer box (left)",
+     "file": "S4 Box 1F.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 6,
+   "head": "Plate 062 parts · ≈ 20 g · 33 mm tall",
+   "tags": "CharcoalSupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Key lock (left)",
+     "file": "Key (Turn On Supports).stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 2,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 7,
+   "head": "Plate 0710 parts · ≈ 20 g · 8 mm tall",
+   "tags": "Orange",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Latch (left)",
+     "file": "Latch.stl"
+    },
+    {
+     "count": 3,
+     "label": "Springs (pair) (left)",
+     "file": "Springs.stl"
+    },
+    {
+     "count": 5,
+     "label": "Runner stopper (left)",
+     "file": "Runner Stopper.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 10,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 8,
+   "head": "Plate 082 parts · ≈ 0 g · 2 mm tall",
+   "tags": "Labels",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Label (left)",
+     "file": "Label.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 2,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  }
+ ],
+ "hardware": "Hardware to buy0 of 1 line bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts1 line 5× M4 × 14 mm button-head boltincl. 1 spare Drawer front to boxStack 1 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Include spares10% more of the bolts and inserts, at least one Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
+}

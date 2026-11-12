@@ -1,0 +1,855 @@
+{
+ "name": "C10b",
+ "meta": {
+  "cfg": "C10 without the foot bar"
+ },
+ "when": "2026-11-12T08:00:03.012Z",
+ "printer": {
+  "id": "p1s"
+ },
+ "towers": [
+  {
+   "id": 1,
+   "name": "Stack 1",
+   "fp": {
+    "w": "M",
+    "d": 4
+   },
+   "levels": [
+    [
+     {
+      "type": "drawer",
+      "w": "M",
+      "d": 4,
+      "h": 2,
+      "lock": "std",
+      "gearedRails": false,
+      "interior": "empty",
+      "baseplateHandles": "0",
+      "gridAcross": 1,
+      "gridAlong": 0,
+      "gridHeight": "20",
+      "gridEdge": "straight",
+      "gridPin": "tight",
+      "roof": "grid",
+      "topHandle": false,
+      "caseInterior": "flat",
+      "caseBaseplate": false,
+      "dividers": {
+       "plain": 0,
+       "depth": 0,
+       "width": 0,
+       "seal": 0
+      },
+      "manualSupports": false,
+      "wallMount": false,
+      "pegboard": "none",
+      "backbone": "family"
+     }
+    ]
+   ],
+   "stack": {
+    "base": true,
+    "wheels": true,
+    "feet": false,
+    "casters": false,
+    "stationaryHandle": true,
+    "pullHandle": true
+   },
+   "roles": {}
+  }
+ ],
+ "printSkip": [],
+ "stackAlerts": [
+  "Everything in this stack fits together and fits the Bambu Lab P1S."
+ ],
+ "stackCard": [
+  "MStack 1M4 · 1 level"
+ ],
+ "levels": [
+  {
+   "unit": "M4 · 2F drawer",
+   "head": "Level 1 of 1 M4 · 2F drawer254 × 198 × 100 mm · 31 parts · ≈ 1.08 kg",
+   "alerts": [],
+   "parts": [
+    {
+     "q": 1,
+     "label": "Module shell",
+     "file": "01. DRAWERS/02. M Families/M4/Modules/M4 Module 2F.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Drawer box",
+     "file": "01. DRAWERS/02. M Families/M4/Boxes/M4 Box 2F.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Drawer front (facade)",
+     "file": "01. DRAWERS/02. M Families/Facades/M2F (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 4,
+     "label": "Runner guide",
+     "file": "01. DRAWERS/07. Universal/Runners/x4 Runner Guide.stl",
+     "bad": false
+    },
+    {
+     "q": 4,
+     "label": "Runner slide",
+     "file": "01. DRAWERS/07. Universal/Runners/x4 Runner Slide.stl",
+     "bad": false
+    },
+    {
+     "q": 5,
+     "label": "Runner stopper incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Key lock",
+     "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Key cap incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Springs (pair) incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Springs.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Latch",
+     "file": "01. DRAWERS/07. Universal/Latch.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Label",
+     "file": "01. DRAWERS/07. Universal/Label.stl",
+     "bad": false
+    },
+    {
+     "q": 6,
+     "label": "Facade cap incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Grid roof (Gridfinity top)",
+     "file": "01. DRAWERS/02. M Families/M4/Roofs/M4 Grid Roof.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Backbone inferred",
+     "file": "03. MODIFICATIONS/Backbone/M2F Backbone.stl",
+     "bad": false
+    },
+    {
+     "q": 7,
+     "label": "M4 × 14 mm button-head bolt",
+     "file": "",
+     "bad": false
+    },
+    {
+     "q": 5,
+     "label": "M4 button-head bolt, 60–100 mm (to fit)",
+     "file": "",
+     "bad": false
+    }
+   ]
+  }
+ ],
+ "scope": [],
+ "top": "0% printed 0 of 48 parts · 15 of 15 plates left · ≈ 0 g of 2.57 kg",
+ "alerts": [],
+ "parts": [
+  {
+   "q": 1,
+   "label": "Module shell",
+   "file": "01. DRAWERS/02. M Families/M4/Modules/M4 Module 2F.stl",
+   "tags": [
+    "Fits, tight"
+   ],
+   "dims": "254 × 105 × 188 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Drawer box",
+   "file": "01. DRAWERS/02. M Families/M4/Boxes/M4 Box 2F.stl",
+   "tags": [
+    "Fits",
+    "Supports on"
+   ],
+   "dims": "223 × 186 × 86 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Drawer front (facade)",
+   "file": "01. DRAWERS/02. M Families/Facades/M2F (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "254 × 95 × 10 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 4,
+   "label": "Runner guide",
+   "file": "01. DRAWERS/07. Universal/Runners/x4 Runner Guide.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "186 × 27 × 9 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 4,
+   "label": "Runner slide",
+   "file": "01. DRAWERS/07. Universal/Runners/x4 Runner Slide.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "160 × 18 × 9 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 5,
+   "label": "Runner stopper incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "18 × 8 × 8 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Key lock",
+   "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "45 × 37 × 33 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Key cap incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "38 × 13 × 12 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Springs (pair) incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Springs.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls"
+   ],
+   "dims": "76 × 48 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Latch",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls"
+   ],
+   "dims": "97 × 75 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Label",
+   "file": "01. DRAWERS/07. Universal/Label.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "48 × 21 × 2 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 6,
+   "label": "Facade cap incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "10 × 10 × 4 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Grid roof (Gridfinity top)",
+   "file": "01. DRAWERS/02. M Families/M4/Roofs/M4 Grid Roof.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "Exported at 45°"
+   ],
+   "dims": "254 × 15 × 188 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Backbone",
+   "file": "03. MODIFICATIONS/Backbone/M2F Backbone.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill",
+    "Inferred"
+   ],
+   "dims": "254 × 99 × 33 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Base",
+   "file": "03. MODIFICATIONS/Base/M/M4 Base.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill"
+   ],
+   "dims": "254 × 52 × 198 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Wheel disk",
+   "file": "03. MODIFICATIONS/Wheels/Disk.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "4 walls · 25% infill"
+   ],
+   "dims": "142 × 142 × 20 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Bushing",
+   "file": "03. MODIFICATIONS/Wheels/Bushing.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill"
+   ],
+   "dims": "31 × 31 × 33 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Wheel cover",
+   "file": "03. MODIFICATIONS/Wheels/Cover.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill"
+   ],
+   "dims": "140 × 140 × 24 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Tire",
+   "file": "03. MODIFICATIONS/Wheels/Tyre (TPU).stl",
+   "tags": [
+    "Fits",
+    "TPU"
+   ],
+   "dims": "160 × 160 × 41 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Bushing jig (tool)",
+   "file": "03. MODIFICATIONS/Wheels/Jig.stl",
+   "tags": [
+    "Fits",
+    "Print aid"
+   ],
+   "dims": "38 × 38 × 20 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Stationary handle",
+   "file": "03. MODIFICATIONS/Stationary Handle/M Stationary Handle.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill"
+   ],
+   "dims": "212 × 47 × 50 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Pull-out handle",
+   "file": "03. MODIFICATIONS/Pull-out Handle/M Pull-out Handle.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill"
+   ],
+   "dims": "202 × 35 × 62 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Pull-out handle lock",
+   "file": "03. MODIFICATIONS/Backbone/M Pull-out Handle Lock.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill"
+   ],
+   "dims": "254 × 35 × 47 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Handle lock knob, part 1",
+   "file": "03. MODIFICATIONS/Backbone/Handle Lock Knob Part 1.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill",
+    "Inferred"
+   ],
+   "dims": "34 × 34 × 22 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Handle lock knob, part 2",
+   "file": "03. MODIFICATIONS/Backbone/Handle Lock Knob Part 2.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill",
+    "Inferred"
+   ],
+   "dims": "38 × 13 × 12 mm",
+   "bed": "var(--ok)"
+  }
+ ],
+ "groups": [
+  "Module1 print",
+  "Drawer2 prints",
+  "Runners13 prints",
+  "Lock13 prints",
+  "Roof1 print",
+  "Backbone1 print",
+  "Base1 print",
+  "Wheels9 prints",
+  "Handles7 prints"
+ ],
+ "plates": [
+  {
+   "n": 1,
+   "head": "Plate 014 parts · ≈ 990 g · 198 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Module shell",
+     "file": "M4 Module 2F.stl"
+    },
+    {
+     "count": 1,
+     "label": "Base",
+     "file": "M4 Base.stl"
+    },
+    {
+     "count": 1,
+     "label": "Stationary handle",
+     "file": "M Stationary Handle.stl"
+    },
+    {
+     "count": 1,
+     "label": "Facade cap",
+     "file": "Facade Cap.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 4,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 2,
+   "head": "Plate 0215 parts · ≈ 160 g · 62 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Pull-out handle",
+     "file": "M Pull-out Handle.stl"
+    },
+    {
+     "count": 4,
+     "label": "Runner guide",
+     "file": "x4 Runner Guide.stl"
+    },
+    {
+     "count": 1,
+     "label": "Bushing jig (tool)",
+     "file": "Jig.stl"
+    },
+    {
+     "count": 2,
+     "label": "Key cap",
+     "file": "Key Cap.stl"
+    },
+    {
+     "count": 2,
+     "label": "Bushing",
+     "file": "Bushing.stl"
+    },
+    {
+     "count": 5,
+     "label": "Facade cap",
+     "file": "Facade Cap.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 15,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 3,
+   "head": "Plate 031 part · ≈ 100 g · 24 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Wheel cover",
+     "file": "Cover.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 4,
+   "head": "Plate 041 part · ≈ 100 g · 24 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Wheel cover",
+     "file": "Cover.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 5,
+   "head": "Plate 052 parts · ≈ 200 g · 188 mm tall",
+   "tags": "Light greySupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Drawer front (facade)",
+     "file": "M2F (Turn On Supports).stl"
+    },
+    {
+     "count": 1,
+     "label": "Grid roof (Gridfinity top)",
+     "file": "M4 Grid Roof.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 2,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 6,
+   "head": "Plate 061 part · ≈ 90 g · 20 mm tall",
+   "tags": "Light greySupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Wheel disk",
+     "file": "Disk.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 7,
+   "head": "Plate 071 part · ≈ 90 g · 20 mm tall",
+   "tags": "Light greySupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Wheel disk",
+     "file": "Disk.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 8,
+   "head": "Plate 086 parts · ≈ 290 g · 47 mm tall",
+   "tags": "Charcoal",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Backbone",
+     "file": "M2F Backbone.stl"
+    },
+    {
+     "count": 1,
+     "label": "Pull-out handle lock",
+     "file": "M Pull-out Handle Lock.stl"
+    },
+    {
+     "count": 4,
+     "label": "Runner slide",
+     "file": "x4 Runner Slide.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 6,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 9,
+   "head": "Plate 094 parts · ≈ 10 g · 22 mm tall",
+   "tags": "Charcoal",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Handle lock knob, part 2",
+     "file": "Handle Lock Knob Part 2.stl"
+    },
+    {
+     "count": 2,
+     "label": "Handle lock knob, part 1",
+     "file": "Handle Lock Knob Part 1.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 4,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 10,
+   "head": "Plate 101 part · ≈ 220 g · 86 mm tall",
+   "tags": "CharcoalSupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Drawer box",
+     "file": "M4 Box 2F.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 11,
+   "head": "Plate 111 part · ≈ 10 g · 33 mm tall",
+   "tags": "CharcoalSupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Key lock",
+     "file": "Key (Turn On Supports).stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 12,
+   "head": "Plate 128 parts · ≈ 10 g · 8 mm tall",
+   "tags": "Orange",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Latch",
+     "file": "Latch.stl"
+    },
+    {
+     "count": 2,
+     "label": "Springs (pair)",
+     "file": "Springs.stl"
+    },
+    {
+     "count": 5,
+     "label": "Runner stopper",
+     "file": "Runner Stopper.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 8,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 13,
+   "head": "Plate 131 part · ≈ 0 g · 2 mm tall",
+   "tags": "Labels",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Label",
+     "file": "Label.stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 14,
+   "head": "Plate 141 part · ≈ 150 g · 41 mm tall",
+   "tags": "TPUTPU settings",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Tire",
+     "file": "Tyre (TPU).stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 15,
+   "head": "Plate 151 part · ≈ 150 g · 41 mm tall",
+   "tags": "TPUTPU settings",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Tire",
+     "file": "Tyre (TPU).stl"
+    }
+   ],
+   "bed": [
+    256,
+    256
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  }
+ ],
+ "hardware": "Hardware to buy0 of 11 lines bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts4 lines 7× M4 × 14 mm button-head boltincl. 1 spare Drawer front to boxStack 1 Amazon 5× M4 button-head bolt, 60–100 mm (to fit)incl. 1 spare · length depends on your build; buy what fits BackboneStack 1 14× M4 × 25 mm button-head boltincl. 2 spare Wheel covers (6 per wheel)Stack 1 Amazon 9× M4 × 60 mm button-head boltincl. 1 spare Stationary handleStack 1 AmazonM6 bolts and inserts3 lines 5× M6 × 30 mm countersunk boltincl. 1 spare Pull-out handleStack 1 Amazon 3× M6 × 35 mm hex boltincl. 1 spare · not found on Amazon; try a hardware store Handle lockStack 1 3× M6 × 8 × 8 heat insertincl. 1 spare Handle lock knobsStack 1 AmazonAxle, rods and bearings4 lines 1× M16 threaded rod, 338 mm1 m rod, cut to length Wheel axleStack 1 Amazon 2× 6205ZZ bearing (25 × 52 × 15 mm) WheelsStack 1 Amazon 2× SCSAW shaft collar (16 mm bore) WheelsStack 1 Amazon 2× M16 rod, cut to stack height1 m rod, cut to length Pull-out handleStack 1 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Include spares10% more of the bolts and inserts, at least one Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
+}

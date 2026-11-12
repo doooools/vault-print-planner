@@ -1,0 +1,570 @@
+{
+ "name": "D09",
+ "meta": {
+  "cfg": "D09",
+  "printer": "h2s",
+  "towers": "[{\"name\":\"Stack 1\",\"fp\":{\"w\":\"XL\",\"d\":5},\"st\":\"feet\",\"L\":[[\"drawer XL 5 1F roof=table std empty\"]]}]"
+ },
+ "when": "2026-11-12T10:22:08.811Z",
+ "printer": {
+  "id": "h2s"
+ },
+ "towers": [
+  {
+   "id": 1,
+   "name": "Stack 1",
+   "fp": {
+    "w": "XL",
+    "d": 5
+   },
+   "levels": [
+    [
+     {
+      "type": "drawer",
+      "w": "XL",
+      "d": 5,
+      "h": 1,
+      "lock": "std",
+      "gearedRails": false,
+      "interior": "empty",
+      "baseplateHandles": "0",
+      "gridAcross": 1,
+      "gridAlong": 0,
+      "gridHeight": "20",
+      "gridEdge": "straight",
+      "gridPin": "tight",
+      "roof": "table",
+      "topHandle": false,
+      "caseInterior": "flat",
+      "caseBaseplate": false,
+      "dividers": {
+       "plain": 0,
+       "depth": 0,
+       "width": 0,
+       "seal": 0
+      },
+      "manualSupports": false,
+      "wallMount": false,
+      "pegboard": "none",
+      "backbone": "none"
+     }
+    ]
+   ],
+   "stack": {
+    "base": false,
+    "wheels": false,
+    "feet": true,
+    "casters": false,
+    "stationaryHandle": false,
+    "pullHandle": false
+   },
+   "roles": {}
+  }
+ ],
+ "printSkip": [],
+ "stackAlerts": [
+  "Everything in this stack fits together and fits the Bambu Lab H2S."
+ ],
+ "stackCard": [
+  "XLStack 1XL5 · 1 level"
+ ],
+ "levels": [
+  {
+   "unit": "XL5 · 1F drawer",
+   "head": "Level 1 of 1 XL5 · 1F drawer419 × 240 × 52 mm · 24 parts · ≈ 1.28 kg",
+   "alerts": [],
+   "parts": [
+    {
+     "q": 1,
+     "label": "Module shell",
+     "file": "01. DRAWERS/05. XL Families/XL5/Modules/XL5 Module 1F.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Drawer box",
+     "file": "01. DRAWERS/05. XL Families/XL5/Boxes/XL5 Box 1F.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Box back panel",
+     "file": "01. DRAWERS/05. XL Families/XL5/Boxes/XL5 Back Panel.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Drawer front (facade)",
+     "file": "01. DRAWERS/05. XL Families/XL Facade 1F.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Runner guide",
+     "file": "01. DRAWERS/07. Universal/Runners/XL Runners/x5 Runner Guide XL.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Runner slide",
+     "file": "01. DRAWERS/07. Universal/Runners/XL Runners/x5 Runner Slide XL.stl",
+     "bad": false
+    },
+    {
+     "q": 3,
+     "label": "Runner stopper incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Key lock",
+     "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Key cap incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Springs (pair) incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Springs.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Latch",
+     "file": "01. DRAWERS/07. Universal/Latch.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Label",
+     "file": "01. DRAWERS/07. Universal/Label.stl",
+     "bad": false
+    },
+    {
+     "q": 4,
+     "label": "Facade cap incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Table roof (flat top)",
+     "file": "01. DRAWERS/05. XL Families/XL5/Roofs/XL5 Table Roof.stl",
+     "bad": false
+    },
+    {
+     "q": 5,
+     "label": "M4 × 14 mm button-head bolt",
+     "file": "",
+     "bad": false
+    }
+   ]
+  }
+ ],
+ "scope": [],
+ "top": "0% printed 0 of 24 parts · 10 of 10 plates left · ≈ 0 g of 1.28 kg",
+ "alerts": [
+  "Kept at the angle USSA exported it, where it just fits this bed. Check it in the slicer before printing."
+ ],
+ "parts": [
+  {
+   "q": 1,
+   "label": "Module shell",
+   "file": "01. DRAWERS/05. XL Families/XL5/Modules/XL5 Module 1F.stl",
+   "tags": [
+    "Fits at USSA’s angle",
+    "Exported at 43°"
+   ],
+   "dims": "419 × 57 × 230 mm",
+   "bed": "var(--warn)"
+  },
+  {
+   "q": 1,
+   "label": "Drawer box",
+   "file": "01. DRAWERS/05. XL Families/XL5/Boxes/XL5 Box 1F.stl",
+   "tags": [
+    "Fits diagonally",
+    "Exported at 43°"
+   ],
+   "dims": "378 × 38 × 228 mm",
+   "bed": "var(--warn)"
+  },
+  {
+   "q": 1,
+   "label": "Box back panel",
+   "file": "01. DRAWERS/05. XL Families/XL5/Boxes/XL5 Back Panel.stl",
+   "tags": [
+    "Fits diagonally",
+    "Supports on",
+    "Exported at 43°"
+   ],
+   "dims": "357 × 38 × 6 mm",
+   "bed": "var(--warn)"
+  },
+  {
+   "q": 1,
+   "label": "Drawer front (facade)",
+   "file": "01. DRAWERS/05. XL Families/XL Facade 1F.stl",
+   "tags": [
+    "Fits diagonally",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "419 × 47 × 10 mm",
+   "bed": "var(--warn)"
+  },
+  {
+   "q": 2,
+   "label": "Runner guide",
+   "file": "01. DRAWERS/07. Universal/Runners/XL Runners/x5 Runner Guide XL.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "228 × 27 × 15 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Runner slide",
+   "file": "01. DRAWERS/07. Universal/Runners/XL Runners/x5 Runner Slide XL.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "202 × 18 × 20 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 3,
+   "label": "Runner stopper incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "18 × 8 × 8 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Key lock",
+   "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "45 × 37 × 33 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Key cap incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "38 × 13 × 12 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Springs (pair) incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Springs.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls"
+   ],
+   "dims": "76 × 48 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Latch",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls"
+   ],
+   "dims": "97 × 75 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Label",
+   "file": "01. DRAWERS/07. Universal/Label.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "48 × 21 × 2 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 4,
+   "label": "Facade cap incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "10 × 10 × 4 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Table roof (flat top)",
+   "file": "01. DRAWERS/05. XL Families/XL5/Roofs/XL5 Table Roof.stl",
+   "tags": [
+    "Fits diagonally",
+    "Exported at 43°"
+   ],
+   "dims": "419 × 15 × 230 mm",
+   "bed": "var(--warn)"
+  }
+ ],
+ "groups": [
+  "Module1 print",
+  "Drawer3 prints",
+  "Runners7 prints",
+  "Lock12 prints",
+  "Roof1 print"
+ ],
+ "plates": [
+  {
+   "n": 1,
+   "head": "Plate 011 part · ≈ 510 g · 230 mm tall",
+   "tags": "Light grey",
+   "care": "Kept at the angle USSA exported it, where it just fits this bed. Check it in the slicer before printing.",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Module shell",
+     "file": "XL5 Module 1F.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 2,
+   "head": "Plate 021 part · ≈ 320 g · 230 mm tall",
+   "tags": "Light grey",
+   "care": "Too long to lie straight, so it’s placed diagonally, the way USSA exported it.",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Table roof (flat top)",
+     "file": "XL5 Table Roof.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 3,
+   "head": "Plate 038 parts · ≈ 40 g · 15 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Runner guide",
+     "file": "x5 Runner Guide XL.stl"
+    },
+    {
+     "count": 2,
+     "label": "Key cap",
+     "file": "Key Cap.stl"
+    },
+    {
+     "count": 4,
+     "label": "Facade cap",
+     "file": "Facade Cap.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 8,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 4,
+   "head": "Plate 041 part · ≈ 40 g · 10 mm tall",
+   "tags": "Light greySupports on",
+   "care": "Too long to lie straight, so it’s placed diagonally, the way USSA exported it.",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Drawer front (facade)",
+     "file": "XL Facade 1F.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 5,
+   "head": "Plate 051 part · ≈ 290 g · 228 mm tall",
+   "tags": "Charcoal",
+   "care": "Too long to lie straight, so it’s placed diagonally, the way USSA exported it.",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Drawer box",
+     "file": "XL5 Box 1F.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 6,
+   "head": "Plate 062 parts · ≈ 30 g · 20 mm tall",
+   "tags": "Charcoal",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Runner slide",
+     "file": "x5 Runner Slide XL.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 2,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 7,
+   "head": "Plate 071 part · ≈ 20 g · 6 mm tall",
+   "tags": "CharcoalSupports on",
+   "care": "Too long to lie straight, so it’s placed diagonally, the way USSA exported it.",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Box back panel",
+     "file": "XL5 Back Panel.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 8,
+   "head": "Plate 081 part · ≈ 10 g · 33 mm tall",
+   "tags": "CharcoalSupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Key lock",
+     "file": "Key (Turn On Supports).stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 9,
+   "head": "Plate 097 parts · ≈ 20 g · 8 mm tall",
+   "tags": "Orange",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Latch",
+     "file": "Latch.stl"
+    },
+    {
+     "count": 2,
+     "label": "Springs (pair)",
+     "file": "Springs.stl"
+    },
+    {
+     "count": 3,
+     "label": "Runner stopper",
+     "file": "Runner Stopper.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 7,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 10,
+   "head": "Plate 101 part · ≈ 0 g · 2 mm tall",
+   "tags": "Labels",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Label",
+     "file": "Label.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  }
+ ],
+ "hardware": "Hardware to buy0 of 1 line bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts1 line 5× M4 × 14 mm button-head boltincl. 1 spare Drawer front to boxStack 1 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Include spares10% more of the bolts and inserts, at least one Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
+}

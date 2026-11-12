@@ -119,6 +119,42 @@ for (const w of ['S', 'M', 'L', 'L2']) for (const d of R.DEPTHS) for (const h of
 // A list that isn't one of the shell's layouts plans one drawer of the shell's height, and XL is always one 1F drawer
 for (const [c, want] of [[{ w: 'S', h: 2, drawers: [1] }, '2'], [{ w: 'M', h: 4, drawers: [3, 1] }, '4'], [{ w: 'XL', h: 1, drawers: [1, 1] }, '1'], [{ w: 'L', h: 2 }, '2']])
   if (R.drawersOf(c).join() !== want) layoutClash.push(`drawersOf(${JSON.stringify(c)}) = ${R.drawersOf(c).join(' ')}, want ${want}`);
+// Counts checked by the part-count battery (tests/battery): one label per case (Sustainers Naming), the removable hidden
+// key once per stack and not per drawer, one wall cleat per opening of the plate, a backbone under every pegboard, and
+// one line per file in a unit (the two bays of L² and XL² merged)
+const countRules = [];
+const fileQty = (r, re) => r.lines.filter(l => re.test(l.file.path)).reduce((a, l) => a + l.qty, 0);
+note(R.buildHiddenKey(resolve), 'hidden key');
+for (const w of Object.keys(R.HEIGHTS.case)) for (const d of R.DEPTHS) for (const h of R.HEIGHTS.case[w]) {
+  const r = R.buildUnit({ type: 'case', w, d, h, roof: 'none' }, resolve), what = `case ${w}${d} ${h}F`;
+  const sus = fileQty(r, /Label for Sustainers\.stl$/), drw = fileQty(r, /07\. Universal\/Label\.stl$/);
+  if (sus !== (h === 1 ? 1 : 0) || drw !== (h === 1 ? 0 : 1)) countRules.push(`${what}: ${sus} sustainer label, ${drw} drawer label`);
+}
+for (const type of ['drawer', 'case']) for (const w of Object.keys(R.HEIGHTS[type])) for (const d of R.DEPTHS) for (const h of R.HEIGHTS[type][w]) {
+  const base = { type, w, d, h, roof: 'none', lock: 'hidden' }, what = `${type} ${w}${d} ${h}F`;
+  const r = R.buildUnit(base, resolve);
+  if (fileQty(r, /Hidden Key Part 2/i)) countRules.push(`${what}: removable hidden key listed in the unit`);
+  const paths = r.lines.map(l => l.file.path + '|' + (l.alt || ''));
+  if (new Set(paths).size !== paths.length) countRules.push(`${what}: a file listed on two lines`);
+  const fw = w === 'L2' ? 'L' : w === 'XL2' ? 'XL' : w;
+  const wm = R.buildUnit({ ...base, wallMount: true }, resolve);
+  if (fileQty(wm, /Wall Mount Second Part\.stl$/) !== (h === 4 ? 2 : 1) * (fw === 'L' || fw === 'XL' ? 2 : 1)) countRules.push(`${what}: ${fileQty(wm, /Wall Mount Second Part\.stl$/)} wall cleats`);
+  if (fileQty(R.buildUnit({ ...base, pegboard: 'ikea', backbone: 'family' }, resolve), /Backbone\.stl$/)) countRules.push(`${what}: a backbone listed in the unit (it belongs to the stack's column)`);
+}
+// The backbone column (Modifications Assembly 7-15): 2F backbones over the base (as 1F) and the modules it covers, a 1F
+// for an odd remainder, at least one 2F from the base; XL has 1F backbones only
+const BB = [[{ base: true, heights: [2], upTo: -1 }, 1, 0], [{ base: true, heights: [2, 1, 1], upTo: 1 }, 2, 0], [{ base: true, heights: [2, 1], upTo: 0 }, 1, 1],
+  [{ base: true, heights: [2, 4, 1, 2], upTo: 2 }, 4, 0], [{ base: false, heights: [2, 2], upTo: 0 }, 1, 0], [{ base: false, heights: [1], upTo: 0 }, 0, 1]];
+for (const w of ['S', 'M', 'L', 'XL']) for (const universal of [false, true]) {
+  note(R.buildBackbones({ w, base: true, heights: [2, 1], upTo: 0, universal }, resolve), `backbones ${w}`);
+  for (const [o, twos, ones] of BB) {
+    const r = R.buildBackbones({ w, universal, ...o }, resolve), f = 2 * twos + ones;
+    const want2 = !universal && w === 'XL' ? 0 : twos, want1 = !universal && w === 'XL' ? f : ones;
+    const got2 = fileQty(r, /2F Backbone\.stl$/), got1 = fileQty(r, /1F Backbone\.stl$/);
+    if (got2 !== want2 || got1 !== want1) countRules.push(`backbones ${w}${universal ? ' universal' : ''} ${JSON.stringify(o)}: ${got2} × 2F + ${got1} × 1F, want ${want2} + ${want1}`);
+  }
+}
+console.log('COUNT RULES:'); countRules.slice(0, 20).forEach(m => console.log(' ', m)); if (countRules.length > 20) console.log(`  (+${countRules.length - 20})`);
 console.log('DRAWER LAYOUTS:'); layoutClash.slice(0, 20).forEach(m => console.log(' ', m)); if (layoutClash.length > 20) console.log(`  (+${layoutClash.length - 20})`);
 console.log('PLACEMENT COUNTS:'); [...new Set(countClash)].slice(0, 20).forEach(m => console.log(' ', m)); if (countClash.length > 20) console.log(`  (+${countClash.length - 20})`);
 console.log('ROOF HANDLES:'); roofClash.slice(0, 20).forEach(m => console.log(' ', m)); if (roofClash.length > 20) console.log(`  (+${roofClash.length - 20})`);

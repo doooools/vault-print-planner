@@ -139,9 +139,10 @@
     add('Runners', 'Runner stopper' + t, U + 'Runners/Runner Stopper.stl', 2 * h, { spare: true, ...x });
     if (o.gearedRails) add('Runners', 'Geared rails (pair)' + t, U + `Geared Rails/${w} Rails.stl`, n,
       { note: 'Optional in the manual. Adds locking force; use them if you put more than one box in a 2F/4F module. One file holds both racks, top and bottom.', ...x });
+    // A hidden lock has no knob on the front: the removable key (part 2) turns it, and one serves the whole stack
+    // (buildHiddenKey, added once per stack by the page)
     if (o.lock === 'hidden') {
       add('Lock', 'Hidden key' + t, U + 'Hidden Key (Turn On Supports).stl', n, { supports: true, ...x });
-      add('Lock', 'Hidden key, part 2' + t, U + 'Hidden Key Part 2 (Turn on Supports).stl', n, { supports: true, ...x });
     } else {
       add('Lock', 'Key lock' + t, U + 'Key (Turn On Supports).stl', n, { supports: true, ...x });
       add('Lock', 'Key cap' + t, U + 'Key Cap.stl', n, { spare: true, ...x });
@@ -273,8 +274,10 @@
     // The case body has a drawer module's underside, latch frames included, and stacks like one
     add('Hinges & locks', 'Latch', U + 'Latch.stl', big ? 2 : 1,
       { inferred: 'The manual doesn’t show a case from below. Its body has the same latch frames as a drawer module (one on S and M, two on L and XL), so it takes the same latches.' });
-    add('Hinges & locks', 'Case label', SUU + 'Label for Sustainers.stl', 1);
-    add('Hinges & locks', 'Front label', U + 'Label.stl', 1);
+    // One label per case, in its front's label slot (Sustainers Naming, manual 01 p.12): the short sustainer label on a
+    // 1F front, the drawers' label on a 2F or 4F front
+    if (h === 1) add('Hinges & locks', 'Case label', SUU + 'Label for Sustainers.stl', 1);
+    else add('Hinges & locks', 'Case label', U + 'Label.stl', 1);
     if (c.caseBaseplate) {
       if (w === 'XL') {
         if (d >= 6) {
@@ -305,19 +308,39 @@
     if (c.wallMount) {
       add('Wall mount', 'Wall mount plate', MO + `Wall Mounts/${w}${h}F Wall Mount.stl`, 1,
         { note: 'Use full-height plates: a 1F plate on a taller module can’t serve as the drilling template.' });
-      add('Wall mount', 'Wall mount second part (wall cleat)', MO + 'Wall Mounts/Wall Mount Second Part.stl', 2,
-        { inferred: 'Two cleats per plate, read from the mounting drawings.' });
+      // One cleat per trapezoid opening of the plate (Wall Mount Instructions 4-5), counted on the plates: one on 1F and
+      // 2F plates, two on 4F ones, twice that across an L or XL plate
+      add('Wall mount', 'Wall mount second part (wall cleat)', MO + 'Wall Mounts/Wall Mount Second Part.stl', (h === 4 ? 2 : 1) * (w === 'L' || w === 'XL' ? 2 : 1),
+        { note: 'One per opening of the plate, screwed to the wall.' });
     }
     if (c.pegboard && c.pegboard !== 'none' && h <= 2) {
       add('Pegboard', (c.pegboard === 'ikea' ? 'IKEA Skådis' : 'USSA') + ' pegboard attachment',
         MO + `Pegboard Attachment/${c.pegboard === 'ikea' ? 'IKEA Skadis Pegboard' : 'USSA Pegboard'}/${w}${h}F.stl`, 1);
     }
-    if (c.backbone && c.backbone !== 'none' && h <= 2) {
-      add('Backbone', c.backbone === 'universal' ? 'Universal backbone' : 'Backbone',
-        MO + `Backbone/${c.backbone === 'universal' ? 'Universal ' + h + 'F' : w + h + 'F'} Backbone.stl`, 1,
-        { note: '2F backbones come sealed: mark the three spots on the module and drill through with a 4 mm bit.',
-          inferred: 'One backbone per unit is read from the trolley drawings.' });
-    }
+    // Backbones are a column on the back of the whole stack (buildBackbones), not a part of one module
+  }
+
+  // The backbone column on the back of a stack (Modifications Assembly 7-15). Each backbone straddles a joint, bolted
+  // to the piece below and the one above: the first, a 2F, ties the base to the first module (steps 10-11), the next
+  // ones tie the modules to each other (13), 1F ones also do (14). The column runs from the base up to the module under
+  // the top one, where the pull-out handle lock goes (17-19), or higher when a pegboard (20) or a chosen backbone sits
+  // there. o = { w, base, heights: [F of each level, bottom to top], upTo: highest level index the column covers,
+  // universal }. Counted in F: the base as one, 2F backbones, and a 1F one for an odd remainder.
+  function buildBackbones(o, resolve) {
+    const k = collector(resolve);
+    const covered = o.heights.slice(0, Math.max(0, o.upTo + 1)).reduce((a, h) => a + h, 0);
+    let f = (o.base ? 1 : 0) + covered;
+    const total = (o.base ? 1 : 0) + o.heights.reduce((a, h) => a + h, 0);
+    if (f < 2) f = Math.min(2, total); // at least the first 2F backbone, base to first module
+    const name = h => MO + `Backbone/${o.universal ? 'Universal ' + h + 'F' : o.w + h + 'F'} Backbone.stl`;
+    const x = { note: 'Backbones come sealed: mark the spots on the modules and drill through with a 4 mm bit.',
+      inferred: 'The manual draws the column but gives no count: 2F backbones over the base (as 1F) and the modules it covers, a 1F one for an odd remainder.' };
+    // XL backbones only come in 1F (there is no XL2F file): the column is made of those
+    const only1 = !o.universal && o.w === 'XL';
+    const twos = only1 ? 0 : Math.floor(f / 2), ones = only1 ? f : f % 2;
+    if (twos) k.add('Backbone', (o.universal ? 'Universal backbone' : 'Backbone') + ' 2F', name(2), twos, x);
+    if (ones) k.add('Backbone', (o.universal ? 'Universal backbone' : 'Backbone') + ' 1F', name(1), ones, x);
+    return { lines: k.lines, missing: k.missing, hardware: twos + ones ? [{ item: 'M4 button-head bolt, 60–100 mm (to fit)', qty: 4 * (twos + ones), why: 'Backbones' }] : [] };
   }
 
   // Tower base and handles: one set per tower, sized by the bottom level's width family and depth
@@ -369,7 +392,6 @@
     }
     if (c.roof === 'grid' && c.topHandle) push('M6 × 50 mm countersunk bolt', 2, 'Roof top handle');
     if (c.pegboard && c.pegboard !== 'none' && c.h <= 2) push('M4 × 40 mm button-head bolt', 4, 'Pegboard attachment');
-    if (c.backbone && c.backbone !== 'none' && c.h <= 2) push('M4 button-head bolt, 60–100 mm (to fit)', 4, 'Backbone');
     return hw;
   }
 
@@ -414,7 +436,20 @@
     // A roof latches onto a case's lid as onto a module: the lid's top has the module top's latch frames (manual p. 17)
     if (c.type !== 'drawer' && c.roof && c.roof !== 'none') roof(k.add, c.w, c.d, c.roof, c.topHandle);
     mounts(k.add, c);
-    return { lines: k.lines, missing: k.missing, hardware: unitHardware(c) };
+    return { lines: mergeSame(k.lines), missing: k.missing, hardware: unitHardware(c) };
+  }
+  // One line per file in a unit: the two bays of an L² or XL² list their shared parts (keys, springs, caps, stoppers…)
+  // once, without the bay's tag, so spares are added to the total as the Print step does
+  function mergeSame(lines) {
+    const out = [], by = new Map();
+    for (const l of lines) {
+      const key = l.file.path + '|' + (l.alt || '');
+      const m = by.get(key);
+      if (!m) { const c = { ...l }; by.set(key, c); out.push(c); continue; }
+      m.qty += l.qty;
+      if (m.label !== l.label) m.label = m.label.replace(/ \((left|right|S side|M side)\)$/, '');
+    }
+    return out;
   }
   // A tower's base, wheels, feet and handles. s = { w: 'S'|'M'|'L'|'XL', d, base, wheels, feet, casters, stationaryHandle, pullHandle }
   function buildStack(s, resolve) {
@@ -429,6 +464,15 @@
     return { lines: k.lines, missing: k.missing, hardware: kind === 'grid' && topHandle ? [{ item: 'M6 × 50 mm countersunk bolt', qty: 2, why: 'Roof top handle' }] : [] };
   }
 
-  const api = { buildUnit, buildStack, buildRoof, makeResolver, exterior, familyForWidth, drawersOf, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, LAYOUTS, norm };
+  // The removable key of the hidden locks: one per stack that has any, with its key cap (its grip has the size of the
+  // Key's, and the manual caps the same grip on the handle lock knob, Modifications Assembly 13/15)
+  function buildHiddenKey(resolve) {
+    const k = collector(resolve);
+    k.add('Lock', 'Hidden key, part 2', U + 'Hidden Key Part 2 (Turn on Supports).stl', 1, { supports: true, note: 'One per stack: it turns every hidden lock of the stack.' });
+    k.add('Lock', 'Key cap', U + 'Key Cap.stl', 1, { spare: true, note: 'Goes on the removable key’s grip.' });
+    return { lines: k.lines, missing: k.missing, hardware: [] };
+  }
+
+  const api = { buildUnit, buildStack, buildRoof, buildHiddenKey, buildBackbones, makeResolver, exterior, familyForWidth, drawersOf, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, LAYOUTS, norm };
   if (typeof module !== 'undefined') module.exports = api; else root.VaultRules = api;
 })(this);

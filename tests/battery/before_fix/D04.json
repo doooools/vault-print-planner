@@ -1,0 +1,576 @@
+{
+ "name": "D04",
+ "meta": {
+  "cfg": "D04",
+  "printer": "h2s",
+  "towers": "[{\"name\":\"Stack 1\",\"fp\":{\"w\":\"M\",\"d\":6},\"st\":\"feet\",\"L\":[[\"drawer M 6 2F roof=grid topHandle rails hidden empty drawers=1,1\"]]}]"
+ },
+ "when": "2026-11-12T08:55:42.261Z",
+ "printer": {
+  "id": "h2s"
+ },
+ "towers": [
+  {
+   "id": 1,
+   "name": "Stack 1",
+   "fp": {
+    "w": "M",
+    "d": 6
+   },
+   "levels": [
+    [
+     {
+      "type": "drawer",
+      "w": "M",
+      "d": 6,
+      "h": 2,
+      "lock": "hidden",
+      "gearedRails": true,
+      "interior": "empty",
+      "baseplateHandles": "0",
+      "gridAcross": 1,
+      "gridAlong": 0,
+      "gridHeight": "20",
+      "gridEdge": "straight",
+      "gridPin": "tight",
+      "roof": "grid",
+      "topHandle": true,
+      "caseInterior": "flat",
+      "caseBaseplate": false,
+      "dividers": {
+       "plain": 0,
+       "depth": 0,
+       "width": 0,
+       "seal": 0
+      },
+      "manualSupports": false,
+      "wallMount": false,
+      "pegboard": "none",
+      "backbone": "none",
+      "drawers": [
+       1,
+       1
+      ]
+     }
+    ]
+   ],
+   "stack": {
+    "base": false,
+    "wheels": false,
+    "feet": true,
+    "casters": false,
+    "stationaryHandle": false,
+    "pullHandle": false
+   },
+   "roles": {}
+  }
+ ],
+ "printSkip": [],
+ "stackAlerts": [
+  "Everything in this stack fits together and fits the Bambu Lab H2S."
+ ],
+ "stackCard": [
+  "MStack 1M6 · 1 level"
+ ],
+ "levels": [
+  {
+   "unit": "M6 · 2F drawer",
+   "head": "Level 1 of 1 M6 · 2F drawer254 × 282 × 100 mm · 39 parts · ≈ 1.39 kg",
+   "alerts": [],
+   "parts": [
+    {
+     "q": 1,
+     "label": "Module shell",
+     "file": "01. DRAWERS/02. M Families/M6/Modules/M6 Module 2F.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Drawer box",
+     "file": "01. DRAWERS/02. M Families/M6/Boxes/M6 Box 1F.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Drawer front (facade)",
+     "file": "01. DRAWERS/02. M Families/Facades/M1F (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 4,
+     "label": "Runner guide",
+     "file": "01. DRAWERS/07. Universal/Runners/x6 Runner Guide.stl",
+     "bad": false
+    },
+    {
+     "q": 4,
+     "label": "Runner slide",
+     "file": "01. DRAWERS/07. Universal/Runners/x6 Runner Slide.stl",
+     "bad": false
+    },
+    {
+     "q": 5,
+     "label": "Runner stopper incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Geared rails (pair)",
+     "file": "01. DRAWERS/07. Universal/Geared Rails/M Rails.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Hidden key",
+     "file": "01. DRAWERS/07. Universal/Hidden Key (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Hidden key, part 2",
+     "file": "01. DRAWERS/07. Universal/Hidden Key Part 2 (Turn on Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 3,
+     "label": "Springs (pair) incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Springs.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Latch",
+     "file": "01. DRAWERS/07. Universal/Latch.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Label",
+     "file": "01. DRAWERS/07. Universal/Label.stl",
+     "bad": false
+    },
+    {
+     "q": 7,
+     "label": "Facade cap incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Grid roof (Gridfinity top)",
+     "file": "01. DRAWERS/02. M Families/M6/Roofs/M6 Grid Roof.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Top handle",
+     "file": "01. DRAWERS/07. Universal/Top Handle (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 9,
+     "label": "M4 × 14 mm button-head bolt",
+     "file": "",
+     "bad": false
+    },
+    {
+     "q": 3,
+     "label": "M6 × 50 mm countersunk bolt",
+     "file": "",
+     "bad": false
+    }
+   ]
+  }
+ ],
+ "scope": [],
+ "top": "0% printed 0 of 39 parts · 8 of 8 plates left · ≈ 0 g of 1.39 kg",
+ "alerts": [],
+ "parts": [
+  {
+   "q": 1,
+   "label": "Module shell",
+   "file": "01. DRAWERS/02. M Families/M6/Modules/M6 Module 2F.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "254 × 105 × 272 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Drawer box",
+   "file": "01. DRAWERS/02. M Families/M6/Boxes/M6 Box 1F.stl",
+   "tags": [
+    "Fits",
+    "Supports on"
+   ],
+   "dims": "270 × 223 × 38 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Drawer front (facade)",
+   "file": "01. DRAWERS/02. M Families/Facades/M1F (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "254 × 47 × 10 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 4,
+   "label": "Runner guide",
+   "file": "01. DRAWERS/07. Universal/Runners/x6 Runner Guide.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "270 × 27 × 9 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 4,
+   "label": "Runner slide",
+   "file": "01. DRAWERS/07. Universal/Runners/x6 Runner Slide.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "244 × 18 × 9 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 5,
+   "label": "Runner stopper incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "18 × 8 × 8 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Geared rails (pair)",
+   "file": "01. DRAWERS/07. Universal/Geared Rails/M Rails.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls"
+   ],
+   "dims": "166 × 13 × 4 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Hidden key",
+   "file": "01. DRAWERS/07. Universal/Hidden Key (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "45 × 37 × 18 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Hidden key, part 2",
+   "file": "01. DRAWERS/07. Universal/Hidden Key Part 2 (Turn on Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "34 × 34 × 26 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 3,
+   "label": "Springs (pair) incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Springs.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls"
+   ],
+   "dims": "76 × 48 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Latch",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls"
+   ],
+   "dims": "97 × 75 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Label",
+   "file": "01. DRAWERS/07. Universal/Label.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "48 × 21 × 2 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 7,
+   "label": "Facade cap incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "10 × 10 × 4 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Grid roof (Gridfinity top)",
+   "file": "01. DRAWERS/02. M Families/M6/Roofs/M6 Grid Roof.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "Brim",
+    "Exported at 45°"
+   ],
+   "dims": "254 × 15 × 272 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Top handle",
+   "file": "01. DRAWERS/07. Universal/Top Handle (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "4 walls · 25% infill"
+   ],
+   "dims": "51 × 37 × 126 mm",
+   "bed": "var(--ok)"
+  }
+ ],
+ "groups": [
+  "Module1 print",
+  "Drawer4 prints",
+  "Runners15 prints",
+  "Lock17 prints",
+  "Roof2 prints"
+ ],
+ "plates": [
+  {
+   "n": 1,
+   "head": "Plate 0112 parts · ≈ 620 g · 272 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 4,
+     "label": "Runner guide",
+     "file": "x6 Runner Guide.stl"
+    },
+    {
+     "count": 1,
+     "label": "Module shell",
+     "file": "M6 Module 2F.stl"
+    },
+    {
+     "count": 7,
+     "label": "Facade cap",
+     "file": "Facade Cap.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 12,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 2,
+   "head": "Plate 023 parts · ≈ 280 g · 272 mm tall",
+   "tags": "Light greySupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Grid roof (Gridfinity top)",
+     "file": "M6 Grid Roof.stl"
+    },
+    {
+     "count": 2,
+     "label": "Drawer front (facade)",
+     "file": "M1F (Turn On Supports).stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 3,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 3,
+   "head": "Plate 034 parts · ≈ 30 g · 9 mm tall",
+   "tags": "Charcoal",
+   "care": "",
+   "rows": [
+    {
+     "count": 4,
+     "label": "Runner slide",
+     "file": "x6 Runner Slide.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 4,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 4,
+   "head": "Plate 045 parts · ≈ 200 g · 38 mm tall",
+   "tags": "CharcoalSupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Drawer box",
+     "file": "M6 Box 1F.stl"
+    },
+    {
+     "count": 2,
+     "label": "Hidden key",
+     "file": "Hidden Key (Turn On Supports).stl"
+    },
+    {
+     "count": 2,
+     "label": "Hidden key, part 2",
+     "file": "Hidden Key Part 2 (Turn on Supports).stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 5,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 5,
+   "head": "Plate 051 part · ≈ 180 g · 38 mm tall",
+   "tags": "CharcoalSupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Drawer box",
+     "file": "M6 Box 1F.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 6,
+   "head": "Plate 061 part · ≈ 50 g · 126 mm tall",
+   "tags": "CharcoalSupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Top handle",
+     "file": "Top Handle (Turn On Supports).stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 7,
+   "head": "Plate 0711 parts · ≈ 20 g · 8 mm tall",
+   "tags": "Orange",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Geared rails (pair)",
+     "file": "M Rails.stl"
+    },
+    {
+     "count": 1,
+     "label": "Latch",
+     "file": "Latch.stl"
+    },
+    {
+     "count": 3,
+     "label": "Springs (pair)",
+     "file": "Springs.stl"
+    },
+    {
+     "count": 5,
+     "label": "Runner stopper",
+     "file": "Runner Stopper.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 11,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 8,
+   "head": "Plate 082 parts · ≈ 0 g · 2 mm tall",
+   "tags": "Labels",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Label",
+     "file": "Label.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 2,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  }
+ ],
+ "hardware": "Hardware to buy0 of 2 lines bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts1 line 9× M4 × 14 mm button-head boltincl. 1 spare Drawer front to boxStack 1 AmazonM6 bolts and inserts1 line 3× M6 × 50 mm countersunk boltincl. 1 spare Roof top handleStack 1 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Include spares10% more of the bolts and inserts, at least one Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
+}

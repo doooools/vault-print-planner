@@ -1034,6 +1034,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           issues.push({ k: 'bad', m: `Level ${i + 1} (${Math.round(levelWidth(lv))} mm wide, x${lv[0].d} deep) doesn't match level ${i} (${Math.round(levelWidth(below))} mm wide, x${below[0].d} deep). Stacked units need the same width and depth.` });
       }
     });
+    // One removable key turns every hidden lock of the stack
+    if (L.some(lv => lv.some(u => u.type === 'drawer' && u.lock === 'hidden'))) parts.push(paintLines(finish(R.buildHiddenKey(resolve)), null));
     const topLv = L[L.length - 1];
     if (topLv.every(u => u.type === 'drawer') && roofOf(topLv).roof === 'none') issues.push({ k: 'warn', m: 'The top drawer has no roof. Pick a roof for it in the editor, unless something else sits on top.' });
     const fam = R.familyForWidth(levelWidth(L[0])), s = t.stack || STACK_DEFAULT;
@@ -1044,9 +1046,18 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (L[0].some(u => u.h !== 2)) issues.push({ k: 'info', m: 'USSA recommends a 2F unit directly on the base when you use a base, wheels or handles.' });
       if (L.length > 1 && topLv.some(u => u.h !== 2)) issues.push({ k: 'info', m: 'USSA also recommends a 2F unit at the top, just under the roof.' });
     }
-    const hasBackbone = L.some(lv => lv.some(u => u.backbone && u.backbone !== 'none'));
-    const needBB = [s.stationaryHandle && 'stationary handle', s.pullHandle && 'pull-out handle'].filter(Boolean);
-    if (needBB.length && !hasBackbone) issues.push({ k: 'warn', m: `The ${needBB.join(' and the ')} ${needBB.length > 1 ? 'bolt' : 'bolts'} onto backbones on the back. Give the units backbones in the editor (Mounting section).` });
+    // The backbone column on the back (Modifications Assembly 7-15): the handles bolt onto it, pegboards hang on it. It
+    // runs from the base to the module under the top one (the pull-out handle lock goes there), or up to the highest
+    // level with a pegboard or a backbone chosen in the editor.
+    const handles = s.stationaryHandle || s.pullHandle;
+    const own = u => (u.backbone && u.backbone !== 'none') || (u.pegboard && u.pegboard !== 'none');
+    let upTo = handles ? L.length - 2 : -1;
+    L.forEach((lv, i) => { if (lv.some(own)) upTo = Math.max(upTo, i); });
+    if (fam && (handles || upTo >= 0)) {
+      const chosen = L.flat().filter(u => u.backbone && u.backbone !== 'none');
+      parts.push(paintLines(finish(R.buildBackbones({ w: fam, base: !!s.base, heights: L.map(lv => Math.max(...lv.map(u => u.h))), upTo,
+        universal: chosen.length > 0 && chosen.every(u => u.backbone === 'universal') }, resolve)), null));
+    }
     const height = L.reduce((a, lv) => a + levelHeight(lv), 0);
     return { issues, parts, height, fam };
   }
@@ -1071,6 +1082,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       }
       for (const w of ['S', 'M', 'L', 'XL']) for (const d of R.DEPTHS)
         for (const s of [{ base: true, wheels: true, feet: true, stationaryHandle: true, pullHandle: true }, { base: true, feet: true }]) note(R.buildStack({ w, d, ...s }, resolve));
+      note(R.buildHiddenKey(resolve));
+      for (const w of ['S', 'M', 'L', 'XL']) for (const universal of [false, true]) note(R.buildBackbones({ w, base: true, heights: [2, 1], upTo: 0, universal }, resolve));
     }
     return META.get(path) || null;
   }
@@ -1514,7 +1527,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     { name: 'Workbench stack', why: 'M drawers with a top-opening case on top, on a base.',
       levels: [[U('drawer', 'M', 5, 2)], [U('drawer', 'M', 5, 1)], [U('drawer', 'M', 5, 1)], [U('case', 'M', 5, 2)]], stack: { base: true, feet: true } },
     { name: 'Rolling tool cart', why: 'M drawers with backbones, wheels and a pull-out trolley handle.',
-      levels: [[U('drawer', 'M', 5, 2, { backbone: 'family' })], [U('drawer', 'M', 5, 1, { backbone: 'family' })], [U('drawer', 'M', 5, 1, { backbone: 'family' })], [U('drawer', 'M', 5, 2, { backbone: 'family', roof: 'table' })]],
+      levels: [[U('drawer', 'M', 5, 2)], [U('drawer', 'M', 5, 1)], [U('drawer', 'M', 5, 1)], [U('drawer', 'M', 5, 2, { roof: 'table' })]],
       stack: { base: true, wheels: true, feet: true, pullHandle: true } },
     { name: 'Wall-mounted cases', why: 'Two S cases hung on the wall with mount plates.',
       levels: [[U('case', 'S', 4, 2, { wallMount: true })], [U('case', 'S', 4, 1, { wallMount: true })]] },
@@ -1719,14 +1732,19 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const sizeFits = (w, d) => !tooBig({ type: 'drawer', w, d, h: 1, roof: 'none' });
   // Saved builds from before the redesign: each stack gets its footprint, and the roof lives on the top level only
   // (a roof set on a lower unit was never used, so planning doesn't change)
+  // Before the backbone column, a handle set 'family' backbones on every 1F and 2F module: on a stack with a handle they
+  // were not the user's choice, and kept they would stretch the column past the top module
+  const dropAutoBackbones = t => { const s = t.stack || {}; if (s.pullHandle || s.stationaryHandle) t.levels.flat().forEach(u => { if (u.backbone === 'family') u.backbone = 'none'; }); };
   function migrateTowers() {
-    if (store.get('model', 1) >= 2) return;
-    towers.forEach(t => {
-      t.fp = fpOf(t);
-      const L = t.levels; if (!L.length) return;
-      L.slice(0, -1).forEach(lv => lv.forEach(u => { if (u.roof && u.roof !== 'none') u.roof = 'none'; }));
-    });
-    save(); store.set('model', 2);
+    if (store.get('model', 1) < 2) {
+      towers.forEach(t => {
+        t.fp = fpOf(t);
+        const L = t.levels; if (!L.length) return;
+        L.slice(0, -1).forEach(lv => lv.forEach(u => { if (u.roof && u.roof !== 'none') u.roof = 'none'; }));
+      });
+      save(); store.set('model', 2);
+    }
+    if (store.get('model', 1) < 3) { towers.forEach(dropAutoBackbones); save(); store.set('model', 3); }
   }
   // The roof follows the top: after levels move, are added or removed, the roof setting goes to the new top level
   function fixRoof(t) {
@@ -1738,11 +1756,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     ru.roof = roof; if (roof === 'grid') ru.topHandle = topHandle;
   }
   const roofOfTower = t => { const L = t.levels; return L.length ? roofOf(L[L.length - 1]) : null; };
-  // Handles bolt onto backbones: with a handle, every 1F and 2F module gets one (there is no 4F backbone)
+  // Handles bring the stack's backbone column themselves (analyzeStack), whatever the modules' heights
   function fixTower(t) {
     fixRoof(t);
-    const s = t.stack || STACK_DEFAULT;
-    if (s.pullHandle || s.stationaryHandle) t.levels.flat().forEach(u => { if (u.h <= 2 && (!u.backbone || u.backbone === 'none')) u.backbone = 'family'; });
   }
   // One module's settings, kept valid: heights and widths its type has, a roof made in its width
   function fixUnit(u) {
@@ -1826,11 +1842,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   };
   const icon = k => `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
   const stackDims = (t, a) => t.levels.length ? `${Math.round(levelWidth(t.levels[0]))} × ${Math.round(unitExt(t.levels[0][0])[1])} × ${Math.round(a.height)} mm` : 'empty';
-  // What this stack needs fixed or should know: analyzeTower's, plus parts that no longer fit and 4F modules without a backbone
+  // What this stack needs fixed or should know: analyzeTower's, plus parts that no longer fit
   function stackAlerts(t, a) {
-    const out = a.issues.filter(x => !/Give the units backbones/.test(x.m)).map(x => ({ ...x }));
-    const s = t.stack || STACK_DEFAULT, L = t.levels;
-    if (s.pullHandle || s.stationaryHandle) L.forEach((lv, i) => lv.forEach(u => { if (u.h > 2) out.push({ k: 'warn', m: `Level ${i + 1} (${unitCode(u)}) has no backbone: backbones exist for 1F and 2F modules only, so the handle skips it.` }); }));
+    const out = a.issues.map(x => ({ ...x }));
+    const L = t.levels;
     L.forEach((lv, i) => lv.forEach(u => { const nf = unitNoFit(u, i === L.length - 1); if (nf.length) out.push({ k: 'warn', l: i, m: `Level ${i + 1} (${unitCode(u)}): ${plural(nf.length, 'part')} no longer ${nf.length === 1 ? 'fits' : 'fit'} the ${printerName()} (${[...new Set(nf.map(l => l.label))].join(', ')}). Print ${nf.length === 1 ? 'it' : 'them'} on a bigger printer, or change the level.` }); }));
     return out;
   }
@@ -1849,7 +1864,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (!('showDirectoryPicker' in window)) return null;
     try { return (await idb('readonly', st => st.get('folder'))) || null; } catch (e) { return null; }
   }
-  const designText = () => JSON.stringify({ app: 'vault-print-planner', kind: 'design', version: 1, saved: new Date().toISOString(), towers, extras, seq, colors: colorPrefs }, null, 1);
+  const designText = () => JSON.stringify({ app: 'vault-print-planner', kind: 'design', version: 2, saved: new Date().toISOString(), towers, extras, seq, colors: colorPrefs }, null, 1);
   const designFileName = () => (towers.length === 1 ? towers[0].name : 'Vault design').replace(/[\\/:*?"<>|]+/g, '-').trim() + '.vault.json';
   const fileIn = async (dir, name) => { try { await dir.getFileHandle(name); return true; } catch (e) { return false; } };
   // Whether a file the user picked sits right in the Vault folder (then it is the design open there)
@@ -1897,7 +1912,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if ((towers.length || extras.length) && !confirm(`Open “${name}”? It replaces the stacks and loose parts here. What you marked printed stays.`)) return false;
     if (d.colors && Array.isArray(d.colors.palette) && d.colors.palette.length) { colorPrefs = { ...d.colors, roles: d.colors.roles || {} }; saveColors(); }
     towers = d.towers.filter(t => t && Array.isArray(t.levels)).map(t => ({ ...t, levels: t.levels.map(lv => lv.map(u => clean(u))), stack: { ...STACK_DEFAULT, ...(t.stack || {}) } }));
-    towers.forEach(t => { t.fp = fpOf(t); if (!t.roles) t.roles = { ...colorPrefs.roles }; t.levels.flat().forEach(fixUnit); fixTower(t); });
+    towers.forEach(t => { t.fp = fpOf(t); if (!t.roles) t.roles = { ...colorPrefs.roles }; if (!(d.version >= 2)) dropAutoBackbones(t); t.levels.flat().forEach(fixUnit); fixTower(t); });
     extras = Array.isArray(d.extras) ? d.extras.filter(e => e && FILE_BY_PATH.has(e.path)) : [];
     seq = Math.max(+d.seq || 1, ...towers.map(t => t.id + 1));
     printSkip = []; savePrintSkip();
@@ -2060,8 +2075,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (u.type === 'drawer') more += optRow('data-ucheck="manualSupports"', 'Manual support helper', 'Optional printing aid for tall parts.', u.manualSupports);
     more += optRow('data-ucheck="wallMount"', 'Wall mount plate and cleats', 'Plate on the back of this module, plus two wall cleats.', u.wallMount);
     if (u.h <= 2) {
-      more += selRow('data-usel="pegboard"', 'Pegboard attachment <span class="hint">1F and 2F only</span>', [['none', 'None'], ['ikea', 'IKEA Skådis'], ['ussa', 'USSA pegboard']], u.pegboard);
-      more += selRow('data-usel="backbone"', 'Backbone <span class="hint">rear spine for handles, 1F and 2F only</span>', [['none', 'None'], ['family', 'Sized to this width'], ['universal', 'Universal']], u.backbone);
+      more += selRow('data-usel="pegboard"', 'Pegboard attachment <span class="hint">1F and 2F only, on a backbone</span>', [['none', 'None'], ['ikea', 'IKEA Skådis'], ['ussa', 'USSA pegboard']], u.pegboard);
+      more += selRow('data-usel="backbone"', 'Backbone <span class="hint">the column on the back reaches this level</span>', [['none', 'None'], ['family', 'Sized to this width'], ['universal', 'Universal']], u.backbone);
     }
     const moreOn = (u.manualSupports ? 1 : 0) + (u.wallMount ? 1 : 0) + (u.pegboard && u.pegboard !== 'none' ? 1 : 0) + (u.backbone && u.backbone !== 'none' ? 1 : 0);
     box.innerHTML = `<div class="ihead"><div class="ipos"><span class="v3-sec">Level ${i + 1} of ${L.length}</span>
@@ -2137,8 +2152,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           ${s.base ? optRow('data-st="wheels"', 'Wheels, with TPU tires', 'bearings and an M16 axle', s.wheels) : ''}
           ${s.base && s.wheels ? optRow('data-st="feet"', 'Foot bar at the front', 'opposite the wheels', s.feet) : ''}
           ${s.base && !s.wheels ? optRow('data-st="casters"', 'Casters', '4 × M8, bought, under the base', s.casters) : ''}
-          ${optRow('data-st="pullHandle"', 'Pull-out trolley handle', 'Adds a backbone to every 1F and 2F level', s.pullHandle)}
-          ${optRow('data-st="stationaryHandle"', 'Stationary handle', 'Adds a backbone to every 1F and 2F level', s.stationaryHandle)}</div>
+          ${optRow('data-st="pullHandle"', 'Pull-out trolley handle', 'Adds the backbone column on the back', s.pullHandle)}
+          ${optRow('data-st="stationaryHandle"', 'Stationary handle', 'Adds the backbone column on the back', s.stationaryHandle)}</div>
         <div class="ialerts">${alerts.length ? alerts.map(x => `<div class="issue ${x.k}">${esc(x.m)}</div>`).join('') : `<div class="issue ok">Everything in this stack fits together and fits the ${esc(printerName())}.</div>`}</div>
         <div class="actions"><button type="button" class="btn" data-tdup>Duplicate stack</button><button type="button" class="btn" data-tdel>Remove stack</button></div>
       </div>`;
@@ -2851,6 +2866,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       }
       y += Math.max(...lv.map(rise));
     });
+    // The stack's one removable hidden key: shown in the top hidden lock
+    const hk = units.filter(u => u.drawer && !u.roof && !u.stack && u.cfg.lock === 'hidden').pop();
+    if (hk) hk.lines = hk.lines.concat(linesOf(R.buildHiddenKey(resolve)).filter(l => /Hidden Key Part 2/i.test(l.file.path)).map(l => ({ ...l, cfg: hk.cfg })));
     return { units, extra, height: units.reduce((m, u) => Math.max(m, u.y + u.h), y), width: Math.max(...L.map(levelWidth)), depth: Math.max(...L.map(lv => unitExt(lv[0])[1])) };
   }
   // A unit's measured parts that its part list uses, matched by file. A file in the list gets every copy the assembly

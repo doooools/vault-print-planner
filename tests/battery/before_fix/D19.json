@@ -1,0 +1,1335 @@
+{
+ "name": "D19",
+ "meta": {
+  "cfg": "D19",
+  "printer": "h2s",
+  "towers": "[{\"name\":\"Stack 1\",\"fp\":{\"w\":\"L\",\"d\":5},\"st\":\"base,wheels,feet,pullHandle\",\"L\":[[\"drawer L 5 2F roof=none std empty bb=family\"],[\"drawer L 5 1F roof=none std empty bb=family\"],[\"case L 5 1F roof=table std empty bb=family ci=flat\"]]}]"
+ },
+ "when": "2026-11-12T08:58:20.970Z",
+ "printer": {
+  "id": "h2s"
+ },
+ "towers": [
+  {
+   "id": 1,
+   "name": "Stack 1",
+   "fp": {
+    "w": "L",
+    "d": 5
+   },
+   "levels": [
+    [
+     {
+      "type": "drawer",
+      "w": "L",
+      "d": 5,
+      "h": 2,
+      "lock": "std",
+      "gearedRails": false,
+      "interior": "empty",
+      "baseplateHandles": "0",
+      "gridAcross": 1,
+      "gridAlong": 0,
+      "gridHeight": "20",
+      "gridEdge": "straight",
+      "gridPin": "tight",
+      "roof": "none",
+      "topHandle": false,
+      "caseInterior": "flat",
+      "caseBaseplate": false,
+      "dividers": {
+       "plain": 0,
+       "depth": 0,
+       "width": 0,
+       "seal": 0
+      },
+      "manualSupports": false,
+      "wallMount": false,
+      "pegboard": "none",
+      "backbone": "family"
+     }
+    ],
+    [
+     {
+      "type": "drawer",
+      "w": "L",
+      "d": 5,
+      "h": 1,
+      "lock": "std",
+      "gearedRails": false,
+      "interior": "empty",
+      "baseplateHandles": "0",
+      "gridAcross": 1,
+      "gridAlong": 0,
+      "gridHeight": "20",
+      "gridEdge": "straight",
+      "gridPin": "tight",
+      "roof": "none",
+      "topHandle": false,
+      "caseInterior": "flat",
+      "caseBaseplate": false,
+      "dividers": {
+       "plain": 0,
+       "depth": 0,
+       "width": 0,
+       "seal": 0
+      },
+      "manualSupports": false,
+      "wallMount": false,
+      "pegboard": "none",
+      "backbone": "family"
+     }
+    ],
+    [
+     {
+      "type": "case",
+      "w": "L",
+      "d": 5,
+      "h": 1,
+      "lock": "std",
+      "gearedRails": false,
+      "interior": "empty",
+      "baseplateHandles": "0",
+      "gridAcross": 1,
+      "gridAlong": 0,
+      "gridHeight": "20",
+      "gridEdge": "straight",
+      "gridPin": "tight",
+      "roof": "table",
+      "topHandle": false,
+      "caseInterior": "flat",
+      "caseBaseplate": false,
+      "dividers": {
+       "plain": 0,
+       "depth": 0,
+       "width": 0,
+       "seal": 0
+      },
+      "manualSupports": false,
+      "wallMount": false,
+      "pegboard": "none",
+      "backbone": "family"
+     }
+    ]
+   ],
+   "stack": {
+    "base": true,
+    "wheels": true,
+    "feet": true,
+    "casters": false,
+    "stationaryHandle": false,
+    "pullHandle": true
+   },
+   "roles": {}
+  }
+ ],
+ "printSkip": [],
+ "stackAlerts": [
+  "USSA also recommends a 2F unit at the top, just under the roof."
+ ],
+ "stackCard": [
+  "LStack 1L5 · 3 levels"
+ ],
+ "levels": [
+  {
+   "unit": "L5 · 1F case",
+   "head": "Level 3 of 3 L5 · 1F case330 × 240 × 66 mm · 22 parts · ≈ 1.21 kg",
+   "alerts": [],
+   "parts": [
+    {
+     "q": 1,
+     "label": "Case body (flat)",
+     "file": "02. SUSTAINERS/03. L Families/L5/Modules/L5 1F Flat Module.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Case front (facade)",
+     "file": "02. SUSTAINERS/03. L Families/Facades/L1F Facade.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Lid",
+     "file": "02. SUSTAINERS/03. L Families/L5/Roofs/L5 Roof.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Hinge",
+     "file": "02. SUSTAINERS/05. Universal/Hinges/L-XL 1F Hinge.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Hinge tops (pair)",
+     "file": "02. SUSTAINERS/05. Universal/Hinges/L-XL Hinge Top.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Hinge rods (pair) incl. 1 spare",
+     "file": "02. SUSTAINERS/05. Universal/Rods/L-XL Rods.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Lock holder",
+     "file": "02. SUSTAINERS/05. Universal/Locks/LOCK HOLDER.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Lock inner part",
+     "file": "02. SUSTAINERS/05. Universal/Locks/LOCK INNER PART.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Lock outer part",
+     "file": "02. SUSTAINERS/05. Universal/Locks/LOCK OUTER PART 1F.stl",
+     "bad": false
+    },
+    {
+     "q": 3,
+     "label": "Lock pin set incl. 1 spare",
+     "file": "02. SUSTAINERS/05. Universal/Locks/1 SET OF PINS FOR 1 LOCK.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Latch inferred",
+     "file": "01. DRAWERS/07. Universal/Latch.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Case label",
+     "file": "02. SUSTAINERS/05. Universal/Label for Sustainers.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Front label",
+     "file": "01. DRAWERS/07. Universal/Label.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Table roof (flat top)",
+     "file": "01. DRAWERS/03. L Families/L5/Roofs/L5 Table Roof.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Backbone inferred",
+     "file": "03. MODIFICATIONS/Backbone/L1F Backbone.stl",
+     "bad": false
+    },
+    {
+     "q": 18,
+     "label": "M4 × 14 mm button-head bolt",
+     "file": "",
+     "bad": false
+    },
+    {
+     "q": 9,
+     "label": "M4 × 10 mm button-head bolt",
+     "file": "",
+     "bad": false
+    },
+    {
+     "q": 8,
+     "label": "M4 × 20 mm button-head bolt",
+     "file": "",
+     "bad": false
+    },
+    {
+     "q": 5,
+     "label": "M4 button-head bolt, 60–100 mm (to fit)",
+     "file": "",
+     "bad": false
+    }
+   ]
+  },
+  {
+   "unit": "L5 · 1F drawer",
+   "head": "Level 2 of 3 L5 · 1F drawer330 × 240 × 52 mm · 23 parts · ≈ 820 g",
+   "alerts": [],
+   "parts": [
+    {
+     "q": 1,
+     "label": "Module shell",
+     "file": "01. DRAWERS/03. L Families/L5/Modules/L5 Module 1F.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Drawer box",
+     "file": "01. DRAWERS/03. L Families/L5/Boxes/L5 Box 1F.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Drawer front (facade)",
+     "file": "01. DRAWERS/03. L Families/Facades/L1F (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Runner guide",
+     "file": "01. DRAWERS/07. Universal/Runners/x5 Runner Guide.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Runner slide",
+     "file": "01. DRAWERS/07. Universal/Runners/x5 Runner Slide.stl",
+     "bad": false
+    },
+    {
+     "q": 3,
+     "label": "Runner stopper incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Key lock",
+     "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Key cap incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Springs (pair) incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Springs.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Latch",
+     "file": "01. DRAWERS/07. Universal/Latch.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Label",
+     "file": "01. DRAWERS/07. Universal/Label.stl",
+     "bad": false
+    },
+    {
+     "q": 4,
+     "label": "Facade cap incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Backbone inferred",
+     "file": "03. MODIFICATIONS/Backbone/L1F Backbone.stl",
+     "bad": false
+    },
+    {
+     "q": 5,
+     "label": "M4 × 14 mm button-head bolt",
+     "file": "",
+     "bad": false
+    },
+    {
+     "q": 5,
+     "label": "M4 button-head bolt, 60–100 mm (to fit)",
+     "file": "",
+     "bad": false
+    }
+   ]
+  },
+  {
+   "unit": "L5 · 2F drawer",
+   "head": "Level 1 of 3 L5 · 2F drawer330 × 240 × 100 mm · 31 parts · ≈ 1.27 kg",
+   "alerts": [],
+   "parts": [
+    {
+     "q": 1,
+     "label": "Module shell",
+     "file": "01. DRAWERS/03. L Families/L5/Modules/L5 Module 2F.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Drawer box",
+     "file": "01. DRAWERS/03. L Families/L5/Boxes/L5 Box 2F.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Drawer front (facade)",
+     "file": "01. DRAWERS/03. L Families/Facades/L2F (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 4,
+     "label": "Runner guide",
+     "file": "01. DRAWERS/07. Universal/Runners/x5 Runner Guide.stl",
+     "bad": false
+    },
+    {
+     "q": 4,
+     "label": "Runner slide",
+     "file": "01. DRAWERS/07. Universal/Runners/x5 Runner Slide.stl",
+     "bad": false
+    },
+    {
+     "q": 5,
+     "label": "Runner stopper incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Key lock",
+     "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Key cap incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Springs (pair) incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Springs.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Latch",
+     "file": "01. DRAWERS/07. Universal/Latch.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Label",
+     "file": "01. DRAWERS/07. Universal/Label.stl",
+     "bad": false
+    },
+    {
+     "q": 6,
+     "label": "Facade cap incl. 1 spare",
+     "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Backbone inferred",
+     "file": "03. MODIFICATIONS/Backbone/L2F Backbone.stl",
+     "bad": false
+    },
+    {
+     "q": 7,
+     "label": "M4 × 14 mm button-head bolt",
+     "file": "",
+     "bad": false
+    },
+    {
+     "q": 5,
+     "label": "M4 button-head bolt, 60–100 mm (to fit)",
+     "file": "",
+     "bad": false
+    }
+   ]
+  }
+ ],
+ "scope": [],
+ "top": "0% printed 0 of 89 parts · 12 of 12 plates left · ≈ 0 g of 5.35 kg",
+ "alerts": [],
+ "parts": [
+  {
+   "q": 1,
+   "label": "Module shell",
+   "file": "01. DRAWERS/03. L Families/L5/Modules/L5 Module 2F.stl",
+   "tags": [
+    "Fits",
+    "Exported at 45°"
+   ],
+   "dims": "330 × 105 × 230 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Module shell",
+   "file": "01. DRAWERS/03. L Families/L5/Modules/L5 Module 1F.stl",
+   "tags": [
+    "Fits",
+    "Exported at 45°"
+   ],
+   "dims": "330 × 57 × 230 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Case body (flat)",
+   "file": "02. SUSTAINERS/03. L Families/L5/Modules/L5 1F Flat Module.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "330 × 51 × 230 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Case front (facade)",
+   "file": "02. SUSTAINERS/03. L Families/Facades/L1F Facade.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "330 × 46 × 10 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Drawer box",
+   "file": "01. DRAWERS/03. L Families/L5/Boxes/L5 Box 2F.stl",
+   "tags": [
+    "Fits",
+    "Supports on"
+   ],
+   "dims": "299 × 228 × 86 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Drawer front (facade)",
+   "file": "01. DRAWERS/03. L Families/Facades/L2F (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "330 × 95 × 10 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Drawer box",
+   "file": "01. DRAWERS/03. L Families/L5/Boxes/L5 Box 1F.stl",
+   "tags": [
+    "Fits",
+    "Supports on"
+   ],
+   "dims": "299 × 228 × 38 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Drawer front (facade)",
+   "file": "01. DRAWERS/03. L Families/Facades/L1F (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "330 × 47 × 10 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 6,
+   "label": "Runner guide",
+   "file": "01. DRAWERS/07. Universal/Runners/x5 Runner Guide.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "228 × 27 × 9 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 6,
+   "label": "Runner slide",
+   "file": "01. DRAWERS/07. Universal/Runners/x5 Runner Slide.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "202 × 18 × 9 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 7,
+   "label": "Runner stopper incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "18 × 8 × 8 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Key lock",
+   "file": "01. DRAWERS/07. Universal/Key (Turn On Supports).stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "45 × 37 × 33 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 3,
+   "label": "Key cap incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Key Cap.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "38 × 13 × 12 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 3,
+   "label": "Springs (pair) incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Springs.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls"
+   ],
+   "dims": "76 × 48 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 6,
+   "label": "Latch",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls",
+    "Inferred"
+   ],
+   "dims": "97 × 75 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 3,
+   "label": "Label",
+   "file": "01. DRAWERS/07. Universal/Label.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "48 × 21 × 2 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 9,
+   "label": "Facade cap incl. 1 spare",
+   "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "10 × 10 × 4 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Backbone",
+   "file": "03. MODIFICATIONS/Backbone/L2F Backbone.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill",
+    "Inferred"
+   ],
+   "dims": "330 × 99 × 33 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Backbone",
+   "file": "03. MODIFICATIONS/Backbone/L1F Backbone.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill",
+    "Inferred"
+   ],
+   "dims": "330 × 47 × 33 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Lid",
+   "file": "02. SUSTAINERS/03. L Families/L5/Roofs/L5 Roof.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "Exported at 43°"
+   ],
+   "dims": "330 × 28 × 240 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Hinge",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/L-XL 1F Hinge.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "54 × 48 × 50 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Hinge tops (pair)",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/L-XL Hinge Top.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "57 × 31 × 40 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Hinge rods (pair) incl. 1 spare",
+   "file": "02. SUSTAINERS/05. Universal/Rods/L-XL Rods.stl",
+   "tags": [
+    "Fits",
+    "Exported at 87°"
+   ],
+   "dims": "105 × 22 × 13 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Lock holder",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK HOLDER.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "22 × 20 × 75 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Lock inner part",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK INNER PART.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "24 × 9 × 40 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Lock outer part",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK OUTER PART 1F.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "49 × 18 × 50 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 3,
+   "label": "Lock pin set incl. 1 spare",
+   "file": "02. SUSTAINERS/05. Universal/Locks/1 SET OF PINS FOR 1 LOCK.stl",
+   "tags": [
+    "Fits",
+    "Exported at 87°"
+   ],
+   "dims": "41 × 12 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Case label",
+   "file": "02. SUSTAINERS/05. Universal/Label for Sustainers.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "38 × 20 × 2 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Table roof (flat top)",
+   "file": "01. DRAWERS/03. L Families/L5/Roofs/L5 Table Roof.stl",
+   "tags": [
+    "Fits",
+    "Exported at 45°"
+   ],
+   "dims": "330 × 15 × 230 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Base",
+   "file": "03. MODIFICATIONS/Base/L/L5 Base.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill",
+    "Exported at 45°"
+   ],
+   "dims": "330 × 52 × 240 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Foot",
+   "file": "03. MODIFICATIONS/Feet/L Feet.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill"
+   ],
+   "dims": "270 × 92 × 61 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Wheel disk",
+   "file": "03. MODIFICATIONS/Wheels/Disk.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "4 walls · 25% infill"
+   ],
+   "dims": "142 × 142 × 20 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Bushing",
+   "file": "03. MODIFICATIONS/Wheels/Bushing.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill"
+   ],
+   "dims": "31 × 31 × 33 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Wheel cover",
+   "file": "03. MODIFICATIONS/Wheels/Cover.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill"
+   ],
+   "dims": "140 × 140 × 24 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Tire",
+   "file": "03. MODIFICATIONS/Wheels/Tyre (TPU).stl",
+   "tags": [
+    "Fits",
+    "TPU"
+   ],
+   "dims": "160 × 160 × 41 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Bushing jig (tool)",
+   "file": "03. MODIFICATIONS/Wheels/Jig.stl",
+   "tags": [
+    "Fits",
+    "Print aid"
+   ],
+   "dims": "38 × 38 × 20 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Pull-out handle",
+   "file": "03. MODIFICATIONS/Pull-out Handle/L Pull-out Handle.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill"
+   ],
+   "dims": "278 × 35 × 62 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Pull-out handle lock",
+   "file": "03. MODIFICATIONS/Backbone/L Pull-out Handle Lock.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill"
+   ],
+   "dims": "330 × 35 × 47 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Handle lock knob, part 1",
+   "file": "03. MODIFICATIONS/Backbone/Handle Lock Knob Part 1.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill",
+    "Inferred"
+   ],
+   "dims": "34 × 34 × 22 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Handle lock knob, part 2",
+   "file": "03. MODIFICATIONS/Backbone/Handle Lock Knob Part 2.stl",
+   "tags": [
+    "Fits",
+    "4 walls · 25% infill",
+    "Inferred"
+   ],
+   "dims": "38 × 13 × 12 mm",
+   "bed": "var(--ok)"
+  }
+ ],
+ "groups": [
+  "Module4 prints",
+  "Drawer4 prints",
+  "Runners19 prints",
+  "Lock26 prints",
+  "Backbone3 prints",
+  "Lid1 print",
+  "Hinges & locks14 prints",
+  "Roof1 print",
+  "Base2 prints",
+  "Wheels9 prints",
+  "Handles6 prints"
+ ],
+ "plates": [
+  {
+   "n": 1,
+   "head": "Plate 016 parts · ≈ 1000 g · 230 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Module shell",
+     "file": "L5 Module 1F.stl"
+    },
+    {
+     "count": 1,
+     "label": "Module shell",
+     "file": "L5 Module 2F.stl"
+    },
+    {
+     "count": 2,
+     "label": "Runner guide",
+     "file": "x5 Runner Guide.stl"
+    },
+    {
+     "count": 1,
+     "label": "Key cap",
+     "file": "Key Cap.stl"
+    },
+    {
+     "count": 1,
+     "label": "Facade cap",
+     "file": "Facade Cap.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 6,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 2,
+   "head": "Plate 0220 parts · ≈ 1000 g · 240 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Base",
+     "file": "L5 Base.stl"
+    },
+    {
+     "count": 1,
+     "label": "Case front (facade)",
+     "file": "L1F Facade.stl"
+    },
+    {
+     "count": 1,
+     "label": "Pull-out handle",
+     "file": "L Pull-out Handle.stl"
+    },
+    {
+     "count": 4,
+     "label": "Runner guide",
+     "file": "x5 Runner Guide.stl"
+    },
+    {
+     "count": 1,
+     "label": "Bushing jig (tool)",
+     "file": "Jig.stl"
+    },
+    {
+     "count": 2,
+     "label": "Key cap",
+     "file": "Key Cap.stl"
+    },
+    {
+     "count": 2,
+     "label": "Bushing",
+     "file": "Bushing.stl"
+    },
+    {
+     "count": 8,
+     "label": "Facade cap",
+     "file": "Facade Cap.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 20,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 3,
+   "head": "Plate 034 parts · ≈ 810 g · 230 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Case body (flat)",
+     "file": "L5 1F Flat Module.stl"
+    },
+    {
+     "count": 1,
+     "label": "Table roof (flat top)",
+     "file": "L5 Table Roof.stl"
+    },
+    {
+     "count": 2,
+     "label": "Wheel cover",
+     "file": "Cover.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 4,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 4,
+   "head": "Plate 043 parts · ≈ 480 g · 240 mm tall",
+   "tags": "Light greySupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Lid",
+     "file": "L5 Roof.stl"
+    },
+    {
+     "count": 1,
+     "label": "Drawer front (facade)",
+     "file": "L2F (Turn On Supports).stl"
+    },
+    {
+     "count": 1,
+     "label": "Drawer front (facade)",
+     "file": "L1F (Turn On Supports).stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 3,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 5,
+   "head": "Plate 052 parts · ≈ 180 g · 20 mm tall",
+   "tags": "Light greySupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Wheel disk",
+     "file": "Disk.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 2,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 6,
+   "head": "Plate 0613 parts · ≈ 590 g · 50 mm tall",
+   "tags": "Charcoal",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Backbone",
+     "file": "L2F Backbone.stl"
+    },
+    {
+     "count": 2,
+     "label": "Backbone",
+     "file": "L1F Backbone.stl"
+    },
+    {
+     "count": 1,
+     "label": "Pull-out handle lock",
+     "file": "L Pull-out Handle Lock.stl"
+    },
+    {
+     "count": 3,
+     "label": "Runner slide",
+     "file": "x5 Runner Slide.stl"
+    },
+    {
+     "count": 2,
+     "label": "Lock outer part",
+     "file": "LOCK OUTER PART 1F.stl"
+    },
+    {
+     "count": 3,
+     "label": "Lock pin set",
+     "file": "1 SET OF PINS FOR 1 LOCK.stl"
+    },
+    {
+     "count": 1,
+     "label": "Handle lock knob, part 2",
+     "file": "Handle Lock Knob Part 2.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 13,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 7,
+   "head": "Plate 079 parts · ≈ 400 g · 61 mm tall",
+   "tags": "Charcoal",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Foot",
+     "file": "L Feet.stl"
+    },
+    {
+     "count": 3,
+     "label": "Runner slide",
+     "file": "x5 Runner Slide.stl"
+    },
+    {
+     "count": 1,
+     "label": "Hinge tops (pair)",
+     "file": "L-XL Hinge Top.stl"
+    },
+    {
+     "count": 1,
+     "label": "Hinge",
+     "file": "L-XL 1F Hinge.stl"
+    },
+    {
+     "count": 1,
+     "label": "Handle lock knob, part 2",
+     "file": "Handle Lock Knob Part 2.stl"
+    },
+    {
+     "count": 2,
+     "label": "Handle lock knob, part 1",
+     "file": "Handle Lock Knob Part 1.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 9,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 8,
+   "head": "Plate 085 parts · ≈ 340 g · 86 mm tall",
+   "tags": "CharcoalSupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Drawer box",
+     "file": "L5 Box 2F.stl"
+    },
+    {
+     "count": 2,
+     "label": "Key lock",
+     "file": "Key (Turn On Supports).stl"
+    },
+    {
+     "count": 2,
+     "label": "Lock holder",
+     "file": "LOCK HOLDER.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 5,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 9,
+   "head": "Plate 093 parts · ≈ 210 g · 40 mm tall",
+   "tags": "CharcoalSupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Drawer box",
+     "file": "L5 Box 1F.stl"
+    },
+    {
+     "count": 2,
+     "label": "Lock inner part",
+     "file": "LOCK INNER PART.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 3,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 10,
+   "head": "Plate 1018 parts · ≈ 60 g · 13 mm tall",
+   "tags": "Orange",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Hinge rods (pair)",
+     "file": "L-XL Rods.stl"
+    },
+    {
+     "count": 6,
+     "label": "Latch",
+     "file": "Latch.stl"
+    },
+    {
+     "count": 3,
+     "label": "Springs (pair)",
+     "file": "Springs.stl"
+    },
+    {
+     "count": 7,
+     "label": "Runner stopper",
+     "file": "Runner Stopper.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 18,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 11,
+   "head": "Plate 114 parts · ≈ 0 g · 2 mm tall",
+   "tags": "Labels",
+   "care": "",
+   "rows": [
+    {
+     "count": 3,
+     "label": "Label",
+     "file": "Label.stl"
+    },
+    {
+     "count": 1,
+     "label": "Case label",
+     "file": "Label for Sustainers.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 4,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 12,
+   "head": "Plate 122 parts · ≈ 300 g · 41 mm tall",
+   "tags": "TPUTPU settings",
+   "care": "",
+   "rows": [
+    {
+     "count": 2,
+     "label": "Tire",
+     "file": "Tyre (TPU).stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 2,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  }
+ ],
+ "hardware": "Hardware to buy0 of 13 lines bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts5 lines 29× M4 × 14 mm button-head boltincl. 3 spare Drawer front to box, case hinge tops and locksStack 1 Amazon 14× M4 button-head bolt, 60–100 mm (to fit)incl. 2 spare · length depends on your build; buy what fits BackboneStack 1 9× M4 × 10 mm button-head boltincl. 1 spare Case hingesStack 1 Amazon 8× M4 × 20 mm button-head boltincl. 1 spare Case front and bodyStack 1 Amazon 14× M4 × 25 mm button-head boltincl. 2 spare Wheel covers (6 per wheel)Stack 1 AmazonM6 bolts and inserts4 lines 3× M6 × 90 mm button-head boltincl. 1 spare FeetStack 1 Amazon 5× M6 × 30 mm countersunk boltincl. 1 spare Pull-out handleStack 1 Amazon 3× M6 × 35 mm hex boltincl. 1 spare · not found on Amazon; try a hardware store Handle lockStack 1 3× M6 × 8 × 8 heat insertincl. 1 spare Handle lock knobsStack 1 AmazonAxle, rods and bearings4 lines 1× M16 threaded rod, 414 mm1 m rod, cut to length Wheel axleStack 1 Amazon 2× 6205ZZ bearing (25 × 52 × 15 mm) WheelsStack 1 Amazon 2× SCSAW shaft collar (16 mm bore) WheelsStack 1 Amazon 2× M16 rod, cut to stack height1 m rod, cut to length Pull-out handleStack 1 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Include spares10% more of the bolts and inserts, at least one Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
+}

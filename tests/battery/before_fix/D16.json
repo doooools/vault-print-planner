@@ -1,0 +1,520 @@
+{
+ "name": "D16",
+ "meta": {
+  "cfg": "D16",
+  "printer": "h2s",
+  "towers": "[{\"name\":\"Stack 1\",\"fp\":{\"w\":\"M\",\"d\":6},\"st\":\"feet\",\"L\":[[\"case M 6 2F roof=grid rails std empty ci=flat\"]]}]"
+ },
+ "when": "2026-11-12T08:57:47.871Z",
+ "printer": {
+  "id": "h2s"
+ },
+ "towers": [
+  {
+   "id": 1,
+   "name": "Stack 1",
+   "fp": {
+    "w": "M",
+    "d": 6
+   },
+   "levels": [
+    [
+     {
+      "type": "case",
+      "w": "M",
+      "d": 6,
+      "h": 2,
+      "lock": "std",
+      "gearedRails": true,
+      "interior": "empty",
+      "baseplateHandles": "0",
+      "gridAcross": 1,
+      "gridAlong": 0,
+      "gridHeight": "20",
+      "gridEdge": "straight",
+      "gridPin": "tight",
+      "roof": "grid",
+      "topHandle": false,
+      "caseInterior": "flat",
+      "caseBaseplate": false,
+      "dividers": {
+       "plain": 0,
+       "depth": 0,
+       "width": 0,
+       "seal": 0
+      },
+      "manualSupports": false,
+      "wallMount": false,
+      "pegboard": "none",
+      "backbone": "none"
+     }
+    ]
+   ],
+   "stack": {
+    "base": false,
+    "wheels": false,
+    "feet": true,
+    "casters": false,
+    "stationaryHandle": false,
+    "pullHandle": false
+   },
+   "roles": {}
+  }
+ ],
+ "printSkip": [],
+ "stackAlerts": [
+  "Everything in this stack fits together and fits the Bambu Lab H2S."
+ ],
+ "stackCard": [
+  "MStack 1M6 · 1 level"
+ ],
+ "levels": [
+  {
+   "unit": "M6 · 2F case",
+   "head": "Level 1 of 1 M6 · 2F case254 × 282 × 100 mm · 16 parts · ≈ 1.11 kg",
+   "alerts": [],
+   "parts": [
+    {
+     "q": 1,
+     "label": "Case body",
+     "file": "02. SUSTAINERS/02. M Families/M6/Modules/M6 2F Module .stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Case front (facade)",
+     "file": "02. SUSTAINERS/02. M Families/Facades/M2F Facade.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Lid (one piece)",
+     "file": "02. SUSTAINERS/02. M Families/M6/Roofs/M6 Roof Whole.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Hinge",
+     "file": "02. SUSTAINERS/05. Universal/Hinges/S-M 2-4F Hinge.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Hinge top",
+     "file": "02. SUSTAINERS/05. Universal/Hinges/M Hinge Top.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Hinge rods (pair) incl. 1 spare",
+     "file": "02. SUSTAINERS/05. Universal/Rods/S-M Rods.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Lock holder",
+     "file": "02. SUSTAINERS/05. Universal/Locks/LOCK HOLDER.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Lock inner part",
+     "file": "02. SUSTAINERS/05. Universal/Locks/LOCK INNER PART.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Lock outer part",
+     "file": "02. SUSTAINERS/05. Universal/Locks/LOCK OUTER PART 2-4F.stl",
+     "bad": false
+    },
+    {
+     "q": 2,
+     "label": "Lock pin set incl. 1 spare",
+     "file": "02. SUSTAINERS/05. Universal/Locks/1 SET OF PINS FOR 1 LOCK.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Latch inferred",
+     "file": "01. DRAWERS/07. Universal/Latch.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Case label",
+     "file": "02. SUSTAINERS/05. Universal/Label for Sustainers.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Front label",
+     "file": "01. DRAWERS/07. Universal/Label.stl",
+     "bad": false
+    },
+    {
+     "q": 1,
+     "label": "Grid roof (Gridfinity top)",
+     "file": "01. DRAWERS/02. M Families/M6/Roofs/M6 Grid Roof.stl",
+     "bad": false
+    },
+    {
+     "q": 18,
+     "label": "M4 × 14 mm button-head bolt",
+     "file": "",
+     "bad": false
+    },
+    {
+     "q": 9,
+     "label": "M4 × 10 mm button-head bolt",
+     "file": "",
+     "bad": false
+    },
+    {
+     "q": 8,
+     "label": "M4 × 20 mm button-head bolt",
+     "file": "",
+     "bad": false
+    }
+   ]
+  }
+ ],
+ "scope": [],
+ "top": "0% printed 0 of 16 parts · 6 of 6 plates left · ≈ 0 g of 1.11 kg",
+ "alerts": [],
+ "parts": [
+  {
+   "q": 1,
+   "label": "Case body",
+   "file": "02. SUSTAINERS/02. M Families/M6/Modules/M6 2F Module .stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "254 × 85 × 272 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Case front (facade)",
+   "file": "02. SUSTAINERS/02. M Families/Facades/M2F Facade.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "254 × 80 × 10 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Lid (one piece)",
+   "file": "02. SUSTAINERS/02. M Families/M6/Roofs/M6 Roof Whole.stl",
+   "tags": [
+    "Fits",
+    "Brim",
+    "Exported at 43°"
+   ],
+   "dims": "254 × 28 × 282 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Hinge",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/S-M 2-4F Hinge.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "67 × 56 × 40 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Hinge top",
+   "file": "02. SUSTAINERS/05. Universal/Hinges/M Hinge Top.stl",
+   "tags": [
+    "Fits",
+    "3 walls",
+    "Brim"
+   ],
+   "dims": "57 × 14 × 99 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Hinge rods (pair) incl. 1 spare",
+   "file": "02. SUSTAINERS/05. Universal/Rods/S-M Rods.stl",
+   "tags": [
+    "Fits",
+    "Exported at 86°"
+   ],
+   "dims": "84 × 21 × 13 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Lock holder",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK HOLDER.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "22 × 20 × 75 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Lock inner part",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK INNER PART.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "3 walls"
+   ],
+   "dims": "24 × 9 × 40 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Lock outer part",
+   "file": "02. SUSTAINERS/05. Universal/Locks/LOCK OUTER PART 2-4F.stl",
+   "tags": [
+    "Fits",
+    "3 walls"
+   ],
+   "dims": "55 × 18 × 50 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 2,
+   "label": "Lock pin set incl. 1 spare",
+   "file": "02. SUSTAINERS/05. Universal/Locks/1 SET OF PINS FOR 1 LOCK.stl",
+   "tags": [
+    "Fits",
+    "Exported at 87°"
+   ],
+   "dims": "41 × 12 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Latch",
+   "file": "01. DRAWERS/07. Universal/Latch.stl",
+   "tags": [
+    "Fits",
+    "Keep 2 walls",
+    "Inferred"
+   ],
+   "dims": "97 × 75 × 5 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Case label",
+   "file": "02. SUSTAINERS/05. Universal/Label for Sustainers.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "38 × 20 × 2 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Front label",
+   "file": "01. DRAWERS/07. Universal/Label.stl",
+   "tags": [
+    "Fits"
+   ],
+   "dims": "48 × 21 × 2 mm",
+   "bed": "var(--ok)"
+  },
+  {
+   "q": 1,
+   "label": "Grid roof (Gridfinity top)",
+   "file": "01. DRAWERS/02. M Families/M6/Roofs/M6 Grid Roof.stl",
+   "tags": [
+    "Fits",
+    "Supports on",
+    "Brim",
+    "Exported at 45°"
+   ],
+   "dims": "254 × 15 × 272 mm",
+   "bed": "var(--ok)"
+  }
+ ],
+ "groups": [
+  "Module2 prints",
+  "Lid1 print",
+  "Hinges & locks12 prints",
+  "Roof1 print"
+ ],
+ "plates": [
+  {
+   "n": 1,
+   "head": "Plate 013 parts · ≈ 820 g · 282 mm tall",
+   "tags": "Light grey",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Lid (one piece)",
+     "file": "M6 Roof Whole.stl"
+    },
+    {
+     "count": 1,
+     "label": "Case body",
+     "file": "M6 2F Module .stl"
+    },
+    {
+     "count": 1,
+     "label": "Case front (facade)",
+     "file": "M2F Facade.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 3,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 2,
+   "head": "Plate 021 part · ≈ 220 g · 272 mm tall",
+   "tags": "Light greySupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Grid roof (Gridfinity top)",
+     "file": "M6 Grid Roof.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 1,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 3,
+   "head": "Plate 035 parts · ≈ 50 g · 99 mm tall",
+   "tags": "Charcoal",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Hinge",
+     "file": "S-M 2-4F Hinge.stl"
+    },
+    {
+     "count": 1,
+     "label": "Hinge top",
+     "file": "M Hinge Top.stl"
+    },
+    {
+     "count": 1,
+     "label": "Lock outer part",
+     "file": "LOCK OUTER PART 2-4F.stl"
+    },
+    {
+     "count": 2,
+     "label": "Lock pin set",
+     "file": "1 SET OF PINS FOR 1 LOCK.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 5,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 4,
+   "head": "Plate 042 parts · ≈ 10 g · 75 mm tall",
+   "tags": "CharcoalSupports on",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Lock inner part",
+     "file": "LOCK INNER PART.stl"
+    },
+    {
+     "count": 1,
+     "label": "Lock holder",
+     "file": "LOCK HOLDER.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 2,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 5,
+   "head": "Plate 053 parts · ≈ 10 g · 13 mm tall",
+   "tags": "Orange",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Latch",
+     "file": "Latch.stl"
+    },
+    {
+     "count": 2,
+     "label": "Hinge rods (pair)",
+     "file": "S-M Rods.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 3,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  },
+  {
+   "n": 6,
+   "head": "Plate 062 parts · ≈ 0 g · 2 mm tall",
+   "tags": "Labels",
+   "care": "",
+   "rows": [
+    {
+     "count": 1,
+     "label": "Front label",
+     "file": "Label.stl"
+    },
+    {
+     "count": 1,
+     "label": "Case label",
+     "file": "Label for Sustainers.stl"
+    }
+   ],
+   "bed": [
+    340,
+    320
+   ],
+   "shapes": 2,
+   "out_of_bed": [],
+   "in_noprint": [],
+   "clashes": []
+  }
+ ],
+ "hardware": "Hardware to buy0 of 3 lines bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts3 lines 18× M4 × 14 mm button-head boltincl. 2 spare Case hinge tops and locksStack 1 Amazon 9× M4 × 10 mm button-head boltincl. 1 spare Case hingesStack 1 Amazon 8× M4 × 20 mm button-head boltincl. 1 spare Case front and bodyStack 1 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Include spares10% more of the bolts and inserts, at least one Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
+}
