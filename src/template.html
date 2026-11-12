@@ -1119,7 +1119,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const m = partMeta(path) || {};
     return { group: 'Extra parts', label: niceName(path), file: f, qty, total: qty, key: 'extra:' + path,
       color: m.role ? colorFor(m.role, null, null) : m.color || (/tpu/i.test(path) ? 'tpu' : 'body'), role: m.role, walls: m.walls, infill: m.infill, flex: m.flex,
-      supports: m.supports || /turn on supports/i.test(path) || f.needsSupport, tpu: m.tpu || /tpu/i.test(path), aid: m.aid,
+      supports: m.supports || /turn on supports/i.test(path), tpu: m.tpu || /tpu/i.test(path), aid: m.aid,
       note: m.label ? m.label.replace(/ \((left|right|S side|M side)\)$/, '') : '', fit: fitOf(f.dims, printer.v, f.ex) };
   }
   const extraLines = () => extras.map(e => extraLine(e.path, e.qty)).filter(Boolean);
@@ -1379,7 +1379,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function tagsFor(l) {
     const tags = [], fit = l.fit || fitOf(l.file.dims, printer.v, l.file.ex);
     tags.push(`<span class="tag ${FIT_CLASS[fit.s]}">${FIT_TEXT[fit.s]}${fit.tight ? ', tight' : ''}</span>`);
-    if (l.supports) tags.push(`<span class="tag sup" title="${l.supportsWhy === 'bambu' || (!/turn on supports/i.test(l.file.path) && l.file.needsSupport) ? 'Bambu Studio flags overhangs on this part when printed without supports, so the project turns them on' : 'USSA says to print this part with supports'}">Supports on</span>`);
+    if (l.supports) tags.push(`<span class="tag sup" title="${/turn on supports/i.test(l.file.path) ? 'USSA says to print this part with supports' : 'USSA names every other drawer front \u201cTurn On Supports\u201d; this one has the same overhangs'}">Supports on</span>`);
     if (l.walls) tags.push(`<span class="tag wall" title="${l.infill ? 'Carries load: extra walls and infill' : 'Takes bolts or wear: one extra wall'}">${l.walls} walls${l.infill ? ' \u00b7 ' + l.infill + '% infill' : ''}</span>`);
     if (brimOf(l.file)) tags.push('<span class="tag wall" title="Tall and thin: a 5 mm brim keeps it from wobbling loose late in the print">Brim</span>');
     if (l.flex) tags.push('<span class="tag wall" title="This part has to bend. More walls make it stiff and it can crack.">Keep 2 walls</span>');
