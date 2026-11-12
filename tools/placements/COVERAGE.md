@@ -92,11 +92,11 @@ part whose place was not measured in this pass; the units that list it can still
 | Grid divider, full depth (22) (S side) | 2 | by design | grid dividers: how many and where is the user's choice |
 | Grid divider, full depth (26-L) (S side) | 2 | by design | grid dividers: how many and where is the user's choice |
 | Front label | 50 | option, not measured | the drawer label the planner adds to a case: the case front has no slot for it (its own label is placed) |
-| Springs (pair) | 50 | option, not measured | inside the key lock, not assembled in the CAD file |
-| Springs (pair) (left) | 15 | option, not measured | inside the key lock, not assembled in the CAD file |
-| L² accessory, 1st | 15 | option, not measured | L² accessories: neither the manual nor the CAD file shows where they go |
-| L² accessory, 2nd | 15 | option, not measured | L² accessories: neither the manual nor the CAD file shows where they go |
-| Springs (pair) (S side) | 5 | option, not measured | inside the key lock, not assembled in the CAD file |
+| Springs (pair) | 50 | by design | inside the key lock: not drawn in the 3D view for now |
+| Springs (pair) (left) | 15 | by design | inside the key lock: not drawn in the 3D view for now |
+| L² accessory, 1st | 15 | option, not measured | L² and XL² accessories, one set per F: where they go in the module isn't known yet |
+| L² accessory, 2nd | 15 | option, not measured | L² and XL² accessories, one set per F: where they go in the module isn't known yet |
+| Springs (pair) (S side) | 5 | by design | inside the key lock: not drawn in the 3D view for now |
 ## Hardware (bolts)
 
 `hardware.py` finds, on every assembled unit, the holes each kind of bolt goes in and writes `hardware` into
