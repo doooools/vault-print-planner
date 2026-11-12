@@ -37,8 +37,9 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   `python -I src/build.py --public src/stl-measurements.tsv index.html previews/index.tsv`, then
   `python -I tools/check.py`. `.gitattributes` keeps text files in LF on every system. Keep `build.py` reading and
   writing UTF-8: the user's checkout is on Windows.
-- Commit or push only when the user asks. Work on a branch off `main`, one pull request per piece of work; merging is
-  the user's.
+- Work on a branch off `main` (`claude/<name>` for Claude's threads), one pull request per piece of work. Claude
+  commits, pushes and opens the pull request without asking first (the user's rule since 2026-11-12, confirmed in
+  this file's update); **merging stays with the user**.
 
 ## What is done
 - `src/build.py` fixed, plus `src/printer-beds.tsv` and `src/bambu-reach.tsv` recovered from the published page:
