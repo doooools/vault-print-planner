@@ -78,6 +78,13 @@ if pf.exists():
     # case dividers (tools/placements/measure_dividers.py): each body style's wall slots, and each divider file standing
     if "divider_files" in pl:
         place["divider_files"] = pl["divider_files"]
+    # drawer grid dividers (tools/placements/measure_grid.py): each box size's hole grid (from its 1F box), each box file's
+    # size and the matrix it was measured with, and each divider, edge piece and pin file standing
+    if "grid_boxes" in pl:
+        fam = lambda p: re.search(r"/((?:S|M|L|XL)\d) Box ", p).group(1)
+        place["grid"] = {fam(p): {k: g[k] for k in ("floor", "x", "z", "pitch", "walls")} for p, g in pl["grid_boxes"].items() if " Box 1F" in p}
+        place["grid_boxes"] = {p: [fam(p), g["m"]] for p, g in pl["grid_boxes"].items()}
+        place["grid_files"] = pl["grid_files"]
     # Packed for size (the page unpacks it on load, unpackPlacements in template.html): each part's file path and each
     # part's and bolt's matrix go in a table once, by index; whole numbers lose their ".0". About half the bytes.
     paths, mats = {}, {}

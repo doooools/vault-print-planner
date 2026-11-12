@@ -132,6 +132,15 @@ select.full { width: 100%; background: var(--sheet-2); border: 1px solid var(--l
 .dvplan .dvin { fill: var(--sheet-2); stroke: var(--edge); stroke-width: 1.5; }
 .dvplan .dvwall { fill: var(--edge); }
 .dvplan text { fill: var(--muted); font-size: 11px; }
+.gplan svg { cursor: crosshair; }
+.gplan .gh { fill: var(--edge); }
+.gplan .gseg .foot { stroke: var(--accent); opacity: .18; stroke-linecap: butt; }
+.gplan .gseg .reach { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 2 3; }
+.gplan .gseg .wall { stroke: var(--accent); stroke-width: 3; }
+.gplan .gseg text { fill: var(--ink); font-size: 10px; }
+.gplan .gseg.bad .foot { stroke: var(--bad); }
+.gplan .gseg.bad .wall, .gplan .gseg.bad .reach { stroke: var(--bad); stroke-dasharray: 4 3; }
+.gplan .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
 .dvs { cursor: pointer; outline: none; }
 .dvs .hit { stroke: transparent; stroke-width: 14; }
 .dvs .bar { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 4; opacity: .7; }
@@ -1804,6 +1813,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (u.h > 2) { u.pegboard = 'none'; u.backbone = 'none'; }
     if (u.drawers && (u.type !== 'drawer' || R.drawersOf(u).join() !== u.drawers.join() || u.drawers.length < 2)) delete u.drawers;
     syncDividers(u);
+    syncGrid(u);
   }
   // The footprint: written on every level. A pair that doesn't make the new width becomes one module of that width.
   function setFootprint(t, w, d) {
@@ -2111,9 +2121,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (u.interior === 'gridfinity' && ['S', 'M', 'L2', 'XL2'].includes(u.w))
         o += selRow('data-usel="baseplateHandles"', 'Baseplate cut-outs <span class="hint">for lifting it out</span>', [['0', 'None'], ...(u.w === 'M' ? [] : [['1', '1 handle']]), ['2', '2 handles']], u.baseplateHandles);
       if (u.interior === 'grid') {
-        o += `<div class="field"><div class="lbl">Grid dividers <span class="hint">per drawer, full-span pieces</span></div><div class="steppers">${stepRow('gridAcross', 'Side to side', u.gridAcross || 0)}${stepRow('gridAlong', 'Front to back', u.gridAlong || 0)}</div></div>`;
+        o += gridPlan(u) || `<div class="field"><div class="lbl">Grid dividers <span class="hint">per drawer, full-span pieces</span></div><div class="steppers">${stepRow('gridAcross', 'Side to side', u.gridAcross || 0)}${stepRow('gridAlong', 'Front to back', u.gridAlong || 0)}</div></div>`;
         o += selRow('data-usel="gridHeight"', 'Divider height', [['20', '20 mm (low)'], ['full', u.h === 1 ? 'Full height, 34.5 mm' : 'Tall, 82.5 mm']], u.gridHeight);
-        o += selRow('data-usel="gridEdge"', 'Edge pieces', [['straight', 'Straight'], ['rounded', 'Rounded']], u.gridEdge);
+        o += optRow('data-ucheck="gridSeal"', 'Close against the walls', 'A divider that ends at a wall takes one hole less and a straight edge piece, which closes the gap (instructions, option 2). Off: the longer divider alone, a few mm short of the wall.', u.gridSeal !== false);
       }
       o += `<div class="field"><div class="lbl">Lock</div><div class="seg">${useg('lock', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], u.lock)}</div></div>`;
       o += optRow('data-ucheck="gearedRails"', 'Geared rails', lay.length > 1 ? 'USSA: use them when a module holds more than one drawer.' : 'Optional in the manual. Recommended for 2F and 4F, and for extra locking force.', u.gearedRails);
@@ -2170,13 +2180,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     box.querySelectorAll('[data-ucheck]').forEach(el => el.onchange = () => set({ [el.dataset.ucheck]: el.checked }));
     box.querySelectorAll('[data-ustep]').forEach(b => b.onclick = () => {
       const id = b.dataset.ustep, d = +b.dataset.d;
-      set({ [id]: Math.max(0, Math.min(12, (u[id] || 0) + d)) });
+      // the grid steppers lay out an even grid again, over every box size of the unit
+      set({ [id]: Math.max(0, Math.min(12, (u[id] || 0) + d)), ...(id === 'gridAcross' || id === 'gridAlong' ? { gridPlans: {} } : {}) });
     });
     box.querySelectorAll('[data-dvslot]').forEach(g => {
       g.onclick = () => set(divToggle(u, g.dataset.dvslot));
       g.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set(divToggle(u, g.dataset.dvslot)); } };
     });
     box.querySelectorAll('[data-dvall]').forEach(b => b.onclick = () => set(divAll(u, b.dataset.dvall)));
+    box.querySelectorAll('[data-gplan]').forEach(svg => svg.onclick = e => { const pt = gridClick(u, svg.dataset.gplan, svg, e); if (pt) set(pt); });
+    box.querySelectorAll('[data-gclear]').forEach(b => b.onclick = () => set({ gridPlans: { ...(u.gridPlans || {}), [b.dataset.gclear]: [] } }));
   }
   // The measured placements a shell's drawer layouts need before the inspector offers them
   const layoutsReady = u => !!((PLACE.units[`drawer|${u.w}|${u.d}|${u.h}`] || {}).layouts);
@@ -2258,6 +2271,134 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const sp = caseSlots(u), pick = n => Array.from({ length: n }, (_, i) => i).filter(i => how === 'all' || (how === 'alt' && i % 2 === (n - 1) % 2));
     const sel = caseStyle(u) === 'sealed' ? { cells: sp.cells.map(() => pick(sp.rows.length)) } : { rows: pick(sp.rows.length), cols: how === 'none' ? [] : pick((sp.cols || []).length) };
     return { divSlots: { ...(u.divSlots || {}), [caseStyle(u)]: sel } };
+  }
+  // Drawer grid dividers (tools/placements/measure_grid.py, rules.js gridDividers). Each box's floor is a grid of peg
+  // holes (PLACE.grid[<w><d>]: first hole and count across (x) and front to back (z), walls, floor, in the frame of its
+  // 1F unit). The unit keeps one plan per box size (cfg.gridPlans[<w><d>], shared by its drawers of that size): a list
+  // of lines [o, at, s], o 'x' a divider running side to side on hole row `at`, 'z' one running front to back on
+  // column `at`, s a hole along it that the divider passes. Lines are laid out in order: a line runs from s both ways to
+  // the walls, or to a divider laid out before it that crosses its path. That divider's foot covers its own row and
+  // the next one on each side, so the line's holes start two rows away from it, and it ends there with a rounded edge
+  // piece. Between two walls it is the box's full-span file; at a wall, "N - 1" with a straight edge piece
+  // (cfg.gridSeal, the default) or "N" alone. Files go from 5 to 32 holes.
+  const GRID_FOOT = 12.68;   // half a divider's foot, mm
+  const gridFams = u => (u.w === 'L2' ? ['S'] : u.w === 'XL2' ? ['M', 'S'] : [u.w]).map(w => w + u.d);
+  const gridOf = fam => (PLACE.grid || {})[fam] || null;
+  // An even grid: `a` dividers side to side spread over the rows, `b` front to back over the columns. One way runs
+  // wall to wall and the other is cut into one piece per compartment; whichever leaves fewer pieces too short to make
+  // (the shortest file covers 5 holes), side to side running through when both do as well.
+  function gridEven(G, a, b, seal, fam) {
+    const n = { x: G.x[1], z: G.z[1] }, spread = (len, k) => Array.from({ length: k }, (_, i) => Math.round((i + 1) * (len + 1) / (k + 1) - 1));
+    const at = { x: spread(n.z, a), z: spread(n.x, b) };
+    const make = (o, q) => { const bounds = [-1, ...at[o], n[q]], out = at[o].map(r => [o, r, Math.round((n[o] - 1) / 2)]);
+      at[q].forEach(c => { for (let i = 1; i < bounds.length; i++) out.push([q, c, Math.round((bounds[i - 1] + bounds[i]) / 2)]); });
+      return out; };
+    const plans = [make('x', 'z'), make('z', 'x')], bad = l => gridLayout(G, l, seal, fam).filter(s => s.bad).length;
+    return bad(plans[1]) < bad(plans[0]) ? plans[1] : plans[0];
+  }
+  // The plan laid out: each line's span, file, edge pieces and whether it fits (`bad`: why not)
+  function gridLayout(G, lines, seal, fam) {
+    const w = fam.replace(/\d+$/, ''), d = +fam.match(/\d+$/)[0], full = R.gridFull(w, d), p = G.pitch;
+    const n = { x: G.x[1], z: G.z[1] }, pos = (o, i) => (o === 'x' ? G.x[0] : G.z[0]) + i * p;
+    // room between the first / last row (column) and its wall: a divider standing there must clear the wall
+    const gap = { x: [G.x[0] - G.walls[0], G.walls[1] - pos('x', n.x - 1)], z: [G.z[0] - G.walls[2], G.walls[3] - pos('z', n.z - 1)] };
+    const segs = [];
+    lines.forEach((ln, idx) => {
+      const [o, at, s] = ln, q = o === 'x' ? 'z' : 'x', len = n[o];
+      const seg = { o, at, s, idx, lo: -1, hi: len, bad: '' };
+      if (!(at >= 0 && at < n[q] && s >= 0 && s < len)) return;
+      // dividers laid out before it that cross its path
+      for (const c of segs) if (!c.bad && c.o === q && c.lo < at && at < c.hi) { if (c.at <= s && c.at > seg.lo) seg.lo = c.at; if (c.at >= s && c.at < seg.hi) seg.hi = c.at; }
+      if (seg.lo === s || seg.hi === s || (seg.lo >= 0 && s - seg.lo < 2) || (seg.hi < len && seg.hi - s < 2)) seg.bad = 'on another divider';
+      const wl = seg.lo < 0, wh = seg.hi >= len;
+      let a = wl ? 0 : seg.lo + 2, b = wh ? len - 1 : seg.hi - 2;
+      if (wl && wh) { const f = full[o], off = Math.round((len - f) / 2); a = off; b = off + f - 1; seg.ends = ['straight', 'straight']; }
+      else {
+        seg.ends = [wl ? (seal ? 'straight' : null) : 'rounded', wh ? (seal ? 'straight' : null) : 'rounded'];
+        if (wl && seal) a++;
+        if (wh && seal) b--;
+      }
+      seg.a = a; seg.b = b; seg.n = b - a + 1;
+      if (!seg.bad && seg.n < 5) seg.bad = 'too short: the shortest divider covers 5 holes';
+      if (!seg.bad && seg.n > 32) seg.bad = 'too long';
+      if (!seg.bad && ((at === 0 && gap[q][0] < GRID_FOOT) || (at === n[q] - 1 && gap[q][1] < GRID_FOOT))) seg.bad = 'too close to the wall';
+      if (!seg.bad) for (const c of segs) if (!c.bad && c.o === o && Math.abs(c.at - at) <= 2 && c.lo < seg.hi && seg.lo < c.hi) { seg.bad = 'too close to another divider'; break; }
+      segs.push(seg);
+    });
+    return segs;
+  }
+  const gridLines = (u, fam) => ((u.gridPlans || {})[fam]) || (gridOf(fam) ? gridEven(gridOf(fam), +u.gridAcross || 0, +u.gridAlong || 0, u.gridSeal !== false, fam) : []);
+  // The pieces a box's plan takes, for the rules: {n: {N: qty}, straight, rounded}
+  function gridPieces(segs) {
+    const pc = { n: {}, straight: 0, rounded: 0 };
+    segs.filter(s => !s.bad).forEach(s => { pc.n[s.n] = (pc.n[s.n] || 0) + 1; s.ends.forEach(e => { if (e) pc[e]++; }); });
+    return pc;
+  }
+  // Keep a drawer's plans and the pieces the rules read in step (from the counts for a drawer saved before it had one)
+  function syncGrid(u) {
+    if (u.type !== 'drawer' || u.interior !== 'grid') return;
+    const plans = {}, pieces = {};
+    for (const fam of gridFams(u)) {
+      const G = gridOf(fam);
+      if (!G) continue;
+      plans[fam] = gridLines(u, fam);
+      pieces[fam] = gridPieces(gridLayout(G, plans[fam], u.gridSeal !== false, fam));
+    }
+    u.gridPlans = { ...(u.gridPlans || {}), ...plans };
+    u.gridPieces = pieces;
+    const first = plans[gridFams(u)[0]];
+    if (first) { u.gridAcross = new Set(first.filter(l => l[0] === 'x').map(l => l[1])).size; u.gridAlong = new Set(first.filter(l => l[0] === 'z').map(l => l[1])).size; }
+  }
+  // A box seen from above, back at the top: its holes, and the dividers laid out on them. A click on a row or a column
+  // of holes adds a divider there (it runs to the walls or to the dividers already in its way) or takes it away.
+  function gridPlan(u) {
+    const fams = gridFams(u).filter(gridOf);
+    if (!fams.length) return '';
+    const seal = u.gridSeal !== false;
+    const one = fam => {
+      const G = gridOf(fam), [xl, xr, zb, zf] = G.walls, p = G.pitch, W = 300, k = (W - 16) / (xr - xl), H = Math.round((zf - zb) * k + 30);
+      const X = x => 8 + (x - xl) * k, Z = z => 8 + (z - zb) * k, f1 = v => v.toFixed(1);
+      const hx = i => G.x[0] + i * p, hz = j => G.z[0] + j * p, segs = gridLayout(G, gridLines(u, fam), seal, fam);
+      let g = `<rect class="dvin" x="${f1(X(xl))}" y="${f1(Z(zb))}" width="${f1(X(xr) - X(xl))}" height="${f1(Z(zf) - Z(zb))}" rx="3"/>`;
+      for (let j = 0; j < G.z[1]; j++) for (let i = 0; i < G.x[1]; i++) g += `<circle class="gh" cx="${f1(X(hx(i)))}" cy="${f1(Z(hz(j)))}" r="${Math.max(1, 2 * k).toFixed(2)}"/>`;
+      segs.forEach(s => {
+        const along = s.o === 'x' ? hx : hz, at = s.o === 'x' ? hz(s.at) : hx(s.at);
+        const lim = (b, wall) => b < 0 || b >= (s.o === 'x' ? G.x[1] : G.z[1]) ? wall : along(b);
+        const e0 = lim(s.lo, s.o === 'x' ? xl : zb), e1 = lim(s.hi, s.o === 'x' ? xr : zf);
+        const P = (t, v) => s.o === 'x' ? [X(t), Z(v)] : [X(v), Z(t)], A = P(e0, at), B = P(e1, at);
+        const c0 = P(along(s.a) - p / 2, at), c1 = P(along(s.b) + p / 2, at);
+        const lbl = s.bad ? `Can't go here: ${s.bad}` : `${s.n}-hole divider${s.ends.includes('rounded') ? ', stops at a divider' : ''}`;
+        g += `<g class="gseg${s.bad ? ' bad' : ''}"><title>${lbl}</title><line class="foot" x1="${f1(c0[0])}" y1="${f1(c0[1])}" x2="${f1(c1[0])}" y2="${f1(c1[1])}" stroke-width="${f1(2 * GRID_FOOT * k)}"/>`
+          + `<line class="reach" x1="${f1(A[0])}" y1="${f1(A[1])}" x2="${f1(B[0])}" y2="${f1(B[1])}"/><line class="wall" x1="${f1(c0[0])}" y1="${f1(c0[1])}" x2="${f1(c1[0])}" y2="${f1(c1[1])}"/>`
+          + (s.bad ? '' : `<text x="${f1((c0[0] + c1[0]) / 2 + (s.o === 'z' ? 7 : 0))}" y="${f1((c0[1] + c1[1]) / 2 + (s.o === 'x' ? -6 : 3))}" text-anchor="${s.o === 'z' ? 'start' : 'middle'}">${s.n}</text>`) + '</g>';
+      });
+      g += `<text x="${W / 2}" y="${H - 6}" text-anchor="middle">Front</text>`;
+      const ok = segs.filter(s => !s.bad), bad = segs.length - ok.length;
+      return `${fams.length > 1 ? `<div class="hint">${fam.replace(/\d+$/, '')} drawer</div>` : ''}<svg viewBox="0 0 ${W} ${H}" data-gplan="${fam}" role="img" aria-label="The ${fam} box from above, back at the top: ${plural(ok.length, 'divider')}">${g}</svg>
+        <div class="dvfoot"><span class="mono">${plural(ok.length, 'divider')}${bad ? ` · <span style="color:var(--bad)">${bad} can't fit (red)</span>` : ''}</span><span class="dvacts"><button type="button" class="btn" data-gclear="${fam}">Clear</button></span></div>`;
+    };
+    return `<div class="field dvplan gplan"><div class="lbl">Grid dividers <span class="hint">click a row of holes to add or remove one</span></div>
+      ${fams.map(one).join('')}
+      <div class="lbl" style="margin-top:8px">Even grid <span class="hint">starts the plan again</span></div>
+      <div class="steppers">${stepRow('gridAcross', 'Side to side', u.gridAcross || 0)}${stepRow('gridAlong', 'Front to back', u.gridAlong || 0)}</div>
+      <p class="pnote" style="margin:0">A divider runs to the walls, or stops at a divider already in its way (a rounded edge piece rides over that one's foot). The number is the file: how many holes it covers.${u.w === 'L2' || u.w === 'XL2' || R.drawersOf(u).length > 1 ? ' Drawers of one size share their plan.' : ''}</p></div>`;
+  }
+  // A click on a plan: the row or column of holes nearest to it, and the hole along it
+  function gridClick(u, fam, svg, ev) {
+    const G = gridOf(fam), [xl, xr, zb] = G.walls, k = (300 - 16) / (xr - xl), r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+    const x = xl + ((ev.clientX - r.left) * vb.width / r.width - 8) / k, z = zb + ((ev.clientY - r.top) * vb.height / r.height - 8) / k;
+    const fi = (x - G.x[0]) / G.pitch, fj = (z - G.z[0]) / G.pitch, i = Math.max(0, Math.min(G.x[1] - 1, Math.round(fi))), j = Math.max(0, Math.min(G.z[1] - 1, Math.round(fj)));
+    const o = Math.abs(fj - Math.round(fj)) <= Math.abs(fi - Math.round(fi)) ? 'x' : 'z', at = o === 'x' ? j : i, s = o === 'x' ? i : j;
+    const lines = gridLines(u, fam), segs = gridLayout(G, lines, u.gridSeal !== false, fam);
+    const hit = segs.find(g => g.o === o && g.at === at && g.lo < s && s < g.hi);
+    let next;
+    if (hit) next = lines.filter((_, n) => n !== hit.idx);
+    else {
+      next = [...lines, [o, at, s]];
+      const got = gridLayout(G, next, u.gridSeal !== false, fam).pop();
+      if (!got || got.bad) { toast(`No divider there: ${got ? got.bad : 'off the grid'}.`); return null; }
+    }
+    return { gridPlans: { ...(u.gridPlans || {}), [fam]: next } };
   }
   const layIcon = (l, h) => `<svg width="26" height="34" viewBox="0 0 26 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">${(() => { let y = 2; return l.map(dh => { const hh = 30 * dh / h, r = `<rect x="2" y="${y + 0.75}" width="22" height="${hh - 1.5}" rx="1.5"/><path d="M10 ${y + hh / 2}h6"/>`; y += hh; return r; }).join(''); })()}</svg>`;
   // Segmented settings of a module: buttons read "key=value" from data-useg
@@ -3016,7 +3157,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   const PLACE = unpackPlacements(window.VAULT_PLACEMENTS) || { units: {}, stack: { first: 52, per_level: 48 } };
   // Cases saved with divider counts only get the slots they fill (syncDividers)
-  towers.forEach(t => t.levels.forEach(lv => lv.forEach(syncDividers)));
+  towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { syncDividers(u); syncGrid(u); })));
   const CDN_THREE = 'https://cdn.jsdelivr.net/npm/three@0.186.1/';
   const CDN_SIMPLIFIER = 'https://cdn.jsdelivr.net/npm/meshoptimizer@1.3.0/meshopt_simplifier.js';
   const SIMPLIFY_MM = 0.15; // how far a simplified surface may stray from the part's, in mm
@@ -3226,6 +3367,38 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (depth) sel.cols.forEach(i => out.push(at(depth, sp.cols[i], sp.back)));
     return out;
   }
+  // A drawer's grid dividers in 3D (measure_grid.py): each box's plan laid out in the frame its grid was measured in
+  // (grid_boxes[<box file>] = [size, m]), then moved with the box: (the box's matrix here) x inverse(m). Each piece
+  // goes in the box's group with its drawer's tags, so it slides out with it. Matrices are 3x4, row major.
+  const m34 = (A, B) => { const o = []; for (let r = 0; r < 3; r++) { for (let c = 0; c < 4; c++) o.push(A[r * 4] * B[c] + A[r * 4 + 1] * B[4 + c] + A[r * 4 + 2] * B[8 + c] + (c === 3 ? A[r * 4 + 3] : 0)); } return o; };
+  const inv34 = M => { const R = [[M[0], M[4], M[8]], [M[1], M[5], M[9]], [M[2], M[6], M[10]]], t = [M[3], M[7], M[11]];
+    return R.flatMap((row, r) => [...row, -(row[0] * t[0] + row[1] * t[1] + row[2] * t[2])]); };
+  // x along `d` (a unit vector in the floor's plane), y up, at (x, y, z)
+  const m34At = (d, x, y, z) => [d[0], 0, -d[2], x, 0, 1, 0, y, d[2], 0, d[0], z];
+  function gridParts(unit, parts) {
+    const u = unit.cfg, F = PLACE.grid_files || {}, GB = PLACE.grid_boxes || {};
+    if (u.type !== 'drawer' || u.interior !== 'grid') return [];
+    const out = [];
+    parts.forEach(([path, , group, M, o]) => {
+      const gb = GB[path], G = gb && gridOf(gb[0]);
+      if (!G) return;
+      const fam = gb[0], T = m34(M, inv34(gb[1])), dh = +((path.match(/ Box (\d)F/) || [])[1] || 1), tags = o && o.drawer != null ? { drawer: o.drawer, side: o.side } : undefined;
+      const put = (file, m) => { if (F[file]) out.push([file, 'interior', group, m34(T, m34(m, F[file])), tags]); };
+      const p = G.pitch, hx = i => G.x[0] + i * p, hz = j => G.z[0] + j * p, y = G.floor;
+      gridLayout(G, (u.gridPlans || {})[fam] || [], u.gridSeal !== false, fam).filter(s => !s.bad).forEach(s => {
+        const X = s.o === 'x', along = X ? hx : hz, at = X ? hz(s.at) : hx(s.at), d = X ? [1, 0, 0] : [0, 0, 1], back = d.map(v => -v);
+        const pt = t => X ? [t, at] : [at, t], len = X ? G.x[1] : G.z[1];
+        const c = pt((along(s.a) + along(s.b)) / 2);
+        put(R.gridFile(dh, u, s.n), m34At(d, c[0], y, c[1]));
+        // edge pieces: at a wall its face on the wall, at a divider its tip on that divider's middle; tongue inwards
+        const e0 = s.lo < 0 ? (X ? G.walls[0] : G.walls[2]) : along(s.lo), e1 = s.hi >= len ? (X ? G.walls[1] : G.walls[3]) : along(s.hi);
+        [[s.ends[0], e0, d], [s.ends[1], e1, back]].forEach(([kind, e, dir]) => { if (kind) { const q = pt(e); put(R.gridEdgeFile(dh, u, kind), m34At(dir, q[0], y, q[1])); } });
+        // pins, in the holes 1.5 pitches in from the divider's ends, down in the floor's holes
+        [s.a + 1, s.b - 1].forEach(i => { const q = pt(along(i)); put(R.gridPinFile(u), m34At([1, 0, 0], q[0], y - 2.8, q[1])); });
+      });
+    });
+    return out;
+  }
   // A module holding several drawers (R.drawersOf; README "Layouts"): the shell's own parts (shell, guides, stoppers,
   // latches) and each drawer's parts from the layout, tagged with their drawer (`mv`: side + index) and its joints.
   function placeParts(unit) {
@@ -3250,6 +3423,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (cb) pl = { ...pl, parts: [...pl.parts, ...cb.parts] };
     // Its dividers, in the slots it fills (measure_dividers.py: each file standing in its own frame, moved to its slot)
     if (unit.cfg.type === 'case') { const dp = dividerParts(unit); if (dp.length) pl = { ...pl, parts: [...pl.parts, ...dp] }; }
+    { const gp = gridParts(unit, pl.parts); if (gp.length) pl = { ...pl, parts: [...pl.parts, ...gp] }; }
     const mvOf = o => o && o.drawer != null ? (o.side || '') + o.drawer : null;
     const has = new Map([...(unit.shared || []), ...unit.lines].map(l => [R.norm(l.file.path), l]));
     const parts = pl.parts.filter(([p]) => has.has(R.norm(p)) && !NOT_DRAWN.test(p)).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, piece: o && o.piece, joint: o && o.joint, mv: mvOf(o), role: l.role, cfg: l.cfg }; });
@@ -4549,8 +4723,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     ] },
     { id: 'interior', title: 'Drawer interiors', when: b => b.lines.some(l => /Gridfinity baseplate|Grid divider/.test(l.label)), steps: [
       { t: 'Drop the Gridfinity baseplate into the drawer box.', p: /Gridfinity baseplate/, when: b => b.lines.some(l => /Gridfinity baseplate/.test(l.label)), src: 'Manual: Interiors' },
-      { t: 'Set each full-width grid divider across the box and add an edge piece at each wall.', p: /Grid divider, full width|Divider edge/, when: b => b.lines.some(l => /Grid divider/.test(l.label)), src: 'Grid Dividers instructions 1\u20132' },
-      { t: 'Pin the dividers into the floor holes. Count open holes to size any partial divider: the number on a divider file is how many holes it spans.', p: /Divider pin|Grid divider, full depth/, when: b => b.lines.some(l => /Grid divider/.test(l.label)), src: 'Grid Dividers instructions 3\u20136' },
+      { t: 'Set the dividers that run from wall to wall first: pin each into its row of floor holes and slide a straight edge piece into each end, against the wall.', p: /Grid divider .*full|Divider edge piece, straight|Divider pin/, when: b => b.lines.some(l => /Grid divider/.test(l.label)), src: 'Grid Dividers instructions 1\u20132' },
+      { t: 'Then the ones that stop at a divider: a rounded edge piece in that end rides over the other divider\u2019s foot. At a wall, a straight edge piece closes the gap. The number on a divider file is how many holes it covers.', p: /Grid divider \d+ \(\d+ holes\)|Divider edge piece, rounded/, when: b => b.lines.some(l => /Grid divider/.test(l.label)), src: 'Grid Dividers instructions 3\u20136' },
     ] },
     { id: 'case', title: 'Top-opening cases', inferred: 'USSA has no step-by-step for cases. This order is worked out from the naming and hardware pages.', when: b => b.lines.some(l => /^Case body/.test(l.label)), steps: [
       { t: 'Bolt the case front to the case body.', p: /^Case body|^Case front/, hw: /M4 \u00d7 20/, src: 'Manual: Required Hardware \u2013 Sustainers' },

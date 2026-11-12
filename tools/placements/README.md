@@ -363,6 +363,36 @@ along +z from its back end at z = 0, middle plane at x = 0). The page (`dividerP
 fills (`cfg.divSlots`), turned half a turn in a cell right of the middle. In the planner, a case fills slots, and its
 divider counts (`cfg.dividers`, what `rules.js` reads) follow; `rules.js` leaves out dividers its body style can't take.
 
+## Drawer grid dividers
+
+`measure_grid.py` (numpy, on the files) measures each drawer box's peg-hole grid and how each grid divider, edge piece
+and pin file stands. USSA's own instructions are `01. DRAWERS/07. Universal/Grid Dividers/01. INSTRUCTIONS`.
+
+- The floor is a grid of 4 mm holes 10.5 mm apart: 12 columns on S, 20 on M, 26 on L, 34 on XL; 4 rows per depth step
+  (x3 = 12 ... x7 = 28). The first hole is 7.2 mm from the side walls on S, 9.8 on M, 16.1 on L, about 11 on XL (its
+  walls lean a few mm); 7.5 mm from the back. The box is open at the front but for a block in the middle, about 9 mm
+  in front of the last row. Floor at y = 12.8 (XL 14.3), holes 2.8 mm deep. The 2F and 4F boxes have the same grid as
+  the 1F one in their own unit (checked on S3 4F and L7 2F); those not measured get the 1F box's (`"as"`).
+- A divider stands on one row of holes: a 25.35 mm foot filleted up to a ~3 mm wall, 20, 34.5 or 82.5 mm tall. File N
+  is 10.5 × N mm long and covers N holes; two pins hold it, in its 2nd and (N−1)th holes (blind 11 mm holes in its
+  foot; the 13.85 mm pin goes 2.8 mm into the floor). Each end has a 12 mm slot for an edge piece's tongue.
+- Straight edge piece: a 7.5 mm plate, 25.35 wide, that closes against a wall; its tongue slides in the slot, so it
+  bridges 8 to 20 mm. Rounded edge piece: an arrow whose underside is a divider's fillet: it rides over the foot of a
+  divider running across, its tip on that divider's middle plane. (The planner used to offer "Rounded" as a style
+  of wall piece; the instructions use it only where a divider meets another.)
+- Full span: the file named after the box (10-S, 18-M, 26-L, 32-XL across; 10, 14, 18, 22, 26 front to back), centred
+  (it leaves the outer hole free on S, M, XL and covers all 26 on L), a straight piece at each wall. A divider that
+  stops at another one covers the holes from two rows past it (its foot covers its own row and the next) and ends
+  there with a rounded piece; at a wall, "N − 1" and a straight piece (instructions option 2) or "N" alone (option 1).
+- Two parallel dividers need 3 rows between them (their feet are 25.35 mm wide), and the outer rows only take one
+  where the wall is more than half a foot away (L's side columns). Files run from 5 to 32 holes.
+
+In the JSON: `grid_boxes[<box file>] = {m, floor, x: [x0, nx], z: [z0, nz], pitch, walls: [left, right, back, front]}`
+in the frame of the unit the box was measured in (`m` its matrix there; XL6/XL7: under Part 1, for both parts), and
+`grid_files[path]`, the file to the piece's own frame (bottom at y = 0; a divider along x centred on 0; an edge piece
+with its face or tip at x = 0, tongue along +x; a pin standing). The page (`gridLayout`, `gridParts`) lays out the plan
+the unit keeps per box size (`cfg.gridPlans`) and moves it with the box: (box matrix here) × inverse(`m`).
+
 ## How it is measured
 
 The files are exported in print orientation (some at 45° to fit the bed) and scattered around one big CAD scene. Some parts are already in their assembled place relative to each other: the box, the baseplate, the stopper and the latch (X/Y). The rest is found by measurement in Blender:
@@ -391,6 +421,7 @@ The files are exported in print orientation (some at 45° to fit the bed) and sc
 | `measure_baseplates.py` | The XL drawers' Gridfinity baseplates (into `drawer|XL|<d>|1`) and the cases' (`casebase|<w>|<d>`). |
 | `measure_lock_pins.py` | The case locks' pins, one `piece` each, on the latches' pins A and B (every `case|*`). |
 | `measure_dividers.py` | The case bodies' divider slots (`dividers` in every `case|*`) and each divider file standing (`divider_files`). |
+| `measure_grid.py` | The drawer boxes' peg-hole grids (`grid_boxes`) and each grid divider, edge piece and pin file standing (`grid_files`). |
 | `check_layouts.py` | The layouts' motion, one drawer at a time with the others in place (kinematics.py's check). |
 | `kinematics.py` | The units' motion as the page runs it (every part's pose at t, 0 closed … 1 open), and a check that no part goes through another on the way (sections across the motion, shapely). |
 | `blender_motion.py` | Key frames of a unit opening, from the JSON alone with kinematics.py's pose: views and sections. |

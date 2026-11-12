@@ -21,7 +21,10 @@ const variants = [{ lock: 'std', roof: 'grid', baseplateHandles: '0', caseInteri
   { lock: 'hidden', roof: 'heavy', baseplateHandles: '2', caseInterior: 'dividers' },
   { roof: 'table', baseplateHandles: '1', caseInterior: 'sealed' },
   { roof: 'bowl', interior: 'grid', gridHeight: 'full', gridEdge: 'rounded', gridPin: 'loose' },
-  { roof: 'undertable', interior: 'grid' }, { roof: 'heavycut', interior: 'grid', gridEdge: 'rounded' }];
+  { roof: 'undertable', interior: 'grid' }, { roof: 'heavycut', interior: 'grid', gridEdge: 'rounded' },
+  // a plan laid out by the page: every divider file (5 ... 32 holes) and both edge pieces, at every height
+  ...['20', 'full'].map(gridHeight => ({ roof: 'grid', interior: 'grid', gridHeight, gridPieces: Object.fromEntries(['S', 'M', 'L', 'XL'].flatMap(w => R.DEPTHS.map(d => [w + d,
+    { n: Object.fromEntries(Array.from({ length: 28 }, (_, i) => [i + 5, 1])), straight: 1, rounded: 1 }]))) }))];
 for (const type of ['drawer', 'case']) for (const w of Object.keys(R.HEIGHTS[type])) for (const d of R.DEPTHS) for (const h of R.HEIGHTS[type][w])
   for (const v of variants) {
     const c = { type, w, d, h, ...all, ...v };
