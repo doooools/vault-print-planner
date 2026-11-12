@@ -68,6 +68,10 @@ for (const w of ['S', 'M', 'L', 'XL']) for (const heights of [[2, 1], [1, 1, 1]]
   merge(`column|${w}`, R.buildBackbones({ w, base: true, heights, upTo: heights.length - 1, universal: false }, resolve));
   merge('column|U', R.buildBackbones({ w, base: true, heights, upTo: heights.length - 1, universal: true }, resolve));
 }
+// The universal pull-out handle lock (one per rod, in column|U with the universal backbones; not on S) and the module
+// connectors (src/stl-placements.json "connectors", measure_connectors.py; the page lays them out by stack)
+for (const w of ['M', 'L', 'XL']) merge('column|U', { lines: R.buildStack({ w, d: 3, pullHandle: true, handleLock: 'universal' }, resolve).lines.filter(l => /handle lock/i.test(l.label)), missing: [] });
+merge('connectors', R.buildConnectors({ ones: 1, twos: 1 }, resolve));
 const res = {};
 for (const [k, u] of Object.entries(units)) res[k] = { lines: u.lines, missing: [...u.missing] };
 fs.writeFileSync(out, JSON.stringify(res, null, 1));

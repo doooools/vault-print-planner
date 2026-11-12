@@ -880,7 +880,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     gridAcross: 1, gridAlong: 0, gridHeight: '20', gridEdge: 'straight', gridPin: 'tight', roof: 'grid', topHandle: false,
     caseInterior: 'flat', caseBaseplate: false, dividers: { plain: 0, depth: 0, width: 0, seal: 0 }, manualSupports: false,
     wallMount: false, pegboard: 'none', backbone: 'none' };
-  const STACK_DEFAULT = { base: false, wheels: false, feet: true, casters: false, stationaryHandle: false, pullHandle: false };
+  const STACK_DEFAULT = { base: false, wheels: false, feet: true, casters: false, stationaryHandle: false, pullHandle: false, handleLock: 'family', connectors: false };
   const clean = cfg => { const k = Object.assign({}, DEFAULT, JSON.parse(JSON.stringify(cfg))); k.dividers = Object.assign({}, DEFAULT.dividers, k.dividers); return k; };
 
   let printer = store.get('printer', { id: 'p1s', v: [256, 256, 250] });
@@ -1071,12 +1071,22 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const usesStack = s.base || s.stationaryHandle || s.pullHandle;
     if (usesStack) {
       if (!fam) issues.push({ k: 'bad', m: 'The bottom level isn\u2019t a standard Vault width, so no base or handle fits it.' });
-      else parts.push(paintLines(finish(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)), null));
+      else {
+        const st = paintLines(finish(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)), null);
+        parts.push(st);
+        if (st.lines.some(l => /^Pull-out handle lock$/.test(l.label) && l.fit && (l.fit.s === 'no' || l.fit.s === 'reorient')))
+          issues.push({ k: 'warn', m: `The ${fam} pull-out handle lock is too big for the ${printerName()}. Pick the universal lock in the stack settings: two small ones, one per rod.` });
+      }
       if (L[0].some(u => u.h !== 2)) issues.push({ k: 'info', m: 'USSA recommends a 2F unit directly on the base when you use a base, wheels or handles.' });
       if (L.length > 1 && topLv.some(u => u.h !== 2)) issues.push({ k: 'info', m: 'USSA also recommends a 2F unit at the top, just under the roof.' });
     }
     const col = columnPlan(t);
     if (col) parts.push(paintLines(finish(R.buildBackbones(col, resolve)), null));
+    if (s.connectors) {
+      const cp = connectorPlan(t);
+      if (cp.ones + cp.twos) parts.push(paintLines(finish(R.buildConnectors(cp, resolve)), null));
+      else issues.push({ k: 'info', m: 'No joint of this stack takes a module connector: they go between two drawer modules, at back corners that no backbone, handle lock or wall plate covers.' });
+    }
     const height = L.reduce((a, lv) => a + levelHeight(lv), 0);
     return { issues, parts, height, fam };
   }
@@ -1093,6 +1103,61 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const chosen = L.flat().filter(u => u.backbone && u.backbone !== 'none');
     return { w: fam, base: !!s.base, heights: L.map(lv => Math.max(...lv.map(u => u.h))), upTo,
       universal: chosen.length > 0 && chosen.every(u => u.backbone === 'universal') };
+  }
+
+  // Module connectors (tools/placements/measure_connectors.py): every drawer module has a hole in its back 8.15 mm in from
+  // each side (an L\u00b2 or XL\u00b2 shell also at its inner seam, as two modules would), at each level's bottom (9.57 mm) and
+  // top (47.07 mm), and the top one of a module is 14.5 mm under the bottom one of the module on it: what a 1F connector's
+  // two holes span. A joint takes one at each back corner the two levels share, when both units there are drawers,
+  // neither has a wall plate (it takes those holes) and no backbone or handle lock covers the holes (the column's pieces
+  // lie flat on the modules' back: a family one across the whole width, a universal one from the side in to its rod's
+  // far side). Up a corner, two joints either side of a 1F module take one 2F connector. Not on the base: its holes are
+  // 19.1 mm from the first module's. Returns { ones, twos, at: [{ x, i (the lower level), f (1 or 2) }] }.
+  const CORNER_IN = 8.15;
+  function levelCorners(lv) {
+    const W = levelWidth(lv), out = [];
+    let x0 = -W / 2;
+    lv.forEach(u => {
+      const w = R.WIDTH_MM[u.w], parts = u.w === 'L2' ? ['S', 'S'] : u.w === 'XL2' ? ['S', 'M'] : [u.w];
+      let x = x0;
+      parts.forEach(p => { const pw = R.WIDTH_MM[p]; out.push({ x: x + CORNER_IN, u }, { x: x + pw - CORNER_IN, u }); x += pw; });
+      x0 += w;
+    });
+    return out;
+  }
+  function connectorPlan(t) {
+    const L = t.levels, s = t.stack || STACK_DEFAULT, none = { ones: 0, twos: 0, at: [] };
+    if (L.length < 2) return none;
+    const fam = R.familyForWidth(levelWidth(L[0])), W = fam ? R.WIDTH_MM[fam] : levelWidth(L[0]);
+    // the column's slots, bottom to top: the base (one), then each level's F; the backbones take the first `f`, the lock the next
+    const base = !!(s.base && fam), first = [];
+    { let k = base ? 1 : 0; L.forEach(lv => { first.push(k); k += Math.max(...lv.map(u => u.h)); }); }
+    const col = columnPlan(t), bb = col ? R.buildBackbones(col, resolve).f : 0;
+    const lockAt = s.pullHandle && col ? bb : -1;
+    const covers = (slot, x) => {
+      const a = Math.abs(x);
+      if (slot < bb) return !col.universal || a >= W / 2 - 63.05;
+      if (slot === lockAt) return s.handleLock !== 'universal' || fam === 'S' || a >= W / 2 - 89.1;
+      return false;
+    };
+    const ok = (c, slot) => c.u.type === 'drawer' && !c.u.wallMount && !covers(slot, c.x);
+    const joints = new Map(); // x -> lower levels i whose joint with i + 1 takes a connector
+    for (let i = 0; i + 1 < L.length; i++) {
+      const fi = Math.max(...L[i].map(u => u.h)), up = levelCorners(L[i + 1]);
+      for (const c of levelCorners(L[i])) {
+        const d = up.find(e => Math.abs(e.x - c.x) < 0.5);
+        if (!d || !ok(c, first[i] + fi - 1) || !ok(d, first[i + 1])) continue;
+        const k = Math.round(c.x * 10) / 10;
+        if (!joints.has(k)) joints.set(k, []);
+        joints.get(k).push(i);
+      }
+    }
+    const at = [];
+    for (const [x, is] of joints) for (let j = 0; j < is.length; j++) {
+      const i = is[j], mid = L[i + 1];
+      if (is[j + 1] === i + 1 && Math.max(...mid.map(u => u.h)) === 1) { at.push({ x, i, f: 2 }); j++; } else at.push({ x, i, f: 1 });
+    }
+    return { ones: at.filter(a => a.f === 1).length, twos: at.filter(a => a.f === 2).length, at };
   }
 
   // ---------- extra parts: any single STL, printed on its own ----------
@@ -1114,8 +1179,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         note(R.buildUnit(k, resolve));
       }
       for (const w of ['S', 'M', 'L', 'XL']) for (const d of R.DEPTHS)
-        for (const s of [{ base: true, wheels: true, feet: true, stationaryHandle: true, pullHandle: true }, { base: true, feet: true }]) note(R.buildStack({ w, d, ...s }, resolve));
+        for (const s of [{ base: true, wheels: true, feet: true, stationaryHandle: true, pullHandle: true }, { base: true, feet: true }, { pullHandle: true, handleLock: 'universal' }]) note(R.buildStack({ w, d, ...s }, resolve));
       note(R.buildHiddenKey(resolve));
+      note(R.buildConnectors({ ones: 1, twos: 1 }, resolve));
       for (const w of ['S', 'M', 'L', 'XL']) for (const universal of [false, true]) note(R.buildBackbones({ w, base: true, heights: [2, 1], upTo: 0, universal }, resolve));
     }
     return META.get(path) || null;
@@ -2474,7 +2540,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           ${s.base && s.wheels ? optRow('data-st="feet"', 'Foot bar at the front', 'opposite the wheels', s.feet) : ''}
           ${s.base && !s.wheels ? optRow('data-st="casters"', 'Casters', '4 × M8, bought, under the base', s.casters) : ''}
           ${optRow('data-st="pullHandle"', 'Pull-out trolley handle', 'Adds the backbone column on the back', s.pullHandle)}
+          ${s.pullHandle && fp.w !== 'S' ? `<div class="seg" role="group" aria-label="Handle lock">${segBtns([{ v: 'family', label: 'One-piece lock', sub: `${Math.round(R.WIDTH_MM[fp.w])} mm wide` }, { v: 'universal', label: 'Universal lock', sub: 'two, 89 mm: any printer' }], s.handleLock === 'universal' ? 'universal' : 'family', 'data-hlock')}</div>` : ''}
           ${optRow('data-st="stationaryHandle"', 'Stationary handle', 'Adds the backbone column on the back', s.stationaryHandle)}</div>
+        <div class="field"><div class="lbl">Between the modules</div>
+          ${optRow('data-st="connectors"', 'Module connectors', 'Screwed over each joint between two drawer modules at the back corners, where no backbone, handle lock or wall plate is', s.connectors)}</div>
         <div class="ialerts">${alerts.length ? alerts.map(x => `<div class="issue ${x.k}">${esc(x.m)}</div>`).join('') : `<div class="issue ok">Everything in this stack fits together and fits the ${esc(printerName())}.</div>`}</div>
         <div class="actions"><button type="button" class="btn" data-tdup>Duplicate stack</button><button type="button" class="btn" data-tdel>Remove stack</button></div>
       </div>`;
@@ -2489,6 +2558,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     });
     const th = box.querySelector('[data-tophandle]'); if (th) th.onchange = () => { ru.topHandle = th.checked; save(); renderAll(); };
     box.querySelectorAll('[data-st]').forEach(el => el.onchange = () => { t.stack = { ...s, [el.dataset.st]: el.checked }; fixTower(t); save(); renderAll(); });
+    box.querySelectorAll('[data-hlock]').forEach(b => b.onclick = () => { t.stack = { ...s, handleLock: b.dataset.hlock }; save(); renderAll(); });
     box.querySelector('[data-tdup]').onclick = () => { const x = { ...JSON.parse(JSON.stringify(t)), id: newId(), name: t.name + ' copy' }; towers.push(x); dsel = { t: x.id, l: null }; saveSel(); save(); renderAll(); };
     box.querySelector('[data-tdel]').onclick = e => {
       const btn = e.currentTarget;
@@ -3285,6 +3355,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         lines: [...[...linesOf(R.buildBackbones(col, resolve)), ...linesOf(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)).filter(l => l.group === 'Handles')].map(l => ({ ...l, cfg: null })),
           ...pegs.flatMap(p => p.lines)] }));
     }
+    if (s.connectors) { const cu = stackConnectors(t, { levelAt, back: -(bd - 10), cfg: L[0][0] }); if (cu) units.push(cu); }
     return { units, extra, height: units.reduce((m, u) => Math.max(m, u.y + u.h), y), width: Math.max(...L.map(levelWidth)), depth: Math.max(...L.map(lv => unitExt(lv[0])[1])) };
   }
   // A unit's measured parts that its part list uses, matched by file. A file in the list gets every copy the assembly
@@ -3345,7 +3416,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     }
     if (s.pullHandle) {
       const y0 = Math.max(slot < slots.length ? slots[slot] - K.lock_h / 2 : top + 1, top + 1), rest = y0 + K.rest;
-      for (const q of of(C, 'lock')) put(q, 0, y0);
+      // the universal lock (measure_column.py ulock): one per rod, its flange out to the side, the left one turned like
+      // the universal backbones; screwed into the level's back corner holes
+      const UL = s.handleLock === 'universal' && col.w !== 'S' ? PLACE.units['column|U'] : null;
+      if (UL && of(UL, 'lock').length) for (const q of of(UL, 'lock')) { put(q, K.rod_x, y0); put(q, -K.rod_x, y0, true, UL.column.lock_h || K.lock_h); }
+      else for (const q of of(C, 'lock')) put(q, 0, y0);
       for (const q of of(C, 'pullout')) put(q, 0, rest);
       boxes.push({ y: y0, h: K.lock_h, d: 35, w: unit.w, role: 'fittings' }, { y: rest, h: 61.5, d: 35, w: unit.w - 52, role: 'body' });
       // the rods: bought, drawn as bolts from the column's foot up into the handle's legs
@@ -3380,6 +3455,29 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     }
     unit.h = top; unit.boxes = boxes.map(b => ({ ...b, z: back - (b.off || 0) - b.d / 2 }));
     unit.placed = P;
+    return unit;
+  }
+  // The module connectors (connectorPlan) as a column-like unit of their own: each at its back corner, its bottom hole on
+  // the lower module's top corner hole (PLACE.connectors, measure_connectors.py: frame x = 0 on the holes' column, y = 0
+  // on that hole, z = 0 on the modules' back), with its M4 bolts. Hidden when the units are spread, like the column.
+  function stackConnectors(t, o) {
+    const cp = connectorPlan(t);
+    if (!cp.at.length) return null;
+    const C = PLACE.connectors, high = C ? C.holes.high : 47.07, pair = C ? C.pair : 14.5;
+    const lines = R.buildConnectors(cp, resolve).lines.map(l => ({ ...l, cfg: null }));
+    const unit = { cfg: o.cfg, name: 'Module connectors', key: 'connectors', level: 0, stack: true, column: true, x: 0, y: 0, w: levelWidth(t.levels[0]), d: 12, h: 0, lines, boxes: [], bolts: [] };
+    const P = [], back = o.back;
+    for (const a of cp.at) {
+      const lv = o.levelAt[a.i], y = lv.y + high + 48 * (lv.f - 1);
+      const H = C ? C.h[a.f] : a.f === 2 ? 99.15 : 47.15, below = C ? C.bottom : 16.33;
+      if (C) { const [file, m] = C.files[a.f]; P.push([file, 'fittings', 'module', [m[0], m[1], m[2], m[3] + a.x, m[4], m[5], m[6], m[7] + y, m[8], m[9], m[10], m[11] + back]]); }
+      unit.boxes.push({ x: a.x, y: y - below, h: H, d: C ? C.t : 12, w: C ? C.w : 16.3, z: back - 6, role: 'fittings' });
+      const path = C ? C.files[a.f][0] : null;
+      for (const dy of a.f === 2 ? [0, pair, 52, 52 + pair] : [0, pair])
+        unit.bolts.push({ spec: 'M4x25 button', group: 'module', path, cfg: null, m: [1, 0, 0, a.x, 0, 0, 1, y + dy, 0, -1, 0, back - (C ? C.t : 12)] });
+      unit.h = Math.max(unit.h, y - below + H);
+    }
+    unit.placed = C ? P : null;
     return unit;
   }
   // The column's measured pieces that its part list uses, like placeParts for a unit (rods with the pull-out handle)
@@ -3842,7 +3940,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const g = new T.Group(), drawer = new T.Group(), boxes = new T.Group();
       g.position.set(u.x, u.y, 0); g.add(boxes, drawer); scene.add(g);
       // its box until the parts are in (the base's own: it lies under the unit's floor)
-      if (u.column) for (const b of u.boxes || []) { const m = painted(new T.BoxGeometry(b.w, b.h, b.d), b.role, null); m.position.set(0, b.y + b.h / 2, b.z); boxes.add(m); }
+      if (u.column) for (const b of u.boxes || []) { const m = painted(new T.BoxGeometry(b.w, b.h, b.d), b.role, null); m.position.set(b.x || 0, b.y + b.h / 2, b.z); boxes.add(m); }
       else {
         const shell = u.stack ? painted(new T.BoxGeometry(u.w, 52.2, u.d), 'base', null) : painted(new T.BoxGeometry(u.w - 1, u.h - 1, u.d), u.roof ? 'roof' : 'shell', u.cfg);
         if (u.stack) shell.position.set(0, -26.1, -u.d / 2); else shell.position.set(0, u.h / 2, -u.d / 2);

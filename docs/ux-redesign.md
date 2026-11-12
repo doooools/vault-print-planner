@@ -167,7 +167,11 @@ Steps 1 to 3 do not depend on the new Design model and can ship first.
 
 - Store links: the table near l.1507 of `src/template.html` holds upstream's affiliate short links (`link.amazon/…`). There is no tag to strip. Either replace each with the plain product page or drop the links: ask the user which.
 - Roof on a pair of side-by-side modules, and the heavyweight roofs' limits by width: keep today's rules (`roofOf`, `normalize`), nothing was redesigned.
-- On XL, a level taller than 1F has to become S + M side by side. What happens to an existing XL 1F level when the user asks for 2F is not drawn: propose it to the user before coding.
+- ~~On XL, a level taller than 1F has to become S + M side by side.~~ Settled by the files (2026-11-12): every XL and
+  XL² piece exists in 1F only (drawer module, box, front, case body, case front, backbone, wall mount, pegboard
+  attachments; there is no XL 2F or 4F file anywhere in the download), so an XL width taller than 1F can only be an S
+  and an M side by side, the same height. The page does that: an XL or XL² level set to 2F or 4F becomes S + M with
+  the unit's options, and says so (toast); "Across the width" back to XL or XL² makes the level 1F again.
 - The mockups do not show the picker for a custom bed size, nor the "What's new" dialog: keep them as they are.
 
 ## Later (not now)

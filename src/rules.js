@@ -39,7 +39,7 @@
   function colorOf(label, group) {
     if (/tire|tyre/i.test(label)) return 'tpu';
     if (/spring|latch|geared rail|runner stopper|hinge rods/i.test(label)) return 'accent';
-    if (/drawer box|back panel|runner slide|key lock|hidden key|top handle|hinge|lock (holder|inner|outer|pin)|backbone|handle lock|knob|second part|^divider$|depth divider|width divider|seal divider|heavyweight roof handle|^foot$/i.test(label)) return 'inner';
+    if (/drawer box|back panel|runner slide|key lock|hidden key|top handle|hinge|lock (holder|inner|outer|pin)|backbone|handle lock|module connector|knob|second part|^divider$|depth divider|width divider|seal divider|heavyweight roof handle|^foot$/i.test(label)) return 'inner';
     return 'body';
   }
 
@@ -58,7 +58,7 @@
     { id: 'dividers', label: 'Dividers', def: 'inner' },
     { id: 'label', label: 'Labels', def: 'body' },
     { id: 'base', label: 'Base, wheels, handles, mounts', def: 'body' },
-    { id: 'fittings', label: 'Backbones, feet, knobs, handle locks', def: 'inner' },
+    { id: 'fittings', label: 'Backbones, connectors, feet, knobs, handle locks', def: 'inner' },
     { id: 'aids', label: 'Print aids (manual supports, jigs)', def: 'body' },
   ];
   function roleOf(label, group) {
@@ -73,7 +73,7 @@
     if (/key lock|hidden key|^lock (holder|inner|outer|pin)/i.test(label)) return 'lock';
     if (/^divider$|depth divider|width divider|seal divider/i.test(label)) return 'dividers';
     if (/gridfinity baseplate|grid divider|divider edge|divider pin/i.test(label)) return 'interior';
-    if (/backbone|handle lock|knob|^foot$|top handle|heavyweight roof handle|second part/i.test(label)) return 'fittings';
+    if (/backbone|handle lock|module connector|knob|^foot$|top handle|heavyweight roof handle|second part/i.test(label)) return 'fittings';
     if (group === 'Roof' || group === 'Lid') return 'roof';
     if (/module shell|case body|accessory|runner guide/i.test(label)) return 'shell';
     if (/^base|wheel|bushing|stationary handle|pull-out handle|pegboard|wall mount plate/i.test(label)) return 'base';
@@ -86,7 +86,7 @@
   // and extra walls + infill where the part carries the tower or takes force. Flexing parts must stay default.
   function strengthOf(label) {
     if (/^springs|^latch|geared rail/i.test(label)) return { flex: true };
-    if (/^base|^foot|backbone|stationary handle|pull-out handle|knob|wheel disk|wheel cover|^bushing(?! jig)|^top handle|heavyweight roof handle|wall mount/i.test(label)) return { walls: 4, infill: 25 };
+    if (/^base|^foot|backbone|module connector|stationary handle|pull-out handle|knob|wheel disk|wheel cover|^bushing(?! jig)|^top handle|heavyweight roof handle|wall mount/i.test(label)) return { walls: 4, infill: 25 };
     if (/front \(facade\)|^hinge(?! rods)|^lock (holder|inner|outer)|runner guide|runner slide|^key lock|^hidden key|pegboard|^heavyweight roof \(/i.test(label)) return { walls: 3 };
     return {};
   }
@@ -368,7 +368,7 @@
     const twos = only1 ? 0 : Math.floor(f / 2), ones = only1 ? f : f % 2;
     if (twos) k.add('Backbone', (o.universal ? 'Universal backbone' : 'Backbone') + ' 2F', name(2), twos, x);
     if (ones) k.add('Backbone', (o.universal ? 'Universal backbone' : 'Backbone') + ' 1F', name(1), ones, x);
-    return { lines: k.lines, missing: k.missing, hardware: twos + ones ? [{ item: 'M4 button-head bolt, 60–100 mm (to fit)', qty: 4 * (twos + ones), why: 'Backbones' }] : [] };
+    return { f: only1 ? ones : 2 * twos + ones, lines: k.lines, missing: k.missing, hardware: twos + ones ? [{ item: 'M4 button-head bolt, 60–100 mm (to fit)', qty: 4 * (twos + ones), why: 'Backbones' }] : [] };
   }
 
   // Tower base and handles: one set per tower, sized by the bottom level's width family and depth
@@ -396,10 +396,21 @@
     if (s.stationaryHandle) add('Handles', 'Stationary handle', MO + `Stationary Handle/${w} Stationary Handle.stl`, 1);
     if (s.pullHandle) {
       add('Handles', 'Pull-out handle', MO + `Pull-out Handle/${w} Pull-out Handle.stl`, 1);
-      add('Handles', 'Pull-out handle lock', MO + `Backbone/${w} Pull-out Handle Lock.stl`, 1);
-      if (w === 'S') add('Handles', 'Pull-out handle lock, part 2', MO + 'Backbone/S Pull-out Handle Lock Part 2.stl', 1);
-      add('Handles', 'Handle lock knob, part 1', MO + 'Backbone/Handle Lock Knob Part 1.stl', 2, { inferred: 'Two knobs, read from the trolley drawings.' });
-      add('Handles', 'Handle lock knob, part 2', MO + 'Backbone/Handle Lock Knob Part 2.stl', 2, { inferred: 'Two knobs, read from the trolley drawings.' });
+      if (s.handleLock === 'universal' && w !== 'S') {
+        // Universal Pull-out Handle Lock (tools/placements/measure_column.py, ulock): one rod's share of the lock, 89 mm
+        // wide, so it prints on any bed: one per rod, each with its knob, screwed through its flange into the module's
+        // back corner holes as well as clamped on the rod. Not on S: two of them (178 mm) are wider than an S stack
+        // (164.8), whose own lock is no wider than its modules
+        add('Handles', 'Pull-out handle lock (universal, one per rod)', MO + 'Backbone/Universal Pull-out Handle Lock.stl', 2,
+          { note: 'One per M16 rod, its flange out to the stack’s side. Fits any printer, instead of the one-piece lock.' });
+        add('Handles', 'Handle lock knob, part 1', MO + 'Backbone/Handle Lock Knob Part 1.stl', 2, { note: 'One per lock.' });
+        add('Handles', 'Handle lock knob, part 2', MO + 'Backbone/Handle Lock Knob Part 2.stl', 2, { note: 'One per lock.' });
+      } else {
+        add('Handles', 'Pull-out handle lock', MO + `Backbone/${w} Pull-out Handle Lock.stl`, 1);
+        if (w === 'S') add('Handles', 'Pull-out handle lock, part 2', MO + 'Backbone/S Pull-out Handle Lock Part 2.stl', 1);
+        add('Handles', 'Handle lock knob, part 1', MO + 'Backbone/Handle Lock Knob Part 1.stl', 2, { inferred: 'Two knobs, read from the trolley drawings.' });
+        add('Handles', 'Handle lock knob, part 2', MO + 'Backbone/Handle Lock Knob Part 2.stl', 2, { inferred: 'Two knobs, read from the trolley drawings.' });
+      }
     }
   }
 
@@ -442,6 +453,7 @@
     if (s.pullHandle) {
       push('M6 × 30 mm countersunk bolt', 4, 'Pull-out handle');
       push('M6 × 35 mm hex bolt', 2, 'Handle lock');
+      if (s.handleLock === 'universal' && s.w !== 'S') push('M4 × 30 mm button-head bolt', 4, 'Universal handle locks, into the module’s back corner holes');
       push('M6 × 8 × 8 heat insert', 2, 'Handle lock knobs');
       push('M16 rod, cut to stack height', 2, 'Pull-out handle');
     }
@@ -485,7 +497,20 @@
     }
     return out;
   }
-  // A tower's base, wheels, feet and handles. s = { w: 'S'|'M'|'L'|'XL', d, base, wheels, feet, casters, stationaryHandle, pullHandle }
+  // Module connectors (tools/placements/measure_connectors.py): a bar 12 mm thick screwed over a joint between two drawer
+  // modules at a back corner, into the corner holes every drawer module has 8.15 mm in from each side, a level's bottom and
+  // top. A 1F one ties a module to the one on it (2 holes), a 2F one the modules on both sides of a 1F module (4 holes).
+  // The page works out where they go (connectorPlan in src/template.html). o = { ones, twos }
+  function buildConnectors(o, resolve) {
+    const k = collector(resolve);
+    const x = { note: 'At the back corners, flush with the sides, over the joint between two drawer modules.' };
+    if (o.twos) k.add('Connectors', 'Module connector 2F', MO + 'Backbone/Connector for Modules 2F.stl', o.twos, { ...x, note: x.note + ' A 2F one spans a 1F module and the joints above and below it.' });
+    if (o.ones) k.add('Connectors', 'Module connector 1F', MO + 'Backbone/Connector for Modules 1F.stl', o.ones, x);
+    const bolts = 2 * (o.ones || 0) + 4 * (o.twos || 0);
+    return { lines: k.lines, missing: k.missing, hardware: bolts ? [{ item: 'M4 × 25 mm button-head bolt', qty: bolts, why: 'Module connectors, into the modules’ back corner holes' }] : [] };
+  }
+  // A tower's base, wheels, feet and handles. s = { w: 'S'|'M'|'L'|'XL', d, base, wheels, feet, casters, stationaryHandle, pullHandle,
+  // handleLock: 'family' (one piece, as wide as the stack) | 'universal' (one small lock per rod) }
   function buildStack(s, resolve) {
     const k = collector(resolve);
     stackParts(k.add, s);
@@ -507,6 +532,6 @@
     return { lines: k.lines, missing: k.missing, hardware: [] };
   }
 
-  const api = { buildUnit, buildStack, buildRoof, buildHiddenKey, buildBackbones, makeResolver, exterior, familyForWidth, drawersOf, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, LAYOUTS, norm, gridFull, gridFile, gridEdgeFile, gridPinFile };
+  const api = { buildUnit, buildStack, buildRoof, buildHiddenKey, buildBackbones, buildConnectors, makeResolver, exterior, familyForWidth, drawersOf, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, LAYOUTS, norm, gridFull, gridFile, gridEdgeFile, gridPinFile };
   if (typeof module !== 'undefined') module.exports = api; else root.VaultRules = api;
 })(this);
