@@ -290,6 +290,37 @@ backbone's top section; the lock on the next level up (or just above the column)
 two M16 rods (drawn as bolts) from the column's foot into its legs. The column stands on the back face of the stack's
 first unit (z = −(depth − 10)) and is hidden when the units are spread.
 
+## Universal handle lock and module connectors
+
+Measured on the files (numpy, no Blender) on 2026-11-12; no USSA page about either part was at hand, so where they go
+is read from their holes and the modules'.
+
+- **The modules' back corner holes** (`measure_connectors.py`, measured on the S3 1F/2F, M3 1F, L3 2F, XL3 1F, L3² 1F and
+  XL3² 1F drawer modules): one 8.15 mm in from each side edge, at each level's bottom and top, 9.57 and 47.07 mm above
+  the module's bottom, then every 48 mm; a 5.6 mm mouth 5 mm deep, then a 3.6 mm pilot about 40 mm on. L² and XL² shells
+  have them at their inner seam too, as two modules would (8.15 mm either side of it); L and XL ones only at their
+  sides. A case body (S3 1F) has none. The base's are 19.1 mm from the first module's, not 14.5: no connector there.
+  The wall mount plate's 4 holes per F sit on them too (4.0 mm, counterbored on the wall side).
+- **Module connectors** (`"connectors"` in the placements: the holes above, `pair` 14.5, `bottom` 16.33, and each file
+  with its matrix): a bar 16.3 × 12 mm, 47.15 (1F) or 99.15 (2F) tall, flat on one face and rounded on the other, with
+  4.2 mm holes on its centre line 14.5 mm apart: the gap between a module's top corner hole and the bottom one of the
+  module on it (47.07 against 52 + 9.57). So a 1F connector ties two stacked drawer modules at one back corner, flush
+  with their side; a 2F one (a second pair 52 mm higher) ties the modules on both sides of a 1F module. Frame of the
+  matrix: x = 0 on the holes' column, y = 0 on the lower module's top corner hole, z = 0 on the modules' back, its flat
+  face there. The page's `connectorPlan` puts one at every back corner two stacked levels share, both units there
+  drawers, neither with a wall plate, and no backbone or handle lock over the holes (a family backbone or lock covers the
+  whole width, a universal one the side out to 63 / 89 mm in); up a corner, joints either side of a 1F module take a 2F.
+  Bolts: an M4 × 25 button head in each hole (inferred: through the 12 mm bar and the 5 mm mouth into the pilot).
+- **Universal pull-out handle lock** (`measure_column.py`, `ulock`, in `column|U` with its knob, `"as": "lock"`): one
+  rod's share of the lock, 89.1 wide: the family lock's rod channel (16.0 mm out from the module) and clamp with its M6
+  bolt 17.5 mm from the rod, and on the other side a 14 mm flange out to the module's side edge (42 mm from the rod, as on
+  every width: the rods are `width / 2 − 42` from the middle) with 4 holes 8.15 mm from that edge, 4.75 / 16.25 / 30.75 /
+  42.25 mm above its bottom. The outer two land on a level's corner holes (9.57 / 47.07): it is screwed onto the level
+  the family lock would stand on, one per rod, the left one turned half a turn about z like the universal backbones (its
+  holes are symmetric top to bottom). The middle pair fits a joint's holes instead (inferred: not used). Two of them are
+  178 mm wide, more than an S stack (164.8): the option is for M, L and XL, whose one-piece locks are 254 to 419 mm long.
+  Bolts: 2 M4 × 30 per lock (inferred, as above).
+
 ## Pegboards, wall mounts, baseplates and lock pins
 
 Measured on the files (numpy, no Blender), written straight into the placements, other keys untouched. The manual's

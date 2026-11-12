@@ -32,8 +32,10 @@ for (const type of ['drawer', 'case']) for (const w of Object.keys(R.HEIGHTS[typ
     note(R.buildUnit(c, resolve), `${type} ${w}${d} ${h}F`);
   }
 for (const w of ['S', 'M', 'L', 'XL']) for (const d of R.DEPTHS)
-  for (const s of [{ base: true, wheels: true, feet: true, stationaryHandle: true, pullHandle: true }, { base: true, feet: true }])
+  for (const s of [{ base: true, wheels: true, feet: true, stationaryHandle: true, pullHandle: true }, { base: true, feet: true }, { pullHandle: true, handleLock: 'universal' }])
     note(R.buildStack({ w, d, ...s }, resolve), `stack ${w}${d}`);
+// Module connectors (measure_connectors.py): 2 holes on a 1F one, 4 on a 2F one, an M4 bolt in each
+note(R.buildConnectors({ ones: 1, twos: 1 }, resolve), 'connectors');
 // Roof handles (manual: Roof Types, Required Hardware - Drawers): the grid roof takes the top handle and 2 M6 x 50
 // bolts when asked, the heavyweight roofs always come with their handle and insert, and no other roof has one. Checked
 // on a unit's own roof and on the wide roof over two units side by side (buildRoof).
@@ -163,6 +165,17 @@ for (const w of ['S', 'M', 'L', 'XL']) for (const universal of [false, true]) {
     const got2 = fileQty(r, /2F Backbone\.stl$/), got1 = fileQty(r, /1F Backbone\.stl$/);
     if (got2 !== want2 || got1 !== want1) countRules.push(`backbones ${w}${universal ? ' universal' : ''} ${JSON.stringify(o)}: ${got2} × 2F + ${got1} × 1F, want ${want2} + ${want1}`);
   }
+}
+// Universal handle lock: one per rod, each with its knob, instead of the one-piece lock
+// (not on S: two of them are wider than the stack, which keeps its own lock)
+for (const w of ['S', 'M', 'L', 'XL']) {
+  const r = R.buildStack({ w, d: 3, pullHandle: true, handleLock: 'universal' }, resolve), u = w !== 'S';
+  const want = { 'Universal Pull-out Handle Lock.stl': u ? 2 : 0, 'Handle Lock Knob Part 1.stl': 2, 'Handle Lock Knob Part 2.stl': 2, [`${w} Pull-out Handle Lock.stl`]: u ? 0 : 1 };
+  for (const [f, n] of Object.entries(want)) if (fileQty(r, new RegExp('/' + f.replace(/[.()]/g, '\\$&') + '$')) !== n) countRules.push(`universal lock ${w}: ${fileQty(r, new RegExp('/' + f.replace(/[.()]/g, '\\$&') + '$'))} × ${f}, want ${n}`);
+}
+{
+  const r = R.buildConnectors({ ones: 3, twos: 2 }, resolve), bolts = r.hardware.reduce((a, h) => a + h.qty, 0);
+  if (fileQty(r, /Connector for Modules 1F\.stl$/) !== 3 || fileQty(r, /Connector for Modules 2F\.stl$/) !== 2 || bolts !== 3 * 2 + 2 * 4) countRules.push(`connectors 3 × 1F + 2 × 2F: ${JSON.stringify(r.lines.map(l => [l.label, l.qty]))}, ${bolts} bolts`);
 }
 console.log('COUNT RULES:'); countRules.slice(0, 20).forEach(m => console.log(' ', m)); if (countRules.length > 20) console.log(`  (+${countRules.length - 20})`);
 console.log('DRAWER LAYOUTS:'); layoutClash.slice(0, 20).forEach(m => console.log(' ', m)); if (layoutClash.length > 20) console.log(`  (+${layoutClash.length - 20})`);

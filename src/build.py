@@ -85,6 +85,10 @@ if pf.exists():
         place["grid"] = {fam(p): {k: g[k] for k in ("floor", "x", "z", "pitch", "walls")} for p, g in pl["grid_boxes"].items() if " Box 1F" in p}
         place["grid_boxes"] = {p: [fam(p), g["m"]] for p, g in pl["grid_boxes"].items()}
         place["grid_files"] = pl["grid_files"]
+    # module connectors (tools/placements/measure_connectors.py): the modules' back corner holes and each connector file
+    if "connectors" in pl:
+        c = pl["connectors"]
+        place["connectors"] = {"holes": {k: c["holes"][k] for k in ("inset", "low", "high", "pitch")}, **{k: c[k] for k in ("pair", "bottom", "files", "h", "t", "w")}}
     # Packed for size (the page unpacks it on load, unpackPlacements in template.html): each part's file path and each
     # part's and bolt's matrix go in a table once, by index; whole numbers lose their ".0". About half the bytes.
     paths, mats = {}, {}

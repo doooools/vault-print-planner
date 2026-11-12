@@ -15,6 +15,7 @@ at hand: what the files say is used, and what is inferred is said so.
   plate on the bed: file +y up the stack, file +z away from the module.
 - Universal backbone: one pad and its flange, 63 mm wide: one per rod, the flange outwards (the family backbone's
   ends have the same notch), the left one the right one turned half a turn about the depth axis.
+- Universal pull-out handle lock (in `column|U`, with its knob): one per rod, see ulock().
 - Pull-out handle lock: a backbone-like block 47 tall and 35 deep, its rods' channels split by a slot that a knob
   (M6 x 35 hex bolt from the module side, head in its pocket, into the knob's insert) clamps. Printed on its end:
   file +z up, file +y towards the module. Its rod channels sit 16.0 mm out from its module face, like the
@@ -156,6 +157,43 @@ def lock(w):
             "bolts": sorted(bolts)}
 
 
+def ulock():
+    """The universal pull-out handle lock: one rod's share of a lock, 89 wide (two per stack, one per rod). Its rod
+    channel and knob bolt are the family lock's (16.0 mm out from its module face, an M6 bolt 17.5 mm from the rod,
+    clamping a slot); on its other side a flange 14 mm thick runs out to the module's side edge, with 4 holes (4.2 mm,
+    a 1 mm membrane on their outer end) in a column 8.15 mm from that edge, 4.75 / 16.25 / 30.75 / 42.25 mm above its
+    bottom: the module's back corner holes (8.15 mm from its side, 9.57 and 47.07 mm above its bottom, measure_connectors.py)
+    take the outer two, so it is screwed onto a module's back at one level, like the family lock stands on one. Printed
+    on its end like the family lock: file +z up, file +y towards the module. In the column frame of the right rod:
+    x = 0 on the rod, the flange towards +x (outwards); the left one is turned half a turn about z (its holes are
+    symmetric top to bottom), like the universal backbones."""
+    f = BB + "Universal Pull-out Handle Lock.stl"
+    T = hg.file_tris(f)
+    P = T.reshape(-1, 3)
+    lo, hi = P.min(0), P.max(0)
+    (rc, rr), = circles(T, 2, (lo[2] + hi[2]) / 2 + 0.013, [0, 1], [np.array([lo[0] + 42.0, hi[1] + ROD_Z])])
+    t = np.array([rc[0], -lo[2], -hi[1]])
+    m = mat(LOCK_R, t)
+    D, u0, w0, _ = vg.depthmap(T, 1, 1, step=0.25)
+    from scipy import ndimage
+    lab, n = ndimage.label(np.isnan(D))
+    bolts = []
+    for k in range(1, n + 1):
+        jj, ii = np.nonzero(lab == k)
+        a = len(ii) * 0.0625
+        if 20 < a < 45 and ii.min() > 0 and jj.min() > 0 and ii.max() < D.shape[1] - 1 and jj.max() < D.shape[0] - 1:
+            fx, fz = u0 + 0.25 * ii.mean(), w0 + 0.25 * jj.mean()
+            bolts.append([round(float(-fx + rc[0]), 2), round(float(fz - lo[2]), 2)])
+    # the flange's holes: circles in a section through the flange, near its outer edge
+    sec = float(hi[1] - 5)
+    edge = float(-lo[0] + rc[0])
+    fl = circles(T, 1, sec + 0.013, [0, 2], [np.array([lo[0] + 8.15, lo[2] + z]) for z in (4.75, 16.25, 30.75, 42.25)], r=(1.0, 3.0))
+    holes = [[round(float(-c[0] + rc[0]), 2), round(float(c[1] - lo[2]), 2), round(2 * r, 2)] for c, r in fl]
+    return {"parts": [{"file": f, "m": m}], "h": round(float(hi[2] - lo[2]), 2), "depth": round(float(hi[1] - lo[1]), 2),
+            "rod_z": round(float(rc[1] - hi[1]), 2), "rod_d": round(2 * rr, 2), "edge": round(edge, 2), "bolts": sorted(bolts),
+            "flange_holes": holes}
+
+
 KNOB_R = np.diag([-1.0, 1, -1])      # file +z (the grip) away from the module
 
 
@@ -269,6 +307,14 @@ def column(w):
             out["column"][f"h{h}"] = b["h"]
             notes[f"backbone{h}"] = b
         out["column"].update({"rod_z": notes["backbone1"]["rods_z"][0], "flange": notes["backbone1"]["flange"]})
+        lk = ulock()
+        for p in lk["parts"]:
+            add(p["file"], "fittings", p["m"], "lock")
+        kn, kn_notes = knobs(lk)
+        for p in kn:
+            add(p["file"], "fittings", p["m"], "lock")
+        out["column"].update({"lock_h": lk["h"], "lock_edge": lk["edge"]})
+        notes.update({"lock": {k: v for k, v in lk.items() if k != "parts"}, "knobs": kn_notes})
         return out, notes
     hs = (1,) if w == "XL" else (1, 2)
     for h in hs:
