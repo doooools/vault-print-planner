@@ -3,6 +3,10 @@
 `src/stl-placements.json` says where every part of a unit goes, so the page can show a stack in 3D
 from the user's own Vault files. It holds numbers only, no geometry, like `src/stl-measurements.tsv`.
 
+To regenerate it from a Vault download, see [Running it](#running-it): Python 3 with numpy (and shapely for the
+checks), Blender 5.x, on Linux, macOS or Windows. Nothing these tools write next to the download (decimated STLs,
+`.blend` files, renders) may be committed: it is USSA's geometry.
+
 ## The data
 
 ```
@@ -17,7 +21,7 @@ hardware_sizes = { button: { M4: { d, dk, k, s, t }, ... }, countersunk: {...}, 
 - **key**: the 3D view's own keys, with the planner's ids: `drawer|<w>|<d>|<h>` (w = S, M, L, L2, XL, XL2),
   `case|<w>|<d>|<h>` (w = S, M, L, XL), `roof|<w>|<d>|<roof id>` (`R.ROOFS`; `roof|L2|…` and `roof|XL2|…` are
   copies of the L and XL entries, marked `same_as`, since the planner gives a single L² or XL² unit the L or XL
-  roof). A tower's base, wheels, feet and handles would be `stack|<w>|<d>` (none placed yet).
+  roof). A tower's base, wheels and foot are `stack|<w>|<d>` (see [Stacks](#stacks); the handles aren't placed yet).
 - One entry holds every variant of a unit: both lock options' files, every baseplate, the three L/XL case body
   styles. The page draws the placed files that the unit's part list names, so the variant in the list wins.
 - **path**: the file in the Vault download, as in `stl-measurements.tsv` (with `²`; some unzip tools write
@@ -270,7 +274,8 @@ The files are exported in print orientation (some at 45° to fit the bed) and sc
 
 Blender 5.x. The scripts read two environment variables:
 - `VAULT_RENDER`: the decimated copy of the download;
-- `BLENDER`: the Blender executable.
+- `BLENDER`: the Blender executable (else `blender` on the PATH, else the usual install folder on Windows, macOS
+  or Linux).
 
 ```bash
 export VAULT_RENDER="/path/to/VAULT_RENDER"

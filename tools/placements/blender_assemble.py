@@ -4,7 +4,7 @@
 
 Config:
 {
-  "root": "X:/.../VAULT_RENDER",
+  "root": "/path/to/VAULT_RENDER",
   "materials": {"body": [r,g,b], ...},
   "parts": [
     {"name": "Module", "file": "rel/path.stl", "role": "body",

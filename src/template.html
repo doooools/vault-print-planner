@@ -86,7 +86,6 @@ dialog#news h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stret
 #folderBtn.on svg { stroke: var(--ok); } #folderBtn.on .ok { display: inline; }
 .printer.pop { position: absolute; z-index: 30; top: calc(100% - 4px); right: max(20px, env(safe-area-inset-right, 0px)); width: min(520px, calc(100vw - 32px)); box-shadow: 0 10px 30px rgba(0, 0, 0, .18); padding: 12px 14px; }
 .printer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 12px; }
-.printer > label:not(.switch) { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .printer select { background: transparent; border: 0; font-weight: 600; padding: 2px 0; }
 .printer .vol { color: var(--muted); }
 .printer input[type=number] { width: 7ch; min-width: 0; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-variant-numeric: tabular-nums; text-align: right; -moz-appearance: textfield; appearance: textfield; }
@@ -102,8 +101,6 @@ dialog#news h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stret
 .main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }
 @media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr); } }
 .panel { background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r); }
-.config { padding: 16px; display: grid; gap: 18px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); overflow: auto; }
-@media (max-width: 860px) { .config { position: static; max-height: none; } }
 .field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .field > .lbl { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 .field > .lbl .hint { text-transform: none; letter-spacing: 0; font-weight: 400; }
@@ -117,12 +114,8 @@ dialog#news h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stret
 .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--bad); }
 .seg button .dot { position: absolute; top: 5px; right: 5px; }
 .seg button.nofit:not([aria-pressed=true]) { color: var(--muted); }
-.fitkey { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
 .ring { display: inline-block; width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--warn, #c98a12); box-sizing: border-box; flex: none; }
 .seg button .ring { position: absolute; top: 5px; right: 5px; }
-.stackchk, .alert.stackchk { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
-.stackchk.okline { color: var(--ok); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; justify-content: flex-start; }
-.stackchk.okline svg { width: 15px; height: 15px; }
 .opt { display: flex; gap: 10px; align-items: flex-start; }
 .opt input[type=checkbox] { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
 .opt span small { display: block; color: var(--muted); font-size: 12.5px; }
@@ -132,28 +125,12 @@ select.full { width: 100%; background: var(--sheet-2); border: 1px solid var(--l
 .stepper div { display: flex; align-items: center; gap: 4px; }
 .stepper button { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--line); background: var(--sheet); line-height: 1; }
 .stepper output { min-width: 18px; text-align: center; font-weight: 700; }
-details.more { border-top: 1px solid var(--line); padding-top: 14px; }
-details.more summary { cursor: pointer; font-weight: 700; list-style: none; display: flex; justify-content: space-between; }
-details.more summary::after { content: "+"; color: var(--muted); }
-details.more[open] summary::after { content: "\2212"; }
-details.more > div { display: grid; gap: 14px; margin-top: 14px; }
-.sub { padding-left: 26px; display: grid; gap: 10px; }
 
 /* Results */
 .results { display: grid; gap: 14px; min-width: 0; }
 .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
 .tabs button { border: 1px solid var(--line); background: var(--sheet); border-radius: 999px; padding: 6px 14px; font-weight: 600; }
 .tabs button[aria-selected=true] { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
-.unit-head { padding: 18px 18px 16px; display: grid; gap: 14px; }
-.unit-title { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 18px; }
-.unit-title h2 { margin: 0; font-family: var(--f-display); font-stretch: 118%; font-weight: 800; font-size: clamp(24px, 3.4vw, 34px); line-height: 1; }
-.unit-title .dims { color: var(--muted); }
-.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-@media (max-width: 560px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.stat { background: var(--sheet); padding: 10px 12px; }
-.stat b { display: block; font-size: 22px; font-stretch: 110%; font-variant-numeric: tabular-nums; }
-.stat span { font-size: 12px; color: var(--muted); }
-.stat.bad b { color: var(--bad); } .stat.ok b { color: var(--ok); } .stat.warn b { color: var(--warn); }
 .alert { border-radius: 8px; padding: 10px 12px; font-size: 14px; display: grid; gap: 4px; }
 .alert.bad { background: var(--bad-soft); } .alert.warn { background: var(--warn-soft); } .alert.ok { background: var(--ok-soft); }
 .alert strong { font-weight: 700; }
@@ -172,26 +149,6 @@ details.more > div { display: grid; gap: 14px; margin-top: 14px; }
 .thumb.lg { width: min(300px, 100%); aspect-ratio: 1; max-width: 100%; cursor: default; }
 .thumb.none { cursor: default; }
 .thumb:hover:not(.none):not(.lg) { outline: 1px solid var(--muted); }
-.hero { display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 10px; }
-.hero figure { margin: 0; display: grid; gap: 4px; position: relative; }
-.hero-sw { position: absolute; top: 7px; right: 7px; width: 20px; height: 20px; padding: 0; border-radius: 5px; border: 2px solid var(--sheet); box-shadow: 0 0 0 1px var(--line), 0 1px 4px rgba(0, 0, 0, .3); cursor: pointer; }
-.hero-sw:hover { transform: scale(1.15); }
-#folderHero:empty { display: none; }
-.fhero { max-width: 720px; margin: 4px auto 18px; padding: 34px 32px 26px; display: grid; justify-items: center; gap: 12px; text-align: center; border: 2px solid var(--accent); }
-.fhero-icon { color: var(--accent); }
-.fhero h2 { margin: 0; font-family: var(--f-display); font-stretch: 112%; font-size: 28px; }
-.fhero p { margin: 0; max-width: 60ch; color: var(--muted); font-size: 15px; text-wrap: pretty; }
-.fhero-last, .fhero-err { display: inline-flex; align-items: center; gap: 8px; color: var(--ink) !important; }
-.fhero-last svg { color: var(--ok); } .fhero-err svg { color: var(--accent); }
-.fhero-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
-.fhero-go { font-size: 17px; padding: 14px 26px; }
-.fhero-skip { margin: 0 auto; }
-@media (max-width: 560px) { .fhero { padding: 24px 18px 20px; } .fhero h2 { font-size: 22px; } }
-.vfolder { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet-2); }
-.vfolder > span { flex: 1 1 260px; min-width: 0; }
-.vfolder.ok svg { color: var(--ok); } .vfolder.bad svg { color: var(--accent); }
-.hero figcaption { font-size: 12px; color: var(--muted); text-align: center; }
-@media (max-width: 560px) { .hero { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 dialog#viewer { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px; width: min(680px, calc(100vw - 32px)); max-height: calc(100vh - 32px); }
 dialog#viewer::backdrop { background: rgba(10, 12, 12, .45); }
 .vbody { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 18px; align-items: start; }
@@ -207,11 +164,6 @@ dialog#v3d .vclose { z-index: 2; }
 .v3-dhost { height: 100%; }
 /* The 3D view: in the page (steps 1 and 2) or enlarged in #v3d */
 .v3-view { display: grid; grid-template-columns: minmax(0, 1fr) 320px; height: 100%; min-height: 0; }
-.v3-panel { overflow: hidden; }
-.v3-phead { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding: 12px 18px; border-bottom: 1px solid var(--line); }
-.v3-phead h2 { margin: 0 auto 0 0; font-family: var(--f-display); font-stretch: 112%; font-size: 18px; }
-.v3-pick { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
-.v3-pick select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); color: var(--ink); }
 .v3-slot { container-type: inline-size; }
 .v3-slot .v3-view { height: auto; }
 .v3-slot .v3-stage { height: clamp(380px, 60vh, 620px); }
@@ -221,7 +173,7 @@ dialog#v3d .vclose { z-index: 2; }
 @container (max-width: 760px) {
   .v3-view { grid-template-columns: minmax(0, 1fr); }
   .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 440px !important; }
-  .v3-brush-hint, .v3-brush-l { display: none; }
+  .v3-brush-hint { display: none; }
 }
 dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-stage { min-width: 0; min-height: 0; position: relative; background: var(--sheet-2); }
@@ -231,23 +183,7 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-status { margin: 0; font-size: 13px; color: var(--muted); }
 .v3-canvas { position: absolute; inset: 0; }
 /* Step 1: what Add does, at the top of the settings column */
-.uadd { display: grid; gap: 8px; padding-bottom: 14px; margin-bottom: 2px; border-bottom: 1px solid var(--line); }
-.uadd:empty { display: none; }
-.uadd-title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.uadd-title b { font-family: var(--f-display); font-stretch: 112%; font-size: 18px; }
-.uadd-title .dims { font-size: 12px; color: var(--muted); }
-.uadd-l { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: -4px; }
-.uadd select { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--sheet-2); color: var(--ink); font-weight: 600; }
-.uadd-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.uadd .stackchk { margin: 0; }
-.uadd .alert { font-size: 13px; }
 /* The unit's summary on the page; its pictures and part list fold away */
-.unit-title h2 small { font-family: var(--f-body, inherit); font-stretch: 100%; font-size: 13px; font-weight: 600; color: var(--accent); margin-left: 6px; }
-.uparts > summary { cursor: pointer; font-weight: 600; color: var(--accent); font-size: 13.5px; padding: 4px 0; }
-.uparts[open] > summary { margin-bottom: 12px; }
-.uparts .parts { margin-top: 12px; }
-.v3-phead h2 small { font-family: var(--f-body, inherit); font-stretch: 100%; font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 8px; }
-.v3-list li.ghost b small { font-weight: 400; color: var(--accent); }
 /* The toolbar over the 3D view (tool, view, spread, roof), and the brush bar or a hint at its foot */
 .v3-tools { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; pointer-events: none; }
 .v3-tools > *, .v3-right > * { pointer-events: auto; }
@@ -259,13 +195,6 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-tog[aria-pressed=true] { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
 #v3dBrush[hidden] { display: none; }
 .v3-brush { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); box-shadow: 0 6px 20px rgba(0, 0, 0, .18); font-size: 13px; }
-.v3-brush-l { font-size: 12px; font-weight: 650; color: var(--muted); }
-.v3-brushes { display: flex; gap: 6px; flex-wrap: wrap; }
-.bsw { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 9px; background: var(--sheet); color: var(--muted); cursor: pointer; }
-.bsw > span { width: 26px; height: 26px; border-radius: 7px; border: 1px solid rgba(0, 0, 0, .15); }
-.bsw small { font-family: var(--f-mono); font-size: 11px; }
-.bsw[aria-pressed=true] { border: 2px solid var(--ink); padding: 3px 5px; color: var(--ink); }
-.bsw.more { justify-content: center; border-style: dashed; padding: 0 10px; font-size: 12.5px; }
 .v3-brush-hint { flex: 1 1 200px; color: var(--muted); font-size: 12.5px; }
 .v3-hintbar.tip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; left: 50%; right: auto; bottom: 16px; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); padding: 12px 12px 12px 18px; border: 2px solid var(--accent-btn); background: var(--sheet); color: var(--ink); font-size: 15px; box-shadow: 0 6px 24px rgba(0,0,0,.25); animation: v3tip 1.6s ease-in-out 3; }
 .v3-hintbar.tip kbd { font-size: 13px; }
@@ -347,59 +276,10 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .fp-note .linkbtn { display: inline; margin: 0; padding: 0; }
 .fp-own { position: relative; cursor: pointer; }
 .fp-own input { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; }
-.ut-side { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
-.v3-colors { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
-.v3-colors h3 { margin: 0; font-size: 15px; }
-.v3-colors .pp, .v3-colors .chead .pp, .v3-colors > p.pp { padding-left: 0; padding-right: 0; }
-.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-/* Colors: the filament tray, then the colour map (colorsPanel) */
-.chead { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 24px; padding-right: 18px; }
-.chead .pp, [data-colors-root] > p.pp { flex: 1 1 360px; margin: 0; padding: 0 0 0 18px; color: var(--muted); font-size: 13.5px; }
-[data-colors-root] > p.pp { padding: 0 18px 12px; }
+/* Colors: the Paint panel's "Start from" presets */
 .cstart { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-left: 18px; font-size: 13px; color: var(--muted); }
 .cstart .chip { border: 1px solid var(--line); border-radius: 999px; background: var(--sheet-2); color: var(--ink); padding: 6px 12px; font-size: 13px; cursor: pointer; }
 .cstart .chip:hover { border-color: var(--ink); }
-.ctray { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 10px; padding: 14px 18px; }
-.ctray-card { display: grid; gap: 4px; align-content: start; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--sheet-2); min-width: 0; }
-.ctray-card.unused { opacity: .7; }
-.ctray-card.tpu { border-style: dashed; background: transparent; }
-.ctray-card.tpu .ctray-sw { background: repeating-linear-gradient(45deg, #2c2f31 0 8px, #3a3d3f 8px 16px); cursor: default; }
-.ctray-card small { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ctray-top { display: flex; justify-content: space-between; align-items: center; min-height: 26px; font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
-.ctray-top .iconbtn { min-width: 26px; height: 26px; padding: 0 6px; font-size: 12px; }
-.ctray-sw { position: relative; display: block; height: 46px; border-radius: 8px; border: 1px solid rgba(0, 0, 0, .15); cursor: pointer; margin: 2px 0 4px; }
-.ctray-sw input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
-.ctray-name { width: 100%; box-sizing: border-box; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; padding: 2px 4px; margin: 0 -4px; }
-.ctray-name:hover, .ctray-name:focus { border-color: var(--line); background: var(--sheet); }
-.ctray-card.tpu b { font-size: 14px; }
-.ctray-add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 140px; border: 1px dashed var(--line); border-radius: 12px; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; }
-.ctray-add:hover, .ctray-add[aria-expanded=true] { border-color: var(--ink); color: var(--ink); }
-.ctray > .fp-host { grid-column: 1 / -1; }
-.cmap-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 12px; padding: 0 18px 14px; align-items: start; }
-.cmap-box { border: 1px solid var(--line); border-radius: 12px; overflow-x: auto; }
-.cmap { border-collapse: collapse; width: 100%; font-size: 13px; }
-.cmap th, .cmap td { padding: 4px 6px; border-top: 1px solid var(--line); }
-.cmap thead th { border-top: 0; background: var(--sheet-2); font-weight: 600; color: var(--muted); }
-.cmap td { text-align: center; width: 44px; }
-.cmap tbody th { text-align: left; font-weight: 400; }
-.cmap-h { display: inline-flex; align-items: center; gap: 4px; font-family: var(--f-mono); font-size: 12px; }
-.cmap-h .swatch { width: 12px; height: 12px; border-radius: 3px; margin: 0; }
-.cmap-sec th { padding-top: 10px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600 !important; border-top: 0; }
-.cmap-role { display: flex; align-items: center; gap: 8px; }
-.cmap-bar { width: 8px; height: 22px; border-radius: 3px; border: 1px solid var(--line); flex: none; }
-.cmap-own { font-size: 11px; padding: 2px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); white-space: nowrap; }
-.cmap-fixed { text-align: left !important; color: var(--muted); }
-.cmap-note { font-size: 11px; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
-.cdot { width: 22px; height: 22px; border-radius: 50%; padding: 0; border: 1.5px solid var(--line); background: var(--sheet); cursor: pointer; }
-.cdot:hover { border-color: var(--ink); }
-.cdot.on { border: 2px solid var(--ink); box-shadow: inset 0 0 0 3px var(--sheet); }
-.v3-colors .chead, .v3-colors .ctray, .v3-colors .cmap-wrap, .v3-colors .cstart { padding-left: 0; padding-right: 0; margin-left: 0; margin-right: 0; }
-.v3-colors .cmap-wrap { grid-template-columns: minmax(0, 1fr); }
-.v3-colors .ctray { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 4px; }
-.v3-colors .cmap td { width: 32px; padding: 3px 2px; }
-.v3-colors[data-colors-root] > p.pp { padding: 0 0 8px; }
-.v3-colors .ctray-sw { height: 28px; }
-.v3-colors .ctray-add { grid-column: 1 / -1; min-height: 0; flex-direction: row; padding: 10px; }
 @media (max-width: 760px) { dialog#v3d .v3-view { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } dialog#v3d .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } .v3-brush-hint { display: none; } }
 .row.done { opacity: .45; }
 .row.done .pname { text-decoration: line-through; }
@@ -413,9 +293,6 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .tag { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: var(--sheet-2); color: var(--muted); white-space: nowrap; }
 .tag.sup { background: var(--accent-soft); color: var(--ink); }
 .tag.wall { background: var(--sheet-2); color: var(--ink); border: 1px solid var(--line); }
-.tag.fit-ok { background: var(--ok-soft); color: var(--ok); }
-.tag.fit-warn { background: var(--warn-soft); color: var(--warn); }
-.tag.fit-bad { background: var(--bad-soft); color: var(--bad); }
 .dimtxt { font-size: 11.5px; color: var(--muted); text-align: right; margin-top: 3px; white-space: nowrap; }
 .bedsvg { width: 38px; height: 38px; display: block; }
 @media (max-width: 560px) {
@@ -429,13 +306,7 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .hw table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .hw td { padding: 8px 18px; border-top: 1px solid var(--line); }
 .hw td.q { width: 70px; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
-.hw td.why { color: var(--muted); }
-.hw td.hd { width: 76px; padding-left: 0; padding-right: 0; }
 .hw svg.bolt { display: block; width: 72px; height: 30px; fill: var(--muted); }
-.hw .heads { margin-top: -2px; }
-.hw a.buy { font-size: 12px; font-weight: 700; color: var(--accent); white-space: nowrap; margin-left: 4px; }
-.hw .shopnote { color: var(--muted); }
-.hw .aff { padding-top: 10px; font-size: 12.5px; }
 /* Step 3 · Hardware: the list, and the options beside it */
 .hwpage { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
 .hwlist { flex: 999 1 640px; min-width: 0; overflow: hidden; }
@@ -473,12 +344,8 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .hwside .pnote { margin: 0 4px; }
 .panel > h3.ph { margin: 0; padding: 14px 18px 4px; font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
 .panel > p.pp { margin: 0; padding: 0 18px 10px; color: var(--muted); font-size: 13.5px; }
-.script { padding: 0 18px 16px; display: grid; gap: 10px; }
-.script label { font-size: 12px; color: var(--muted); display: grid; gap: 4px; }
-.script input { background: var(--sheet-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-family: var(--f-mono); font-size: 12.5px; width: 100%; }
 pre.code { margin: 0; background: var(--sheet-2); border-radius: 8px; padding: 12px; overflow-x: auto; font-family: var(--f-mono); font-size: 12px; line-height: 1.55; max-height: 240px; }
 .empty { padding: 18px; color: var(--muted); }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 0 18px 14px; font-size: 12.5px; color: var(--muted); align-items: center; }
 .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); transform: translateX(-50%); background: var(--ink); color: var(--sheet); padding: 8px 14px; border-radius: 8px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
 .toast.show { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
@@ -491,165 +358,28 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .appbar .tabs button { min-height: 44px; padding: 0 16px; font-size: 14px; border-radius: 22px; }
 .tabs button:disabled { color: var(--muted); background: transparent; cursor: not-allowed; }
 .appbar .tabs button .count { font-weight: 500; opacity: .7; }
-.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600; user-select: none; }
-.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-.switch .track { width: 36px; height: 20px; border-radius: 999px; background: var(--line); position: relative; transition: background .15s; flex: none; }
-.switch .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--sheet); box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .15s; }
-.switch input:checked + .track { background: var(--ok); }
-.switch input:checked + .track::after { transform: translateX(16px); }
-.switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
-.switch small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
-@media (prefers-reduced-motion: reduce) { .switch .track, .switch .track::after { transition: none; } }
 .view { display: grid; gap: 14px; min-width: 0; }
-.main.single { grid-template-columns: minmax(0, 1fr); }
 .badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; white-space: nowrap; }
 .badge.inf { background: var(--warn-soft); color: var(--warn); cursor: help; }
 .badge.no { background: var(--bad-soft); color: var(--bad); }
-.editing { background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
 
 /* Starting points */
-.presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; padding: 0 18px 18px; }
-.preset { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--sheet); border-radius: 10px; padding: 10px; }
-.preset.nopic { grid-template-columns: minmax(0, 1fr); }
-.preset:hover { border-color: var(--ink); }
-.preset b { display: block; font-stretch: 110%; }
-.preset span { display: block; font-size: 12.5px; color: var(--muted); }
-.preset .thumb.sm { cursor: pointer; }
-.preset.nofit { opacity: .55; }
-.preset .warnline { color: var(--bad); }
 
 /* Towers */
-.towers { display: grid; gap: 14px; }
-.overview { padding: 14px 18px 4px; display: grid; gap: 10px; }
-.overview > p.pp { padding: 0 0 10px; }
-.sx { display: grid; gap: 8px; margin-top: 8px; max-width: 660px; }
-.panel.empty .sx { margin: 16px auto 0; text-align: left; }
-.sx-pics { display: flex; flex-wrap: wrap; gap: 0 10px; align-items: end; }
-.sx svg { width: 100%; height: auto; flex: 1 1 300px; }
-.sx p { margin: 0; color: var(--muted); font-size: 13px; }
-.sx .sx-d { fill: var(--bed); stroke: var(--muted); stroke-width: 1; }
-.sx .sx-roof { fill: var(--muted); }
-.sx .sx-base { fill: var(--ink); opacity: .75; }
-.sx .sx-w { fill: none; stroke: var(--ink); stroke-width: 1.5; }
-.sx .sx-floor { stroke: var(--line); stroke-width: 1.5; }
-.sx .sx-l { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
-.sx text { font-family: var(--f-body); }
-.sx .sx-t { fill: var(--muted); font-size: 12px; }
-.sx .sx-in { fill: var(--ink); font-size: 11.5px; font-weight: 600; }
-.sx .sx-h { fill: var(--ink); font-size: 13.5px; font-weight: 700; }
-.ov-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
-.ov-head h3 { margin: 0; font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
-.ov-head span { font-size: 13px; color: var(--muted); }
-.ov-row { display: flex; gap: 10px; align-items: stretch; overflow-x: auto; padding-bottom: 4px; }
-.ov-t { flex: none; display: grid; grid-template-rows: 1fr auto auto; justify-items: center; gap: 4px; min-width: 112px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet-2); text-align: center; cursor: pointer; }
-.ov-t:hover { border-color: var(--muted); }
-.ov-t.bad { border-color: var(--bad); }
-.ov-t b { font-size: 13.5px; max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ov-t small { font-size: 11.5px; color: var(--muted); line-height: 1.35; }
-.ov-new { border-style: dashed; background: transparent; align-content: center; grid-template-rows: auto auto; }
-.ov-new span { font-size: 26px; line-height: 1; color: var(--muted); }
 .mini { display: grid; justify-items: center; align-content: end; gap: 1px; }
 .mini.empty { font-size: 11px; color: var(--muted); align-self: center; }
-.mini .mlvl { display: flex; gap: 1px; }
 .mini i { display: block; background: var(--bed); border: 1px solid var(--muted); border-radius: 2px; }
 .mini i.case { background: color-mix(in srgb, var(--bed) 60%, var(--accent-soft)); }
-.mini .mroof { height: 3px; border-radius: 2px 2px 0 0; background: var(--muted); }
-.mini .mbase { height: 5px; border-radius: 0 0 2px 2px; background: var(--ink); opacity: .7; }
-.mini .mbase.wheels { height: 7px; border-bottom: 2px dotted var(--sheet-2); }
-details.folded > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 14px; margin: -16px -18px; padding: 12px 18px; }
-details.folded > summary::-webkit-details-marker { display: none; }
-details.folded > summary::after { content: "+"; margin-left: auto; color: var(--muted); font-size: 20px; line-height: 1; }
-details.folded[open] > summary::after { content: "\2212"; }
-details.folded[open] > summary { display: none; }
-.foldbtn { font-size: 18px; min-width: 36px; height: auto; align-self: stretch; }
-.ov-t .mini { align-self: end; }
-details.folded > summary .mini { min-width: 40px; }
-.ft-name { display: grid; gap: 2px; min-width: 0; }
-.ft-name b { font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
-.ft-name small { font-size: 12.5px; color: var(--muted); }
 .tag.bad { background: var(--bad-soft); color: var(--bad); }
-.addto { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
-.tower { padding: 16px 18px; display: grid; gap: 14px; }
-.tower-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
-.tower-head input.tname { font-family: var(--f-display); font-stretch: 115%; font-weight: 800; font-size: 22px; border: 0; background: transparent; padding: 2px 0; min-width: 0; width: 14ch; border-bottom: 1px dashed var(--line); }
-.tower-body { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 18px; align-items: start; }
-@media (max-width: 760px) { .tower-body { grid-template-columns: minmax(0, 1fr); } }
-.stackviz { display: grid; gap: 3px; justify-items: center; padding: 10px; background: var(--sheet-2); border-radius: 10px; }
-.stackviz .lvl { display: flex; gap: 3px; justify-content: center; width: 100%; }
-.stackviz .blk { border-radius: 4px; background: var(--bed); border: 1px solid var(--line); display: grid; place-items: center; font-size: 10.5px; font-weight: 700; color: var(--muted); overflow: hidden; min-height: 14px; }
-.stackviz .blk.case { background: color-mix(in srgb, var(--bed) 70%, var(--accent-soft)); }
-.stackviz .blk.bad { border-color: var(--bad); color: var(--bad); }
-.stackviz .roofbar { height: 6px; border-radius: 3px 3px 0 0; background: var(--muted); opacity: .55; }
-.stackviz .basebar { height: 10px; border-radius: 0 0 4px 4px; background: var(--ink); opacity: .7; }
-.stackviz .caption { font-size: 11.5px; color: var(--muted); text-align: center; }
-.stackviz .caption + .caption { margin-top: -2px; }
-.sv { max-width: 100%; height: auto; overflow: visible; }
-.sv .sv-u { fill: var(--bed); stroke: var(--muted); stroke-width: 1; }
-.sv-mini .sv-u { stroke-width: .75; }
-.sv .sv-u.case { fill: color-mix(in srgb, var(--bed) 65%, var(--accent-soft)); }
-.sv .sv-u.bad { stroke: var(--bad); stroke-width: 1.5; }
-.sv .sv-t { fill: var(--muted); font: 700 10.5px var(--f-body); }
-.sv .sv-t.bad { fill: var(--bad); }
-.sv .sv-roof { fill: var(--muted); opacity: .6; }
-.sv .sv-base { fill: var(--ink); opacity: .75; }
-.sv .sv-foot { fill: var(--ink); opacity: .55; }
-.sv .sv-wheel { fill: var(--sheet); stroke: var(--ink); stroke-width: 2; }
-.sv-mini .sv-wheel { stroke-width: 1; }
-.sv .sv-hub { fill: var(--muted); }
-.sv .sv-back { fill: none; stroke: var(--ink); stroke-width: 2; stroke-dasharray: 4 3; opacity: .7; }
-.sv-mini .sv-back { stroke-width: 1; stroke-dasharray: 2 1.5; }
-.sv .sv-grip { fill: var(--ink); opacity: .7; }
-.sv .sv-back-fill { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 3; opacity: .8; }
-.sv-mini .sv-back-fill { stroke-width: 1; stroke-dasharray: 2 1.5; }
-.sv .sv-floor { stroke: var(--line); stroke-width: 1.5; }
-.stackviz .views { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 6px 14px; }
-.stackviz figure { margin: 0; display: grid; justify-items: center; gap: 2px; }
-.stackviz figcaption { font-size: 11px; color: var(--muted); }
-.sv .sv-pull { fill: var(--accent); }
-.sv .sv-bb { fill: var(--ink); opacity: .8; }
-.sv .sv-plate { fill: var(--muted); }
-.sv .sv-peg { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; opacity: .85; }
-.sv .sv-handle { fill: none; stroke: var(--ink); stroke-width: 3; opacity: .85; }
-.sv .sv-rod { stroke: var(--muted); stroke-width: 2.5; }
-.sv .sv-dl { fill: none; stroke: var(--accent); stroke-width: 1; }
-.sv .sv-dim { fill: var(--accent); font: 600 10.5px var(--f-body); }
-.stackviz .caption b { color: var(--ink); font-weight: 700; }
-.levels { display: grid; gap: 6px; }
-.level { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
-.level .n { font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; text-align: center; }
-.level .units { display: grid; gap: 4px; min-width: 0; }
-.level .unit { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
-.level .unit b { font-stretch: 110%; }
-.level .unit small { color: var(--muted); }
-.level .ctl { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
 .iconbtn { border: 1px solid var(--line); background: var(--sheet); border-radius: 6px; min-width: 30px; height: 30px; padding: 0 8px; font-size: 13px; font-weight: 600; }
 .iconbtn:hover { border-color: var(--ink); }
 .iconbtn:disabled { opacity: .35; cursor: default; }
-.checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px 16px; }
-.issues { display: grid; gap: 6px; }
 .issue { font-size: 13.5px; border-radius: 8px; padding: 8px 10px; }
 .issue.bad { background: var(--bad-soft); } .issue.warn { background: var(--warn-soft); } .issue.info { background: var(--sheet-2); } .issue.ok { background: var(--ok-soft); }
-.addrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.addrow select { background: var(--sheet-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; max-width: 100%; }
 
 /* Print: progress + plates */
-.progress { padding: 16px 18px; display: grid; gap: 10px; }
 .bar { height: 10px; border-radius: 999px; background: var(--sheet-2); overflow: hidden; }
 .bar > i { display: block; height: 100%; background: var(--ok); border-radius: 999px; }
-.progress-nums { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13.5px; color: var(--muted); }
-.progress-nums b { color: var(--ink); font-variant-numeric: tabular-nums; }
-.colortotals { margin-top: 6px; }
-.printopts { display: grid; gap: 14px; padding: 0 18px 12px; justify-items: start; }
-.printopts .seg { width: 100%; }
-.plates { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
-.plate { padding: 14px; display: grid; gap: 10px; align-content: start; }
-.plate-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
-.plate-head b { font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
-.plate-head span { font-size: 12.5px; color: var(--muted); text-align: right; }
-.plate.done { align-self: start; opacity: .75; }
-.plate.done .donerow { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13.5px; font-weight: 600; }
-.plate.done .donerow .ok { display: inline-flex; align-items: center; gap: 6px; color: var(--ok); }
-.plate.done .donerow svg { width: 16px; height: 16px; }
 .platesvg { width: 100%; height: auto; max-width: 100%; display: block; }
 /* Step 1 · Design: stacks rail, the stack in 3D, the inspector */
 .design { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
@@ -707,7 +437,7 @@ details.folded > summary .mini { min-width: 40px; }
 .pchip[aria-pressed=true] { border-color: var(--ink); background: var(--raised); }
 .pchip[aria-pressed=true]::before { background: var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.3l3 3 6-6.6' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat; border-color: var(--ink); }
 .pchip b { font-size: 14px; } .pchip small { font-size: 11.5px; color: var(--muted); }
-.v3-hintbar kbd, .dhint kbd { display: inline-block; padding: 0 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 11.5px var(--f-mono); color: var(--ink); background: var(--sheet); }
+.v3-hintbar kbd { display: inline-block; padding: 0 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 11.5px var(--f-mono); color: var(--ink); background: var(--sheet); }
 .dempty { display: grid; justify-items: center; align-content: center; gap: 12px; min-height: 360px; padding: 24px; color: var(--muted); background: var(--sheet-2); }
 .dempty .btn { display: inline-flex; align-items: center; gap: 6px; }
 .dinsp { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
@@ -876,15 +606,11 @@ button.prole:hover { background: var(--sheet-2); }
 .btn.ink { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
 .btn.ink:hover { filter: brightness(1.15); }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
-.sw-body { background: #d4d6d3; } .sw-inner { background: #3a3d3f; } .sw-accent { background: #e8742f; } .sw-tpu { background: #222; } .sw-big { background: #d4d6d3; } .sw-small { background: #3a3d3f; } .sw-labels { background: linear-gradient(90deg, #f4f1ea 34%, #3a3d3f 34% 67%, #e8742f 67%); } .sw-all { background: linear-gradient(90deg, #d4d6d3 50%, #3a3d3f 50%); }
-.pitems { display: grid; gap: 6px; }
 .pitem { display: grid; grid-template-columns: 44px 30px minmax(0, 1fr); gap: 8px; align-items: center; font-size: 13.5px; }
 .pitem .thumb { width: 44px; height: 44px; }
 .pitem .q { font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
 .pitem .lbl { min-width: 0; }
 .pitem .lbl small { display: block; color: var(--muted); font-size: 11.5px; }
-.donelist { padding: 0 18px 14px; display: grid; gap: 4px; }
-.doneitem { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; font-size: 13.5px; padding: 4px 0; border-top: 1px solid var(--line); }
 details.fold { padding: 0; }
 details.fold > summary { cursor: pointer; padding: 14px 18px; font-family: var(--f-display); font-stretch: 112%; font-weight: 700; font-size: 17px; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 details.fold > summary::-webkit-details-marker { display: none; }
@@ -907,7 +633,6 @@ details.info > p { margin: 6px 0 0; color: var(--muted); font-size: 13px; max-wi
 .xitem { grid-template-columns: 56px minmax(0, 1fr) auto; }
 .xitem .thumb { width: 56px; height: 56px; }
 /* Built without part pictures: collapse the picture columns */
-.thumb.nopic { width: 0 !important; height: 0 !important; }
 html.nopics .row { grid-template-columns: 0 0 40px minmax(0, 1fr) auto 38px !important; column-gap: 6px; }
 html.nopics .pitem { grid-template-columns: 0 30px minmax(0, 1fr); }
 html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
@@ -917,26 +642,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 .gprog { margin: 10px 18px 0; display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
 .gprog[hidden] { display: none; }
 .linkbtn { border: 0; background: none; color: var(--accent); font-size: 12px; font-weight: 600; padding: 4px 0 0; text-decoration: underline; text-underline-offset: 2px; display: block; margin-left: auto; }
-.seg.scope { max-width: 520px; }
 
-.openrow { display: grid; gap: 10px; padding: 4px 18px 16px; }
-.gsteps { list-style: none; margin: 12px 18px 4px; padding: 0; display: grid; gap: 8px; }
-.gstep { display: grid; grid-template-columns: 30px 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; }
-.gnum { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 13px; background: var(--sheet-2); }
-.gstep.done .gnum { background: var(--ok); color: var(--sheet); }
-.gtext { display: grid; gap: 3px; min-width: 0; }
-.gtext small { color: var(--muted); font-size: 12.5px; line-height: 1.4; }
-.gtext code { font-size: 11.5px; background: var(--sheet-2); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
-.gstep .btn { white-space: nowrap; }
-.gstep .btn:disabled { opacity: .4; cursor: not-allowed; }
 .fstat { display: flex; gap: 6px; align-items: flex-start; margin: 3px 0 0; font-size: 12.5px; }
 .fstat svg { flex: none; margin-top: 1px; }
 .fstat.ok { color: var(--ok); } .fstat.bad { color: var(--accent); }
 .fstat span { color: var(--ink); }
-@media (max-width: 560px) { .gstep { grid-template-columns: 30px 1fr; } .gstep .btn { grid-column: 2; justify-self: start; } }
-details.termfold { border-top: 1px solid var(--line); }
-details.termfold > summary { cursor: pointer; padding: 12px 18px; font-weight: 600; color: var(--muted); }
-details.termfold[open] > summary { color: var(--ink); }
 
 /* Assemble */
 /* Step 4 · Assemble: sections rail, steps, what the section needs */
@@ -983,18 +693,6 @@ details.termfold[open] > summary { color: var(--ink); }
 .aneed > div { display: flex; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
 .aneed .num { flex: 0 0 40px; text-align: right; font-weight: 800; }
 .asm-need .btn { min-height: 44px; }
-.guide { padding: 4px 0 8px; }
-.guide > h3 { margin: 0; padding: 14px 18px 2px; font-family: var(--f-display); font-stretch: 112%; font-size: 18px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.guide > p { margin: 0; padding: 2px 18px 8px; color: var(--muted); font-size: 13.5px; }
-.step { display: grid; grid-template-columns: 22px 30px minmax(0, 1fr); gap: 10px; padding: 10px 18px; border-top: 1px solid var(--line); align-items: start; }
-.step input { width: 17px; height: 17px; accent-color: var(--ok); margin-top: 2px; }
-.step .sn { font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
-.step.done { opacity: .5; }
-.step .stext { display: grid; gap: 6px; min-width: 0; }
-.step .src { font-size: 11.5px; color: var(--muted); }
-.step .uses { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.step .uses .thumb { width: 40px; height: 40px; }
-.step .hwchip { font-size: 12px; background: var(--sheet-2); border-radius: 6px; padding: 3px 7px; }
 </style>
 </head>
 <body>
@@ -1148,11 +846,9 @@ details.termfold[open] > summary { color: var(--ink); }
   const STACK_DEFAULT = { base: false, wheels: false, feet: true, casters: false, stationaryHandle: false, pullHandle: false };
   const clean = cfg => { const k = Object.assign({}, DEFAULT, JSON.parse(JSON.stringify(cfg))); k.dividers = Object.assign({}, DEFAULT.dividers, k.dividers); return k; };
 
-  let c = clean(store.get('config', {}));
   let printer = store.get('printer', { id: 'p1s', v: [256, 256, 250] });
   { const pp = PRINTERS.find(p => p.id === printer.id); if (!pp) printer = { id: 'p1s', v: PRINTERS[0].v }; else if (pp.id !== 'custom') printer = { id: pp.id, v: pp.v }; }
   const preset = () => PRINTERS.find(p => p.id === printer.id) || {};
-  const onlyFits = true; // sizes that don't fit the printer are never offered
   const spares = true; // +10% on small loseable parts and bolts
   // Filament colours: a palette (USSA's three render colours to start with), a colour per part role (R.ROLES), and
   // per-unit choices kept in the unit's own settings (cfg.colors, so they travel with duplicates and edits). A part
@@ -1191,7 +887,6 @@ details.termfold[open] > summary { color: var(--ink); }
   // since are kept by number and contents in `done`. Any other change (build, printer, settings) starts a new plan.
   let plateState = store.get('plateState', {});   // scope -> { base: {path: count}, done: [{ n, sig }] }
   let stepsDone = store.get('steps', {});
-  let editing = null;                       // { t, l, u } when a tower unit is loaded into the editor
   let view = store.get('view', 'build');
   if (view === 'unit') view = 'build'; // designing a unit and building stacks are one step now
   let towers = store.get('towers', null);
@@ -1204,7 +899,7 @@ details.termfold[open] > summary { color: var(--ink); }
   const newId = () => { seq = Math.max(seq, ...towers.map(t => t.id + 1)); return seq++; };
   // The 'mech' colour role (runner slides, keys, hinges and locks) became three: carry a choice made before over
   const splitMech = o => { if (o && o.mech) { for (const k of ['runners', 'lock', 'hinge']) if (!o[k]) o[k] = o.mech; delete o.mech; } };
-  splitMech(colorPrefs.roles); splitMech(c.colors); towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => splitMech(u.colors))));
+  splitMech(colorPrefs.roles); towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => splitMech(u.colors))));
   // Stacks saved before they had colours of their own start from the project's
   towers.forEach(t => { if (!t.roles) t.roles = { ...colorPrefs.roles }; splitMech(t.roles); });
   let extras = store.get('extras', []);               // [{ path, qty }]: single parts printed on their own, outside any tower
@@ -1638,16 +1333,9 @@ details.termfold[open] > summary { color: var(--ink); }
   function bindPickers(root, ctx) {
     root.querySelectorAll('[data-fp-role]').forEach(b => b.onclick = () => togglePicker(b, { role: b.dataset.fpRole, ...ctx(b) }));
   }
-  // The unit being set up in step 1, for "Only this unit" in the picker
-  const editorUnit = v => ({ cfg: c, name: unitCode(c), save: () => {
-    store.set('config', c);
-    if (v && v.ghost) { if (c.colors) v.ghost.colors = c.colors; else delete v.ghost.colors; } // the 3D view draws a copy of it
-  } });
-  let viewerInUnit = false;
-  // inUnit: opened from the unit being set up (its summary), whose colours can be its own
-  function openViewer(path, menuOpen, inUnit = viewerInUnit) {
+  // A part's preview: its picture, file, size on the bed and filament (the stack's colour for that kind of part)
+  function openViewer(path, menuOpen) {
     const l = viewMap.get(path); if (!l) return;
-    viewerInUnit = inUnit;
     $('viewerBody').innerHTML = `
       <div class="thumb lg" style="${spriteStyle(l.file)}" role="img" aria-label="${esc(l.label)}"></div>
       <div class="vinfo">
@@ -1655,8 +1343,8 @@ details.termfold[open] > summary { color: var(--ink); }
         ${l.total ? `<div class="qty" style="text-align:left">${l.total}<small>\u00d7 to print</small></div>` : ''}
         <div class="pfile mono">${esc(l.file.path)}</div>
         <div class="tags" style="justify-content:flex-start">${tagsFor(l).join('')}</div>
-        ${l.role && ROLE_BY_ID.has(l.role) ? `<div class="vcolor" data-fp-row><span>Filament<small>for ${esc(ROLE_BY_ID.get(l.role).label.toLowerCase())}${inUnit ? '' : stackNow() ? ', in the whole stack' : ', in the whole project'}</small></span>${fpButton(l.role, inUnit ? c : null)}</div>
-          ${!inUnit && l.color !== colorFor(l.role, null) && l.color !== 'tpu' ? `<p class="pnote" style="margin:0">${swatch(l.color)}This unit has its own color here, ${esc(colorName(l.color))} (from the 3D view of its stack).</p>` : ''}` : ''}
+        ${l.role && ROLE_BY_ID.has(l.role) ? `<div class="vcolor" data-fp-row><span>Filament<small>for ${esc(ROLE_BY_ID.get(l.role).label.toLowerCase())}${stackNow() ? ', in the whole stack' : ', in the whole project'}</small></span>${fpButton(l.role, null)}</div>
+          ${l.color !== colorFor(l.role, null) && l.color !== 'tpu' ? `<p class="pnote" style="margin:0">${swatch(l.color)}This unit has its own color here, ${esc(colorName(l.color))} (from the 3D view of its stack).</p>` : ''}` : ''}
         <div class="mono num">${dimStr(l.file.dims)}</div>
         ${l.note ? `<div class="pnote">${esc(l.note)}</div>` : ''}
         ${l.inferred ? `<div class="pnote"><span class="badge inf">Inferred</span> ${esc(l.inferred)}</div>` : ''}
@@ -1664,15 +1352,14 @@ details.termfold[open] > summary { color: var(--ink); }
         <p class="pnote">Shown standing the way the file is exported, which is how it goes on the plate.</p>
         <div class="actions"><button class="btn primary" data-addextra="${esc(l.file.path)}">Print this part on its own</button></div>
       </div>`;
-    bindPickers($('viewerBody'), () => ({ from: inUnit ? `${unitCode(c)}, part preview` : 'Part preview', unit: inUnit ? editorUnit() : null,
-      after: () => { renderAll(); openViewer(path); } }));
+    bindPickers($('viewerBody'), () => ({ from: 'Part preview', unit: null, after: () => { renderAll(); openViewer(path); } }));
     const d = $('viewer');
     if (!d.open) { if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
     if (menuOpen && $('viewerBody').querySelector('[data-fp-role]')) $('viewerBody').querySelector('[data-fp-role]').click();
   }
   document.addEventListener('click', e => {
-    const t = e.target.closest('[data-view]'); if (t) openViewer(t.dataset.view, false, !!t.closest('#unitSum'));
-    const sw = e.target.closest('[data-view-color]'); if (sw) openViewer(sw.dataset.viewColor, true, !!sw.closest('#unitSum'));
+    const t = e.target.closest('[data-view]'); if (t) openViewer(t.dataset.view, false);
+    const sw = e.target.closest('[data-view-color]'); if (sw) openViewer(sw.dataset.viewColor, true);
     const a = e.target.closest('[data-addextra]'); if (a) { addExtra(a.dataset.addextra, 1); if (view === 'build') renderBuild(); }
   });
   $('viewerClose').onclick = () => $('viewer').close ? $('viewer').close() : $('viewer').removeAttribute('open');
@@ -1758,15 +1445,6 @@ details.termfold[open] > summary { color: var(--ink); }
     [/60–100 mm/, null, 'length depends on your build; buy what fits'],
   ];
   const shopOf = item => { const s = SHOP.find(([re]) => re.test(item)); return s ? { link: s[1], note: s[2] } : {}; };
-  const buyLink = item => { const { link, note } = shopOf(item);
-    return (link ? ` <a class="buy" href="${link}" target="_blank" rel="noopener">Amazon</a>` : '') + (note ? ` <small class="shopnote">${esc(note)}</small>` : ''); };
-  function hwTable(hw, title, sub) {
-    if (!hw.length) return '';
-    return `<div class="panel hw"><h3 class="ph">${title || 'Hardware to buy'}</h3><p class="pp">${sub || 'Not printed.'}</p>
-      ${hw.some(h => headOf(h.item)) ? '<p class="pp heads">Match the head shape: button heads are domed; countersunk heads are flat and sit flush.</p>' : ''}
-      <table><tbody>${hw.map(h => `<tr><td class="q">${h.total}\u00d7</td><td class="hd">${headIcon(h.item)}</td><td>${esc(h.item)}${h.spareN ? ` <small style="color:var(--muted)">incl. ${h.spareN} spare</small>` : ''}${buyLink(h.item)}</td><td class="why">${esc(h.why)}</td></tr>`).join('')}</tbody></table>
-      </div>`;
-  }
 
   // ---------- copy helpers ----------
   function copy(text, msg, fallbackEl) {
@@ -1796,43 +1474,6 @@ details.termfold[open] > summary { color: var(--ink); }
       el.appendChild(b);
     });
   }
-  // Does this unit (with everything else as set) have a part too big for the printer?
-  function unitTooBig(patch) {
-    const k = clean(Object.assign({}, c, patch, { wallMount: false, pegboard: 'none', backbone: 'none' }));
-    const hs = R.HEIGHTS[k.type][k.w]; if (!hs) return true; if (!hs.includes(k.h)) k.h = hs[0];
-    if (k.roof !== 'none' && !R.ROOFS.find(r => r.id === k.roof).widths.includes(k.w)) k.roof = 'grid';
-    return computeUnit(k).lines.some(l => l.fit.s === 'no' || l.fit.s === 'reorient');
-  }
-  function set(patch) { Object.assign(c, patch); normalize(); store.set('config', c); renderAll(); }
-  // say: tell the user when a roof with a carry handle had to be swapped (not at start-up)
-  function normalize(say = true) {
-    const widths = Object.keys(R.HEIGHTS[c.type]);
-    if (!widths.includes(c.w)) c.w = c.w === 'L2' ? 'L' : c.w === 'XL2' ? 'XL' : 'S';
-    let hs = R.HEIGHTS[c.type][c.w];
-    if (!hs.includes(c.h)) c.h = hs[0];
-    // A heavyweight roof has its own carry handle. When it has to go (not made in this width, or too big for the
-    // printer), the grid roof that replaces it keeps a handle: its top handle. Without this the handle silently
-    // dropped out of the print list.
-    const roof0 = c.roof, handled = c.roof === 'heavy' || c.roof === 'heavycut';
-    const roofs = R.ROOFS.filter(r => r.widths.includes(c.w)).map(r => r.id);
-    if (c.roof !== 'none' && !roofs.includes(c.roof)) c.roof = 'grid';
-    if (onlyFits && unitTooBig({})) {
-      // Move to the nearest size that fits: try the roof first, then depth, height and width
-      const tries = [];
-      if (c.type === 'drawer') tries.push(...['grid', 'table', 'bowl', 'undertable'].map(roof => ({ roof })));
-      for (const d of [...R.DEPTHS].sort((a, b) => Math.abs(a - c.d) - Math.abs(b - c.d))) for (const h of [c.h, 1, 2, 4]) for (const w of [c.w, ...widths]) tries.push({ w, d, h });
-      for (const p of tries) {
-        if (p.w && !(R.HEIGHTS[c.type][p.w] || []).includes(p.h)) continue;
-        if (!unitTooBig(p)) { Object.assign(c, p); break; }
-      }
-    }
-    if (handled && c.roof !== roof0) {
-      if (c.roof === 'grid') c.topHandle = true;
-      const why = roofs.includes(roof0) ? `is too big for your printer at ${WNAME[c.w]}${c.d}` : `isn’t made for ${WNAME[c.w]} units`;
-      if (say) toast(`The heavyweight roof ${why}: switched to the ${c.roof === 'grid' ? 'grid roof, with its top handle' : R.ROOFS.find(r => r.id === c.roof).label.toLowerCase() + ' (no handle)'}.`);
-    }
-  }
-
   function checkbox(id, label, sub, val) {
     return `<label class="opt"><input type="checkbox" id="${id}" ${val ? 'checked' : ''}><span>${label}${sub ? `<small>${sub}</small>` : ''}</span></label>`;
   }
@@ -1855,11 +1496,11 @@ details.termfold[open] > summary { color: var(--ink); }
     const beds = (window.PRINTER_BEDS || []).map(([b, m, w, d, h]) => ({ label: m.toLowerCase().includes(b.toLowerCase().split(' ')[0].slice(0, 4)) ? m : b + ' ' + m, v: [w, d, h] }));
     if (!$('pfindList').children.length) $('pfindList').innerHTML = beds.map(b => `<option value="${esc(b.label)}"></option>`).join('');
     $('pfind').value = printer.from || '';
-    $('pfind').onchange = () => { const b = beds.find(b => b.label.toLowerCase() === $('pfind').value.trim().toLowerCase()); if (!b) return; printer = { id: 'custom', v: b.v, from: b.label }; store.set('printer', printer); normalize(); renderAll(); toast(`Filled in the ${b.label}\u2019s bed size`); };
+    $('pfind').onchange = () => { const b = beds.find(b => b.label.toLowerCase() === $('pfind').value.trim().toLowerCase()); if (!b) return; printer = { id: 'custom', v: b.v, from: b.label }; store.set('printer', printer); renderAll(); toast(`Filled in the ${b.label}\u2019s bed size`); };
     $('pfrom').hidden = printer.id !== 'custom';
     $('pfrom').textContent = printer.from ? `Bed size from OrcaSlicer\u2019s ${printer.from} profile. Check it against your printer and change it if needed.` : 'We only need your bed size. Type your printer\u2019s name to fill it in, or enter it yourself from your slicer\u2019s printer settings (bed shape) or the spec sheet.';
-    ['pvx', 'pvy', 'pvz'].forEach((id, i) => { $(id).value = printer.v[i]; $(id).onchange = () => { const v = [...printer.v]; v[i] = Math.max(100, +$(id).value || 256); printer = { id: 'custom', v }; store.set('printer', printer); normalize(); renderAll(); }; });
-    sel.onchange = () => { const p = PRINTERS.find(p => p.id === sel.value); printer = { id: p.id, v: p.id === 'custom' ? printer.v : p.v }; store.set('printer', printer); normalize(); renderAll(); };
+    ['pvx', 'pvy', 'pvz'].forEach((id, i) => { $(id).value = printer.v[i]; $(id).onchange = () => { const v = [...printer.v]; v[i] = Math.max(100, +$(id).value || 256); printer = { id: 'custom', v }; store.set('printer', printer); renderAll(); }; });
+    sel.onchange = () => { const p = PRINTERS.find(p => p.id === sel.value); printer = { id: p.id, v: p.id === 'custom' ? printer.v : p.v }; store.set('printer', printer); renderAll(); };
   }
 
   // ---------- starting points ----------
@@ -3066,8 +2707,11 @@ details.termfold[open] > summary { color: var(--ink); }
   // The Vault folder the user picked: relative path -> File. Matching by the end of the path also works when
   // they picked the folder above or below the download's top folder.
   let vaultFolder = null;
+  // What macOS leaves in a folder it zipped or copied (resource forks: "__MACOSX/…", "._name.stl"): never a part
+  const JUNK = /(^|\/)(__MACOSX\/|\._)/i;
   async function filesFromHandle(dir, prefix = '', out = new Map()) {
     for await (const [name, h] of dir.entries()) {
+      if (JUNK.test(prefix + name + (h.kind === 'directory' ? '/' : ''))) continue;
       if (h.kind === 'directory') await filesFromHandle(h, prefix + name + '/', out);
       else if (/\.stl$/i.test(name)) out.set(prefix + name, h);
     }
@@ -3080,13 +2724,14 @@ details.termfold[open] > summary { color: var(--ink); }
   const looseIdx = new WeakMap();
   function findFile(map, path) {
     if (map.has(path)) return map.get(path);
-    for (const [k, v] of map) if (k.endsWith('/' + path)) return v;
+    for (const [k, v] of map) if (k.endsWith('/' + path) && !JUNK.test(k)) return v;
     const tail = path.split('/').slice(1).join('/'); // picked a folder inside the download
     if (tail && map.has(tail)) return map.get(tail);
     let ix = looseIdx.get(map);
     if (!ix) {
-      ix = { paths: [...map].map(([k, v]) => [loose('/' + k), v]), names: new Map() };
-      for (const [k, v] of map) { const n = sameName(k); ix.names.set(n, ix.names.has(n) ? null : v); } // null: name not unique
+      const real = [...map].filter(([k]) => !JUNK.test(k)); // a folder upload (other browsers) keeps them; skip them here
+      ix = { paths: real.map(([k, v]) => [loose('/' + k), v]), names: new Map() };
+      for (const [k, v] of real) { const n = sameName(k); ix.names.set(n, ix.names.has(n) ? null : v); } // null: name not unique
       looseIdx.set(map, ix);
     }
     const lp = loose(path), lt = loose(tail);
@@ -3132,7 +2777,16 @@ details.termfold[open] > summary { color: var(--ink); }
   // so the rest of the page never needs them. Units are boxes from R.exterior until the Vault folder is picked; then the
   // units measured in src/stl-placements.json show their real parts, read from that folder, simplified in a worker and
   // kept in this browser for next time. Parts without a measured place are listed, never guessed.
-  const PLACE = window.VAULT_PLACEMENTS || { units: {}, stack: { first: 52, per_level: 48 } };
+  // build.py packs the placements (file paths and matrices in tables, by index): put them back as stl-placements.json has them
+  function unpackPlacements(P) {
+    if (!P || !P.paths) return P;
+    const parts = list => (list || []).forEach(q => { q[0] = P.paths[q[0]]; q[3] = P.mats[q[3]]; });
+    const bolts = list => (list || []).forEach(b => { b[2] = P.mats[b[2]]; });
+    for (const u of Object.values(P.units)) { parts(u.parts); bolts(u.hardware); for (const l of Object.values(u.layouts || {})) { parts(l.parts); bolts(l.hardware); } }
+    delete P.paths; delete P.mats;
+    return P;
+  }
+  const PLACE = unpackPlacements(window.VAULT_PLACEMENTS) || { units: {}, stack: { first: 52, per_level: 48 } };
   const CDN_THREE = 'https://cdn.jsdelivr.net/npm/three@0.186.1/';
   const CDN_SIMPLIFIER = 'https://cdn.jsdelivr.net/npm/meshoptimizer@1.3.0/meshopt_simplifier.js';
   const SIMPLIFY_MM = 0.15; // how far a simplified surface may stray from the part's, in mm
@@ -3472,8 +3126,7 @@ details.termfold[open] > summary { color: var(--ink); }
   // ---------- the 3D view: one view, three tools ----------
   // Turn (a click selects a part), Paint (a click gives the brush colour to that kind of part, in every unit or in the
   // clicked unit only) and Open (a click opens or closes a drawer or a case lid). Views from the front, at three quarters and
-  // from the side; units can be spread apart and the roof hidden. Opened from step 1 it shows the unit being set up
-  // The unit being set up (`c`) is drawn from a copy, `v.ghost`, where Add would put it (see v3sync).
+  // from the side; units can be spread apart and the roof hidden. It shows the stack picked in Design (v3sync).
   let v3 = null; // the open view: { t, T, renderer, scene, camera, controls, units: [...], token, tool, brush, ... }
   const v3status = msg => { $('v3dStatus').textContent = msg; };
   const V3_VIEWS = [['front', 'Front', [0, 0.16, 1]], ['3q', '¾', [0.55, 0.42, 1]], ['side', 'Side', [1, 0.22, 0.02]]];
@@ -3507,26 +3160,22 @@ details.termfold[open] > summary { color: var(--ink); }
     const grid = new T.GridHelper(Math.ceil(size * 2.4 / 100) * 100, Math.ceil(size * 2.4 / 100) * 2, 0x9a9e9b, 0xc4c7c3);
     grid.position.set(0, 0, -lay.depth / 2); grid.material.transparent = true; grid.material.opacity = 0.5; scene.add(grid);
     const camera = new T.PerspectiveCamera(32, 1, 5, size * 60);
-    const out = 0;
-    // The unit being set up, drawn where Add would put it: see-through while it isn't in the stack yet
-    const ghost = mode.ghost || null, seeThrough = ghost && mode.preview && t.levels.flat().some(u => u !== ghost);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.maxPolarAngle = Math.PI * 0.55;
     // Materials by colour; a highlighted copy for what a click would paint
     const hiCol = new T.Color(css.getPropertyValue('--accent').trim() || '#d9622b');
     const mats = new Map(), mat = (role, cfg, hi) => {
-      const hw = role === 'hardware', hex = hw ? hwColor() : role === 'caster' ? '#2a2c2e' : colorHex(colorFor(role, cfg)), see = !!(seeThrough && cfg === ghost), k = (hw ? 'hw' : '') + hex + (hi ? '*' : '') + (see ? '~' : '');
+      const hw = role === 'hardware', hex = hw ? hwColor() : role === 'caster' ? '#2a2c2e' : colorHex(colorFor(role, cfg)), k = (hw ? 'hw' : '') + hex + (hi ? '*' : '');
       // Highlighted: tinted halfway to the accent colour and lit from within a little, so it shows on white and on black
       if (!mats.has(k)) {
         const m = new T.MeshStandardMaterial({ color: hi ? new T.Color(hex).lerp(hiCol, 0.5) : hex, roughness: hw ? 0.4 : 0.72, metalness: hw ? 0.5 : 0 });
         if (hi) { m.emissive = hiCol; m.emissiveIntensity = 0.18; }
-        if (see) { m.transparent = true; m.opacity = 0.45; }
         mats.set(k, m);
       }
       return mats.get(k);
     };
     const painted = (geo, role, cfg) => Object.assign(new T.Mesh(geo, mat(role, cfg)), { userData: { role, cfg } });
-    const v = v3 = { t, ghost, canPreview: !!mode.canPreview, label: mode.label || t.name, key: mode.key, cfgs: mode.cfgs || [], ac: new AbortController(), extras: [], T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {},
+    const v = v3 = { t, key: mode.key, cfgs: mode.cfgs || [], ac: new AbortController(), extras: [], T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {},
       tool: v3ui.tool === 'paint' ? 'paint' : 'turn', pscope: v3ui.pscope, brush: v3ui.brush, sel: null, hot: null, explode: v3ui.explode, hideRoof: v3ui.hideRoof, view: v3ui.view, hwGeo: new Map() };
     // A bolt's shape, made once per size for this model
     v.hwGeom = spec => {
@@ -3563,7 +3212,7 @@ details.termfold[open] > summary { color: var(--ink); }
     const hasBase = lay.extra.length > 0 || lay.units.some(u => u.stack), spreadOf = u => v.explode ? (u.level + (hasBase ? 1 : 0)) * V3_SPREAD : 0;
     v.aim = dir => {
       const top = Math.max(lay.height, ...v.units.filter(u => u.g.visible).map(u => u.y + u.h + spreadOf(u)));
-      const target = new T.Vector3(0, top / 2, (out - lay.depth) / 2), radius = Math.hypot(lay.width, top, lay.depth + out) / 2;
+      const target = new T.Vector3(0, top / 2, -lay.depth / 2), radius = Math.hypot(lay.width, top, lay.depth) / 2;
       const half = Math.min(camera.fov / 2, Math.atan(Math.tan(camera.fov * Math.PI / 360) * camera.aspect) * 180 / Math.PI);
       const d = dir ? new T.Vector3(...dir) : camera.position.clone().sub(controls.target);
       camera.position.copy(target).add(d.normalize().multiplyScalar(radius * 1.08 / Math.sin(half * Math.PI / 180)));
@@ -3612,7 +3261,7 @@ details.termfold[open] > summary { color: var(--ink); }
         return { id: (dr.side || '') + dr.drawer, side: dr.side || null, level: dr.level, h: dr.h, drawer: dg, front: f, travel: Math.round(u.d * 0.6),
           open: false, t: 0, jn: new Map(), motion: lay.motion, steps: dr.open, dur: dur(dr.open) };
       }) : null;
-      v.units.push({ ...u, g, drawer, boxes, front, lid, place, movers, travel: u.drawer && !movers ? Math.round(u.d * 0.6) : 0, open: false, ghost: !!ghost && u.cfg === ghost,
+      v.units.push({ ...u, g, drawer, boxes, front, lid, place, movers, travel: u.drawer && !movers ? Math.round(u.d * 0.6) : 0, open: false,
         motion, steps, t: 0, jn: new Map(), dur: dur(steps) });
     }
     v.units.forEach(v3pose);
@@ -3713,10 +3362,9 @@ details.termfold[open] > summary { color: var(--ink); }
     v3tools(); v3side();
     if (vaultFolder) loadParts(v); else v3status(v.units.some(u => u.place) ? 'Boxes for now. Choose your Vault folder to see the real parts.' : 'Boxes from the published sizes.');
   }
-  // The colour settings a part's own colour goes in, as the picker wants it. In step 1's view that is the unit being
-  // set up (`c`); in a stack, the unit the part belongs to (a roof's parts are its unit's).
+  // The colour settings a part's own colour goes in, as the picker wants it: the unit the part belongs to (a roof's
+  // parts are its unit's)
   function v3owner(v, cfg) {
-    if (v.ghost && cfg === v.ghost) return editorUnit(v);
     const u = v.units.find(x => x.cfg === cfg && !x.roof) || v.units.find(x => x.cfg === cfg);
     return { cfg, name: u ? u.name : 'unit', save };
   }
@@ -3732,9 +3380,8 @@ details.termfold[open] > summary { color: var(--ink); }
     } else {
       setRoleColor(role, id);
       const drop = k => { if (k && k.colors && k.colors[role]) { const x = { ...k.colors }; delete x[role]; if (Object.keys(x).length) k.colors = x; else delete k.colors; } };
-      (stackNow() ? [stackNow()] : towers).forEach(t => t.levels.forEach(lv => lv.forEach(drop))); drop(c);
-      save(); store.set('config', c);
-      if (v.ghost) editorUnit(v).save();
+      (stackNow() ? [stackNow()] : towers).forEach(t => t.levels.forEach(lv => lv.forEach(drop)));
+      save();
     }
     saveColors();
     v3refresh(v);
@@ -3832,7 +3479,7 @@ details.termfold[open] > summary { color: var(--ink); }
       const sw = roles.map(r => { const k = cfgOf(r), cur = colorFor(r, k), own = k && k.colors && paletteOf(k.colors[r]);
         return `<button type="button" class="v3-rsw${own ? ' own' : ''}" style="background:${colorHex(cur)}" data-v3pick="${ui}|${r}" title="${esc(ROLE_BY_ID.get(r).label)}: ${esc(colorName(cur))}${own ? ' (this unit only)' : ''}" aria-label="${esc(ROLE_BY_ID.get(r).label)}: ${esc(colorName(cur))}${own ? ', this unit only' : ''}"></button>`; }).join('');
       const un = u.place && u.place.unplaced.length ? `<small class="v3-miss">Not placed yet: ${esc(u.place.unplaced.join(', '))}</small>` : '';
-      return `<li class="${v.sel && v.sel.u === u ? 'on' : ''}${u.ghost ? ' ghost' : ''}"><div class="v3-uhead"><b>${esc(u.name)}${u.ghost ? ` <small>${editing ? 'being edited' : 'not added yet'}</small>` : ''}</b><span class="v3-st ${cls}">${esc(st)}</span></div>
+      return `<li class="${v.sel && v.sel.u === u ? 'on' : ''}"><div class="v3-uhead"><b>${esc(u.name)}</b><span class="v3-st ${cls}">${esc(st)}</span></div>
         ${u.loading && n ? `<div class="v3-bar"><span style="width:${Math.round(100 * (u.loaded || 0) / n)}%"></span></div>` : ''}
         <div class="v3-roles">${sw}</div>${un}</li>`;
     }).join('');
@@ -4592,7 +4239,6 @@ details.termfold[open] > summary { color: var(--ink); }
 
   $('footnote').innerHTML = `Part rules come from the four PDF manuals in the Vault download and USSA\u2019s published component counts; anything worked out beyond them is marked <span class="badge inf">Inferred</span>. Sizes are measured from each STL (${FILES.length} files)${HAS_PREVIEWS ? ' and pictures are rendered from them' : ''}. Filament is a rough figure from part volume at standard settings, calibrated against USSA\u2019s own gram estimates. Progress and stacks are saved in this browser only.${window.VAULT_PUBLIC ? ' Free and open source, provided as is, with no support.' : ''}`;
 
-  normalize(false);
   migrateTowers();
   renderAll();
 })();

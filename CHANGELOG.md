@@ -1,6 +1,20 @@
 # What's new
 
-Changes to the Vault Print Planner at [vault.romy.io](https://vault.romy.io), newest first.
+Changes to the Vault Print Planner, newest first: this fork's first, then Romy's at [vault.romy.io](https://vault.romy.io).
+
+## Draft, not released yet: the Dols fork
+- **A fork of Romy's planner,** kept at [github.com/doooools/vault-print-planner](https://github.com/doooools/vault-print-planner). Everything below is new in it.
+- **Your stacks in 3D,** made from your own Vault files: every drawer, case, roof, base and wheel where the assembled unit puts it, with its bolts. Turn it, spread the units apart, hide the roof. Parts are simplified in your browser and kept there for next time; nothing is uploaded.
+- **Open drawers and cases in 3D:** hold Ctrl or Shift and click. A drawer's key turns and its racks slide before it pulls out; a case's latches flip before the lid opens, with the roof riding on it.
+- **Several drawers in one module:** a 2F module can hold two 1F drawers, a 4F module two 2F, four 1F, or a 2F and two 1F in any order. Parts, bolts and geared rails are counted per drawer. The mixed ones are marked Inferred: the manuals don't show them.
+- **Colors:** the Paint tool gives each kind of part a filament, for a whole stack or a single module, from your own filaments or Bambu Lab's PLA and PETG colours. Each stack keeps its own colours. Plates, filament totals and the Bambu Studio project follow them, one filament slot per colour.
+- **A new layout:** Design, Print, Hardware and Assemble tabs. In Design, your stacks on the left, the 3D view in the middle, the selected level or stack on the right. Start from a template or a blank stack, and set a level across the width as L, L² or two modules side by side.
+- **Print what you want:** tick the stacks, and the loose parts, to plan. The plates follow every change made in Design.
+- **Hardware has its own tab:** one shopping list for the whole build, ticks for what you've bought, copy or CSV, and the bolts' finish (black or zinc) shown in 3D.
+- **Save and open designs:** in Chrome and Edge, Save writes your stacks, loose parts and colours into your Vault folder, next to the part files. Save as… and Open… work anywhere; other browsers download the file.
+- **Bases in 3D:** the base, wheels, front foot bar and casters are drawn where they go. A base without wheels now stands on its own: no feet. A roof can sit on a top-opening case.
+- **Fixed:** Bambu Studio projects with several colours no longer fail with "Invalid configuration file". The heavyweight roof's carry handle no longer drops out of the print list when the roof is swapped. Store links are plain product pages.
+- **Works the same on Linux, macOS and Windows:** the files macOS adds to a copied folder are ignored, and Firefox and Safari fall back to a folder upload and downloads.
 
 ## 2026-11-09
 - **XL units really fit the H2S now:** the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.

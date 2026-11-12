@@ -73,7 +73,24 @@ if pf.exists():
     # layouts: several drawers in a 2F/4F module (tools/placements/README.md "Layouts"): drawers, parts, motion, bolts
     lays = lambda u: {"layouts": {i: {"drawers": l["drawers"], "parts": l["parts"], "motion": l["motion"], **hw(l)}
                                   for i, l in u["layouts"].items()}} if u.get("layouts") else {}
-    catalog += "window.VAULT_PLACEMENTS=" + json.dumps({"stack": {**{k: pl["stack"][k] for k in ("first", "per_level")}, **({"case": pl["stack"]["case"]["rise"]} if "case" in pl["stack"] else {})}, **({"sizes": sizes} if sizes else {}), "units": {k: {"parts": u["parts"], **({"hinge": {x: u["hinge"][x] for x in ("origin", "axis", "open_deg")}} if "hinge" in u else {}), **({"motion": u["motion"]} if "motion" in u else {}), **({"floor": {k: v for k, v in u["floor"].items() if k != "note"}} if "floor" in u else {}), **({"casters": u["casters"]} if "casters" in u else {}), **hw(u), **lays(u)} for k, u in pl["units"].items()}}, ensure_ascii=False, separators=(",", ":")) + ";"
+    place = {"stack": {**{k: pl["stack"][k] for k in ("first", "per_level")}, **({"case": pl["stack"]["case"]["rise"]} if "case" in pl["stack"] else {})}, **({"sizes": sizes} if sizes else {}), "units": {k: {"parts": u["parts"], **({"hinge": {x: u["hinge"][x] for x in ("origin", "axis", "open_deg")}} if "hinge" in u else {}), **({"motion": u["motion"]} if "motion" in u else {}), **({"floor": {k: v for k, v in u["floor"].items() if k != "note"}} if "floor" in u else {}), **({"casters": u["casters"]} if "casters" in u else {}), **hw(u), **lays(u)} for k, u in pl["units"].items()}}
+    # Packed for size (the page unpacks it on load, unpackPlacements in template.html): each part's file path and each
+    # part's and bolt's matrix go in a table once, by index; whole numbers lose their ".0". About half the bytes.
+    paths, mats = {}, {}
+    num = lambda x: int(x) if isinstance(x, float) and x.is_integer() else x
+    def mat(m):
+        key = json.dumps([num(x) for x in m], separators=(",", ":"))
+        return mats.setdefault(key, len(mats))
+    def pack(entry):
+        for q in entry.get("parts", []):
+            q[0] = paths.setdefault(q[0], len(paths)); q[3] = mat(q[3])
+        for b in entry.get("hardware", []):
+            b[2] = mat(b[2])
+    for u in place["units"].values():
+        pack(u)
+        for l in u.get("layouts", {}).values(): pack(l)
+    place["paths"] = list(paths); place["mats"] = [json.loads(k) for k in mats]
+    catalog += "window.VAULT_PLACEMENTS=" + json.dumps(place, ensure_ascii=False, separators=(",", ":")) + ";"
 # Bambu Lab's PLA and PETG colours (src/bambu-colors.tsv, from tools/bambu_colors.py): line, code, name, hex
 bc = here / "bambu-colors.tsv"
 if bc.exists():

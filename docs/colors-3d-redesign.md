@@ -1,6 +1,6 @@
 # Colours and 3D view: redesign brief
 
-Mockups (interactive, press Play): https://claude.ai/artifact/40d863dc-76fe-4420-b13b-42b99025f5c8
+Mockups (interactive, press Play): private link, in `CLAUDE.local.md` (not committed).
 Artboards: "1 · Colors" (Main), "2 · Le sélecteur unique" (Picker), "3 · Atelier 3D" (Studio).
 Approved by the user. Talk to the user in French. Work on `feat/3d-stack-viewer` or a branch off it; commit only when asked.
 

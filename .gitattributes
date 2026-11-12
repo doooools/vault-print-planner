@@ -1,0 +1,13 @@
+# Text files in LF on every system (build.py and the tools read and write UTF-8 with LF)
+* text=auto eol=lf
+
+# Binaries
+*.png binary
+*.jpg binary
+*.gif binary
+*.webp binary
+*.stl binary
+*.3mf binary
+*.blend binary
+*.npy binary
+*.zip binary

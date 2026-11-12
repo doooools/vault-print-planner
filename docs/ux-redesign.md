@@ -1,6 +1,6 @@
 # UX redesign brief
 
-Mockups (interactive, press Play): https://claude.ai/code/artifact/63f578c9-7fc5-43bb-92ef-8dbb771e800e
+Mockups (interactive, press Play): private link, in `CLAUDE.local.md` (not committed).
 Approved by the user on 2026-11-11. Talk to the user in French. Work on `feat/3d-stack-viewer` or a branch off it; commit only when asked.
 
 This brief replaces the UI described in steps 2 and 3 of `docs/colors-3d-redesign.md` (Colors panel, 3D toolbar). Step 1 of that brief (the single filament picker) stays valid as the "Add a filament" catalogue.

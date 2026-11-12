@@ -1,61 +1,64 @@
-# Vault Print Planner
+# Vault Print Planner, Dols fork
 
-An unofficial, fan-made planner for [Vault by USSA](https://www.ussadesign.com/products/vault), the 3D-printable modular storage system.
+An unofficial, fan-made planner for [Vault by USSA](https://www.ussadesign.com/products/vault), the 3D-printable modular storage system. This is a fork of [Romy Macasieb's Vault Print Planner](https://github.com/rmacasieb/vault-print-planner) ([vault.romy.io](https://vault.romy.io)) that adds a 3D view of your stacks, colours, several drawers per module and a redesigned page.
 
-Pick a unit and the planner tells you exactly which STL files to print and how many. You can stack units on top of each other and check every part against your printer's bed. It packs the parts onto plates and makes a Bambu Studio project with one plate per tab.
+Open it at **https://doooools.github.io/vault-print-planner/** (nothing to install).
 
-**Use it:** [open the planner](https://vault.romy.io). It runs entirely in your browser.
+Design your stacks and the planner tells you exactly which STL files to print and how many. It checks every part against your printer's bed, packs the parts onto plates, and makes a Bambu Studio project with one plate per tab (or plate files for other slicers).
 
-> This project is not made, endorsed or supported by USSA. It contains no Vault STL files: you need your own copy, [bought from USSA](https://www.ussadesign.com/products/vault).
+> This project is not made, endorsed or supported by USSA. It contains no Vault files: it works only with your own copy of the Vault STL download, [bought from USSA](https://www.ussadesign.com/products/vault). Vault, its designs and its files belong to USSA.
 
 ## What it does
 
-1. **Design a unit:** choose the width, depth, height, drawer or case, lock, roof and so on. You get the exact files and counts, with a flag on any part too big for your printer.
-2. **Build:** put units into stacks, each with its own base, feet or wheels and a roof. You can also add single parts, like a spare roof or latch.
-3. **Print:** parts are packed onto plates, kept under one 1 kg spool and grouped by color and by whether they need supports. Press **Make Bambu Studio project** and pick your Vault download folder. You get one `.3mf` with every plate as its own tab, with these settings already in place:
-   - supports on for the parts whose files ask for them, and for every part Bambu Studio warns about when sliced without supports (each of the 733 files was sliced to check)
-   - more walls on parts that carry load or take bolts
-   - a brim on tall, thin parts
-   - plates clear of the printer's no-print corner
+1. **Design:** build stacks level by level: drawers or top-opening cases, S to XL, L² and two modules side by side, 1F to 4F, several drawers in one 2F or 4F module, locks, interiors, roofs, a base with wheels, a foot bar or casters, handles. Start from a template or a blank stack.
+   - **3D view** of the stack, made from your own Vault files: every part where the assembled unit puts it, with its bolts. Turn it, spread the units apart, hide the roof. **Ctrl** or **Shift** + click opens a drawer (its key turns, the racks slide) or a case (latches, then the lid, with the roof on it).
+   - **Colors:** the Paint tool gives each kind of part (shells, fronts, boxes, latches, labels…) a filament, for the whole stack or for one module, from your filaments or Bambu Lab's PLA and PETG colours.
+2. **Print:** pick the stacks to print. Parts are packed onto plates by colour, under one 1 kg spool each, kept apart when they need supports. Press **Download the Bambu Studio project**: one `.3mf` with every plate as its own tab, with supports, walls and brims already set where the parts need them. Other printers get a zip with one `.3mf` per plate, or STL folders.
+3. **Hardware:** one shopping list for the whole build, each bolt with its head shape, a tick when bought, copy or CSV.
+4. **Assemble:** a checklist that follows USSA's manuals, stack by stack.
 
-   On other printers, save STL folders instead: a zip with one folder per plate.
-4. **Assemble:** a checklist that follows the manuals, plus a hardware shopping list that shows each bolt's head shape and links to matching products on Amazon US (affiliate links).
+Save a design to a file and open it again later (Chrome and Edge save it straight into your Vault folder, next to the part files).
 
-Your files are read on your own computer and never uploaded. Your stacks and progress are saved in your browser.
+## Your files stay on your computer
+
+The page runs entirely in your browser. It reads the part files from your Vault folder on your own computer and never uploads them. Your stacks, colours and progress are saved in your browser; simplified 3D parts are cached there too. The 3D view loads three.js and meshoptimizer from jsDelivr when you open it; nothing else is fetched.
 
 ## Requirements
 
-- The Vault STL download, release **261021** (folder `261021_VAULT_USSA_S`). Other releases may rename files, and the planner will say which parts it can't find.
-- A desktop browser. Chrome or Edge works best and remembers your Vault folder. Safari and Firefox work too, but ask for the folder each time.
-- Bambu Studio projects come with settings for these printers: P1S, P2S, X1C, X2D, P1P, A1, A1 mini, A2L, H2S, H2D, H2D Pro, H2C and H3C (the dual-nozzle ones use the left nozzle only). Each uses the 0.4 mm nozzle, 0.20 mm Standard and PLA Basic. Other printers still get bed-fit checks and plate plans.
+- The Vault STL download, release **261021** (folder `261021_VAULT_USSA_S`). Other releases may rename files: the planner matches names loosely and tells you which parts it can't find.
+- A desktop browser:
 
-## No support
+  | | Chrome, Edge (and other Chromium browsers) | Firefox, Safari |
+  |---|---|---|
+  | Open the Vault folder | Remembered between visits | Asked each visit (folder upload) |
+  | 3D view, Print files | Yes | Yes |
+  | Save a design | Into the Vault folder, or anywhere | Downloaded |
+  | Open a design | File picker, starting in the Vault folder | File picker |
 
-I built this for my own Vault build and am sharing it as is. I don't plan to maintain it, answer questions or take feature requests. If something's wrong or you want it to work differently, fork it and change it; it's all here.
+- Bambu Studio projects come with settings for the P1S, P2S, X1C, X2D, P1P, A1, A1 mini, A2L, H2S, H2D, H2D Pro, H2C and H3C (0.4 mm nozzle, 0.20 mm Standard, PLA Basic; dual-nozzle printers use the left nozzle). Other printers get bed-fit checks, plate plans and plate files.
 
-If it saved you some time, you can [buy me a coffee](https://ko-fi.com/E8R32A64D1).
+Linux, macOS and Windows all work: file names are matched without regard to case, Unicode form or folder separators, and the files macOS adds to a copied folder (`__MACOSX`, `._name`) are ignored.
 
 ## Changing it
 
-The page is one HTML file, `index.html`, built from `src/`:
-
-| File | What it holds |
-|---|---|
-| `src/rules.js` | Which files and how many each unit needs |
-| `src/template.html` | The page itself |
-| `src/stl-measurements.tsv` | Footprint, height, volume and export angle of every STL, measured from the files |
-| `src/bambu-settings/<printer>.json` | The full project settings Bambu Studio saves for each printer |
-| `previews/` | Small pictures of every part, 8 per row in each sheet, listed in `previews/index.tsv` |
-| `src/build.py` | Puts it all together |
-
-Rebuild after editing:
+The page is one HTML file, `index.html`, built from `src/` (Python 3, no dependencies):
 
 ```bash
 python3 src/build.py --public src/stl-measurements.tsv index.html previews/index.tsv
 ```
 
-`node src/validate.js <list of STL paths>` checks that every unit's files exist in a given file list. To add a Bambu printer, save a one-part project for it in Bambu Studio, copy `Metadata/project_settings.config` out of the `.3mf` into `src/bambu-settings/<id>.json`, and add the printer to `PRINTERS` in `src/template.html`.
+| File | What it holds |
+|---|---|
+| `src/rules.js` | Which files and how many each unit needs, and its bolts |
+| `src/template.html` | The page itself |
+| `src/stl-measurements.tsv` | Footprint, height, volume and export angle of every STL, measured from the files |
+| `src/stl-placements.json` | Where each part goes in an assembled unit, for the 3D view (numbers only, made with `tools/placements/`) |
+| `src/bambu-settings/<printer>.json` | The full project settings Bambu Studio saves for each printer |
+| `src/bambu-colors.tsv`, `src/printer-beds.tsv` | Bambu Lab's filament colours; bed sizes from OrcaSlicer's printer profiles |
+| `previews/` | Small pictures of every part, listed in `previews/index.tsv` |
 
-## License
+`node src/validate.js <file with one STL path per line>` checks every unit's files against a list of the download's files. `tools/placements/README.md` explains how the 3D placements are measured and regenerated (Blender).
 
-The code is MIT licensed (see `LICENSE`). Vault, its designs and its STL files belong to USSA and are not covered by this license.
+## Credits and license
+
+The planner is [Romy Macasieb's](https://github.com/rmacasieb/vault-print-planner); this fork is maintained by [Dols](https://github.com/doooools/vault-print-planner). The code is MIT licensed (see `LICENSE`). Vault, its designs and its STL files belong to USSA and are not covered by this license.

@@ -8,7 +8,19 @@ part (S3_1F -> S3). Recipes whose .blend is newer than the recipe are skipped.
 import argparse, os, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
 
-BLENDER = os.environ.get("BLENDER", r"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe")
+def find_blender():
+    """The Blender executable: $BLENDER, else `blender` on the PATH, else the usual install places."""
+    import glob, re, shutil
+    for c in [os.environ.get("BLENDER"), shutil.which("blender")]:
+        if c: return c
+    for pat in [r"C:\Program Files\Blender Foundation\Blender*\blender.exe",
+                "/Applications/Blender.app/Contents/MacOS/Blender", "/usr/bin/blender", "/snap/bin/blender"]:
+        hits = sorted(glob.glob(pat), key=lambda h: [int(n) for n in re.findall(r"\d+", os.path.basename(os.path.dirname(h)) or h)[:2]])
+        if hits: return hits[-1]
+    sys.exit("Blender not found: set BLENDER to its executable.")
+
+
+BLENDER = find_blender()
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 ap = argparse.ArgumentParser()

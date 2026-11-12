@@ -122,12 +122,8 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
   (it was flat). Counts that differ from the planner: `tools/placements/COVERAGE.md`, "Hardware".
 
 ## Where things are on this machine
-- Vault download: `X:/Download/261021_VAULT_USSA_S/261021_VAULT_USSA_S` (733 STL, 24 GB).
-- Decimated copy (≤ 40k faces, same coordinates, for the Blender tooling only): `X:/Download/261021_VAULT_USSA_S/VAULT_RENDER`
-  (S3, S facades, universal parts and the L7 family done so far; `_decimate_log.jsonl` has per-file bbox and QA).
-- Pilot from the first session (assembled `.blend` files, Cycles renders, its own README): `X:/Download/261021_VAULT_USSA_S/VAULT_PILOT`
-  (S3 1F, L7 1F/2F/4F, L7 roofs, `L7_tours.blend` with three stacked towers). Useful as a visual reference for the 3D view.
-- Blender 5.2: `C:/Program Files/Blender Foundation/Blender 5.2/blender.exe`.
+- Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
+  main checkout's root, which is not committed.
 - The tooling reads `VAULT_RENDER` and `BLENDER` from the environment.
 
 ## Page internals worth knowing (src/template.html)
