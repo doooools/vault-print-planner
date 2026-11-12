@@ -8,26 +8,6 @@
   "kind": "option",
   "why": "L² accessories: neither the manual nor the CAD file shows where they go"
  },
- "MODIFICATIONS/Wall Mounts/": {
-  "kind": "option",
-  "why": "wall mount (back of the unit): not measured yet"
- },
- "MODIFICATIONS/Pegboard Attachment/": {
-  "kind": "option",
-  "why": "pegboard attachment (back of the unit): not measured yet"
- },
- "XL\\d/Gridfinity Baseplate/": {
-  "kind": "option",
-  "why": "XL baseplates are printed tilted and were not placed yet"
- },
- "Locks/1 SET OF PINS": {
-  "kind": "option",
-  "why": "one file holds the lock's two pins, which go through two different holes 15 mm apart"
- },
- "SUSTAINERS/05. Universal/Baseplates/": {
-  "kind": "option",
-  "why": "case baseplates: not placed yet"
- },
  "07. Universal/Label\\.stl": {
   "kind": "option",
   "why": "the drawer label the planner adds to a case: the case front has no slot for it (its own label is placed)"

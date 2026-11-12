@@ -228,6 +228,36 @@ def pullout(w, lk):
             "rest": round(200 - gap, 2), "clear": round(float(-ROD_Z - (ry - lo[1])), 2)}
 
 
+# ---------------------------------------------------------------------------------------------------------- pegboard
+PEG = MO + "Pegboard Attachment/"
+PEG_KINDS = {"ussa": "USSA Pegboard", "ikea": "IKEA Skadis Pegboard"}
+
+
+def pegboard(w, kind, h, bb):
+    """A pegboard attachment on its backbone (bb: backbone(), same width and height): a plate 42 mm narrower than the
+    backbone, as tall, with one row of 4 holes per section, over the backbone's middle (3.2 mm pilot) holes. Its side
+    with two 3 mm pockets goes on the pads, the pockets over the pads' keys. Printed flat, the pockets up: file +z
+    towards the module, file +y up (it is symmetric both ways). Placed far out, then moved in until it touches."""
+    f = PEG + f"{PEG_KINDS[kind]}/{w}{h}F.stl"
+    T = hg.file_tris(f)
+    P = T.reshape(-1, 3)
+    lo, hi = P.min(0), P.max(0)
+    t = np.array([-(lo[0] + hi[0]) / 2, -lo[1], -hi[2] - 60.0])
+    m = mat(np.eye(3), t)
+    Tb = posed(hg.file_tris(bb["file"]), bb["m"])
+    Tp = posed(T, m)
+    win = (np.minimum(Tb.reshape(-1, 3).min(0), Tp.reshape(-1, 3).min(0)), np.maximum(Tb.reshape(-1, 3).max(0), Tp.reshape(-1, 3).max(0)))
+    gap = touch(Tb, Tp, 2, -1, win)
+    t[2] += gap
+    m = mat(np.eye(3), t)
+    # its holes against the backbone's pilot holes (x, y in the column frame)
+    class Part: pass
+    pp = Part(); pp.tris = posed(T, m); pp.lo, pp.hi = pp.tris.reshape(-1, 3).min(0), pp.tris.reshape(-1, 3).max(0)
+    holes = sorted((round(float(c["c"][0]), 2), round(float(c["c"][1]), 2)) for c in hg.holes_in(pp, 2, -1, area=(3, 60)))
+    return {"file": f, "m": m, "face": round(float(t[2] + hi[2]), 2), "t": round(float(hi[2] - lo[2]), 2),
+            "w": round(float(hi[0] - lo[0]), 2), "h": round(float(hi[1] - lo[1]), 2), "holes": holes}
+
+
 def column(w):
     out = {"parts": [], "column": {}}
     notes = {}
@@ -256,6 +286,12 @@ def column(w):
     add(st["file"], "body", st["m"], "stationary")
     pu = pullout(w, lk)
     add(pu["file"], "body", pu["m"], "pullout")
+    for kind in PEG_KINDS:
+        for h in hs:
+            pg = pegboard(w, kind, h, notes[f"backbone{h}"])
+            add(pg["file"], "base", pg["m"], f"pegboard-{kind}{h}")
+            notes[f"pegboard-{kind}{h}"] = pg
+            out["column"][f"peg_{kind}"] = {"face": pg["face"], "t": pg["t"], "w": pg["w"]}
     b1 = notes["backbone1"]
     out["column"].update({"rod_x": round(abs(b1["rods_x"][0]), 2), "rod_z": b1["rods_z"][0], "rod_d": 16, "lock_h": lk["h"],
                           "rest": pu["rest"], "rod_in": pu["rod_in"], "section": 52.0})

@@ -280,6 +280,42 @@ backbone's top section; the lock on the next level up (or just above the column)
 two M16 rods (drawn as bolts) from the column's foot into its legs. The column stands on the back face of the stack's
 first unit (z = −(depth − 10)) and is hidden when the units are spread.
 
+## Pegboards, wall mounts, baseplates and lock pins
+
+Measured on the files (numpy, no Blender), written straight into the placements, other keys untouched. The manual's
+pages for these (Pegboard and Wall Mount instructions) weren't at hand: what the files say is used, and what is
+inferred is said so (each script's docstring has the details).
+
+- **Pegboard attachments** (`measure_column.py`, in `column|<w>`, `"as": "pegboard-<ussa|ikea><h>"`;
+  `column.peg_<kind>` = `{face, t, w}`): a plate as tall as the backbone of the same height, 42 mm narrower, one row
+  of 4 holes per section over the backbone's 3.2 mm pilot holes; its side with two 3 mm pockets on the pads (the pads'
+  keys in the pockets), so its back is 30 mm out from the modules' back (`face` −30). USSA 12 mm thick, IKEA Skådis
+  5 mm. The page (`stackColumn`) takes a unit's pegboard line off the unit and hangs the attachment on the free run of
+  backbone sections nearest the unit's level (inferred), with 4 M4 × 40 button heads per section into the pilot holes
+  (on an IKEA one they reach about 5 mm into the module's back). Without a column, nothing is drawn (it needs the
+  backbone). The planner's coverage puts the pegboard lines in `column|<w>` too (`coverage.js`).
+- **Wall mounts** (`measure_wall.py`, `wall|<w>|<h>`, w: S M L XL, h: 1 2 4, XL 1F only): the plate and its wall
+  cleats (1 per F pair, 2 on L and XL, as the planner counts) in a frame whose z = 0 is the module's back face and
+  y = 0 the bottom of its flat part (5 mm above the module's bottom). `placeParts` adds them to a drawer or case that
+  has the wall mount line, moved to z = −(depth − 10). L² and XL² take the L and XL plates.
+- **XL drawer baseplates** (`measure_baseplates.py xl`, in `drawer|XL|<d>|1`): exported in the box's pose but
+  elsewhere and upside down; turned half a turn about x, laid on the box's floor (14.3), centred across and placed where
+  they overlap the box's tapered walls least (they are about 2 mm wider than the walls at the back: 10 mm² on XL3,
+  about 130 mm² on XL4/5). XL6/7: part 1 at the front, part 2 right behind it. Group `drawer`, role `interior`.
+- **Case baseplates** (`measure_baseplates.py case`, `casebase|<w>|<d>` = `{name, parts}`): on the case body's floor
+  (9.8), centred across, their back on the body's back wall (−141.1 − 42 (d − 3)); on XL6/7 part 2 at the back, part 1
+  in front (it ends 0.36 mm past the front). Measured on the bodies at hand (S3, M3, L3, XL3), by the 42 mm depth step
+  for the others. `placeParts` adds them to a case with the baseplate line.
+- **Case lock pins** (`measure_lock_pins.py`, in every `case|*`): the file's four pins, each its own `piece`. On pin A
+  the link's ears and the holder make a 39.6 mm bore closed by the lever's sides (40.0 apart): the two plain 17.9 mm
+  pins, one from each end. On pin B the lever's ears and the link make a 50 mm bore: the two 21.4 mm pins, thick end
+  outwards. Flush with the outer faces (inferred), joint `latch_<k>.link` (A is its axis, B is carried by it).
+
+Not placed (`unplaced_reasons.json`): the key lock's springs (not in the CAD scene, and their pocket wasn't looked
+for), the L² accessories (neither the manual nor the CAD file shows where they go), and the "Connector for Modules"
+1F/2F (`03. MODIFICATIONS/Backbone`, which the planner never lists: 16 × 12 mm bars, 47 / 99 mm tall, 4 mm holes at
+the backbone screws' heights; the 2F one spans the backs of two stacked 1F modules).
+
 ## How it is measured
 
 The files are exported in print orientation (some at 45° to fit the bed) and scattered around one big CAD scene. Some parts are already in their assembled place relative to each other: the box, the baseplate, the stopper and the latch (X/Y). The rest is found by measurement in Blender:
@@ -304,6 +340,9 @@ The files are exported in print orientation (some at 45° to fit the bed) and sc
 | `measure_levels.py` | Where each level of a 2F/4F shell is: its cut through the racks' channels against the 1F shell's, slid level by level (README "Layouts"). |
 | `measure_stack.py` | A tower's base, wheels and foot, measured on the files (README "Stacks"); `make_recipes.py STK` places them by its matrices. |
 | `measure_column.py` | The backbone column, handles, lock and knobs (`column|<w>`), measured on the files and written straight into the placements (README "Backbone column and handles"). |
+| `measure_wall.py` | The wall mount plates and cleats (`wall|<w>|<h>`), measured on the files (README "Pegboards, wall mounts, baseplates and lock pins"). |
+| `measure_baseplates.py` | The XL drawers' Gridfinity baseplates (into `drawer|XL|<d>|1`) and the cases' (`casebase|<w>|<d>`). |
+| `measure_lock_pins.py` | The case locks' pins, one `piece` each, on the latches' pins A and B (every `case|*`). |
 | `check_layouts.py` | The layouts' motion, one drawer at a time with the others in place (kinematics.py's check). |
 | `kinematics.py` | The units' motion as the page runs it (every part's pose at t, 0 closed … 1 open), and a check that no part goes through another on the way (sections across the motion, shapely). |
 | `blender_motion.py` | Key frames of a unit opening, from the JSON alone with kinematics.py's pose: views and sections. |
@@ -324,12 +363,16 @@ python -I tools/placements/stl_index.py "/path/to/261021_VAULT_USSA_S" "$VAULT_A
 python -I tools/placements/orient.py jobs.json "$VAULT_ASSEMBLY/_orient.json"   # jobs: target, reference, its matrix
 python -I tools/placements/measure_levels.py src/stl-placements.json "$VAULT_ASSEMBLY/_levels.json"   # the 2F/4F shells' levels
 python -I tools/placements/measure_stack.py src/stl-placements.json "$VAULT_ASSEMBLY/_stack.json"   # bases, wheels, feet (STK)
-python -I tools/placements/measure_column.py src/stl-placements.json   # backbone column and handles: writes column|<w>, other keys untouched (checked on the original files)
+python -I tools/placements/measure_column.py src/stl-placements.json   # backbone column, handles, pegboards: writes column|<w>, other keys untouched (checked on the original files)
+python -I tools/placements/measure_wall.py src/stl-placements.json     # wall mounts: wall|<w>|<h>
 python -I tools/placements/make_recipes.py "$VAULT_ASSEMBLY/recipes"              # S M L L2 XL XL2 CS CM CL CXL LAY STK
 python -I tools/placements/run_assemble.py "$VAULT_ASSEMBLY" "$VAULT_ASSEMBLY"/recipes/*_assembly.json --jobs 4
 blender -b --factory-startup --python tools/placements/blender_export_placements.py -- \
   src/stl-placements.json "$VAULT_RENDER/_decimate_log.jsonl" $(ls "$VAULT_ASSEMBLY"/*/*.blend | grep -v /towers/)
 # (the tower files are not units: given to the export, they stop it before it writes)
+# after every export (it rewrites a unit with only its own parts): the XL drawers' and cases' baseplates, the lock pins
+python -I tools/placements/measure_baseplates.py src/stl-placements.json xl case
+python -I tools/placements/measure_lock_pins.py src/stl-placements.json
 # the bolts: after every export (the export rewrites a unit without its `hardware`)
 python -I tools/placements/hardware.py src/stl-placements.json "$VAULT_ASSEMBLY/_hardware/hardware_report.json"
 python -I tools/placements/check_layouts.py src/stl-placements.json "/path/to/261021_VAULT_USSA_S" "$VAULT_ASSEMBLY/_layout_checks.json"

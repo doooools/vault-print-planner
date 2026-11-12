@@ -91,23 +91,12 @@ part whose place was not measured in this pass; the units that list it can still
 | Grid divider, full depth (18-M) (S side) | 2 | by design | grid dividers: how many and where is the user's choice |
 | Grid divider, full depth (22) (S side) | 2 | by design | grid dividers: how many and where is the user's choice |
 | Grid divider, full depth (26-L) (S side) | 2 | by design | grid dividers: how many and where is the user's choice |
-| Wall mount plate | 120 | option, not measured | wall mount (back of the unit): not measured yet |
-| Wall mount second part (wall cleat) | 120 | option, not measured | wall mount (back of the unit): not measured yet |
-| IKEA Skådis pegboard attachment | 85 | option, not measured | pegboard attachment (back of the unit): not measured yet |
-| USSA pegboard attachment | 85 | option, not measured | pegboard attachment (back of the unit): not measured yet |
-| Lock pin set | 50 | option, not measured | one file holds the lock's two pins, which go through two different holes 15 mm apart |
 | Front label | 50 | option, not measured | the drawer label the planner adds to a case: the case front has no slot for it (its own label is placed) |
 | Springs (pair) | 50 | option, not measured | inside the key lock, not assembled in the CAD file |
-| Gridfinity baseplate | 48 | option, not measured | case baseplates: not placed yet |
 | Springs (pair) (left) | 15 | option, not measured | inside the key lock, not assembled in the CAD file |
 | L² accessory, 1st | 15 | option, not measured | L² accessories: neither the manual nor the CAD file shows where they go |
 | L² accessory, 2nd | 15 | option, not measured | L² accessories: neither the manual nor the CAD file shows where they go |
 | Springs (pair) (S side) | 5 | option, not measured | inside the key lock, not assembled in the CAD file |
-| Gridfinity baseplate | 3 | option, not measured | XL baseplates are printed tilted and were not placed yet |
-| Gridfinity baseplate, part 1 | 2 | option, not measured | case baseplates: not placed yet |
-| Gridfinity baseplate, part 2 | 2 | option, not measured | case baseplates: not placed yet |
-| Gridfinity baseplate, part 1 | 2 | option, not measured | XL baseplates are printed tilted and were not placed yet |
-| Gridfinity baseplate, part 2 | 2 | option, not measured | XL baseplates are printed tilted and were not placed yet |
 ## Hardware (bolts)
 
 `hardware.py` finds, on every assembled unit, the holes each kind of bolt goes in and writes `hardware` into
@@ -177,8 +166,8 @@ Not placed, and why:
 |---|---|
 | Base, wheels and feet: M16 rod, M4 x 25, 6205ZZ bearings, SCSAW collars, M6 x 90, casters | the printed parts are placed (`stack|...` units); these bought parts are not drawn yet (their places are in README "Stacks") |
 | Stationary and pull-out handles: M4 x 60, M6 x 30, M6 x 35 hex, M6 heat inserts | the handles are placed (`column|...`); these bolts are not drawn yet. The two M16 rods are (`stackColumn`) |
-| Pegboard M4 x 40, backbone M4 x 60-100 | the pegboard attachments are not placed yet; the backbones are (`column|...`), their bolts not drawn yet |
-| Lock pins, hinge rods | printed parts, not bought hardware (the rods are placed with the hinges) |
+| Backbone M4 x 60-100 | the backbones are placed (`column|...`), their bolts not drawn yet. The pegboard attachments' M4 x 40 are drawn by the page (`stackColumn`): 4 per backbone section the attachment covers (8 on a 2F), where the planner counts 4 per attachment; on an IKEA attachment they reach about 5 mm into the module's back |
+| Lock pins, hinge rods | printed parts, not bought hardware (both are placed: the pins with the latches, the rods with the hinges) |
 
 Moving parts: a bolt carries the index of the part that holds it (`part`), and its group is that part's. The
 hinge tops' bolts turn with the lid (group `lid`). The case locks' bolts are in the holder, which doesn't move;
