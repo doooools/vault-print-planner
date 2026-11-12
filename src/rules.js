@@ -167,8 +167,6 @@
       }
     }
     if (o.interior === 'grid') byH.forEach(([dh, k]) => gridDividers(add, w, d, dh, o, t, k));
-    if (o.manualSupports) add('Drawer', 'Manual support' + t, U + `Manual Supports/x${d}.stl`, n,
-      { note: 'Optional print aid for tall prints. Not part of the finished drawer.', aid: true, ...x });
   }
 
   // Grid dividers: the file number is how many peg holes the divider spans.
@@ -205,9 +203,13 @@
   const ROOF_FILE = { grid: 'Grid Roof', table: 'Table Roof', bowl: 'Bowl Roof', undertable: 'Under Table Mount Roof', heavy: 'Heawyweight Roof', heavycut: 'Heavyweight Roof Cut' };
 
   // Roof for the top of a drawer stack, sized to a width family (S/M/L/XL) and depth
-  function roof(add, rw, d, kind, topHandle) {
+  // aids: USSA's manual support, a prop as tall as the roof printed on its edge, printed standing against its end (the
+  // Print step's "Manual supports" option; the plate planner packs each with its roof)
+  function roof(add, rw, d, kind, topHandle, aids) {
     if (!kind || kind === 'none') return;
     add('Roof', ROOFS.find(r => r.id === kind).label, D + DRAWER_FAM_DIR[rw] + '/' + `${rw}${d}/Roofs/${rw}${d} ${ROOF_FILE[kind]}.stl`, 1);
+    if (aids) add('Roof', 'Manual support', U + `Manual Supports/x${d}.stl`, 1,
+      { note: 'Print aid: stands against the end of the roof while both print. Not part of the finished unit.', aid: true });
     if (kind === 'grid' && topHandle) add('Roof', 'Top handle', U + 'Top Handle (Turn On Supports).stl', 1, { supports: true });
     if (kind === 'heavy' || kind === 'heavycut') {
       add('Roof', 'Heavyweight roof handle', U + 'Heawyweight Roof Handle.stl', 1);
@@ -215,6 +217,12 @@
       add('Roof', 'Heavyweight roof insert', U + 'Heawyweight Roof Insert.stl', 2,
         { inferred: 'The manual doesn’t count them. The roof has two handle pockets, each with an entry groove that one insert closes, so two are listed.' });
     }
+  }
+
+  // The L² and XL² modules take one set of accessories (1st + 2nd) per F, in the module's depth
+  function l2Accessories(add, name, d, h) {
+    add('Module', `${name} accessory, 1st`, U + `L² Accessories/x${d} Accessory 1st.stl`, h, { note: 'One set (1st + 2nd) per F.' });
+    add('Module', `${name} accessory, 2nd`, U + `L² Accessories/x${d} Accessory 2nd.stl`, h, { note: 'One set (1st + 2nd) per F.' });
   }
 
   function drawer(add, c) {
@@ -226,18 +234,18 @@
       // Both sides of an L² take the same drawers
       drawerInsert(add, 'S', d, h, c, 'left', why, drawersOf(c));
       drawerInsert(add, 'S', d, h, c, 'right', why, drawersOf(c));
-      add('Module', 'L² accessory, 1st', U + `L² Accessories/x${d} Accessory 1st.stl`, 1, { inferred: 'One of each accessory per module is assumed.' });
-      add('Module', 'L² accessory, 2nd', U + `L² Accessories/x${d} Accessory 2nd.stl`, 1, { inferred: 'One of each accessory per module is assumed.' });
+      l2Accessories(add, 'L²', d, h);
     } else if (w === 'XL2') {
       const why = 'The manual doesn’t list XL² contents. XL = S + M, so this assumes an S and an M drawer side by side.';
       add('Module', 'Module shell', fam + `XL${d}²/XL${d}² Module 1F.stl`, 1);
       drawerInsert(add, 'S', d, 1, c, 'S side', why);
       drawerInsert(add, 'M', d, 1, c, 'M side', why);
+      l2Accessories(add, 'XL²', d, 1);
     } else {
       add('Module', 'Module shell', fam + `${w}${d}/Modules/${w}${d} Module ${h}F.stl`, 1);
       drawerInsert(add, w, d, h, c, '', '', drawersOf(c));
     }
-    if (c.roof && c.roof !== 'none') roof(add, w === 'L2' ? 'L' : w === 'XL2' ? 'XL' : w, d, c.roof, c.topHandle);
+    if (c.roof && c.roof !== 'none') roof(add, w === 'L2' ? 'L' : w === 'XL2' ? 'XL' : w, d, c.roof, c.topHandle, c.manualSupports);
   }
 
   function sustainer(add, c, resolve) {
@@ -436,7 +444,7 @@
     const k = collector(resolve);
     if (c.type === 'drawer') drawer(k.add, c); else sustainer(k.add, c, resolve);
     // A roof latches onto a case's lid as onto a module: the lid's top has the module top's latch frames (manual p. 17)
-    if (c.type !== 'drawer' && c.roof && c.roof !== 'none') roof(k.add, c.w, c.d, c.roof, c.topHandle);
+    if (c.type !== 'drawer' && c.roof && c.roof !== 'none') roof(k.add, c.w, c.d, c.roof, c.topHandle, c.manualSupports);
     mounts(k.add, c);
     return { lines: mergeSame(k.lines), missing: k.missing, hardware: unitHardware(c) };
   }
@@ -460,9 +468,9 @@
     return { lines: k.lines, missing: k.missing, hardware: stackHardware(s) };
   }
   // Roof on its own, for a top level made of two units side by side (sized to their combined width)
-  function buildRoof(rw, d, kind, topHandle, resolve) {
+  function buildRoof(rw, d, kind, topHandle, resolve, aids) {
     const k = collector(resolve);
-    roof(k.add, rw, d, kind, topHandle);
+    roof(k.add, rw, d, kind, topHandle, aids);
     return { lines: k.lines, missing: k.missing, hardware: kind === 'grid' && topHandle ? [{ item: 'M6 × 50 mm countersunk bolt', qty: 2, why: 'Roof top handle' }] : [] };
   }
 

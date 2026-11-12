@@ -44,7 +44,7 @@ for (const w of ['S', 'M', 'L', 'L2', 'XL', 'XL2']) for (const d of R.DEPTHS) fo
   for (const v of drawerVariants) mergeUnit(`drawer|${w}|${d}|${h}`, w, R.buildUnit({ type: 'drawer', w, d, h, roof: 'none', ...v }, resolve));
   // roofs: the page keys a single unit's roof by the unit's own width (L2, XL2 included)
   for (const rf of R.ROOFS) if (rf.widths.includes(w)) for (const th of [false, true]) {
-    const res = R.buildUnit({ type: 'drawer', w, d, h, roof: rf.id, topHandle: th }, resolve);
+    const res = R.buildUnit({ type: 'drawer', w, d, h, roof: rf.id, topHandle: th, manualSupports: th }, resolve);
     merge(`roof|${w}|${d}|${rf.id}`, { lines: res.lines.filter(l => l.group === 'Roof'), missing: [] });
   }
 }
