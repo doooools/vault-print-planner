@@ -50,7 +50,10 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
   "+ Add a unit" or "Show in 3D") with the unit being set up drawn from a copy of `c` (`v.ghost`) where Add would put
   it: on top, beside the top unit, alone for a new stack (see-through while not added), or instead of the unit being
   edited. The "Preview" toggle (`v3preview`, saved) shows the stack as it is instead. The model is rebuilt only when
-  the stack or the unit changes (`v.key`, colours left out), and just repainted otherwise. `v3park()` takes the view
+  the stack or the unit changes (`v.key`, colours left out), and just repainted otherwise. A rebuild of the same stack (any change: an option, a divider,
+  a level added) keeps the camera (position and target), every drawer and lid open or closed, and the selection:
+  `close3d` → `v3keep` saves them in `v3ui.keep`; `open3d` matches the new units to them (`v3match`: same `cfg` object
+  first, then same kind, level and rank). Another stack is framed afresh. `v3park()` takes the view
   out before step 1 redraws with `innerHTML` (else it goes with the old page and `getElementById` stops finding it). One WebGL renderer (`v3gl`) for the page's life; `close3d`
   drops a model's scene; `v3ui` carries tools and camera direction over. "Enlarge" (`v3enlarge`) moves the view into
   the `#v3d` dialog; closing it puts it back.

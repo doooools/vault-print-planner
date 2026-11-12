@@ -3578,11 +3578,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       camera.position.copy(target).add(d.normalize().multiplyScalar(radius * 1.08 / Math.sin(half * Math.PI / 180)));
       controls.target.copy(target); controls.update(); render();
     };
-    let framed = false;
+    // The camera: where it was if this is the same stack built again after a change, else aimed at the whole stack
     const resize = () => {
       const w = box.clientWidth, h = box.clientHeight; if (!w || !h) return;
       renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
-      if (!framed) { framed = true; v.aim(v3ui.dir || V3_VIEWS[1][2]); }
+      if (!v.framed) {
+        v.framed = true;
+        const k = v3ui.keep && v3ui.keep.tower === t.id && v3ui.keep.cam;
+        if (k) { camera.position.fromArray(k.at); controls.target.fromArray(k.target); controls.update(); }
+        else v.aim(v3ui.dir || V3_VIEWS[1][2]);
+      }
       render();
     };
     v.ro = new ResizeObserver(resize); v.ro.observe(box);
@@ -3626,6 +3631,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       }) : null;
       v.units.push({ ...u, g, drawer, boxes, front, lid, place, movers, split: lay ? lay.split || 0 : 0, sorted: !!(lay && lay.sorted), travel: u.drawer && !movers ? Math.round(u.d * 0.6) : 0, open: false,
         motion, steps, t: 0, jn: new Map(), dur: dur(steps) });
+    }
+    // The same stack built again after a change: its drawers and cases stay as they were (open, closed or on their way)
+    const keep = v3ui.keep && v3ui.keep.tower === t.id ? v3ui.keep : null, kept = keep ? v3match(v.units, keep) : new Map();
+    for (const [u, e] of kept) {
+      if (u.movers) (e.movers || []).forEach(x => { const m = u.movers.find(y => y.id === x.id); if (m) { m.open = x.open; m.t = x.t; } });
+      else if (!e.movers && e.how === v3how(u)) { u.open = e.open; u.t = e.t; }
+    }
+    if (keep && keep.sel) {
+      const s = keep.sel, u = s.unit != null ? [...kept].find(([, e]) => e === keep.units[s.unit]) : null;
+      if (s.unit == null || u) v3lastPick = v.sel = { role: s.role, cfg: s.cfg && u ? u[0].cfg : s.cfg, u: u ? u[0] : null, name: s.name };
     }
     v.units.forEach(v3pose);
     // A roof on a case latches onto its lid: it rides the lid's hinge, held by the pivot itself (the lid's inner group is
@@ -3722,6 +3737,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     }, sig);
     el.addEventListener('pointerleave', () => { hotKey = ''; setHot(null); }, sig);
     resize();
+    if (v.units.flatMap(x => x.movers || [x]).some(u => u.t !== (u.open ? 1 : 0))) glide(); // one caught on its way
     v3tools(); v3side();
     if (vaultFolder) loadParts(v); else v3status(v.units.some(u => u.place) ? 'Boxes for now. Choose your Vault folder to see the real parts.' : 'Boxes from the published sizes.');
   }
@@ -4050,13 +4066,41 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // Let go of a model (its scene, controls and listeners); the renderer stays for the next one
   function close3d() {
     const v = v3; if (!v) return;
-    Object.assign(v3ui, { tool: v.tool, pscope: v.pscope, brush: v.brush, explode: v.explode, hideRoof: v.hideRoof, view: v.view,
-      dir: v.camera.position.clone().sub(v.controls.target).toArray() });
+    Object.assign(v3ui, { tool: v.tool, pscope: v.pscope, brush: v.brush, explode: v.explode, hideRoof: v.hideRoof, view: v.view });
+    v3keep(v);
     v3 = null; v.token = null; v.ac.abort();
     v.ro.disconnect(); v.controls.dispose();
     v.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     v.mats.forEach(m => m.dispose());
     document.querySelectorAll('.v3-morepop').forEach(x => x.remove());
+  }
+  // What a change of the stack keeps (v3ui.keep, read by open3d when it builds the same stack again): the camera, and
+  // each unit's drawers and lid, open or closed, with the selection. A model never framed (its view hidden all along)
+  // keeps the camera of the one before.
+  const v3kind = u => u.column ? 'column' : u.stack ? 'base' : u.roof ? 'roof' : 'unit';
+  const v3how = u => u.movers ? 'movers' : u.travel ? 'drawer' : u.lid ? 'lid' : '';
+  // A unit's place, for a unit whose settings were replaced: its kind, its level and its rank on that level
+  function v3slots(units) {
+    const n = new Map();
+    return units.map(u => { const k = `${v3kind(u)}|${u.level}`, i = n.get(k) || 0; n.set(k, i + 1); return `${k}|${i}`; });
+  }
+  function v3keep(v) {
+    const old = v3ui.keep && v3ui.keep.tower === v.t.id ? v3ui.keep : null, slots = v3slots(v.units);
+    const cam = v.framed ? { at: v.camera.position.toArray(), target: v.controls.target.toArray() } : old && old.cam;
+    if (v.framed) v3ui.dir = v.camera.position.clone().sub(v.controls.target).toArray();
+    const sel = v.sel && { role: v.sel.role, cfg: v.sel.cfg, name: v.sel.name, unit: v.sel.u ? v.units.indexOf(v.sel.u) : null };
+    v3ui.keep = { tower: v.t.id, cam, sel: sel && sel.unit !== -1 ? sel : null,
+      units: v.units.map((u, i) => ({ cfg: u.cfg, kind: v3kind(u), slot: slots[i], how: v3how(u), open: u.open, t: u.t,
+        movers: u.movers ? u.movers.map(m => ({ id: m.id, open: m.open, t: m.t })) : null })) };
+  }
+  // The new model's units each matched to one kept: the same settings first (they move with their unit when a level
+  // is added or taken away), then the same place
+  function v3match(units, keep) {
+    const used = new Set(), out = new Map(), slots = v3slots(units);
+    const take = (u, f) => { const e = keep.units.find(e => !used.has(e) && f(e)); if (e) { used.add(e); out.set(u, e); } };
+    units.forEach(u => take(u, e => e.cfg === u.cfg && e.kind === v3kind(u)));
+    units.forEach((u, i) => { if (!out.has(u)) take(u, e => e.slot === slots[i]); });
+    return out;
   }
   // Put the view where it belongs and show the right model: step 1's unit, or the chosen stack of step 2. Called after
   // every page render; a change of colour only repaints, a change of the unit or stack builds the model again.
