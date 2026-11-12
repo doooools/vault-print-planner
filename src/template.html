@@ -71,9 +71,12 @@ header.appbar .tabs { flex: 1 1 auto; }
 @media (min-width: 1280px) { .credit { flex-basis: auto; order: 0; } }
 .newsbtn { border: 0; background: none; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 .newsbtn:hover { color: var(--ink); }
-dialog#news { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px 22px; width: min(620px, calc(100vw - 32px)); max-height: min(80vh, 720px); overflow-y: auto; overscroll-behavior: contain; position: fixed; }
-dialog#news::backdrop { background: rgba(10, 12, 12, .45); }
-dialog#news h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
+dialog#news, dialog#relink { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px 22px; width: min(620px, calc(100vw - 32px)); max-height: min(80vh, 720px); overflow-y: auto; overscroll-behavior: contain; position: fixed; }
+dialog#news::backdrop, dialog#relink::backdrop { background: rgba(10, 12, 12, .45); }
+dialog#relink { width: min(480px, calc(100vw - 32px)); }
+#relink p { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
+#relink .acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 18px; }
+dialog#news h2, dialog#relink h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
 #news .changes h3 { margin: 16px 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
 #news .changes ul { margin: 0; padding-left: 18px; }
 #news .changes li { margin: 5px 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
@@ -750,6 +753,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><!--CHANGELOG--></div></dialog>
+<dialog id="relink" aria-labelledby="relinkTitle"><button type="button" class="vclose" id="relinkClose" aria-label="Not now">&times;</button><h2 id="relinkTitle">The 3D view needs your Vault folder</h2><p id="relinkWhy"></p><p class="fstat bad" id="relinkErr" hidden></p>
+  <div class="acts"><button type="button" class="btn primary" id="relinkGo" autofocus></button><button type="button" class="btn" id="relinkOther">Choose another folder…</button><button type="button" class="linkbtn" id="relinkLater">Not now: show boxes</button></div></dialog>
 <dialog id="viewer" aria-label="Part preview"><button type="button" class="vclose" id="viewerClose" aria-label="Close preview">&times;</button><div id="viewerBody" class="vbody"></div></dialog>
 <div id="v3home" hidden><div class="v3-view" id="v3view">
   <div class="v3-stage"><div class="v3-canvas" id="v3dCanvas"></div><div class="v3-tools" id="v3dTools"></div><div id="v3dBrush" hidden></div></div>
@@ -2757,11 +2762,15 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       let h = null;
       if (!fresh) try { h = await idb('readonly', s => s.get('folder')); } catch (e) { /* no saved folder */ }
       if (h && (await h.requestPermission({ mode: 'read' })) !== 'granted') h = null;
+      let files = null;
+      if (h) try { files = await filesFromHandle(h); } catch (e) { if (e.name !== 'NotFoundError') throw e; h = null; } // moved or deleted since
       if (!h) {
         h = await window.showDirectoryPicker({ id: 'vault', mode: 'read', startIn: 'downloads' });
         try { await idb('readwrite', s => s.put(h, 'folder')); } catch (e) { /* remembering it is only a convenience */ }
+        files = await filesFromHandle(h);
       }
-      return { name: h.name, files: await filesFromHandle(h), handle: h };
+      folderLink = '';
+      return { name: h.name, files, handle: h };
     }
     // Safari and Firefox: a folder upload field. Files stay on this computer; the page only reads them.
     return new Promise((res, rej) => {
@@ -2769,13 +2778,82 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       inp.onchange = () => {
         const files = new Map();
         for (const f of inp.files) if (/\.stl$/i.test(f.name)) files.set(f.webkitRelativePath.split('/').slice(1).join('/'), f);
-        files.size ? res({ name: (inp.files[0].webkitRelativePath || '').split('/')[0], files }) : rej(new Error('No STL files in that folder.'));
+        const name = (inp.files[0].webkitRelativePath || '').split('/')[0];
+        if (files.size) { folderLink = ''; store.set('folderName', name); }
+        files.size ? res({ name, files }) : rej(new Error('No STL files in that folder.'));
       };
       inp.oncancel = () => rej(new DOMException('cancelled', 'AbortError'));
       inp.click();
     });
   }
   const fileBytes = async f => (f.getFile ? await f.getFile() : f).arrayBuffer();
+  // ---------- losing the folder ----------
+  // Chrome and Edge keep the chosen folder (IndexedDB) but, unless "Allow on every visit" was ticked, drop the right to
+  // read it when the page closes: asking again needs a click. Firefox and Safari keep nothing, only its name here. The
+  // folder can also be moved or deleted, or its permission revoked while the page is open. Then the 3D view can only
+  // draw boxes, so it says so once per visit, with a button that links the folder again.
+  let folderLink = ''; // '' linked or never chosen, 'ask' kept but needs a click, 'gone' moved or deleted, 'again' chosen in another visit (no handle)
+  let folderLinkName = '', relinkShown = false;
+  async function checkFolderLink() {
+    if (vaultFolder) return;
+    if ('showDirectoryPicker' in window) {
+      let h = null;
+      try { h = await idb('readonly', s => s.get('folder')); } catch (e) { return; }
+      if (!h || vaultFolder) return;
+      folderLinkName = h.name;
+      let p = 'prompt';
+      try { p = await h.queryPermission({ mode: 'read' }); } catch (e) { /* treat it as needing a click */ }
+      if (p === 'granted') {
+        // Allowed on every visit: read it right away, no popup
+        try { const files = await filesFromHandle(h); if (!vaultFolder) { vaultFolder = { name: h.name, files, handle: h }; rememberedFolder = ''; folderLink = ''; meshMemo.clear(); renderAll(); renderHeader(); } return; }
+        catch (e) { folderLink = e.name === 'NotFoundError' ? 'gone' : 'ask'; }
+      } else folderLink = 'ask';
+      if (!rememberedFolder && folderLink === 'ask') { rememberedFolder = h.name; renderHeader(); }
+    } else {
+      folderLinkName = store.get('folderName', '');
+      if (folderLinkName) folderLink = 'again';
+    }
+    maybeRelink();
+  }
+  // The folder in use while the page is open: back from another window, check it can still be read
+  async function recheckFolder() {
+    const f = vaultFolder; if (!f || !f.handle) return;
+    let lost = '';
+    try { if ((await f.handle.queryPermission({ mode: 'read' })) !== 'granted') lost = 'ask'; else await f.handle.entries().next(); }
+    catch (e) { lost = e.name === 'NotFoundError' ? 'gone' : 'ask'; }
+    if (!lost || vaultFolder !== f) return;
+    vaultFolder = null; rememberedFolder = lost === 'gone' ? '' : f.name; folderLink = lost; folderLinkName = f.name; relinkShown = false;
+    meshMemo.clear(); renderAll(); renderHeader(); maybeRelink();
+  }
+  window.addEventListener('focus', () => { recheckFolder(); });
+  // Shown when the 3D view is on screen and has parts to read, once per visit (or once per loss)
+  function maybeRelink() {
+    if (!folderLink || vaultFolder || relinkShown || !canPickFolder) return;
+    const box = $('v3view'); if (!box || !box.closest('.v3-slot, #v3d')) return;
+    if (v3 && v3.units && !v3.units.some(u => u.place)) return; // only boxes in this stack anyway
+    if (document.querySelector('dialog[open]')) return;
+    relinkShown = true;
+    const name = `<b>${esc(folderLinkName || 'your Vault folder')}</b>`;
+    $('relinkWhy').innerHTML = folderLink === 'gone'
+      ? `The folder ${name} can’t be found any more: it was moved, renamed or deleted. Until you choose it again, the 3D view shows boxes instead of your parts, and print files can’t be made.`
+      : folderLink === 'again'
+        ? `This browser doesn’t keep the link to ${name} between visits. Choose it again to see your parts in 3D: until then the 3D view shows boxes. Nothing is uploaded.`
+        : `The page is no longer linked to ${name}: your browser asks again after the page is closed or reloaded. Allow it to read the folder again and the 3D view shows your parts. Nothing is uploaded.`;
+    $('relinkGo').textContent = folderLink === 'ask' ? `Reconnect ${folderLinkName || 'the folder'}` : 'Choose the folder…';
+    $('relinkOther').hidden = folderLink !== 'ask';
+    $('relinkErr').hidden = true;
+    $('relink').showModal();
+  }
+  const relinkClose = () => $('relink').close();
+  const relinkTry = async fresh => {
+    await openFolder(fresh);
+    if (vaultFolder) { relinkClose(); return; }
+    if (folderHeroError) { const e = $('relinkErr'); e.hidden = false; e.innerHTML = `${ICON_BAD}<span>${esc(folderHeroError)}</span>`; }
+  };
+  $('relinkGo').onclick = () => relinkTry(folderLink === 'gone');
+  $('relinkOther').onclick = () => relinkTry(true);
+  $('relinkLater').onclick = relinkClose;
+  $('relinkClose').onclick = relinkClose;
   // ---------- 3D stack view ----------
   // Opened from a stack card. three.js and meshoptimizer's simplifier come from a pinned CDN version only when it opens,
   // so the rest of the page never needs them. Units are boxes from R.exterior until the Vault folder is picked; then the
@@ -3496,6 +3574,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     });
     // Only to show the real parts: the folder is changed from step 1 (unitFolderBar), not here
     $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder || !!vaultFolder;
+    $('v3dPick').textContent = folderLink === 'ask' && folderLinkName ? `Reconnect ${folderLinkName}…` : 'Show the real parts…';
   }
   // A part kind's colour in the stack shown (kept even when it is the default: the project's may differ), or the
   // project's when there is no stack
@@ -3692,11 +3771,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const v = v3;
     if (v && v.key === mode.key && mode.cfgs.length === v.cfgs.length && mode.cfgs.every((x, i) => x === v.cfgs[i])) {
       if (vaultFolder && v.folder !== vaultFolder) loadParts(v); // the folder was chosen since
-      v.recolor(); v3tools(); v3side();
+      v.recolor(); v3tools(); v3side(); maybeRelink();
       return;
     }
     if (v3want && v3want.key === mode.key) return; // already on its way
     open3d(tw, mode); v3want.key = mode.key;
+    maybeRelink();
   }
   // Before steps 1 and 2 redraw, the view steps out of the way, so the redraw doesn't take it with the old page
   function v3park() { if (!$('v3d').open) $('v3home').append($('v3view')); }
@@ -4231,7 +4311,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   $('printerBtn').onclick = e => { e.stopPropagation(); printerPop($('printerBox').hidden); };
   document.addEventListener('click', e => { if (!$('printerBox').hidden && !e.target.closest('#printerBox, #printerBtn')) printerPop(false); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('printerBox').hidden) { printerPop(false); $('printerBtn').focus(); } });
-  if ('showDirectoryPicker' in window) idb('readonly', st => st.get('folder')).then(h => { if (h && h.name && !vaultFolder && !rememberedFolder) { rememberedFolder = h.name; renderHeader(); } }).catch(() => {});
+  checkFolderLink().catch(() => {});
   document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { view = b.dataset.tab; renderAll(); });
 
   function renderAll() {
