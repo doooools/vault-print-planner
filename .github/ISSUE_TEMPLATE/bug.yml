@@ -1,0 +1,37 @@
+name: Report a bug
+description: Something in the planner is wrong, broken or confusing.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. Reports are public: don't paste anything private.
+        Please don't attach Vault's STL files or pictures of them: they belong to USSA.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to get there
+      description: The steps from opening the page, as far as you remember them (tab, stack, unit, button).
+      placeholder: |
+        1. In Design, add an L7 4F drawer
+        2. Paint its facade
+        3. ...
+  - type: textarea
+    id: screens
+    attributes:
+      label: Screenshots or your design
+      description: Drag pictures here. A design saved with "Save as…" (.json) helps a lot; zip it first if GitHub refuses the file.
+  - type: textarea
+    id: context
+    attributes:
+      label: Browser and setup
+      description: Filled in by the planner when you come from its "Report a bug" link. Otherwise, your browser and system.
+      render: text

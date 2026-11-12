@@ -1,0 +1,24 @@
+name: Suggest an improvement
+description: An idea, a missing part or option, or something that could be easier.
+title: "[Idea] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks! Reports are public, and this fork is maintained in spare time, so no promises on when.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why does it help?
+      description: What you were trying to do, and what got in the way.
+  - type: textarea
+    id: screens
+    attributes:
+      label: Pictures or examples
+      description: Optional. Sketches, screenshots, a saved design.
