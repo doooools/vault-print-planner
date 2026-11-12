@@ -3591,6 +3591,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const m = painted(g, x.role, null); m.position.set(...x.at); m.userData.name = x.name; scene.add(m); v.extras.push(m);
     }
     // Each unit: a group at its place in the stack, its boxes, and a drawer group that slides out along +Z
+    const all = lay.units;
     for (const u of lay.units) {
       const g = new T.Group(), drawer = new T.Group(), boxes = new T.Group();
       g.position.set(u.x, u.y, 0); g.add(boxes, drawer); scene.add(g);
@@ -3614,7 +3615,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         lid.userData = { inner, axis: new T.Vector3(...hinge.axis).normalize(), max: hinge.open_deg, deg: 0 };
       }
       const motion = (PLACE.units[u.key] || {}).motion || null;
-      const steps = (motion && motion.open) || [{ joints: [u.drawer ? 'drawer' : 'lid'], from: 0, to: 1, s: 1 }];
+      // A case with a unit on it can't turn its lid up into that unit: the lid stays latched to the unit above, and the
+      // case opens the other way (motion.release, tools/placements/measure_rods.py): the front latches open as usual,
+      // the hinge rods slide out sideways, out of the hinge tops, and the body comes out forward like a drawer
+      const under = !!hinge && all.some(o => o.level === u.level + 1 && !o.roof && !o.stack && !o.column && Math.abs(o.x - u.x) < (o.w + u.w) / 2 - 1);
+      const steps = (under && motion && (motion.release || [...motion.open.filter(s => !s.joints.includes('lid')), { joints: ['body'], from: 0, to: 1, s: 0.6 }]))
+        || (motion && motion.open) || [{ joints: [u.drawer ? 'drawer' : under ? 'body' : 'lid'], from: 0, to: 1, s: 1 }];
       const dur = st => Math.min(1, Math.max(0.6, st.reduce((a, s) => a + (s.s || 0.5), 0)));
       // Several drawers in the module: each its own group, front, steps (its key and racks, then its slide) and joints
       const movers = lay ? lay.drawers.map(dr => {
@@ -3625,7 +3631,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           open: false, t: 0, jn: new Map(), motion: lay.motion, steps: dr.open, dur: dur(dr.open) };
       }) : null;
       v.units.push({ ...u, g, drawer, boxes, front, lid, place, movers, split: lay ? lay.split || 0 : 0, sorted: !!(lay && lay.sorted), travel: u.drawer && !movers ? Math.round(u.d * 0.6) : 0, open: false,
-        motion, steps, t: 0, jn: new Map(), dur: dur(steps) });
+        pull: under ? Math.round(u.d * 0.6) : 0, motion, steps, t: 0, jn: new Map(), dur: dur(steps) });
     }
     v.units.forEach(v3pose);
     // A roof on a case latches onto its lid: it rides the lid's hinge, held by the pivot itself (the lid's inner group is
@@ -3974,7 +3980,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   // ---------- opening and closing (stl-placements.json "motion", tools/placements/README.md "Motion") ----------
   // A unit's joints each go from 0 (as placed) to 1: a key turns about its axis, a rack slides, a case latch moves
-  // its link and lever as a linkage. "drawer" (the drawer's slide) and "lid" (the hinge) are the unit's own. The
+  // its link and lever as a linkage. "drawer" (the drawer's slide), "lid" (the hinge) and "body" (a case under a unit
+  // slides its body out from under the lid: steps `release`) are the unit's own. The
   // unit's steps say which joints move, in order, from where to where, when it opens; it closes the same way back.
   // u.t runs from 0 (closed) to 1 (open) along the steps.
   // The group a part with a joint goes in: made the first time, inside `at` (the drawer, the parts or the lid)
@@ -4006,6 +4013,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function v3pose(u) {
     const val = jointValues(u);
     if (u.travel) u.drawer.position.z = u.travel * (val.drawer || 0);
+    if (u.pull && u.parts) u.parts.position.z = u.pull * (val.body || 0); // a case under a unit: its body, not its lid
     if (u.lid) { const L = u.lid.userData; L.deg = L.max * (val.lid || 0); u.lid.quaternion.setFromAxisAngle(L.axis, L.deg * Math.PI / 180); }
     for (const [name, n] of u.jn) {
       const id = name.split('.')[0], s = val[id] || 0, j = n.j;

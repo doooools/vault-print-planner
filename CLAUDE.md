@@ -106,6 +106,9 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
   `tools/placements/kinematics.py` (same pose, collision check on sections) and `blender_motion.py` (key frames).
   Measuring it moved every drawer part but the module and latches 1.2 mm up (`MODULE_UNDER_BOX` 9.8) and turned the
   case latch's link end for end.
+  A case with a unit on it (not a roof) opens by `motion.release` instead (`measure_rods.py`): latches as usual, then
+  the hinge rods (`rod_1`/`rod_2`, slides along x) leave the hinge tops, then the body slides out (`u.pull`, joint
+  `body`) and the lid stays under the unit above.
 - Several drawers in one 2F/4F module (S, M, L, L²; `R.LAYOUTS`): `units[key].layouts["2,1,1"]` = drawers (index top
   to bottom, height, lowest level, opening steps), their parts tagged `{drawer, side}`, per-drawer key/rack joints and
   front bolts. `measure_levels.py` found the shells' levels exactly 48 mm apart; `make_recipes.py LAY` → Blender →

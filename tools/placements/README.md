@@ -94,6 +94,16 @@ closed unit is at the start of the steps, an open one at the end; closing runs t
 - Drawer: `[{joints: [key, rack_lo, rack_hi], from: 1, to: 0, s: 0.35}, {joints: [drawer], from: 0, to: 1, s: 0.55}]`
   (L² and XL²: `key_left`/`key_right`, `key_S`/`key_M`, … all in the first step). Closed, the drawer is locked.
 - Case: `[{joints: [latch_1(, latch_2)], from: 0, to: 1, s: 0.45}, {joints: [lid], from: 0, to: 1, s: 0.6}]`.
+- Case under a unit (`release`, `measure_rods.py`): the lid can't turn up into the unit on it, so it stays latched to
+  that unit and the case opens the other way: `[{joints: [latch_1(, latch_2)], …, s: 0.45}, {joints: [rod_1, rod_2],
+  from: 0, to: 1, s: 0.4}, {joints: [body], from: 0, to: 1, s: 0.6}]`. Each hinge rod (`rod_<k>`, a `slide` along x,
+  away from the middle) comes out until its tip is 1 mm past the hinge top's knuckle, its tip still in the leaf's
+  knuckle (S 30.5 mm, M 31.1, L and XL 44.0), so it rides out with the body; `body` (the page's, like `drawer`) slides
+  the case's module parts out along +Z by 0.6 × its depth, the lid and hinge tops staying. The page takes `release`
+  when a unit (not a roof) stands on the next level over the case. Not from USSA (no manual use of it): the user's
+  idea, 2026-11-12. Measured, not avoided: the leaves' knuckles stand 7 mm over the body's top, behind the back wall,
+  and the lid's back lip comes down to 0.7 mm over it, so the knuckles pass through that 6 mm lip as the body leaves;
+  on S the rods' heads stick out 25 mm past the case's side once out (into an S or M beside it).
 
 What it is (measured with sections of the user's files, `kinematics.py`, and the manual):
 
