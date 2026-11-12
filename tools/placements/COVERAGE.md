@@ -150,13 +150,14 @@ its shank goes down a hole into the next part, and no tip goes past the bottom o
 and the lock M4 x 14 are exactly as long as their holes are deep). `hw_check.py` cut S, M, L, L2, XL, XL2
 drawers, S, M, L, XL cases and S, L, XL grid roofs through their bolts and found no head inside a part.
 
-Planner, manual and files (counts per unit; the planner's counts were left as they are):
+Planner, manual and files (counts per unit). The planner follows the holes in the files for cases too since
+2026-11-12 (the user's choice); `validate.js` checks its case counts against the bolts placed here:
 
 | Bolt | Planner (`rules.js`) | Manual | Holes in the files |
 |---|---|---|---|
 | M4 x 14, drawer front | S 2/4, M and L 4/6, XL 4 (1F / 2F-4F), L2 and XL2 the sum of their drawers | x4 for 1F, x6 for 2F/4F (p. 18, drawn on an M) | same as the planner |
-| M4 x 20, case front | 7 on every case | x7 per module (p. 17, drawn on an L 4F) | S and M: 4 (1F, 2F), 6 (4F); L: 5 (1F, 2F), 7 (4F); XL: 5. Only the L 4F has 7 |
-| M4 x 14, case hinge tops and locks | 16 on every case | x16 per module (p. 17, an L: 2 tops, 2 locks) | L and XL 16; S and M 8 (one hinge top with 4 holes, one lock) |
+| M4 x 20, case front | as the files (was 7 on every case) | x7 per module (p. 17, drawn on an L 4F) | S and M: 4 (1F, 2F), 6 (4F); L: 5 (1F, 2F), 7 (4F); XL: 5. Only the L 4F has 7 |
+| M4 x 14, case hinge tops and locks | as the files (was 16 on every case) | x16 per module (p. 17, an L: 2 tops, 2 locks) | L and XL 16; S and M 8 (one hinge top with 4 holes, one lock) |
 | M4 x 10, case hinges | 8 | x8 | 8 |
 | M6 x 50 countersunk, grid roof top handle | 2 (option) | x2 (p. 18) | 2 |
 

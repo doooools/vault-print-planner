@@ -414,9 +414,13 @@
       const bolts = c.w === 'L2' ? 2 * per('S') : c.w === 'XL2' ? front('S', 1) + front('M', 1) : per(c.w);
       push('M4 × 14 mm button-head bolt', bolts, 'Drawer front to box');
     } else {
-      push('M4 × 14 mm button-head bolt', 16, 'Case hinge tops and locks');
+      // Counted on the holes in the STLs (tools/placements/COVERAGE.md "Hardware"; the manual's p. 17 draws an L 4F,
+      // with 7 and 16). Case front: S and M 4 (1F, 2F), 6 (4F); L 5 (1F, 2F), 7 (4F); XL (1F only) 5. Hinge tops and
+      // locks: 4 + 4 on S and M (one hinge top with 4 holes, one lock), 8 + 8 on L and XL. Hinges: 8 everywhere.
+      const big = c.w === 'L' || c.w === 'XL';
+      push('M4 × 14 mm button-head bolt', big ? 16 : 8, 'Case hinge tops and locks');
       push('M4 × 10 mm button-head bolt', 8, 'Case hinges');
-      push('M4 × 20 mm button-head bolt', 7, 'Case front and body');
+      push('M4 × 20 mm button-head bolt', (big ? 5 : 4) + (c.h === 4 ? 2 : 0), 'Case front and body');
     }
     if (c.roof === 'grid' && c.topHandle) push('M6 × 50 mm countersunk bolt', 2, 'Roof top handle');
     if (c.pegboard && c.pegboard !== 'none' && c.h <= 2) push('M4 × 40 mm button-head bolt', 4, 'Pegboard attachment');

@@ -132,6 +132,13 @@ for (const w of Object.keys(R.HEIGHTS.case)) for (const d of R.DEPTHS) for (cons
   const r = R.buildUnit({ type: 'case', w, d, h, roof: 'none' }, resolve), what = `case ${w}${d} ${h}F`;
   const sus = fileQty(r, /Label for Sustainers\.stl$/), drw = fileQty(r, /07\. Universal\/Label\.stl$/);
   if (sus !== (h === 1 ? 1 : 0) || drw !== (h === 1 ? 0 : 1)) countRules.push(`${what}: ${sus} sustainer label, ${drw} drawer label`);
+  // Case bolts follow the holes in the files: the bolts hardware.py placed in that case (one per hole), by size
+  const placed = (PL.units[`case|${w}|${d}|${h}`] || {}).hardware;
+  if (placed) for (const size of ['M4 × 10', 'M4 × 14', 'M4 × 20']) {
+    const got = r.hardware.filter(x => x.item.startsWith(size + ' mm')).reduce((a, x) => a + x.qty, 0);
+    const want = placed.filter(b => b[0] === size.replace(' × ', 'x') + ' button').length;
+    if (got !== want) countRules.push(`${what}: ${got} ${size} bolts, ${want} holes in the files`);
+  }
 }
 for (const type of ['drawer', 'case']) for (const w of Object.keys(R.HEIGHTS[type])) for (const d of R.DEPTHS) for (const h of R.HEIGHTS[type][w]) {
   const base = { type, w, d, h, roof: 'none', lock: 'hidden' }, what = `${type} ${w}${d} ${h}F`;
