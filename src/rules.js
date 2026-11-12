@@ -354,6 +354,9 @@
   // the top one, where the pull-out handle lock goes (17-19), or higher when a pegboard (20) or a chosen backbone sits
   // there. o = { w, base, heights: [F of each level, bottom to top], upTo: highest level index the column covers,
   // universal }. Counted in F: the base as one, 2F backbones, and a 1F one for an odd remainder.
+  // Bolts (Modifications Assembly 7-11, measured on the files): through the sealed holes along the backbone's ends (14 mm
+  // of backbone), into the 3.6 mm pilot holes in the back of the modules (100 mm deep) and of the base (74 mm). The manual
+  // says 60 to 100 mm; 80 is the longest standard length that fits the base too (14 + 74 = 88).
   function buildBackbones(o, resolve) {
     const k = collector(resolve);
     const covered = o.heights.slice(0, Math.max(0, o.upTo + 1)).reduce((a, h) => a + h, 0);
@@ -368,7 +371,7 @@
     const twos = only1 ? 0 : Math.floor(f / 2), ones = only1 ? f : f % 2;
     if (twos) k.add('Backbone', (o.universal ? 'Universal backbone' : 'Backbone') + ' 2F', name(2), twos, x);
     if (ones) k.add('Backbone', (o.universal ? 'Universal backbone' : 'Backbone') + ' 1F', name(1), ones, x);
-    return { f: only1 ? ones : 2 * twos + ones, lines: k.lines, missing: k.missing, hardware: twos + ones ? [{ item: 'M4 button-head bolt, 60–100 mm (to fit)', qty: 4 * (twos + ones), why: 'Backbones' }] : [] };
+    return { f: only1 ? ones : 2 * twos + ones, lines: k.lines, missing: k.missing, hardware: twos + ones ? [{ item: 'M4 × 80 mm button-head bolt', qty: 4 * (twos + ones), why: 'Backbones' }] : [] };
   }
 
   // Tower base and handles: one set per tower, sized by the bottom level's width family and depth

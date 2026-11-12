@@ -167,7 +167,7 @@ Not placed, and why:
 |---|---|
 | Base, wheels and feet: M16 rod, M4 x 25, 6205ZZ bearings, SCSAW collars, M6 x 90, casters | the printed parts are placed (`stack|...` units); these bought parts are not drawn yet (their places are in README "Stacks") |
 | Stationary and pull-out handles: M4 x 60, M6 x 30, M6 x 35 hex, M6 heat inserts | the handles are placed (`column|...`); these bolts are not drawn yet. The two M16 rods are (`stackColumn`) |
-| Backbone M4 x 60-100 | the backbones are placed (`column|...`), their bolts not drawn yet. The pegboard attachments' M4 x 40 are drawn by the page (`stackColumn`): 4 per backbone section the attachment covers (8 on a 2F), where the planner counts 4 per attachment; on an IKEA attachment they reach about 5 mm into the module's back |
+| Backbone M4 x 80 | the backbones are placed (`column|...`), their bolts not drawn yet. They go through the sealed holes in the column 8.2 mm from each end (14 mm of backbone) into the 3.6 mm pilot holes in the back of the modules (100 mm deep, at x = ±(w/2 − 8.2), y 9.6 and 47.1 + 48 per level) and of the base (74 mm deep); a case body has none (a 5 mm back wall). The pegboard attachments' M4 x 40 are drawn by the page (`stackColumn`): 4 per backbone section the attachment covers (8 on a 2F), where the planner counts 4 per attachment; on an IKEA attachment they reach about 5 mm into the module's back |
 | Lock pins, hinge rods | printed parts, not bought hardware (both are placed: the pins with the latches, the rods with the hinges) |
 
 Moving parts: a bolt carries the index of the part that holds it (`part`), and its group is that part's. The
