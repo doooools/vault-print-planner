@@ -144,6 +144,14 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
   rules.js, `aids` argument), packed against its roof by `planPlates`. A roof printed diagonally (`care`) can't take one:
   the step says the prop was left out. L² and XL² take one set of accessories (1st + 2nd) per F (the user's rule,
   2026-11-12). The springs are left out of the 3D on purpose for now.
+- Case dividers (branch `claude/project-thread-jbhoyd`): a divider only goes in a slot moulded in the body's walls.
+  `tools/placements/measure_dividers.py` measures every case body's slots (`dividers` in each `case|*`: S/M "plain" side
+  slots; L/XL "dividers" side slots + 2 back slots, an egg crate; L/XL "sealed" cells with their own side slots; flat:
+  none) and stands each divider file up (`divider_files`); README "Case dividers". The inspector draws the case from
+  above and a click fills or empties a slot (`dividerPlan`, `divToggle`, `divAll`); the unit keeps `cfg.divSlots` per
+  style and `syncDividers` (in `fixUnit`, and on load) keeps `cfg.dividers` (the counts `rules.js` reads) in step.
+  `rules.js` leaves out dividers the body style can't take; XL's side seal dividers have their own count
+  (`dividers.sealSide`). `dividerParts` adds them to the 3D in their slots, standing in the floor grooves.
 
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
