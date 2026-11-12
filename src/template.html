@@ -71,12 +71,17 @@ header.appbar .tabs { flex: 1 1 auto; }
 @media (min-width: 1280px) { .credit { flex-basis: auto; order: 0; } }
 .newsbtn { border: 0; background: none; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 .newsbtn:hover { color: var(--ink); }
-dialog#news, dialog#relink { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px 22px; width: min(620px, calc(100vw - 32px)); max-height: min(80vh, 720px); overflow-y: auto; overscroll-behavior: contain; position: fixed; }
-dialog#news::backdrop, dialog#relink::backdrop { background: rgba(10, 12, 12, .45); }
+dialog#news, dialog#relink, dialog#report { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px 22px; width: min(620px, calc(100vw - 32px)); max-height: min(80vh, 720px); overflow-y: auto; overscroll-behavior: contain; position: fixed; }
+dialog#news::backdrop, dialog#relink::backdrop, dialog#report::backdrop { background: rgba(10, 12, 12, .45); }
 dialog#relink { width: min(480px, calc(100vw - 32px)); }
 #relink p { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
 #relink .acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 18px; }
-dialog#news h2, dialog#relink h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
+dialog#news h2, dialog#relink h2, dialog#report h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
+#report p { margin: 8px 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
+#report .acts { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 6px; }
+#report .acts a { text-decoration: none; }
+#report .acts a:not(.primary), #report p a { color: var(--ink); }
+#report p a { text-decoration: underline; text-underline-offset: 2px; }
 #news .changes h3 { margin: 16px 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
 #news .changes ul { margin: 0; padding-left: 18px; }
 #news .changes li { margin: 5px 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
@@ -726,7 +731,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     <button type="button" class="hbtn" id="printerBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="printerBox"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg><b id="printerName"></b><span class="mono" id="printerBed"></span></button>
     <button type="button" class="hbtn" id="folderBtn"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path class="ok" d="M9 13l2 2 4-4"/></svg><b>Vault folder</b><span class="mono" id="folderState"></span></button>
   </div>
-  <p class="credit">A <a href="https://github.com/doooools" target="_blank" rel="noopener">Dols</a> fork of <a href="https://vault.romy.io" target="_blank" rel="noopener">Romy’s Vault Print Planner</a> · <button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog">What’s new</button></p>
+  <p class="credit">A <a href="https://github.com/doooools" target="_blank" rel="noopener">Dols</a> fork of <a href="https://vault.romy.io" target="_blank" rel="noopener">Romy’s Vault Print Planner</a> · <button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog">What’s new</button> · <button type="button" class="newsbtn" id="reportBtn" aria-haspopup="dialog">Report a bug or an idea</button></p>
   <div class="printer pop" id="printerBox" hidden role="dialog" aria-label="Printer">
       <label for="printer">Printer</label>
       <select id="printer"></select>
@@ -766,6 +771,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><!--CHANGELOG--></div></dialog>
+<dialog id="report" aria-labelledby="reportTitle"><button type="button" class="vclose" id="reportClose" aria-label="Close">&times;</button><h2 id="reportTitle">Report a bug or an idea</h2>
+  <p>Something wrong, broken or confusing, or something you'd like the planner to do? Tell us on GitHub: the form opens in a new tab and asks a few short questions.</p>
+  <div class="acts"><a class="btn primary" id="reportBug" target="_blank" rel="noopener" href="https://github.com/doooools/vault-print-planner/issues/new?template=bug.yml">Report a bug</a><a class="btn" id="reportIdea" target="_blank" rel="noopener" href="https://github.com/doooools/vault-print-planner/issues/new?template=idea.yml">Suggest an improvement</a></div>
+  <p>You need a free GitHub account. Reports are public, so don't paste anything private, and don't attach Vault's part files: they belong to USSA. A design saved with Save as… helps with a bug. The bug form gets your browser and printer filled in; nothing else leaves this page.</p>
+  <p><a href="https://github.com/doooools/vault-print-planner/issues" target="_blank" rel="noopener">See what's already been reported</a></p></dialog>
 <dialog id="relink" aria-labelledby="relinkTitle"><button type="button" class="vclose" id="relinkClose" aria-label="Not now">&times;</button><h2 id="relinkTitle">The 3D view needs your Vault folder</h2><p id="relinkWhy"></p><p class="fstat bad" id="relinkErr" hidden></p>
   <div class="acts"><button type="button" class="btn primary" id="relinkGo" autofocus></button><button type="button" class="btn" id="relinkOther">Choose another folder…</button><button type="button" class="linkbtn" id="relinkLater">Not now: show boxes</button></div></dialog>
 <dialog id="viewer" aria-label="Part preview"><button type="button" class="vclose" id="viewerClose" aria-label="Close preview">&times;</button><div id="viewerBody" class="vbody"></div></dialog>
@@ -1394,7 +1404,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // What's new: header button opens the changelog; close with ×, Esc or a click outside
   $('newsBtn').onclick = () => $('news').showModal();
   $('newsClose').onclick = () => $('news').close();
+  // Report a bug or an idea: GitHub issue forms (.github/ISSUE_TEMPLATE). The bug form's "context" field is filled in here.
+  $('reportBtn').onclick = () => {
+    const ctx = [`Page: ${location.href.split(/[?#]/)[0]}`, `Browser: ${navigator.userAgent}`,
+      `Screen: ${innerWidth} × ${innerHeight} (×${devicePixelRatio})`, `Printer: ${printerName()} (${printer.v.join(' × ')} mm)`, `Tab: ${view}`].join('\n');
+    $('reportBug').href = 'https://github.com/doooools/vault-print-planner/issues/new?template=bug.yml&context=' + encodeURIComponent(ctx);
+    $('report').showModal();
+  };
+  $('reportClose').onclick = () => $('report').close();
   $('news').addEventListener('click', e => { const r = $('news').getBoundingClientRect(); if (e.target === $('news') && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) $('news').close(); });
+  $('report').addEventListener('click', e => { const r = $('report').getBoundingClientRect(); if (e.target === $('report') && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) $('report').close(); });
 
   function tagsFor(l) {
     const tags = [], fit = l.fit || fitOf(l.file.dims, printer.v, l.file.ex);
