@@ -3724,16 +3724,28 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     };
     const setHot = f => { if (v.hot === f || (!v.hot && !f)) return; v.hot = f; v.recolor(); };
     let down = null, hoverQueued = false, hotKey = '';
+    // Open or close what was clicked (the drawer of a module holding several, a case)
+    const toggleAt = h => {
+      const m = moverAt(h); if (!canOpen(m)) return;
+      m.open = !m.open; glide();
+      if (!store.get('openTip', false)) { store.set('openTip', true); v3tools(); }
+    };
     el.addEventListener('pointerdown', ev => { down = { x: ev.clientX, y: ev.clientY, t: performance.now() }; }, sig);
     el.addEventListener('pointerup', ev => {
       if (!down || ev.button !== 0 || Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 5 || performance.now() - down.t > 500) { down = null; return; }
       down = null;
       const h = hitAt(ev);
-      if (v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey) { const m = moverAt(h); if (canOpen(m)) { m.open = !m.open; glide(); if (!store.get('openTip', false)) { store.set('openTip', true); v3tools(); } } return; }
+      if (v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey) { toggleAt(h); return; }
       if (!h || !h.mesh.userData.role) { if (v.tool === 'turn') { v.sel = null; v3side(); } return; }
       v.sel = { role: h.mesh.userData.role, cfg: h.mesh.userData.cfg, u: h.u || null, name: h.mesh.userData.name };
       if (v.tool === 'paint') v3paint(v, h.mesh);
       else v3side();
+    }, sig);
+    // A double click opens or closes too (its two clicks select, as one would; with Ctrl or Shift, or the Open tool,
+    // each click already toggles)
+    el.addEventListener('dblclick', ev => {
+      if (v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey) return;
+      ev.preventDefault(); toggleAt(hitAt(ev));
     }, sig);
     el.addEventListener('pointermove', ev => {
       if (ev.buttons || hoverQueued) return;
@@ -3796,13 +3808,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       B.hidden = false; B.className = 'v3-brush';
       const bp = paletteOf(v.brush);
       B.innerHTML = `<span class="v3-bnow"><span class="dot2 big" style="background:${bp.hex}"></span><span><small>Brush</small><b>${esc(bp.name)}</b></span></span>
-        <span class="v3-brush-hint">Click a part in the view, or a line on the right. <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click opens a drawer, to paint its box.</span>
+        <span class="v3-brush-hint">Click a part in the view, or a line on the right. A double-click, or <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click, opens a drawer, to paint its box.</span>
         <div class="v3-seg" role="group" aria-label="What a click in the view paints">${seg([['project', 'Same part everywhere'], ['unit', 'Only this module']], v.pscope, 'data-v3scope')}</div>`;
     } else {
       const tip = !store.get('openTip', false) && v.units.some(u => u.travel || u.movers || u.lid);
       B.hidden = false; B.className = 'v3-hintbar' + (tip ? ' tip' : '');
-      B.innerHTML = tip ? '<span><b>Open a drawer:</b> hold <kbd>Ctrl</kbd> or <kbd>Shift</kbd> and click it. Cases open the same way.</span><button type="button" class="btn" data-v3tipok>Got it</button>'
-        : '<kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click opens or closes a drawer or a case. A click selects a level. Drag to turn, scroll to zoom, right-drag to move.';
+      B.innerHTML = tip ? '<span><b>Open a drawer:</b> double-click it, or hold <kbd>Ctrl</kbd> or <kbd>Shift</kbd> and click it. Cases open the same way.</span><button type="button" class="btn" data-v3tipok>Got it</button>'
+        : 'A double-click, or <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click, opens or closes a drawer or a case. A click selects a level. Drag to turn, scroll to zoom, right-drag to move.';
     }
     const on = (sel, f) => document.querySelectorAll(sel).forEach(b => b.onclick = () => f(b));
     on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; if (v.tool === 'paint') inspPaint = true; v.hot = null; v.recolor(); v3tools(); v3side(); });
