@@ -165,3 +165,7 @@ if (process.argv[3]) fs.writeFileSync(process.argv[3], [...used].sort().join('\n
 console.log('ROLE COLOURS:'); roleClash.forEach(m => console.log(' ', m));
 console.log('MISSING:'); for (const [m, w] of bad) console.log(' ', m, '<-', w.slice(0, 3).join(', '), w.length > 3 ? `(+${w.length - 3})` : '');
 console.log('\nUNUSED FILES:'); list.filter(p => !used.has(p) && !/Grid Dividers\/[^/]+\/\d/.test(p)).forEach(p => console.log(' ', p));
+// Any problem above makes the exit code 1, so tools/check.py (and the CI on every pull request) fails. Unused files
+// are only listed: some are never offered on purpose.
+const problems = countRules.length + layoutClash.length + countClash.length + roofClash.length + roleClash.size + bad.size;
+if (problems) { console.log(`\n${problems} problem${problems > 1 ? 's' : ''} found`); process.exitCode = 1; }

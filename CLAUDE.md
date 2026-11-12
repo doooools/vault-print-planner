@@ -5,32 +5,43 @@ Upstream takes no feature requests ("fork it and change it"), so this fork is ou
 **Talk to the user in French.**
 
 ## Goal of the fork
-Add to the planner a **3D view of each stack** built from the user's own Vault STL files, with a **colour picker**:
-colours per role (body, facade, drawer box, accents…) and per unit (e.g. each drawer's facade). The chosen
-colours must feed what the planner already does with colour: plate grouping, filament per colour and the
-3MF/Bambu export. Today colours are fixed categories in `src/rules.js` (`colorOf`: body / inner / accent / tpu)
-and `COLOR_NAME` / `COLOR_FILL` in `src/template.html`.
+A **3D view of each stack** built from the user's own Vault STL files, with **colours** per part role (shell, front,
+drawer box, accents…), per stack and per unit, that feed what the planner does with colour: plate grouping, filament
+per colour and the Bambu project. Both are done (see "What is done"); the fork is now maintained and extended on the
+user's requests. Live site: https://doooools.github.io/vault-print-planner/ (GitHub Pages from `main`).
 
-## Next: the UX redesign
-`docs/ux-redesign.md` is the brief for the redesign of the whole page, approved by the user on 2026-11-11: footprint
-and roof set per stack, levels edited in place (no draft unit), a Paint tool for colours, a plate sheet with nesting,
-Hardware as its own step, several drawers per module. Read it before any UI work and follow its steps in order, one
-at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
+## Where the work stands (2026-11-12)
+- The page redesign in `docs/ux-redesign.md` (approved 2026-11-11) shipped, all seven steps: tabs 1 · Design,
+  2 · Print, 3 · Hardware, 4 · Assemble; footprint and roof per stack, levels edited in place in an inspector, the
+  Paint tool, the plate sheet, several drawers per module. Read the brief before UI work: its layout, tokens and
+  wording still hold. Its "Open points" and "Later" are what is left of it (store links, an XL 1F level asked for 2F,
+  animated GIFs in Assemble). `docs/colors-3d-redesign.md` is history.
+- What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file
+  `3d/stl-absents-de-la-3d.md`.
+
+## Checks
+- Every pull request and every push to `main` runs `.github/workflows/check.yml`, i.e. `python -I tools/check.py`:
+  `index.html` is the build of `src/`, `validate.js` finds no problem (it exits 1 on any; unused files are only
+  listed), the page's scripts parse, no mesh file is committed. Run it before pushing.
+- Every merge to `main` publishes the site within a minute. `index.html` is generated: on a merge conflict in it,
+  merge `src/` and rebuild, never edit it by hand.
 
 ## Hard rules
 - The page is **one HTML file** (`index.html`) built from `src/` and runs entirely in the browser. It has no external
-  scripts today. Load three.js (or similar) **only when the 3D view is shown** (step 1 shows it), as a dynamic
-  import from a pinned CDN version, and keep the rest of the page working without it.
+  scripts. Load three.js (or similar) **only when the 3D view is shown**, as a dynamic import from a pinned CDN
+  version, and keep the rest of the page working without it.
 - **Never commit USSA geometry**: no STL (original or decimated), no `.blend`, no renders of the parts. Vault's
   files are commercial and the page must keep reading them from the user's own folder only. Numbers derived from
   them (measurements, placements) are fine, like the existing `src/stl-measurements.tsv`.
 - After any change in `src/`, rebuild and check the page:
-  `python -I src/build.py --public src/stl-measurements.tsv index.html previews/index.tsv`.
-  On this branch's first commit the rebuild was byte-identical to upstream's published `index.html`, ignoring CRLF
-  (this checkout has `core.autocrlf=true`). Keep `build.py` reading and writing UTF-8, since this is Windows.
-- Commit or push only when the user asks. Work on `feat/3d-stack-viewer` (or a branch off it).
+  `python -I src/build.py --public src/stl-measurements.tsv index.html previews/index.tsv`, then
+  `python -I tools/check.py`. `.gitattributes` keeps text files in LF on every system. Keep `build.py` reading and
+  writing UTF-8: the user's checkout is on Windows.
+- Work on a branch off `main` (`claude/<name>` for Claude's threads), one pull request per piece of work. Claude
+  commits, pushes and opens the pull request without asking first (the user's rule since 2026-11-12, confirmed in
+  this file's update); **merging stays with the user**.
 
-## What is done (branch feat/3d-stack-viewer)
+## What is done
 - `src/build.py` fixed, plus `src/printer-beds.tsv` and `src/bambu-reach.tsv` recovered from the published page:
   `src/` now rebuilds the page.
 - `src/stl-placements.json`: per unit, each part's file, colour role, group and a 3x4 matrix from the file's own
@@ -44,32 +55,28 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
     `R.exterior` uses 51.5 / 99.5 / 195.5 (USSA's figures): within 0.5 mm, pick one and say so.
 - 3D view (section "3D stack view" in `src/template.html`): three.js 0.186.1 and meshoptimizer 1.3.0 from jsDelivr,
   loaded when the view is first shown; boxes before the folder is picked, then real parts simplified in workers
-  (0.15 mm, cached in IndexedDB). Always on in step 1: `v3panel()` at the top of the page, and `v3sync()` (end of
-  `renderBuild`, and `renderAll` for the other steps) moves the one persistent `#v3view` into the shown step's
-  `.v3-slot`, or parks it. It shows the stack Add would go to (`currentDest()`, set by the Add menu, a stack's
-  "+ Add a unit" or "Show in 3D") with the unit being set up drawn from a copy of `c` (`v.ghost`) where Add would put
-  it: on top, beside the top unit, alone for a new stack (see-through while not added), or instead of the unit being
-  edited. The "Preview" toggle (`v3preview`, saved) shows the stack as it is instead. The model is rebuilt only when
-  the stack or the unit changes (`v.key`, colours left out), and just repainted otherwise. A rebuild of the same stack (any change: an option, a divider,
+  (0.15 mm, cached in IndexedDB). Shown in step 1 (Design) in the middle of the stack's card (`designCenter`'s
+  `.v3-slot`): `v3sync()` (after every render) moves the one persistent `#v3view` into the shown step's `.v3-slot`, or
+  parks it in `#v3home`, and shows the selected stack (`curTower()`) as it is. The model is rebuilt only when
+  the stack changes (`v.key`, colours left out), and just repainted otherwise. A rebuild of the same stack (any change: an option, a divider,
   a level added) keeps the camera (position and target), every drawer and lid open or closed, and the selection:
   `close3d` → `v3keep` saves them in `v3ui.keep`; `open3d` matches the new units to them (`v3match`: same `cfg` object
   first, then same kind, level and rank). Another stack is framed afresh. `v3park()` takes the view
   out before step 1 redraws with `innerHTML` (else it goes with the old page and `getElementById` stops finding it). One WebGL renderer (`v3gl`) for the page's life; `close3d`
-  drops a model's scene; `v3ui` carries tools and camera direction over. "Enlarge" (`v3enlarge`) moves the view into
-  the `#v3d` dialog; closing it puts it back.
+  drops a model's scene; `v3ui` carries tools and camera direction over. The `#v3d` dialog ("3D view, enlarged") is
+  still in the page and `v3sync` still honours it, but nothing opens it any more.
   One view since step 3 of `docs/colors-3d-redesign.md` (`open3d`):
   toolbar `v3tools` (Turn: a click selects; Paint: brush bar with the tray's colours, "More…" adds one, "Same part
   everywhere" / "This unit only", hover tints what a click would paint via `v.hot`; Drawers: a click opens or closes a
   drawer), views Front / ¾ / Side (`v.aim`), "Spread units" and "Hide roof" (`v.arrange`). Side column `v3side`:
   "Selected" card (`v3sel`, "Change color…" opens the picker, "Back to the project color"), units top to bottom
-  (`v3list`: progress, role swatches ringed when the unit has its own, "not added yet"), then the Colors panel when
-  enlarged. `v3paint` writes the colour; `v3owner` says whose `cfg.colors` a part's own colour goes in (the ghost's
-  go to `c` via `editorUnit`; a roof's parts are its unit's).
+  (`v3list`: progress, role swatches ringed when the unit has its own). `v3paint` writes the colour; `v3owner` says
+  whose `cfg.colors` a part's own colour goes in (a roof's parts are its unit's).
   Checked in Chrome: L7 4F + 2F + 1F + grid roof, 16.4M → 151k triangles. `build.py` embeds `window.VAULT_PLACEMENTS`.
 - Colours: `R.ROLES` / `roleOf` (rules.js) give every part a colour role whose default is its old `colorOf` colour
-  (`validate.js` checks), so a build with no choices plans exactly as before. Palette + role choices in
-  `colorPrefs` (localStorage `vpp.colors`, panel "Colors" in step 1); per-unit choices in the unit's own `cfg.colors`
-  (edited in the 3D view's side list). `paintLines` recolours lines; a non-default colour gets its own line key
+  (`validate.js` checks), so a build with no choices plans exactly as before. A part's colour (`colorFor`): the unit's
+  own `cfg.colors`, else its stack's `t.roles`, else the project's `colorPrefs.roles` (palette and roles in
+  localStorage `vpp.colors`), else the role's default. `paintLines` recolours lines; a non-default colour gets its own line key
   (`path#colour`), so plates and progress keep it apart. The Bambu project gets one filament per plate colour
   (slot 1, TPU in 2, others from 3). Bambu Studio counts filaments by `filament_colour` and refuses a project
   whose `filament_extruder_variant` / `filament_self_index` don't give every filament its rows ("Invalid configuration
@@ -80,26 +87,24 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
   embedded as `window.BAMBU_COLORS`, offered as a swatch grid in the filament picker. PETG colours still get PLA
   settings in the Bambu project.
 - Choosing colours: one filament picker everywhere (`filamentPicker`, step 1 of `docs/colors-3d-redesign.md`): header
-  (role, where it was opened), "Whole project" / "Only this <unit>" when a unit is known (writes `colorPrefs.roles` or
-  the unit's `cfg.colors`; the unit being set up is `c`, via `editorUnit`), your tray, Bambu Lab's colours (search, line
+  (role, where it was opened), "Whole stack" (or "Whole project" with no stack) / "Only this <unit>" when a unit is
+  known (writes the stack's `roles`, `colorPrefs.roles` or the unit's `cfg.colors`), your tray, Bambu Lab's colours (search, line
   filters, grid by shade), and a footer button "Use it" / "Add as slot N" (a new colour joins the palette only then).
   `fpButton` + `bindPickers` show a role's colour as a button that opens it: in place inside dialogs, as a popover
   elsewhere. Used by the part preview and the 3D view's "Selected" card; with `role: null` it only adds to the tray
   (the Colors panel's "Add a filament", the brush bar's "More…"). `after(id)` gets the colour applied.
-- Colors panel (`colorsPanel`, step 2 of the redesign): the filament tray, one card per palette colour with its slot
-  and use, TPU fixed in slot 2; "Start from" presets (`applyColorPreset`: USSA render = the old reset, Two-tone, One
-  color); a colour map of roles × tray colours (`ROLE_GROUPS`), tagged "N units" when units have their own colour.
+- Colors (`paintPanel`: the inspector while the Paint tool is on): the filament tray with each colour's use, the role
+  list (a click paints a role with the brush, `paintRole`), the modules' own colours as exceptions (`ownColors`),
+  "Add a filament" (the catalogue under the view, `fpAdding`); presets (`applyColorPreset`) and `ROLE_GROUPS`.
   Slots come from `trayUse()`: one per colour in use, in tray order (1, then 3…), like `buildProject`; labels on their
-  own plate (`labelsApart`) don't count. With step 2's (Print) plates by size or in one colour, the panel says the plates
-  don't follow it.
-- Tabs: 1 · Design & build (`view` 'build'; the old 'unit' step merged into it, a saved 'unit' opens it), 2 · Print,
-  3 · Assemble. Step 1 = the settings column (`#config`) with the Add block at its top (`#unitAdd`, by `renderUnit`),
-  then on the page: 3D, the unit's summary (`#unitSum`: folder, numbers, warnings; pictures, part list and hardware
-  folded), then the stacks' overview, Colors, starting points, extra parts and the stacks. Editing a stack's unit or
-  "+ Add a unit" stay on step 1 and scroll up. The summary's tiles (shell, box, front, key lock, roof; case: body,
-  front, lid, hinge) each carry a colour square that opens the preview with the picker open (unit scope there, via
-  `viewerInUnit`). Opening the Vault folder is step 1's first thing: a big card in the middle (`renderFolderHero`, "Not now"
-  hides it for the visit), then a one-line status (`unitFolderBar`).
+  own plate (`labelsApart`) don't count.
+- Tabs: 1 · Design (`view` 'build'; a saved 'unit' opens it), 2 · Print, 3 · Hardware, 4 · Assemble (`renderTabs`;
+  2 to 4 are disabled while there is nothing to make). Design (`renderBuild`) = the stacks' rail (stacks, "New stack",
+  templates, design file, loose parts), the selected stack's card (`designCenter`: name, Stack settings, Footprint,
+  "Add a level on top", the 3D view) and the inspector (`#dInsp`, `renderInspector`: the selected level, the stack's
+  settings, or Colors while painting). Selection: `dsel` = `{t, l, u}` (stack id, level, unit in the level), or
+  `{t: 'loose'}`. With no stack yet, `renderStart` ("Start your build": printer, Vault folder, templates; skipping the
+  folder sets `folderHeroSkipped`).
   The old `mech` role was split into `runners`, `lock`, `hinge` (saved choices are carried over on load).
 - Opening and closing (branch claude/open-close-kinematics-…): every drawer and case has `motion` in the JSON
   (README "Motion"): the key turns a quarter turn and its 20-tooth pinion moves both racks 20 mm (a closed drawer is
@@ -174,24 +179,20 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
 - The tooling reads `VAULT_RENDER` and `BLENDER` from the environment.
 
 ## Page internals worth knowing (src/template.html)
-- `towers` (from ~l.685): stacks, each `{ levels: [[unit, unit?], ...] bottom→top, stack: {base, wheels, feet…} }`.
-  A level is one unit or two side by side (S+S = L, S+M = XL).
-- `R.buildUnit(c, resolve)` (rules.js) lists a unit's files (`lines[].file.path`, `qty`, `color`).
-- `stackSvg` (~l.1419): the current 2D stack drawing. `renderBuild` (~l.1654) is the Build step.
-- Reading the user's files: `pickVaultFolder` (~l.2220), `filesFromHandle`; STL parsing with vertex welding: `readStl` (~l.2120).
+- `towers` (~l.928): stacks, each `{ id, name, levels: [[unit, unit?], ...] bottom→top, stack: {base, wheels, feet…},
+  roles? }`. A level is one unit or two side by side (S+S = L, S+M = XL).
+- `R.buildUnit(c, resolve)` (rules.js) lists a unit's files (`lines[].file.path`, `qty`, `color`); `analyzeStack`
+  (~l.1039) plans a whole stack.
+- `renderBuild` (~l.1995) is step 1, Design; `renderPrint`, `renderHardware`, `renderAssemble` the others; `renderAll`
+  redraws the shown one.
+- Reading the user's files: `pickVaultFolder` (~l.3044), `filesFromHandle`; STL parsing with vertex welding: `readStl` (~l.2940).
 
-## Viewer plan
-1. A "3D" view in the Build step for the selected stack. It draws boxes from `R.exterior` right away (no files
-   needed), then the real parts once the Vault folder has been picked.
-2. Parts: read with the existing STL code, **simplify in the browser** (a whole tower can top 20M triangles:
-   e.g. meshoptimizer's simplifier, WASM), cache the result locally (IndexedDB/OPFS) and place it with the
-   matrices. Some source files are nasty (S1F facade: ~170k zero-area triangles that wreck naive decimators),
-   so weld and drop degenerate faces first.
-3. Match placements to the unit's lines by file path; list the parts that have no placement yet (other families,
-   options such as hidden key, handle baseplates, dividers) instead of guessing.
-4. Colour picker per role and per unit, wired into plates, filament totals and the 3MF.
-5. Later: extend `stl-placements.json` to the other families with the Blender tooling (M, XL, L², XL², other L/S
-   sizes via a generator like `make_recipe_L.py`, cases/sustainers, bases, feet, wheels, handles).
+## How the 3D view was built (all done)
+Boxes from `R.exterior` before the folder is picked, then the real parts: read with the STL code, **simplified in the
+browser** (a whole tower can top 20M triangles), cached in IndexedDB and placed with the matrices. Some source files
+are nasty (S1F facade: ~170k zero-area triangles that wreck naive decimators): weld and drop degenerate faces first.
+Placements are matched to the unit's lines by file path; parts with no placement are listed, never guessed. Every
+part the planner lists is placed now but a few (springs, L² accessories…): `tools/placements/COVERAGE.md`.
 
 ## Gotchas met in the page
 - Claude desktop's built-in browser can't hand a folder to a page (`showDirectoryPicker` aborts at once and the
@@ -200,8 +201,6 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
   memory and the workers died silently: keep the byte budget and the timeout in `meshRunner`.
 - Bounds of placed parts: `Box3.setFromObject(o)` turns each file's own box, and the parts printed on edge at 45° (L 1F
   modules) then give a box ~380 mm tall. Pass `precise = true` (vertices), as `v3mark` does for the level's outline.
-- The planner lists 1 latch and 1 facade cap per L7 unit; the measured assembly places 2 latches and a cap in every
-  counterbore. Not checked against USSA's docs yet.
 - Roof handles (manual p.10 "Roof Types", p.18 "Required Hardware – Drawers"): only the grid roof (Top Handle, opt-in
   `topHandle`, 2 × M6 × 50) and the heavyweight roofs (a bar + 2 inserts) have one; `validate.js` checks it ("ROOF
   HANDLES"). `normalize()` swaps a heavyweight roof for the grid one when it isn't made in that width or is too big for

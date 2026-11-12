@@ -57,7 +57,7 @@ python3 src/build.py --public src/stl-measurements.tsv index.html previews/index
 | `src/bambu-colors.tsv`, `src/printer-beds.tsv` | Bambu Lab's filament colours; bed sizes from OrcaSlicer's printer profiles |
 | `previews/` | Small pictures of every part, listed in `previews/index.tsv` |
 
-`node src/validate.js <file with one STL path per line>` checks every unit's files against a list of the download's files. `tools/placements/README.md` explains how the 3D placements are measured and regenerated (Blender).
+`node src/validate.js <file with one STL path per line>` checks every unit's files against a list of the download's files. `python3 tools/check.py` (Python 3 and Node.js) runs the checks every pull request gets on GitHub: `index.html` is the build of `src/`, `validate.js` finds no problem, the page's scripts parse, and no mesh file is in the repository. `tools/placements/README.md` explains how the 3D placements are measured and regenerated (Blender).
 
 ## Credits and license
 
