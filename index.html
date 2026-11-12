@@ -3272,14 +3272,15 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // read it when the page closes: asking again needs a click. Firefox and Safari keep nothing, only its name here. The
   // folder can also be moved or deleted, or its permission revoked while the page is open. Then the 3D view can only
   // draw boxes, so it says so once per visit, with a button that links the folder again.
-  let folderLink = ''; // '' linked or never chosen, 'ask' kept but needs a click, 'gone' moved or deleted, 'again' chosen in another visit (no handle)
+  let folderLink = ''; // '' linked (or not checked yet), 'none' never chosen in this browser, 'ask' kept but needs a click, 'gone' moved or deleted, 'again' chosen in another visit (no handle)
   let folderLinkName = '', relinkShown = false;
   async function checkFolderLink() {
     if (vaultFolder) return;
     if ('showDirectoryPicker' in window) {
       let h = null;
       try { h = await idb('readonly', s => s.get('folder')); } catch (e) { return; }
-      if (!h || vaultFolder) return;
+      if (vaultFolder) return;
+      if (!h) { folderLink = 'none'; maybeRelink(); return; }
       folderLinkName = h.name;
       let p = 'prompt';
       try { p = await h.queryPermission({ mode: 'read' }); } catch (e) { /* treat it as needing a click */ }
@@ -3291,7 +3292,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       if (!rememberedFolder && folderLink === 'ask') { rememberedFolder = h.name; renderHeader(); }
     } else {
       folderLinkName = store.get('folderName', '');
-      if (folderLinkName) folderLink = 'again';
+      folderLink = folderLinkName ? 'again' : 'none';
     }
     maybeRelink();
   }
@@ -3311,15 +3312,17 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (!folderLink || vaultFolder || relinkShown || !canPickFolder) return;
     const box = $('v3view'); if (!box || !box.closest('.v3-slot, #v3d')) return;
     if (v3 && v3.units && !v3.units.some(u => u.place)) return; // only boxes in this stack anyway
-    if (document.querySelector('dialog[open]')) return;
+    if (document.querySelector('dialog[open]')) { setTimeout(maybeRelink, 1500); return; } // after the other dialog
     relinkShown = true;
     const name = `<b>${esc(folderLinkName || 'your Vault folder')}</b>`;
-    $('relinkWhy').innerHTML = folderLink === 'gone'
+    $('relinkWhy').innerHTML = folderLink === 'none'
+      ? `To show your stacks with their real parts, the 3D view reads the part files in your Vault folder: the unzipped <code>${esc(SRC_DEFAULT)}</code> folder you downloaded from USSA. Until you choose it, it shows boxes. Nothing is uploaded.`
+      : folderLink === 'gone'
       ? `The folder ${name} can’t be found any more: it was moved, renamed or deleted. Until you choose it again, the 3D view shows boxes instead of your parts, and print files can’t be made.`
       : folderLink === 'again'
         ? `This browser doesn’t keep the link to ${name} between visits. Choose it again to see your parts in 3D: until then the 3D view shows boxes. Nothing is uploaded.`
         : `The page is no longer linked to ${name}: your browser asks again after the page is closed or reloaded. Allow it to read the folder again and the 3D view shows your parts. Nothing is uploaded.`;
-    $('relinkGo').textContent = folderLink === 'ask' ? `Reconnect ${folderLinkName || 'the folder'}` : 'Choose the folder…';
+    $('relinkGo').textContent = folderLink === 'ask' ? `Reconnect ${folderLinkName || 'the folder'}` : folderLink === 'none' ? 'Choose your Vault folder…' : 'Choose the folder…';
     $('relinkOther').hidden = folderLink !== 'ask';
     $('relinkErr').hidden = true;
     $('relink').showModal();
@@ -3330,7 +3333,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (vaultFolder) { relinkClose(); return; }
     if (folderHeroError) { const e = $('relinkErr'); e.hidden = false; e.innerHTML = `${ICON_BAD}<span>${esc(folderHeroError)}</span>`; }
   };
-  $('relinkGo').onclick = () => relinkTry(folderLink === 'gone');
+  $('relinkGo').onclick = () => relinkTry(folderLink === 'gone' || folderLink === 'none');
   $('relinkOther').onclick = () => relinkTry(true);
   $('relinkLater').onclick = relinkClose;
   $('relinkClose').onclick = relinkClose;
