@@ -267,6 +267,13 @@ between the two M16 rods, y = 0 at the piece's bottom, z = 0 on the modules' bac
   17.3 mm channel for an M16 rod, 16.0 mm out from the module's back and `rod_x` from the middle (width / 2 − 42 on
   every size), and per F three holes 13 mm apart in two columns 26 mm apart. A 2F is two 1F sections `section` = 52
   apart (99 = 47 + 52). XL comes in 1F only.
+- Bolts to the modules (Modifications Assembly 7-11): along each end, 8.2 mm from it, a column of 4 holes per section
+  (4.75, 16.25, 30.75, 42.25 mm up), 4.5 mm wide, sealed by a 1 mm skin on the outer face that the user drills through;
+  14 mm of backbone there on every size and on the universal pieces. They line up with 3.6 mm pilot holes in the
+  modules' back (x = ±(w/2 − 8.2), 9.6 and 47.1 mm above each level's bottom, 100 mm deep, a 5.6 mm entry) and the
+  base's (5.2 and 42.7 mm above its bottom, 74 mm deep): the planner lists M4 × 80 (the manual's 60-100; 14 + 74 = 88
+  is the most the base takes). A case body has no such holes (a 5 mm back wall). Measured on S, M, L, XL 1F and S 2F
+  backbones, S3 1F/2F, S7 1F, M3 1F, L3 1F drawer modules and the S3 base.
 - Universal backbone: one pad and its flange (63 wide): one per rod, the flange outwards (the family backbone's ends
   have the same notch); the left one is the right one turned half a turn about z. The planner counts them like the
   family ones (one per F pair), so the view shows two for each one the part list counts.
