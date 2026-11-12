@@ -139,6 +139,11 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
   rerun after a Blender export. Inferred, not measured: which backbone section a pegboard takes, the wall plate's height,
   the pins' places along their bores (README "Pegboards, wall mounts, baseplates and lock pins"). Still not placed:
   the key lock's springs, the L² accessories, the "Connector for Modules" (never listed by the planner).
+- Manual supports are a Print option now ("Plate options…" → "Manual supports", `printAids`, saved as
+  `manualSupports`; on at first load if any unit had the old unit option): one `x<d>` prop per drawer roof (`roof()` in
+  rules.js, `aids` argument), packed against its roof by `planPlates`. A roof printed diagonally (`care`) can't take one:
+  the step says the prop was left out. L² and XL² take one set of accessories (1st + 2nd) per F (the user's rule,
+  2026-11-12). The springs are left out of the 3D on purpose for now.
 
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the

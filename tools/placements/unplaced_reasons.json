@@ -1,12 +1,12 @@
 {
  "_about": "Files coverage.py may find unplaced, and why. kind 'design': never placed on purpose; kind 'option': an optional part not measured yet (the unit's own parts can still be verified).",
  "Universal/Springs\\.stl": {
-  "kind": "option",
-  "why": "inside the key lock, not assembled in the CAD file"
+  "kind": "design",
+  "why": "inside the key lock: not drawn in the 3D view for now"
  },
  "Accessories/x\\d Accessory": {
   "kind": "option",
-  "why": "L² accessories: neither the manual nor the CAD file shows where they go"
+  "why": "L² and XL² accessories, one set per F: where they go in the module isn't known yet"
  },
  "07. Universal/Label\\.stl": {
   "kind": "option",
