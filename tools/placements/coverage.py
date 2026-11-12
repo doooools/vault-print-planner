@@ -35,7 +35,7 @@ for f in os.listdir(recipes_dir):
 REASONS = [
     (lambda l, p: l["aid"], "print aid, not part of the finished unit"),
     (lambda l, p: l["alt"] == "whole", "split version of a part: the 3D view draws the one-piece version"),
-    (lambda l, p: re.search(r"Grid Dividers/", p), "grid dividers: how many and where is the user's choice"),
+    (lambda l, p: re.search(r"Grid Dividers/", p), "drawer grid dividers: the page lays them on the box's hole grid as the user plans them (measure_grid.py)"),
     (lambda l, p: re.search(r"SUSTAINERS/05. Universal/Dividers/", p), "case dividers: the page places them in the slots the user fills (measure_dividers.py)"),
 ]
 EXTRA = {k: v for k, v in json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "unplaced_reasons.json"),

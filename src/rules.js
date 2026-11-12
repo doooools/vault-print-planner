@@ -169,27 +169,42 @@
     if (o.interior === 'grid') byH.forEach(([dh, k]) => gridDividers(add, w, d, dh, o, t, k));
   }
 
-  // Grid dividers: the file number is how many peg holes the divider spans.
-  // Full width: 10-S, 18-M, 26-L, 32-XL. Full depth: 4 x depth - 2 (x3 = 10 ... x7 = 26).
+  // Grid dividers (Grid Dividers/01. INSTRUCTIONS; tools/placements/measure_grid.py): a box's floor is a grid of peg
+  // holes 10.5 mm apart and a divider's file number is how many holes it covers (5 ... 32). A full-span divider is the
+  // file named after the box (width 10-S, 18-M, 26-L, 32-XL; depth 4 x depth - 2: x3 = 10 ... x7 = 26) with a straight
+  // edge piece at each wall. A partial one, stopping at another divider, ends there with a rounded edge piece (its arrow
+  // rides over that divider's foot); at a wall it ends with a straight piece ("N - 1" + piece) or alone ("N").
+  // The page lays out each box's plan and passes the pieces in `o.gridPieces[<w><d>]` ({n: {N: qty}, straight,
+  // rounded}); without one (no measured grid), `gridAcross` full-width dividers and `gridAlong` front-to-back ones,
+  // the latter cut in two by each full-width one.
   const GRID_DIR = {
     20: U + 'Grid Dividers/20MM TALL/',
     1: U + 'Grid Dividers/34.5MM TALL (full height of 1F drawers)/',
     2: U + 'Grid Dividers/82.5MM TALL (full height of 2F drawers)/',
   };
-  const GRID_WIDTH_FILE = { S: '10-S, x3', M: '18-M, x5', L: '26-L, x7', XL: '32-XL' };
-  const GRID_DEPTH_FILE = { 3: '10-S, x3', 4: '14, x4', 5: '18-M, x5', 6: '22, x6', 7: '26-L, x7' };
+  const GRID_NAMES = { 10: '10-S, x3', 14: '14, x4', 18: '18-M, x5', 22: '22, x6', 26: '26-L, x7', 32: '32-XL' };
+  const GRID_FULL_W = { S: 10, M: 18, L: 26, XL: 32 };
+  const gridFull = (w, d) => ({ x: GRID_FULL_W[w], z: 4 * d - 2 });
+  // The files of a drawer of height h: the folder (20 mm, or as tall as a 1F / 2F drawer), the edge pieces' suffix
+  const gridTall = (h, o) => (o.gridHeight === 'full' ? (h === 1 ? 1 : 2) : 20);
+  const gridFile = (h, o, n) => GRID_DIR[gridTall(h, o)] + (GRID_NAMES[n] || String(n)) + '.stl';
+  const gridEdgeFile = (h, o, kind) => { const t = gridTall(h, o); return GRID_DIR[t] + `${kind === 'rounded' ? 'Rounded' : 'Straight'} Edge Piece ${t === 20 ? '20MM' : t + 'F'}.stl`; };
+  const gridPinFile = o => U + `Grid Dividers/grid divider pin_${o.gridPin === 'loose' ? 'loose' : 'tight'}.stl`;
   function gridDividers(add, w, d, h, o, t, k = 1) {
-    const tall = o.gridHeight === 'full' ? (h === 1 ? 1 : 2) : 20;
-    const dir = GRID_DIR[tall], sfx = tall === 20 ? '20MM' : tall + 'F';
-    const across = (+o.gridAcross || 0) * k, along = (+o.gridAlong || 0) * k;
-    if (across) add('Interior', `Grid divider, full width (${GRID_WIDTH_FILE[w].split(',')[0]})` + t, dir + GRID_WIDTH_FILE[w] + '.stl', across);
-    if (along) add('Interior', `Grid divider, full depth (${GRID_DEPTH_FILE[d].split(',')[0]})` + t, dir + GRID_DEPTH_FILE[d] + '.stl', along);
-    if (across + along) {
-      add('Interior', 'Divider edge piece' + t, dir + `${o.gridEdge === 'rounded' ? 'Rounded' : 'Straight'} Edge Piece ${sfx}.stl`, 2 * (across + along),
-        { note: 'Two per full-span divider, one at each wall.' });
-      add('Interior', 'Divider pin' + t, U + `Grid Dividers/grid divider pin_${o.gridPin === 'loose' ? 'loose' : 'tight'}.stl`, 2 * (across + along),
-        { inferred: 'The instructions don’t give a pin count. Two per divider is read from the drawings.' });
-    }
+    const p = o.gridPieces && o.gridPieces[w + d];
+    const full = gridFull(w, d), across = +o.gridAcross || 0, along = +o.gridAlong || 0;
+    const pc = p || { n: { [full.x]: across, ...(along ? { [full.z]: along * (across + 1) } : {}) }, straight: 2 * across + along * 2, rounded: along * 2 * across };
+    let total = 0;
+    Object.entries(pc.n).map(([n, q]) => [+n, q]).filter(([, q]) => q > 0).sort((a, b) => b[0] - a[0]).forEach(([n, q]) => {
+      const what = n === full.x && n === full.z ? 'full width or depth' : n === full.x ? 'full width' : n === full.z ? 'full depth' : n + ' holes';
+      add('Interior', `Grid divider ${(GRID_NAMES[n] || String(n)).split(',')[0]} (${what})` + t, gridFile(h, o, n), q * k);
+      total += q;
+    });
+    if (!total) return;
+    if (pc.straight) add('Interior', 'Divider edge piece, straight (at a wall)' + t, gridEdgeFile(h, o, 'straight'), pc.straight * k);
+    if (pc.rounded) add('Interior', 'Divider edge piece, rounded (where a divider meets another)' + t, gridEdgeFile(h, o, 'rounded'), pc.rounded * k);
+    add('Interior', 'Divider pin' + t, gridPinFile(o), 2 * total * k,
+      { inferred: 'The instructions don’t give a pin count. Two per divider is read from the drawings.' });
   }
 
   const ROOFS = [
@@ -488,6 +503,6 @@
     return { lines: k.lines, missing: k.missing, hardware: [] };
   }
 
-  const api = { buildUnit, buildStack, buildRoof, buildHiddenKey, buildBackbones, makeResolver, exterior, familyForWidth, drawersOf, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, LAYOUTS, norm };
+  const api = { buildUnit, buildStack, buildRoof, buildHiddenKey, buildBackbones, makeResolver, exterior, familyForWidth, drawersOf, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, LAYOUTS, norm, gridFull, gridFile, gridEdgeFile, gridPinFile };
   if (typeof module !== 'undefined') module.exports = api; else root.VaultRules = api;
 })(this);

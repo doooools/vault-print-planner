@@ -158,6 +158,15 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
   style and `syncDividers` (in `fixUnit`, and on load) keeps `cfg.dividers` (the counts `rules.js` reads) in step.
   `rules.js` leaves out dividers the body style can't take; XL's side seal dividers have their own count
   (`dividers.sealSide`). `dividerParts` adds them to the 3D in their slots, standing in the floor grooves.
+- Drawer grid dividers (same branch): `tools/placements/measure_grid.py` measures every drawer box's peg-hole grid
+  (`grid_boxes`, 10.5 mm pitch; README "Drawer grid dividers") and stands each divider / edge piece / pin file
+  (`grid_files`). The inspector's plan (`gridPlan`, a click on a row of holes adds or removes a divider) keeps one plan
+  per box size (`cfg.gridPlans[<w><d>]`: lines `[o, at, s]` laid out in order by `gridLayout`: a line runs to the walls
+  or stops two rows short of a divider laid out before it). `syncGrid` writes `cfg.gridPieces` (files by hole count,
+  straight / rounded edge pieces), which `rules.js` `gridDividers` reads; the old counts (`gridAcross`, `gridAlong`)
+  now make an even grid (`gridEven`). Rounded edge pieces are for where a divider meets another (the old "Edge pieces:
+  Rounded" option is gone); "Close against the walls" (`gridSeal`) picks "N − 1" + straight piece or "N" alone.
+  `gridParts` draws them in 3D with the box.
 
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
