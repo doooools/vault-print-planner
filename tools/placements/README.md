@@ -21,7 +21,8 @@ hardware_sizes = { button: { M4: { d, dk, k, s, t }, ... }, countersunk: {...}, 
 - **key**: the 3D view's own keys, with the planner's ids: `drawer|<w>|<d>|<h>` (w = S, M, L, L2, XL, XL2),
   `case|<w>|<d>|<h>` (w = S, M, L, XL), `roof|<w>|<d>|<roof id>` (`R.ROOFS`; `roof|L2|…` and `roof|XL2|…` are
   copies of the L and XL entries, marked `same_as`, since the planner gives a single L² or XL² unit the L or XL
-  roof). A tower's base, wheels and foot are `stack|<w>|<d>` (see [Stacks](#stacks); the handles aren't placed yet).
+  roof). A tower's base, wheels and foot are `stack|<w>|<d>` (see [Stacks](#stacks)); its backbone column and handles are
+  `column|<w>` (see [Backbone column and handles](#backbone-column-and-handles)).
 - One entry holds every variant of a unit: both lock options' files, every baseplate, the three L/XL case body
   styles. The page draws the placed files that the unit's part list names, so the variant in the list wins.
 - **path**: the file in the Vault download, as in `stl-measurements.tsv` (with `²`; some unzip tools write
@@ -238,9 +239,46 @@ the wheels, the foot). Measured by `measure_stack.py` on the files (Modification
   z −10.0 at the front and 17.0 mm in from the back; 45.0 deep (45.8 at the XL's back holes). The caster itself is
   bought: the page draws it from these. The other two holes under the base are the foot's (M6, 5.4 mm, 36 deep).
 
-Not placed yet: the handles (stationary and pull-out, with the pull-out handle's lock and knobs) bolt to the
-backbones on the back of the modules (Modifications Assembly 12-14/15), which are not placed either; the base
-connector of a split base (its place isn't shown); the bought parts (rod, bearings, collars, casters, bolts).
+Not placed yet: the base connector of a split base (its place isn't shown); the bought parts (rod, bearings,
+collars, casters, bolts). The handles and backbones: next section.
+
+## Backbone column and handles
+
+`units["column|L"] = { name, parts, column: { h1: 47, h2: 99, rod_x: 122.8, rod_z: -16, rod_d: 16, lock_h: 47, rest: 47,
+rod_in: 56.5, section: 52 } }` (S, M, L, XL; `column|U` holds the universal backbones). Measured by
+`measure_column.py` on the files (numpy, no Blender); the manual's Modifications Assembly 7-19/15 wasn't at hand, so
+what the parts say is used and the rest is said to be inferred.
+
+Each part is `[file, role, "module", m, {"as": what}]`, `what` one of `backbone1`, `backbone2`, `lock` (the lock, the
+S lock's part 2, each knob's two parts), `stationary`, `pullout`, in a **column frame**: three.js axes, x = 0 midway
+between the two M16 rods, y = 0 at the piece's bottom, z = 0 on the modules' back face, -z away from the stack.
+
+- Backbone: as wide as the module; its flat side on the module's back, a raised pad over each rod. Each pad has a
+  17.3 mm channel for an M16 rod, 16.0 mm out from the module's back and `rod_x` from the middle (width / 2 − 42 on
+  every size), and per F three holes 13 mm apart in two columns 26 mm apart. A 2F is two 1F sections `section` = 52
+  apart (99 = 47 + 52). XL comes in 1F only.
+- Universal backbone: one pad and its flange (63 wide): one per rod, the flange outwards (the family backbone's ends
+  have the same notch); the left one is the right one turned half a turn about z. The planner counts them like the
+  family ones (one per F pair), so the view shows two for each one the part list counts.
+- Pull-out handle lock: 47 tall, 35 deep, the rods' channels split by a slot a knob clamps (an M6 hex bolt from the
+  module side, head in its pocket); its channels are 16.0 mm out from its module face like the backbone's. Knobs
+  (part 1 + the grip, part 2) and the S lock's part 2 are exported assembled to their partner (none of their material
+  inside it) and take its matrix; part 1 sits on the lock's outer face over each bolt hole: in its 6 mm seat on M, L,
+  XL (2 knobs), on the clamp bar (part 2) on S (1 knob; the planner lists 2 everywhere).
+- Stationary handle: a U, its legs' ends (2 holes each, 26 mm apart, under the pads' outer holes) on the pads of one
+  backbone section, the bar 50 mm out.
+- Pull-out handle: a U, legs down, a 15 mm blind hole 56.5 deep (`rod_in`) in each leg's end. Its rods' axis is 14.4 mm
+  from its module side: 1.5 mm clear of the modules' back, so it slides down past the roof. At rest it stands on the
+  lock's top (`rest` above the lock's bottom).
+
+The page (`stackColumn` in src/template.html) builds the column: as many backbones as the part list has (2F first, then
+a 1F), from the bottom, each over the F it ties (the base counts as one, then every level of every unit), centred on
+those levels' middles (base: 23.5 above its bottom; a module level: 28.2 above the module's bottom, then every 48, the
+middle of the small holes each level has in the module's back) and never overlapping the one below. A 2F's sections
+are 52 apart and a module's levels 48: this is the best fit, not a measured one. The stationary handle goes on the top
+backbone's top section; the lock on the next level up (or just above the column), the pull-out handle on the lock, its
+two M16 rods (drawn as bolts) from the column's foot into its legs. The column stands on the back face of the stack's
+first unit (z = −(depth − 10)) and is hidden when the units are spread.
 
 ## How it is measured
 
@@ -265,6 +303,7 @@ The files are exported in print orientation (some at 45° to fit the bed) and sc
 | `blender_check_placements.py` | Rebuilds a stack from the JSON alone, as the page will, and renders it. |
 | `measure_levels.py` | Where each level of a 2F/4F shell is: its cut through the racks' channels against the 1F shell's, slid level by level (README "Layouts"). |
 | `measure_stack.py` | A tower's base, wheels and foot, measured on the files (README "Stacks"); `make_recipes.py STK` places them by its matrices. |
+| `measure_column.py` | The backbone column, handles, lock and knobs (`column|<w>`), measured on the files and written straight into the placements (README "Backbone column and handles"). |
 | `check_layouts.py` | The layouts' motion, one drawer at a time with the others in place (kinematics.py's check). |
 | `kinematics.py` | The units' motion as the page runs it (every part's pose at t, 0 closed … 1 open), and a check that no part goes through another on the way (sections across the motion, shapely). |
 | `blender_motion.py` | Key frames of a unit opening, from the JSON alone with kinematics.py's pose: views and sections. |
@@ -285,6 +324,7 @@ python -I tools/placements/stl_index.py "/path/to/261021_VAULT_USSA_S" "$VAULT_A
 python -I tools/placements/orient.py jobs.json "$VAULT_ASSEMBLY/_orient.json"   # jobs: target, reference, its matrix
 python -I tools/placements/measure_levels.py src/stl-placements.json "$VAULT_ASSEMBLY/_levels.json"   # the 2F/4F shells' levels
 python -I tools/placements/measure_stack.py src/stl-placements.json "$VAULT_ASSEMBLY/_stack.json"   # bases, wheels, feet (STK)
+python -I tools/placements/measure_column.py src/stl-placements.json   # backbone column and handles: writes column|<w>, other keys untouched (checked on the original files)
 python -I tools/placements/make_recipes.py "$VAULT_ASSEMBLY/recipes"              # S M L L2 XL XL2 CS CM CL CXL LAY STK
 python -I tools/placements/run_assemble.py "$VAULT_ASSEMBLY" "$VAULT_ASSEMBLY"/recipes/*_assembly.json --jobs 4
 blender -b --factory-startup --python tools/placements/blender_export_placements.py -- \

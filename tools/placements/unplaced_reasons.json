@@ -16,10 +16,6 @@
   "kind": "option",
   "why": "pegboard attachment (back of the unit): not measured yet"
  },
- "MODIFICATIONS/Backbone/(?!.*Pull-out|.*Knob)": {
-  "kind": "option",
-  "why": "backbone (back of the unit): not measured yet"
- },
  "XL\\d/Gridfinity Baseplate/": {
   "kind": "option",
   "why": "XL baseplates are printed tilted and were not placed yet"
@@ -35,10 +31,6 @@
  "07. Universal/Label\\.stl": {
   "kind": "option",
   "why": "the drawer label the planner adds to a case: the case front has no slot for it (its own label is placed)"
- },
- "MODIFICATIONS/(Stationary Handle|Pull-out Handle)/|Backbone/.*(Pull-out Handle Lock|Handle Lock Knob)": {
-  "kind": "option",
-  "why": "tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet"
  },
  "MODIFICATIONS/Base/Base Connector": {
   "kind": "option",

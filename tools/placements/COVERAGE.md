@@ -33,8 +33,13 @@ something is a guess (see the unit's notes);
 | `stack|M` | 5 | 0 | 0 |
 | `stack|S` | 5 | 0 | 0 |
 | `stack|XL` | 5 | 0 | 0 |
+| `column|L` | 1 | 0 | 0 |
+| `column|M` | 1 | 0 | 0 |
+| `column|S` | 1 | 0 | 0 |
+| `column|U` | 1 | 0 | 0 |
+| `column|XL` | 1 | 0 | 0 |
 
-Total: 290 units, 290 verified, 0 doubtful, 0 missing.
+Total: 295 units, 295 verified, 0 doubtful, 0 missing.
 
 ## Files not placed, and why
 
@@ -89,23 +94,15 @@ part whose place was not measured in this pass; the units that list it can still
 | Wall mount plate | 120 | option, not measured | wall mount (back of the unit): not measured yet |
 | Wall mount second part (wall cleat) | 120 | option, not measured | wall mount (back of the unit): not measured yet |
 | IKEA Skådis pegboard attachment | 85 | option, not measured | pegboard attachment (back of the unit): not measured yet |
-| Backbone | 85 | option, not measured | backbone (back of the unit): not measured yet |
 | USSA pegboard attachment | 85 | option, not measured | pegboard attachment (back of the unit): not measured yet |
-| Universal backbone | 85 | option, not measured | backbone (back of the unit): not measured yet |
 | Lock pin set | 50 | option, not measured | one file holds the lock's two pins, which go through two different holes 15 mm apart |
 | Front label | 50 | option, not measured | the drawer label the planner adds to a case: the case front has no slot for it (its own label is placed) |
 | Springs (pair) | 50 | option, not measured | inside the key lock, not assembled in the CAD file |
 | Gridfinity baseplate | 48 | option, not measured | case baseplates: not placed yet |
-| Stationary handle | 20 | option, not measured | tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet |
-| Pull-out handle | 20 | option, not measured | tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet |
-| Pull-out handle lock | 20 | option, not measured | tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet |
-| Handle lock knob, part 1 | 20 | option, not measured | tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet |
-| Handle lock knob, part 2 | 20 | option, not measured | tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet |
 | Springs (pair) (left) | 15 | option, not measured | inside the key lock, not assembled in the CAD file |
 | L² accessory, 1st | 15 | option, not measured | L² accessories: neither the manual nor the CAD file shows where they go |
 | L² accessory, 2nd | 15 | option, not measured | L² accessories: neither the manual nor the CAD file shows where they go |
 | Springs (pair) (S side) | 5 | option, not measured | inside the key lock, not assembled in the CAD file |
-| Pull-out handle lock, part 2 | 5 | option, not measured | tower handles: they bolt to the backbones on the back of the modules (Modifications Assembly 12-14/15) and the pull-out one rides on M16 rods cut to the tower's height; not measured yet |
 | Gridfinity baseplate | 3 | option, not measured | XL baseplates are printed tilted and were not placed yet |
 | Gridfinity baseplate, part 1 | 2 | option, not measured | case baseplates: not placed yet |
 | Gridfinity baseplate, part 2 | 2 | option, not measured | case baseplates: not placed yet |
@@ -179,8 +176,8 @@ Not placed, and why:
 | Hardware (planner) | Why |
 |---|---|
 | Base, wheels and feet: M16 rod, M4 x 25, 6205ZZ bearings, SCSAW collars, M6 x 90, casters | the printed parts are placed (`stack|...` units); these bought parts are not drawn yet (their places are in README "Stacks") |
-| Stationary and pull-out handles: M4 x 60, M6 x 30, M6 x 35 hex, M6 heat inserts, M16 rods | same: tower parts, not placed yet |
-| Pegboard M4 x 40, backbone M4 x 60-100 | the mounts on the back of a unit are not placed yet |
+| Stationary and pull-out handles: M4 x 60, M6 x 30, M6 x 35 hex, M6 heat inserts | the handles are placed (`column|...`); these bolts are not drawn yet. The two M16 rods are (`stackColumn`) |
+| Pegboard M4 x 40, backbone M4 x 60-100 | the pegboard attachments are not placed yet; the backbones are (`column|...`), their bolts not drawn yet |
 | Lock pins, hinge rods | printed parts, not bought hardware (the rods are placed with the hinges) |
 
 Moving parts: a bolt carries the index of the part that holds it (`part`), and its group is that part's. The
