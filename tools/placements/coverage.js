@@ -5,8 +5,8 @@
 // The index (stl_index.py) stands in for the user's folder: the resolver sees the same files the page
 // would. Each unit is built with every option turned on, one variant at a time (key lock / hidden key,
 // baseplate cut-outs, grid divider heights, mounts...), and the lines are merged per file.
-// Unit keys follow the 3D view's: drawer|w|d|h, case|w|d|h, roof|w|d|id, and stack|w|d for a tower's
-// base, wheels, feet and handles (sized by the bottom level).
+// Unit keys follow the 3D view's: drawer|w|d|h, case|w|d|h, roof|w|d|id, stack|w|d for a tower's base, wheels
+// and feet (sized by the bottom level), column|w for its backbones, handles and the units' pegboards.
 const fs = require('fs'), path = require('path');
 const R = require(path.join(__dirname, '../../src/rules.js'));
 const [idxPath, out] = process.argv.slice(2);
@@ -26,6 +26,13 @@ function merge(key, res, extra = {}) {
   for (const m of res.missing) u.missing.add(m);
 }
 
+// A unit's pegboard hangs on the stack's backbone column (column|w, as the page draws it): its line goes there
+const famOf = w => w === 'L2' ? 'L' : w === 'XL2' ? 'XL' : w;
+function mergeUnit(key, w, res) {
+  merge(key, { lines: res.lines.filter(l => l.group !== 'Pegboard'), missing: res.missing });
+  merge(`column|${famOf(w)}`, { lines: res.lines.filter(l => l.group === 'Pegboard'), missing: [] });
+}
+
 const drawerVariants = [
   { lock: 'std', gearedRails: true, interior: 'gridfinity', baseplateHandles: '0', manualSupports: true, wallMount: true, pegboard: 'ikea', backbone: 'family' },
   { lock: 'hidden', interior: 'gridfinity', baseplateHandles: '1', pegboard: 'ussa', backbone: 'universal' },
@@ -34,7 +41,7 @@ const drawerVariants = [
   { interior: 'grid', gridAcross: 1, gridAlong: 1, gridHeight: 'full', gridEdge: 'rounded', gridPin: 'loose' },
 ];
 for (const w of ['S', 'M', 'L', 'L2', 'XL', 'XL2']) for (const d of R.DEPTHS) for (const h of R.HEIGHTS.drawer[w]) {
-  for (const v of drawerVariants) merge(`drawer|${w}|${d}|${h}`, R.buildUnit({ type: 'drawer', w, d, h, roof: 'none', ...v }, resolve));
+  for (const v of drawerVariants) mergeUnit(`drawer|${w}|${d}|${h}`, w, R.buildUnit({ type: 'drawer', w, d, h, roof: 'none', ...v }, resolve));
   // roofs: the page keys a single unit's roof by the unit's own width (L2, XL2 included)
   for (const rf of R.ROOFS) if (rf.widths.includes(w)) for (const th of [false, true]) {
     const res = R.buildUnit({ type: 'drawer', w, d, h, roof: rf.id, topHandle: th }, resolve);
@@ -43,9 +50,9 @@ for (const w of ['S', 'M', 'L', 'L2', 'XL', 'XL2']) for (const d of R.DEPTHS) fo
 }
 for (const w of ['S', 'M', 'L', 'XL']) for (const d of R.DEPTHS) for (const h of R.HEIGHTS.case[w]) {
   for (const ci of (w === 'L' || w === 'XL') ? ['flat', 'dividers', 'sealed'] : ['flat'])
-    merge(`case|${w}|${d}|${h}`, R.buildUnit({ type: 'case', w, d, h, caseInterior: ci, caseBaseplate: true,
+    mergeUnit(`case|${w}|${d}|${h}`, w, R.buildUnit({ type: 'case', w, d, h, caseInterior: ci, caseBaseplate: true,
       dividers: { plain: 1, depth: 1, width: 1, seal: 1 }, wallMount: true, pegboard: 'ikea', backbone: 'family' }, resolve));
-  merge(`case|${w}|${d}|${h}`, R.buildUnit({ type: 'case', w, d, h, pegboard: 'ussa', backbone: 'universal' }, resolve));
+  mergeUnit(`case|${w}|${d}|${h}`, w, R.buildUnit({ type: 'case', w, d, h, pegboard: 'ussa', backbone: 'universal' }, resolve));
 }
 // The handles go with the backbone column (column|w, measure_column.py), the base, wheels and foot with stack|w|d
 const handles = res => ({ lines: res.lines.filter(l => l.group === 'Handles'), missing: [] });

@@ -129,6 +129,14 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
   what is inferred (the manual's Modifications Assembly 7-19 wasn't at hand): tools/placements/README.md
   "Backbone column and handles". Differences with the part list: 1 knob on S (the planner says 2), 2 universal
   backbones per F pair (one per rod; the planner counts 1).
+- Pegboards, wall mounts, baseplates, lock pins in 3D: `measure_column.py` (pegboard attachments in `column|<w>`, hung
+  by `stackColumn` on the free backbone sections nearest their unit, 4 M4 × 40 per section), `measure_wall.py`
+  (`wall|<w>|<h>`: plate + cleats, added by `placeParts` on the unit's back), `measure_baseplates.py` (XL drawers'
+  Gridfinity baseplates into `drawer|XL|<d>|1`, cases' into `casebase|<w>|<d>`, added by `placeParts`) and
+  `measure_lock_pins.py` (the case latches' 4 pins, one `piece` each, on pins A and B). The baseplates and pins must be
+  rerun after a Blender export. Inferred, not measured: which backbone section a pegboard takes, the wall plate's height,
+  the pins' places along their bores (README "Pegboards, wall mounts, baseplates and lock pins"). Still not placed:
+  the key lock's springs, the L² accessories, the "Connector for Modules" (never listed by the planner).
 
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the

@@ -2918,7 +2918,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       extra.push({ name: 'Base', size: [bw, 52.2, bd], at: [0, under + 26.1, -bd / 2], role: 'base' });
       y = under + 52.2;
     }
-    const baseBottom = base ? y - 52.2 : null, levelAt = [];
+    const baseBottom = base ? y - 52.2 : null, levelAt = [], pegs = [];
     L.forEach((lv, i) => {
       levelAt.push({ y, f: Math.max(...lv.map(u => u.h)), drawer: lv.every(u => u.type === 'drawer') });
       const top = i === L.length - 1, pair = lv.length > 1, W = levelWidth(lv);
@@ -2929,6 +2929,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         const [w, d] = unitExt(u), lines = linesOf(R.buildUnit(k, resolve)).map(l => ({ ...l, cfg: u }));
         const unit = { cfg: u, name: unitCode(u), key: `${u.type}|${u.w}|${u.d}|${u.h}`, level: i, x: x + w / 2, y, w, d, h: rise(u), drawer: u.type === 'drawer', lines: lines.filter(l => l.group !== 'Roof') };
         units.push(unit);
+        // its pegboard hangs on the backbone column (stackColumn), which takes its line
+        const peg = unit.lines.filter(l => l.group === 'Pegboard');
+        if (peg.length) pegs.push({ unit, level: i, f: u.h, kind: u.pegboard, lines: peg });
         if (k.roof !== 'none') units.push({ cfg: u, name: unitCode(u).split(' · ')[0] + ' · ' + R.ROOFS.find(r => r.id === k.roof).label, key: `roof|${u.w}|${u.d}|${k.roof}`, level: i + 1, roof: true,
           x: unit.x, y: y + unit.h, w, d, h: 14.8, lines: lines.filter(l => l.group === 'Roof'), shared: unit.lines });
         x += w;
@@ -2947,8 +2950,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (hk) hk.lines = hk.lines.concat(linesOf(R.buildHiddenKey(resolve)).filter(l => /Hidden Key Part 2/i.test(l.file.path)).map(l => ({ ...l, cfg: hk.cfg })));
     // The backbone column on the back, with the handles and the pull-out handle's lock (stackColumn)
     const col = columnPlan(t);
-    if (col) units.push(stackColumn(t, col, { baseBottom, levelAt, back: -(bd - 10), cfg: L[0][0],
-      lines: [...linesOf(R.buildBackbones(col, resolve)), ...linesOf(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)).filter(l => l.group === 'Handles')].map(l => ({ ...l, cfg: null })) }));
+    if (col) {
+      pegs.forEach(p => { p.unit.lines = p.unit.lines.filter(l => l.group !== 'Pegboard'); });
+      units.push(stackColumn(t, col, { baseBottom, levelAt, pegs, back: -(bd - 10), cfg: L[0][0],
+        lines: [...[...linesOf(R.buildBackbones(col, resolve)), ...linesOf(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)).filter(l => l.group === 'Handles')].map(l => ({ ...l, cfg: null })),
+          ...pegs.flatMap(p => p.lines)] }));
+    }
     return { units, extra, height: units.reduce((m, u) => Math.max(m, u.y + u.h), y), width: Math.max(...L.map(levelWidth)), depth: Math.max(...L.map(lv => unitExt(lv[0])[1])) };
   }
   // A unit's measured parts that its part list uses, matched by file. A file in the list gets every copy the assembly
@@ -2981,13 +2988,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const pieces = [...Array(count(/backbone 2F$/i)).fill(2), ...Array(count(/backbone 1F$/i)).fill(1)];
     const P = [], boxes = [];
     // a piece: its matrix moved by (dx, dy, back) and, for the left universal one, turned half a turn about z first
-    const put = (q, dx, dy, turn = false, H = 0) => {
+    const put = (q, dx, dy, turn = false, H = 0, cfg = null) => {
       const m = q[3], r = turn ? [-1, -1, 1] : [1, 1, 1];
       P.push([q[0], q[1], q[2], [r[0] * m[0], r[0] * m[1], r[0] * m[2], r[0] * m[3] + dx, r[1] * m[4], r[1] * m[5], r[1] * m[6], r[1] * m[7] + dy + (turn ? H : 0),
-        m[8], m[9], m[10], m[11] + back]]);
+        m[8], m[9], m[10], m[11] + back], cfg && { cfg }]);
     };
     const of = (E, what) => E.parts.filter(q => q[4] && q[4].as === what);
     let slot = 0, top = -Infinity, bottom = null, last = null;
+    const laid = []; // the backbones as laid: { y, f, slot (the first level it covers), used: [section taken?] }
     for (const f of pieces) {
       const H = (U || C).column['h' + f] || K.h1, ys = slots.slice(slot, slot + f);
       const mid = ys.length ? ys.reduce((a, y) => a + y, 0) / ys.length : top + 1 + H / 2;
@@ -2996,10 +3004,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       else for (const q of of(C, 'backbone' + f)) put(q, 0, y0);
       boxes.push({ y: y0, h: H, d: 33, w: unit.w, role: 'fittings' });
       if (bottom == null) bottom = y0;
-      last = { y: y0, f }; top = y0 + H; slot += f;
+      last = { y: y0, f }; top = y0 + H;
+      laid.push({ y: y0, f, slot, used: Array(f).fill(false) });
+      slot += f;
     }
     if (s.stationaryHandle && last) {
       const y0 = last.y + (last.f === 2 ? K.section : 0);
+      laid[laid.length - 1].used[last.f - 1] = true;
       for (const q of of(C, 'stationary')) put(q, 0, y0);
       boxes.push({ y: y0, h: 47, d: 80, w: unit.w - 42, role: 'body' });
     }
@@ -3013,7 +3024,32 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       unit.rods = [-1, 1].map(sx => ({ spec: `M16x${len} rod`, group: 'module', m: [1, 0, 0, sx * K.rod_x, 0, 1, 0, rodTop, 0, 0, 1, back + K.rod_z] }));
       top = rest + 61.5;
     }
-    unit.h = top; unit.boxes = boxes.map(b => ({ ...b, z: back - b.d / 2 }));
+    // Pegboards (measure_column.py): each bolts onto a backbone of its own height, over its sections' middle holes
+    // (a 1F one on either section of a 2F backbone), and is as tall as it. Each goes on the free sections nearest
+    // the levels of its unit; one with no free backbone of its height is left out (listed as not placed).
+    const firstSlot = [];
+    { let k = o.baseBottom != null ? 1 : 0; o.levelAt.forEach(lv => { firstSlot.push(k); k += lv.f; }); }
+    unit.bolts = [];
+    for (const p of o.pegs || []) {
+      const pk = K['peg_' + p.kind], qs = of(C, `pegboard-${p.kind}${p.f}`);
+      if (!pk || !qs.length) continue;
+      const want = firstSlot[p.level] + (o.levelAt[p.level].f - 1) / 2;
+      let best = null;
+      laid.forEach(b => { for (let k = 0; k + p.f <= b.f; k++) {
+        if (b.used.slice(k, k + p.f).some(Boolean)) continue;
+        const d = Math.abs(b.slot + k + (p.f - 1) / 2 - want);
+        if (!best || d < best.d) best = { b, k, d };
+      } });
+      if (!best) continue;
+      best.b.used.fill(true, best.k, best.k + p.f);
+      const y0 = best.b.y + K.section * best.k;
+      for (const q of qs) put(q, 0, y0, false, 0, p.unit.cfg);
+      boxes.push({ y: y0, h: K.h1 + K.section * (p.f - 1), d: pk.t, off: -pk.face, w: pk.w, role: 'base' });
+      // its M4 x 40 bolts: from its outer face into the backbone's pilot holes, 2 each side of each rod
+      for (let k = 0; k < p.f; k++) for (const x of [-K.rod_x - 13, -K.rod_x + 13, K.rod_x - 13, K.rod_x + 13])
+        unit.bolts.push({ spec: 'M4x40 button', group: 'module', path: qs[0][0], cfg: p.unit.cfg, m: [1, 0, 0, x, 0, 0, 1, y0 + 23.5 + K.section * k, 0, -1, 0, back + pk.face - pk.t] });
+    }
+    unit.h = top; unit.boxes = boxes.map(b => ({ ...b, z: back - (b.off || 0) - b.d / 2 }));
     unit.placed = P;
     return unit;
   }
@@ -3021,11 +3057,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function placeColumn(unit) {
     if (!unit.placed) return null;
     const has = new Map(unit.lines.map(l => [R.norm(l.file.path), l]));
-    const parts = unit.placed.filter(([p]) => has.has(R.norm(p))).map(([path, , group, m]) => { const l = has.get(R.norm(path)); return { path, group, m, role: l.role, cfg: l.cfg }; });
+    const parts = unit.placed.filter(([p]) => has.has(R.norm(p))).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, role: l.role, cfg: (o && o.cfg) || l.cfg }; });
     const placed = new Set(parts.map(p => R.norm(p.path)));
     const unplaced = unit.lines.filter(l => !placed.has(R.norm(l.file.path))).map(l => l.label + (l.qty > 1 ? ' ×' + l.qty : ''));
     const pull = parts.find(p => /pull-out handle\.stl$/i.test(p.path));
-    const bolts = pull ? (unit.rods || []).map(r => ({ ...r, path: pull.path, cfg: null })) : [];
+    const bolts = [...pull ? (unit.rods || []).map(r => ({ ...r, path: pull.path, cfg: null })) : [], ...(unit.bolts || []).filter(b => placed.has(R.norm(b.path)))];
     return { parts, unplaced, bolts, lay: null };
   }
   // A module holding several drawers (R.drawersOf; README "Layouts"): the shell's own parts (shell, guides, stoppers,
@@ -3041,6 +3077,15 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         hardware: [...(pl.hardware || []).filter(b => at.has(b[3].part)).map(b => [b[0], b[1], b[2], { ...b[3], part: at.get(b[3].part) }]),
           ...(lay.hardware || []).map(b => [b[0], b[1], b[2], { ...b[3], part: b[3].part + keep.length }])] };
     }
+    // Its wall mount plate and cleats (measure_wall.py "wall|<w>|<h>": y = 0 at the unit's bottom, z = 0 on its back)
+    const wl = unit.lines.find(l => l.group === 'Wall mount'), wp = wl && PLACE.units[`wall|${R.familyForWidth(R.WIDTH_MM[unit.cfg.w]) || unit.cfg.w}|${unit.cfg.h}`];
+    if (wp) {
+      const back = -(unit.d - 10);
+      pl = { ...pl, parts: [...pl.parts, ...wp.parts.map(([p, r, g, m, o]) => [p, r, g, m.map((v, k) => k === 11 ? v + back : v), o])] };
+    }
+    // A case's Gridfinity baseplate (measure_baseplates.py "casebase|<w>|<d>", in the case's own frame)
+    const cb = unit.cfg.type === 'case' && PLACE.units[`casebase|${unit.cfg.w}|${unit.cfg.d}`];
+    if (cb) pl = { ...pl, parts: [...pl.parts, ...cb.parts] };
     const mvOf = o => o && o.drawer != null ? (o.side || '') + o.drawer : null;
     const has = new Map([...(unit.shared || []), ...unit.lines].map(l => [R.norm(l.file.path), l]));
     const parts = pl.parts.filter(([p]) => has.has(R.norm(p)) && !NOT_DRAWN.test(p)).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, piece: o && o.piece, joint: o && o.joint, mv: mvOf(o), role: l.role, cfg: l.cfg }; });

@@ -59,6 +59,15 @@ for key in sorted(UNITS, key=lambda k: (k.split("|")[0], k)):
     u = UNITS[key]
     pl = PL.get(key)
     placed = {norm(p[0]) for p in pl["parts"]} if pl else set()
+    # a drawer's or case's wall mount comes from wall|<family>|<h> (measure_wall.py), as the page draws it
+    kk = key.split("|")
+    if kk[0] in ("drawer", "case") and pl:
+        wall = PL.get(f"wall|{ {'L2': 'L', 'XL2': 'XL'}.get(kk[1], kk[1]) }|{kk[3]}")
+        placed |= {norm(p[0]) for p in wall["parts"]} if wall else set()
+    # a case's Gridfinity baseplate comes from casebase|<w>|<d> (measure_baseplates.py)
+    if kk[0] == "case" and pl:
+        cb = PL.get(f"casebase|{kk[1]}|{kk[2]}")
+        placed |= {norm(p[0]) for p in cb["parts"]} if cb else set()
     unplaced, explained = [], []
     for path, l in u["lines"].items():
         if norm(path) in placed:
