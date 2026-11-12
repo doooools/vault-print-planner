@@ -111,6 +111,8 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
   front bolts. `measure_levels.py` found the shells' levels exactly 48 mm apart; `make_recipes.py LAY` → Blender →
   export; `check_layouts.py` checks each drawer's motion among the others (tools/placements/README.md "Layouts").
   `build.py` embeds them: the page grew from 1.5 to 3.0 MB.
+  An L² / XL² with one drawer per side (1F, or 2F with one 2F drawer) has no per-drawer tags: the page's `sideDrawers`
+  makes one drawer per side (its `key_<side>` and racks) and `sideOf` sorts the parts by side as they load.
 - Checked: `tools/placements/blender_check_placements.py` rebuilt an L7 4F + 2F + 1F + grid roof tower from the
   JSON alone, and an S3 1F from the **original** download files. The matrices apply to the user's files as they are.
 - Bolts in 3D (branch `claude/hardware-3d-a9c94c`): `tools/placements/hardware.py` measures, on every assembled unit, the
@@ -173,6 +175,8 @@ at a time. It replaces steps 2 and 3 of `docs/colors-3d-redesign.md`.
   folder upload field reports a cancel). Test with real files in Chrome or Firefox.
 - The biggest STL are ~215 MB (L7 Module 2F, 4.3M triangles). Simplifying several at once in one tab ran it out of
   memory and the workers died silently: keep the byte budget and the timeout in `meshRunner`.
+- Bounds of placed parts: `Box3.setFromObject(o)` turns each file's own box, and the parts printed on edge at 45° (L 1F
+  modules) then give a box ~380 mm tall. Pass `precise = true` (vertices), as `v3mark` does for the level's outline.
 - The planner lists 1 latch and 1 facade cap per L7 unit; the measured assembly places 2 latches and a cap in every
   counterbore. Not checked against USSA's docs yet.
 - Roof handles (manual p.10 "Roof Types", p.18 "Required Hardware – Drawers"): only the grid roof (Top Handle, opt-in
