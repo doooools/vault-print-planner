@@ -5,13 +5,14 @@ the files (numpy + scipy, no Blender).
 
 A case whose lid can't turn up (a unit sits on it: the lid stays latched to that unit) opens another way, its
 `motion.release`: the front latches open as before, then each hinge rod slides out along the axis, away from the
-middle, until its tip has left the hinge top's knuckle, then the body slides out forward (the page's "body" joint, like
-a drawer). Each rod gets a joint `rod_<k>` (`slide`, unit frame, mm) and its part `{"joint": "rod_<k>"}`.
+middle, until its tip has left the hinge top's knuckle, then the whole stack above, the lid with it, rises by a 4F
+module's height (the page's "lift" joint, 196 mm; Dols's rule, 2026-11-12). Each rod gets a joint `rod_<k>`
+(`slide`, unit frame, mm) and its part `{"joint": "rod_<k>"}`.
 
 Measured on every case|<w>|<d>|<h>, posed as placed: each rod's shaft and each knuckle are the vertices within 9 mm of
 the hinge axis. A rod (head outwards, against the leaf's outer end) goes through its leaf's knuckle into the hinge
 top's: it must slide out by (outer end of the top's knuckle on its side) - (rod's inner tip) + CLEAR, and its tip
-then stays inside the leaf's knuckle (checked), so the rods ride out with the body.
+then stays inside the leaf's knuckle (checked), so the rods stay with the body.
 
 Not from USSA: the case has no such use in the manual (no manual at hand); this is the user's idea for a case under
 other units (2026-11-12). The rods do come out this way in real life (they are push-in pins).
@@ -23,7 +24,7 @@ import hw_geom as hg  # noqa: E402
 
 CLEAR = 1.0      # mm past the hinge top's knuckle
 NEAR = 9.0       # mm from the axis: a knuckle's or a rod shaft's vertices (knuckles r 7, rod heads r ~6)
-RELEASE_S = (0.45, 0.4, 0.6)   # step times: latches (as when the lid opens), rods, body
+RELEASE_S = (0.45, 0.4, 0.6)   # step times: latches (as when the lid opens), rods, lift
 
 
 def placed(p):
@@ -71,7 +72,7 @@ def case_rods(key, u):
     latch = [s for s in u["motion"]["open"] if "lid" not in s["joints"]]
     u["motion"]["release"] = [*({**s, "s": RELEASE_S[0]} for s in latch),
                               {"joints": sorted(k for k in joints if k.startswith("rod_")), "from": 0, "to": 1, "s": RELEASE_S[1]},
-                              {"joints": ["body"], "from": 0, "to": 1, "s": RELEASE_S[2]}]
+                              {"joints": ["lift"], "from": 0, "to": 1, "s": RELEASE_S[2]}]
     return out
 
 
