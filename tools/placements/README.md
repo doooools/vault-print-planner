@@ -94,6 +94,16 @@ closed unit is at the start of the steps, an open one at the end; closing runs t
 - Drawer: `[{joints: [key, rack_lo, rack_hi], from: 1, to: 0, s: 0.35}, {joints: [drawer], from: 0, to: 1, s: 0.55}]`
   (L² and XL²: `key_left`/`key_right`, `key_S`/`key_M`, … all in the first step). Closed, the drawer is locked.
 - Case: `[{joints: [latch_1(, latch_2)], from: 0, to: 1, s: 0.45}, {joints: [lid], from: 0, to: 1, s: 0.6}]`.
+- Case under a unit (`release`, `measure_rods.py`): the lid can't turn up into the unit on it, so it stays latched to
+  that unit and the case opens the other way: `[{joints: [latch_1(, latch_2)], …, s: 0.45}, {joints: [rod_1, rod_2],
+  from: 0, to: 1, s: 0.4}, {joints: [lift], from: 0, to: 1, s: 0.6}]`. Each hinge rod (`rod_<k>`, a `slide` along x,
+  away from the middle) comes out until its tip is 1 mm past the hinge top's knuckle, its tip still in the leaf's
+  knuckle (S 30.5 mm, M 31.1, L and XL 44.0); then `lift` (the page's, `V3_LIFT`) raises the case's lid and the whole
+  stack above it by a 4F module's height, 196 mm (Dols's rule), the body staying. With the rods out and the latches
+  open nothing holds the lid to the body, and lifting it clears the leaves' knuckles (they only meet the hinge tops'
+  side by side along the axis). The page takes `release` when a unit (not a roof) stands on the next level over the
+  case. Not from USSA (no manual use of it): the user's idea, 2026-11-12. On S the rods' heads stick out 25 mm past
+  the case's side once out (into an S or M beside it).
 
 What it is (measured with sections of the user's files, `kinematics.py`, and the manual):
 
