@@ -52,7 +52,7 @@ part whose place was not measured in this pass; the units that list it can still
 | Divider edge piece | 100 | by design | grid dividers: how many and where is the user's choice |
 | Divider pin | 100 | by design | grid dividers: how many and where is the user's choice |
 | Manual support | 50 | by design | print aid, not part of the finished unit |
-| Divider | 30 | by design | case dividers: how many and where is the user's choice |
+| Divider | 30 | by design | case dividers: the page places them in the slots the user fills (measure_dividers.py) |
 | Grid divider, full width (10-S) (left) | 30 | by design | grid dividers: how many and where is the user's choice |
 | Divider edge piece (left) | 30 | by design | grid dividers: how many and where is the user's choice |
 | Divider pin (left) | 30 | by design | grid dividers: how many and where is the user's choice |
@@ -65,9 +65,9 @@ part whose place was not measured in this pass; the units that list it can still
 | Grid divider, full depth (14) | 20 | by design | grid dividers: how many and where is the user's choice |
 | Grid divider, full depth (22) | 20 | by design | grid dividers: how many and where is the user's choice |
 | Bushing jig (tool) | 20 | by design | print aid, not part of the finished unit |
-| Depth divider (runs front to back) | 15 | by design | case dividers: how many and where is the user's choice |
-| Width divider (runs side to side) | 15 | by design | case dividers: how many and where is the user's choice |
-| Seal divider | 15 | by design | case dividers: how many and where is the user's choice |
+| Depth divider (runs front to back) | 15 | by design | case dividers: the page places them in the slots the user fills (measure_dividers.py) |
+| Width divider (runs side to side) | 15 | by design | case dividers: the page places them in the slots the user fills (measure_dividers.py) |
+| Seal divider | 15 | by design | case dividers: the page places them in the slots the user fills (measure_dividers.py) |
 | Manual support (left) | 15 | by design | print aid, not part of the finished unit |
 | Grid divider, full depth (10-S) | 14 | by design | grid dividers: how many and where is the user's choice |
 | Grid divider, full depth (18-M) | 14 | by design | grid dividers: how many and where is the user's choice |
@@ -82,10 +82,10 @@ part whose place was not measured in this pass; the units that list it can still
 | Grid divider, full depth (18-M) (left) | 6 | by design | grid dividers: how many and where is the user's choice |
 | Grid divider, full depth (22) (left) | 6 | by design | grid dividers: how many and where is the user's choice |
 | Grid divider, full depth (26-L) (left) | 6 | by design | grid dividers: how many and where is the user's choice |
-| Depth divider | 5 | by design | case dividers: how many and where is the user's choice |
-| Width divider | 5 | by design | case dividers: how many and where is the user's choice |
-| Seal divider, center | 5 | by design | case dividers: how many and where is the user's choice |
-| Seal divider, sides | 5 | by design | case dividers: how many and where is the user's choice |
+| Depth divider (runs front to back) | 5 | by design | case dividers: the page places them in the slots the user fills (measure_dividers.py) |
+| Width divider (runs side to side) | 5 | by design | case dividers: the page places them in the slots the user fills (measure_dividers.py) |
+| Seal divider, center | 5 | by design | case dividers: the page places them in the slots the user fills (measure_dividers.py) |
+| Seal divider, sides | 5 | by design | case dividers: the page places them in the slots the user fills (measure_dividers.py) |
 | Manual support (S side) | 5 | by design | print aid, not part of the finished unit |
 | Grid divider, full depth (14) (S side) | 2 | by design | grid dividers: how many and where is the user's choice |
 | Grid divider, full depth (18-M) (S side) | 2 | by design | grid dividers: how many and where is the user's choice |

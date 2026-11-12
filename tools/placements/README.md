@@ -316,6 +316,43 @@ for), the L² accessories (neither the manual nor the CAD file shows where they 
 1F/2F (`03. MODIFICATIONS/Backbone`, which the planner never lists: 16 × 12 mm bars, 47 / 99 mm tall, 4 mm holes at
 the backbone screws' heights; the 2F one spans the backs of two stacked 1F modules).
 
+## Case dividers
+
+`measure_dividers.py` (numpy, on the files) measures where a case's dividers can go and how each divider file stands.
+A divider is a 2 mm sheet sliding into 2 mm slots moulded in the body's walls (each slot holds a small nub); there is
+no other place for one.
+
+- **S and M bodies** (`plain`): side-wall slots only; the divider runs side to side, full width and nearly full height
+  (1F 49.85 mm). From 3 slots on a depth 3 to 6 on a 7, mostly 42 mm apart (41 on S3 and L3, 30.5 on M3 and XL3,
+  39.5 in XL4's sealed cells): the page reads them from the JSON, never from a rule.
+- **L and XL "Dividers" bodies** (`dividers`): the same side slots for the Width dividers, plus 2 slots in the back wall
+  for the Depth dividers (L at x = ±41, XL at ±85.5), 1.5 mm deep. Width dividers are notched from below and depth ones
+  from above where they cross, at those very places: any mix fits. Both are 40.85 mm tall on 1F. The depth divider's
+  back end goes in its slot (−142.5 on a depth 3, 42 mm further a depth step); its front end is then 2.9 mm in front
+  of the body, inside the front panel (inferred: the front panel wasn't cut to look for its slots).
+- **L and XL "Sealed" bodies** (`sealed`): fixed walls make 2 cells on L (156.7 mm wide) and 3 on XL (sides 138.8,
+  middle 119.5); each cell has its own side slots (2 on L3, 3 on XL3, 6 on L7 and XL7) for the Seal dividers, as tall
+  as the plain ones. XL's middle cell takes the "Center" divider, its side cells the "Sides" one.
+- **Flat bodies**: no slot.
+
+Each slot runs on down into a 2 mm groove in the floor, where the divider stands (7.8 above the body's bottom; the
+floor is at 9.8 on every case). Plain and seal dividers then reach 57.65, about the lid's underside (a sealed body's
+rim is at 58.3); width and depth ones stop at 48.65, under a 50.8 rim.
+
+How: each 1F body is cut 15 mm above its floor and the cut filled on a 0.25 mm grid; the free runs
+across a row give the cells, a row where every cell has free space within 3 mm beyond both its walls is a side slot,
+a column where the back wall has free space behind it is a back slot. The 2F and 4F bodies of a depth have the same slots
+and floor (`measure_dividers.py … check`: L3 2F/4F Dividers and Sealed, S3 4F). A divider file lies flat (2 mm along
+the file's thinnest axis); its top edge is the one with 2.1 mm rounded corners (the bottom has square corners or 3.5 mm
+steps), and its height is one of 40.85 / 74.85 / 170.85 (width, depth) or 49.85 / 83.85 / 179.85 (plain, seal).
+
+In the JSON: `units["case|<w>|<d>|<h>"].dividers[style] = {floor, rows, cols, back, cells}` (rows: side-slot centres
+in z, the same in every cell; cols, back: back-slot centres in x and their bottom in z) and `divider_files[path]`, the
+file to the divider's own frame (standing, bottom at y = 0, middle plane at z = 0 and centred across; a depth divider
+along +z from its back end at z = 0, middle plane at x = 0). The page (`dividerParts`) moves it to the slots the case
+fills (`cfg.divSlots`), turned half a turn in a cell right of the middle. In the planner, a case fills slots, and its
+divider counts (`cfg.dividers`, what `rules.js` reads) follow; `rules.js` leaves out dividers its body style can't take.
+
 ## How it is measured
 
 The files are exported in print orientation (some at 45° to fit the bed) and scattered around one big CAD scene. Some parts are already in their assembled place relative to each other: the box, the baseplate, the stopper and the latch (X/Y). The rest is found by measurement in Blender:
@@ -343,6 +380,7 @@ The files are exported in print orientation (some at 45° to fit the bed) and sc
 | `measure_wall.py` | The wall mount plates and cleats (`wall|<w>|<h>`), measured on the files (README "Pegboards, wall mounts, baseplates and lock pins"). |
 | `measure_baseplates.py` | The XL drawers' Gridfinity baseplates (into `drawer|XL|<d>|1`) and the cases' (`casebase|<w>|<d>`). |
 | `measure_lock_pins.py` | The case locks' pins, one `piece` each, on the latches' pins A and B (every `case|*`). |
+| `measure_dividers.py` | The case bodies' divider slots (`dividers` in every `case|*`) and each divider file standing (`divider_files`). |
 | `check_layouts.py` | The layouts' motion, one drawer at a time with the others in place (kinematics.py's check). |
 | `kinematics.py` | The units' motion as the page runs it (every part's pose at t, 0 closed … 1 open), and a check that no part goes through another on the way (sections across the motion, shapely). |
 | `blender_motion.py` | Key frames of a unit opening, from the JSON alone with kinematics.py's pose: views and sections. |

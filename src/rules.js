@@ -294,18 +294,23 @@
         } else add('Interior', 'Gridfinity baseplate', SUU + `Baseplates/04. XL/XL${d}  Gridfinity Baseplate.stl`, 1);
       } else add('Interior', 'Gridfinity baseplate', SUU + `Baseplates/0${'SML'.indexOf(w) + 1}. ${w}/${w}${d} Baseplate.stl`, 1);
     }
-    const dv = c.dividers || {};
-    if (w === 'S' || w === 'M') {
+    // Dividers slide into slots moulded in the body's walls (tools/placements/measure_dividers.py): S and M bodies
+    // take plain ones, an L or XL "Dividers" body width and depth ones (an egg crate), a "Sealed" body seal ones
+    // in its cells. A flat body has no slot, so dividers chosen for another style are left out.
+    const dv = c.dividers || {}, style = big ? c.caseInterior || 'flat' : 'plain';
+    if (style === 'plain') {
       if (dv.plain) add('Interior', 'Divider', SUU + `Dividers/${w} Dividers/${w}${h}F Divider.stl`, dv.plain);
     } else if (w === 'L') {
-      if (dv.depth) add('Interior', 'Depth divider (runs front to back)', SUU + `Dividers/L Depth Dividers/L${d}-${h}F Depth Divider.stl`, dv.depth);
-      if (dv.width) add('Interior', 'Width divider (runs side to side)', SUU + `Dividers/L Width Dividers/L-${h}F Width Divider.stl`, dv.width);
-      if (dv.seal) add('Interior', 'Seal divider', SUU + `Dividers/L Seal Dividers/L-${h}F Seal Divider.stl`, dv.seal);
+      if (style === 'dividers' && dv.depth) add('Interior', 'Depth divider (runs front to back)', SUU + `Dividers/L Depth Dividers/L${d}-${h}F Depth Divider.stl`, dv.depth);
+      if (style === 'dividers' && dv.width) add('Interior', 'Width divider (runs side to side)', SUU + `Dividers/L Width Dividers/L-${h}F Width Divider.stl`, dv.width);
+      if (style === 'sealed' && dv.seal) add('Interior', 'Seal divider', SUU + `Dividers/L Seal Dividers/L-${h}F Seal Divider.stl`, dv.seal);
     } else if (w === 'XL') {
-      if (dv.depth) add('Interior', 'Depth divider', SUU + `Dividers/XL Depth Dividers/XL${d} Depth Divider.stl`, dv.depth);
-      if (dv.width) add('Interior', 'Width divider', SUU + 'Dividers/XL Width Divider.stl', dv.width);
-      if (dv.seal) { add('Interior', 'Seal divider, center', SUU + 'Dividers/XL Seal Divider (Center).stl', dv.seal);
-                     add('Interior', 'Seal divider, sides', SUU + 'Dividers/XL Seal Divider (Sides).stl', dv.seal * 2); }
+      if (style === 'dividers' && dv.depth) add('Interior', 'Depth divider (runs front to back)', SUU + `Dividers/XL Depth Dividers/XL${d} Depth Divider.stl`, dv.depth);
+      if (style === 'dividers' && dv.width) add('Interior', 'Width divider (runs side to side)', SUU + 'Dividers/XL Width Divider.stl', dv.width);
+      // seal: the middle cell's count; sealSide: the two side cells' (one row across all three cells before)
+      const side = dv.sealSide != null ? dv.sealSide : (dv.seal || 0) * 2;
+      if (style === 'sealed' && dv.seal) add('Interior', 'Seal divider, center', SUU + 'Dividers/XL Seal Divider (Center).stl', dv.seal);
+      if (style === 'sealed' && side) add('Interior', 'Seal divider, sides', SUU + 'Dividers/XL Seal Divider (Sides).stl', side);
     }
   }
 
