@@ -6,7 +6,7 @@
   "towers": "[{\"name\":\"Stack 1\",\"fp\":{\"w\":\"M\",\"d\":4},\"st\":\"base,wheels,feet,stationaryHandle,pullHandle\",\"L\":[[\"drawer M 4 2F roof=grid std empty\"]]}]",
   "rerun": "after fix"
  },
- "when": "2026-11-12T10:19:51.344Z",
+ "when": "2026-11-12T10:39:19.139Z",
  "printer": {
   "id": "p1s"
  },
@@ -72,7 +72,7 @@
  "levels": [
   {
    "unit": "M4 · 2F drawer",
-   "head": "Level 1 of 1 M4 · 2F drawer254 × 198 × 100 mm · 30 parts · ≈ 900 g",
+   "head": "Level 1 of 1 M4 · 2F drawer254 × 198 × 100 mm · 26 parts · ≈ 890 g",
    "alerts": [],
    "parts": [
     {
@@ -106,8 +106,8 @@
      "bad": false
     },
     {
-     "q": 5,
-     "label": "Runner stopper incl. 1 spare",
+     "q": 4,
+     "label": "Runner stopper",
      "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
      "bad": false
     },
@@ -118,14 +118,14 @@
      "bad": false
     },
     {
-     "q": 2,
-     "label": "Key cap incl. 1 spare",
+     "q": 1,
+     "label": "Key cap",
      "file": "01. DRAWERS/07. Universal/Key Cap.stl",
      "bad": false
     },
     {
-     "q": 2,
-     "label": "Springs (pair) incl. 1 spare",
+     "q": 1,
+     "label": "Springs (pair)",
      "file": "01. DRAWERS/07. Universal/Springs.stl",
      "bad": false
     },
@@ -142,8 +142,8 @@
      "bad": false
     },
     {
-     "q": 6,
-     "label": "Facade cap incl. 1 spare",
+     "q": 5,
+     "label": "Facade cap",
      "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
      "bad": false
     },
@@ -154,7 +154,7 @@
      "bad": false
     },
     {
-     "q": 7,
+     "q": 6,
      "label": "M4 × 14 mm button-head bolt",
      "file": "",
      "bad": false
@@ -163,7 +163,7 @@
   }
  ],
  "scope": [],
- "top": "0% printed 0 of 49 parts · 15 of 15 plates left · ≈ 0 g of 2.81 kg",
+ "top": "0% printed 0 of 45 parts · 15 of 15 plates left · ≈ 0 g of 2.80 kg",
  "alerts": [],
  "parts": [
   {
@@ -222,8 +222,8 @@
    "bed": "var(--ok)"
   },
   {
-   "q": 5,
-   "label": "Runner stopper incl. 1 spare",
+   "q": 4,
+   "label": "Runner stopper",
    "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
    "tags": [
     "Fits"
@@ -244,8 +244,8 @@
    "bed": "var(--ok)"
   },
   {
-   "q": 2,
-   "label": "Key cap incl. 1 spare",
+   "q": 1,
+   "label": "Key cap",
    "file": "01. DRAWERS/07. Universal/Key Cap.stl",
    "tags": [
     "Fits"
@@ -254,8 +254,8 @@
    "bed": "var(--ok)"
   },
   {
-   "q": 2,
-   "label": "Springs (pair) incl. 1 spare",
+   "q": 1,
+   "label": "Springs (pair)",
    "file": "01. DRAWERS/07. Universal/Springs.stl",
    "tags": [
     "Fits",
@@ -286,8 +286,8 @@
    "bed": "var(--ok)"
   },
   {
-   "q": 6,
-   "label": "Facade cap incl. 1 spare",
+   "q": 5,
+   "label": "Facade cap",
    "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
    "tags": [
     "Fits"
@@ -458,8 +458,8 @@
  "groups": [
   "Module1 print",
   "Drawer2 prints",
-  "Runners13 prints",
-  "Lock13 prints",
+  "Runners12 prints",
+  "Lock10 prints",
   "Roof1 print",
   "Base2 prints",
   "Wheels9 prints",
@@ -505,7 +505,7 @@
   },
   {
    "n": 2,
-   "head": "Plate 0215 parts · ≈ 160 g · 62 mm tall",
+   "head": "Plate 0213 parts · ≈ 160 g · 62 mm tall",
    "tags": "Light grey",
    "care": "",
    "rows": [
@@ -525,7 +525,7 @@
      "file": "Jig.stl"
     },
     {
-     "count": 2,
+     "count": 1,
      "label": "Key cap",
      "file": "Key Cap.stl"
     },
@@ -535,7 +535,7 @@
      "file": "Bushing.stl"
     },
     {
-     "count": 5,
+     "count": 4,
      "label": "Facade cap",
      "file": "Facade Cap.stl"
     }
@@ -544,7 +544,7 @@
     256,
     256
    ],
-   "shapes": 15,
+   "shapes": 13,
    "out_of_bed": [],
    "in_noprint": [],
    "clashes": []
@@ -765,7 +765,7 @@
   },
   {
    "n": 12,
-   "head": "Plate 128 parts · ≈ 10 g · 8 mm tall",
+   "head": "Plate 126 parts · ≈ 10 g · 8 mm tall",
    "tags": "Orange",
    "care": "",
    "rows": [
@@ -775,12 +775,12 @@
      "file": "Latch.stl"
     },
     {
-     "count": 2,
+     "count": 1,
      "label": "Springs (pair)",
      "file": "Springs.stl"
     },
     {
-     "count": 5,
+     "count": 4,
      "label": "Runner stopper",
      "file": "Runner Stopper.stl"
     }
@@ -789,7 +789,7 @@
     256,
     256
    ],
-   "shapes": 8,
+   "shapes": 6,
    "out_of_bed": [],
    "in_noprint": [],
    "clashes": []
@@ -858,5 +858,5 @@
    "clashes": []
   }
  ],
- "hardware": "Hardware to buy0 of 12 lines bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts4 lines 7× M4 × 14 mm button-head boltincl. 1 spare Drawer front to boxStack 1 Amazon 14× M4 × 25 mm button-head boltincl. 2 spare Wheel covers (6 per wheel)Stack 1 Amazon 9× M4 × 60 mm button-head boltincl. 1 spare Stationary handleStack 1 Amazon 5× M4 button-head bolt, 60–100 mm (to fit)incl. 1 spare · length depends on your build; buy what fits BackbonesStack 1 M6 bolts and inserts4 lines 3× M6 × 90 mm button-head boltincl. 1 spare FeetStack 1 Amazon 5× M6 × 30 mm countersunk boltincl. 1 spare Pull-out handleStack 1 Amazon 3× M6 × 35 mm hex boltincl. 1 spare · not found on Amazon; try a hardware store Handle lockStack 1 3× M6 × 8 × 8 heat insertincl. 1 spare Handle lock knobsStack 1 AmazonAxle, rods and bearings4 lines 1× M16 threaded rod, 338 mm1 m rod, cut to length Wheel axleStack 1 Amazon 2× 6205ZZ bearing (25 × 52 × 15 mm) WheelsStack 1 Amazon 2× SCSAW shaft collar (16 mm bore) WheelsStack 1 Amazon 2× M16 rod, cut to stack height1 m rod, cut to length Pull-out handleStack 1 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Include spares10% more of the bolts and inserts, at least one Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
+ "hardware": "Hardware to buy0 of 12 lines bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts4 lines 6× M4 × 14 mm button-head bolt Drawer front to boxStack 1 Amazon 12× M4 × 25 mm button-head bolt Wheel covers (6 per wheel)Stack 1 Amazon 8× M4 × 60 mm button-head bolt Stationary handleStack 1 Amazon 4× M4 button-head bolt, 60–100 mm (to fit)length depends on your build; buy what fits BackbonesStack 1 M6 bolts and inserts4 lines 2× M6 × 90 mm button-head bolt FeetStack 1 Amazon 4× M6 × 30 mm countersunk bolt Pull-out handleStack 1 Amazon 2× M6 × 35 mm hex boltnot found on Amazon; try a hardware store Handle lockStack 1 2× M6 × 8 × 8 heat insert Handle lock knobsStack 1 AmazonAxle, rods and bearings4 lines 1× M16 threaded rod, 338 mm1 m rod, cut to length Wheel axleStack 1 Amazon 2× 6205ZZ bearing (25 × 52 × 15 mm) WheelsStack 1 Amazon 2× SCSAW shaft collar (16 mm bore) WheelsStack 1 Amazon 2× M16 rod, cut to stack height1 m rod, cut to length Pull-out handleStack 1 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
 }

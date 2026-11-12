@@ -849,7 +849,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   let printer = store.get('printer', { id: 'p1s', v: [256, 256, 250] });
   { const pp = PRINTERS.find(p => p.id === printer.id); if (!pp) printer = { id: 'p1s', v: PRINTERS[0].v }; else if (pp.id !== 'custom') printer = { id: pp.id, v: pp.v }; }
   const preset = () => PRINTERS.find(p => p.id === printer.id) || {};
-  const spares = true; // +10% on small loseable parts and bolts
   // Filament colours: a palette (USSA's three render colours to start with), a colour per part role (R.ROLES), and
   // per-unit choices kept in the unit's own settings (cfg.colors, so they travel with duplicates and edits). A part
   // with no choice keeps its role's default, which is what colorOf has always given it.
@@ -986,16 +985,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       (p.notes || []).forEach(n => notes.includes(n) || notes.push(n));
     }
     return { lines: [...lines.values()], hardware: [...hw.values()], notes };
-  }
-
-  // Spares: +10% (at least one) on small loseable parts and on bolts and inserts
-  function withSpares(res) {
-    if (!spares) return res;
-    return {
-      ...res,
-      lines: res.lines.map(l => l.spare ? { ...l, spareN: Math.max(1, Math.ceil(l.total * 0.1)), total: l.total + Math.max(1, Math.ceil(l.total * 0.1)) } : l),
-      hardware: res.hardware.map(h => /bolt|insert/i.test(h.item) ? { ...h, spareN: Math.max(1, Math.ceil(h.total * 0.1)), total: h.total + Math.max(1, Math.ceil(h.total * 0.1)) } : h),
-    };
   }
 
   // ---------- towers ----------
@@ -1151,7 +1140,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     list.forEach(t => { const a = analyzeTower(t); all.push(...a.parts); a.issues.filter(i => i.k === 'bad').forEach(i => issues.push(t.name + ': ' + i.m)); });
     if (withX) all.push({ lines: xl, hardware: [] });
     const scope = whole ? 'all' : onlyExtras ? 'extras' : 'pick:' + [...list.map(t => t.id), ...(withX ? ['loose'] : [])].join(',');
-    return { ...withSpares(merge(all)), towerIssues: issues, empty, list, extras: withX ? xl.length : 0, onlyExtras, whole, scope };
+    return { ...merge(all), towerIssues: issues, empty, list, extras: withX ? xl.length : 0, onlyExtras, whole, scope };
   }
 
   // ---------- part previews ----------
@@ -1403,7 +1392,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       ${g.items.map(l => `<div class="row" style="grid-template-columns: 0 64px 40px minmax(0,1fr) auto 38px">
           <span></span>${thumb(l, 'sm')}
           <div class="qty">${l.total}<small>\u00d7</small></div>
-          <div style="min-width:0"><div class="pname">${esc(l.label)}${l.spareN ? ` <small style="color:var(--muted);font-weight:400">incl. ${l.spareN} spare</small>` : ''}</div>
+          <div style="min-width:0"><div class="pname">${esc(l.label)}</div>
             <div class="pfile mono" title="${esc(l.file.path)}">${esc(fileName(l.file.path))} <span style="opacity:.7">\u2014 ${esc(folder(l.file.path))}</span></div>
             ${l.note ? `<div class="pnote">${esc(l.note)}</div>` : ''}
             ${l.inferred ? `<div class="pnote">Inferred: ${esc(l.inferred)}</div>` : ''}</div>
@@ -1419,7 +1408,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     lines.forEach(l => { let g = groups.find(g => g.name === l.group); if (!g) groups.push(g = { name: l.group, items: [] }); g.items.push(l); });
     const bad = l => l.fit.s === 'no' || l.fit.s === 'reorient';
     return `<div class="ilist">${groups.map(g => `<h3><span>${esc(g.name)}</span><span class="mono">${plural(g.items.reduce((a, l) => a + l.total, 0), 'print')}</span></h3>
-        <ul>${g.items.map(l => `<li><span class="q mono">${l.total}\u00d7</span><span class="n" title="${esc(l.file.path)}">${esc(l.label)}${l.spareN ? ` <small>incl. ${l.spareN} spare</small>` : ''}${l.inferred ? ' <small>inferred</small>' : ''}</span>${bad(l) ? '<span class="badge no">Too big</span>' : ''}</li>`).join('')}</ul>`).join('')}
+        <ul>${g.items.map(l => `<li><span class="q mono">${l.total}\u00d7</span><span class="n" title="${esc(l.file.path)}">${esc(l.label)}${l.inferred ? ' <small>inferred</small>' : ''}</span>${bad(l) ? '<span class="badge no">Too big</span>' : ''}</li>`).join('')}</ul>`).join('')}
       ${hw.length ? `<h3><span>Bolts and hardware</span><span class="mono">not printed</span></h3><ul>${hw.map(h => `<li><span class="q mono">${h.total}\u00d7</span><span class="n">${esc(h.item)}</span></li>`).join('')}</ul>` : ''}
       <button type="button" class="linkbtn" data-go="print">Files, sizes and plates in Print</button></div>`;
   }
@@ -2040,7 +2029,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (dsel.l == null || !t.levels[dsel.l]) return stackInspector(box, t);
     const i = dsel.l, L = t.levels, lv = L[i], ui = Math.min(dsel.u || 0, lv.length - 1), u = lv[ui], top = i === L.length - 1;
     const k = clean(u); if (!top) k.roof = 'none';
-    const res = withSpares(computeUnit(k)), s = summary(res.lines), ext = unitExt(u), nf = unitNoFit(u, top);
+    const res = computeUnit(k), s = summary(res.lines), ext = unitExt(u), nf = unitNoFit(u, top);
     const trial = patch => { const x = clean({ ...u, ...patch, roof: 'none' }); fixUnit(x); return !tooBig(x); };
     const typeOpts = [{ v: 'drawer', label: 'Drawer', sub: 'pulls out' }, { v: 'case', label: 'Case', sub: 'opens on top' }].filter(o => o.v === u.type || trial({ type: o.v }));
     // Heights: on an XL or XL\u00b2 level, 2F and 4F make it an S and an M side by side
@@ -2542,7 +2531,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
             <div class="panel popbox" id="plateOptsBox" ${plateOptsOpen ? '' : 'hidden'}><h2>Plate options</h2>
               <label class="opt"><input type="checkbox" id="mixSupports" ${mixSupports ? 'checked' : ''}><span>Fewer plates<small>Support parts share plates; supports stay on just for them</small></span></label>
               ${hasLabels ? `<label class="opt"><input type="checkbox" id="labelsApart" ${labelsApart ? 'checked' : ''}><span>Labels on their own plate<small>Add text and colors in the slicer without touching other plates</small></span></label>` : ''}
-              <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Small parts that are easy to lose come with 10% spares. Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
+              <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
               <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}<button type="button" class="btn" id="clearPlates">${b.onlyExtras ? 'Clear loose parts' : 'Clear all plates'}</button></div>
             </div></span></div>
           <div class="pnote" style="margin:0">Plates follow the colors chosen in Design.${labelsApart && hasLabels ? ' Labels on their own plate.' : ''}${mixSupports ? '' : ' Parts with supports kept apart.'}</div>
@@ -3990,10 +3979,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const ICON_OK = '<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8.2l2.3 2.3 4.7-4.9" fill="none" stroke="var(--sheet)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const ICON_BAD = '<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M8 4.2v4.6M8 11.3v.2" stroke="var(--sheet)" stroke-width="1.9" stroke-linecap="round"/></svg>';
   // ---------- 3 · hardware: one shopping list for the whole build ----------
-  // Same data as the hardware tables (the rules' hardware, merged, with spares). Lines are grouped by what is bought;
-  // each says which stacks need it. "Bought" ticks are kept per item; "Include spares" only changes this list.
+  // Same data as the hardware tables (the rules' hardware, merged). Lines are grouped by what is bought; each says which
+  // stacks need it. "Bought" ticks are kept per item.
   let hwBought = store.get('hwBought', {});
-  let hwSpares = store.get('hwSpares', true);
   const HW_GROUPS = [['M4 bolts', /^M4\b/], ['M6 bolts and inserts', /^M6\b/], ['Axle, rods and bearings', /M16|bearing|collar/i], ['Other', /./]];
   const hwGroupOf = item => HW_GROUPS.find(([, re]) => re.test(item))[0];
   function hardwareList() {
@@ -4012,14 +4000,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       return [...set].join(', ');
     };
     const rows = b.hardware.map(h => {
-      const spare = hwSpares ? h.spareN || 0 : 0, qty = h.total - (h.spareN || 0) + spare, shop = shopOf(h.item);
-      return { item: h.item, qty, spare, why: h.why, where: whereText(h.item), group: hwGroupOf(h.item), head: headOf(h.item), link: shop.link, note: shop.note, bought: !!hwBought[h.item] };
+      const qty = h.total, shop = shopOf(h.item);
+      return { item: h.item, qty, why: h.why, where: whereText(h.item), group: hwGroupOf(h.item), head: headOf(h.item), link: shop.link, note: shop.note, bought: !!hwBought[h.item] };
     }).sort((x, y) => HW_GROUPS.findIndex(g => g[0] === x.group) - HW_GROUPS.findIndex(g => g[0] === y.group));
     return { b, rows };
   }
-  const hwText = rows => 'Vault hardware\n' + rows.map(r => `${r.qty}x  ${r.item}${r.spare ? ` (incl. ${r.spare} spare)` : ''}  \u2014  ${r.why}${r.where ? ' \u00b7 ' + r.where : ''}${r.bought ? '  [bought]' : ''}`).join('\n');
+  const hwText = rows => 'Vault hardware\n' + rows.map(r => `${r.qty}x  ${r.item}  \u2014  ${r.why}${r.where ? ' \u00b7 ' + r.where : ''}${r.bought ? '  [bought]' : ''}`).join('\n');
   const csvCell = v => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
-  const hwCsv = rows => ['Bought,Quantity,Item,Spares included,Used for,Stacks,Store link', ...rows.map(r => [r.bought ? 'yes' : '', r.qty, r.item, r.spare || '', r.why, r.where, r.link || ''].map(csvCell).join(','))].join('\r\n');
+  const hwCsv = rows => ['Bought,Quantity,Item,Used for,Stacks,Store link', ...rows.map(r => [r.bought ? 'yes' : '', r.qty, r.item, r.why, r.where, r.link || ''].map(csvCell).join(','))].join('\r\n');
   function renderHardware() {
     const { b, rows } = hardwareList();
     if (b.empty) return emptyStep('view-hardware', 'to buy');
@@ -4033,7 +4021,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <label class="hwtick"><input type="checkbox" data-hw-bought="${esc(r.item)}" ${r.bought ? 'checked' : ''} aria-label="${esc(r.item)} bought"></label>
         <span class="hwq num">${r.qty}\u00d7</span>
         <span class="hwhead">${headIcon(r.item)}</span>
-        <span class="hwname"><b>${esc(r.item)}</b><small>${[r.spare ? `incl. ${r.spare} spare` : '', r.note || ''].filter(Boolean).map(esc).join(' \u00b7 ')}</small></span>
+        <span class="hwname"><b>${esc(r.item)}</b><small>${esc(r.note || '')}</small></span>
         <span class="hwuse"><span>${esc(r.why)}</span><small class="mono">${esc(r.where)}</small></span>
         <span class="hwbuy">${r.link ? `<a class="btn" href="${r.link}" target="_blank" rel="noopener">Amazon</a>` : ''}</span></div>`;
     }).join('');
@@ -4051,7 +4039,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="panel hwbox">
           <button type="button" class="btn primary big" id="hwCopy">Copy the list</button>
           <button type="button" class="btn" id="hwCsv">Export as CSV</button>
-          <label class="opt"><input type="checkbox" id="hwSpares" ${hwSpares ? 'checked' : ''}><span>Include spares<small>10% more of the bolts and inserts, at least one</small></span></label>
         </div>
         ${rows.some(r => r.head) ? `<div class="panel hwbox hwlegend"><div class="v3-sec">Match the head shape</div>
           ${headIcon('button-head')}<span><b>Button head</b>, domed</span>
@@ -4063,7 +4050,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (cb.checked) hwBought[cb.dataset.hwBought] = 1; else delete hwBought[cb.dataset.hwBought];
       store.set('hwBought', hwBought); renderHardware(); renderTabs();
     });
-    $('hwSpares').onchange = () => { hwSpares = $('hwSpares').checked; store.set('hwSpares', hwSpares); renderHardware(); };
     $('hwCopy').onclick = () => copy(hwText(rows), 'Hardware list copied');
     V.querySelectorAll('[data-hwfin]').forEach(b => b.onclick = () => { if (b.dataset.hwfin === HW_STEEL) delete colorPrefs.hardware; else colorPrefs.hardware = b.dataset.hwfin; saveColors(); renderHardware(); });
     $('hwCsv').onclick = () => {
@@ -4152,7 +4138,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (!sections.length) { $('view-assemble').innerHTML = '<div class="panel empty">Loose parts only: nothing to assemble.</div>'; return; }
     if (!sections.some(g => g.id === asmSec)) asmSec = sections[0].id;
     // Which stacks each section concerns, read from each stack's own parts
-    const per = b.list.map(t => ({ t, b: { ...withSpares(merge(analyzeTower(t).parts)), list: [t] } }));
+    const per = b.list.map(t => ({ t, b: { ...merge(analyzeTower(t).parts), list: [t] } }));
     const scopeOf = g => { const ts = per.filter(x => g.when(x.b)).map(x => x.t.name); return ts.length > 1 && ts.length === b.list.length ? (ts.length === 2 ? 'Both stacks' : 'All stacks') : ts.join(', ') || 'Loose parts'; };
     const units = b.list.flatMap(t => t.levels.flat());
     const repeatOf = g => ASM_UNIT[g.id] ? units.reduce((a, u) => a + ASM_UNIT[g.id][1](u), 0) : 0;
@@ -4187,7 +4173,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <aside class="panel asm-need" aria-label="What this section needs"><div class="v3-sec">Have ready for this section</div>
         ${need.length ? `<div class="aneed">${need.map(h => `<div><span class="num">${h.total}×</span><span>${esc(h.item)}</span></div>`).join('')}</div>` : '<p class="pnote" style="margin:0">No hardware in this section, printed parts only.</p>'}
         <button type="button" class="btn" data-go="hardware">Open the hardware list</button>
-        <p class="pnote" style="margin:0">Quantities are for the whole build, spares included.</p></aside></div>`;
+        <p class="pnote" style="margin:0">Quantities are for the whole build.</p></aside></div>`;
     const V = $('view-assemble');
     V.querySelectorAll('[data-sec]').forEach(btn => btn.onclick = () => { asmSec = btn.dataset.sec; store.set('asmSec', asmSec); renderAssemble(); });
     V.querySelectorAll('[data-go]').forEach(btn => btn.onclick = () => { view = btn.dataset.go; renderAll(); });

@@ -5,7 +5,7 @@
   "printer": "h2s",
   "towers": "[{\"name\":\"Stack 1\",\"fp\":{\"w\":\"XL\",\"d\":4},\"st\":\"feet\",\"L\":[[\"drawer XL2 4 1F roof=grid std empty\"]]}]"
  },
- "when": "2026-11-12T10:22:27.566Z",
+ "when": "2026-11-12T10:41:55.676Z",
  "printer": {
   "id": "h2s"
  },
@@ -71,7 +71,7 @@
  "levels": [
   {
    "unit": "XL4² · 1F drawer",
-   "head": "Level 1 of 1 XL4² · 1F drawer419 × 198 × 52 mm · 36 parts · ≈ 1.10 kg",
+   "head": "Level 1 of 1 XL4² · 1F drawer419 × 198 × 52 mm · 32 parts · ≈ 1.09 kg",
    "alerts": [],
    "parts": [
     {
@@ -117,8 +117,8 @@
      "bad": false
     },
     {
-     "q": 5,
-     "label": "Runner stopper incl. 1 spare inferred",
+     "q": 4,
+     "label": "Runner stopper inferred",
      "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
      "bad": false
     },
@@ -129,14 +129,14 @@
      "bad": false
     },
     {
-     "q": 3,
-     "label": "Key cap incl. 1 spare inferred",
+     "q": 2,
+     "label": "Key cap inferred",
      "file": "01. DRAWERS/07. Universal/Key Cap.stl",
      "bad": false
     },
     {
-     "q": 3,
-     "label": "Springs (pair) incl. 1 spare inferred",
+     "q": 2,
+     "label": "Springs (pair) inferred",
      "file": "01. DRAWERS/07. Universal/Springs.stl",
      "bad": false
     },
@@ -153,8 +153,8 @@
      "bad": false
     },
     {
-     "q": 5,
-     "label": "Facade cap incl. 1 spare inferred",
+     "q": 4,
+     "label": "Facade cap inferred",
      "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
      "bad": false
     },
@@ -165,7 +165,7 @@
      "bad": false
     },
     {
-     "q": 7,
+     "q": 6,
      "label": "M4 × 14 mm button-head bolt",
      "file": "",
      "bad": false
@@ -174,7 +174,7 @@
   }
  ],
  "scope": [],
- "top": "0% printed 0 of 36 parts · 8 of 8 plates left · ≈ 0 g of 1.10 kg",
+ "top": "0% printed 0 of 32 parts · 8 of 8 plates left · ≈ 0 g of 1.09 kg",
  "alerts": [
   "Kept at the angle USSA exported it, where it just fits this bed. Check it in the slicer before printing."
  ],
@@ -264,8 +264,8 @@
    "bed": "var(--ok)"
   },
   {
-   "q": 5,
-   "label": "Runner stopper incl. 1 spare",
+   "q": 4,
+   "label": "Runner stopper",
    "file": "01. DRAWERS/07. Universal/Runners/Runner Stopper.stl",
    "tags": [
     "Fits",
@@ -288,8 +288,8 @@
    "bed": "var(--ok)"
   },
   {
-   "q": 3,
-   "label": "Key cap incl. 1 spare",
+   "q": 2,
+   "label": "Key cap",
    "file": "01. DRAWERS/07. Universal/Key Cap.stl",
    "tags": [
     "Fits",
@@ -299,8 +299,8 @@
    "bed": "var(--ok)"
   },
   {
-   "q": 3,
-   "label": "Springs (pair) incl. 1 spare",
+   "q": 2,
+   "label": "Springs (pair)",
    "file": "01. DRAWERS/07. Universal/Springs.stl",
    "tags": [
     "Fits",
@@ -334,8 +334,8 @@
    "bed": "var(--ok)"
   },
   {
-   "q": 5,
-   "label": "Facade cap incl. 1 spare",
+   "q": 4,
+   "label": "Facade cap",
    "file": "01. DRAWERS/07. Universal/Facade Cap.stl",
    "tags": [
     "Fits",
@@ -359,8 +359,8 @@
  "groups": [
   "Module1 print",
   "Drawer4 prints",
-  "Runners13 prints",
-  "Lock17 prints",
+  "Runners12 prints",
+  "Lock14 prints",
   "Roof1 print"
  ],
  "plates": [
@@ -408,7 +408,7 @@
   },
   {
    "n": 3,
-   "head": "Plate 0312 parts · ≈ 50 g · 12 mm tall",
+   "head": "Plate 0310 parts · ≈ 40 g · 12 mm tall",
    "tags": "Light grey",
    "care": "",
    "rows": [
@@ -418,12 +418,12 @@
      "file": "x4 Runner Guide.stl"
     },
     {
-     "count": 3,
+     "count": 2,
      "label": "Key cap",
      "file": "Key Cap.stl"
     },
     {
-     "count": 5,
+     "count": 4,
      "label": "Facade cap",
      "file": "Facade Cap.stl"
     }
@@ -432,7 +432,7 @@
     340,
     320
    ],
-   "shapes": 12,
+   "shapes": 10,
    "out_of_bed": [],
    "in_noprint": [],
    "clashes": []
@@ -517,7 +517,7 @@
   },
   {
    "n": 7,
-   "head": "Plate 0710 parts · ≈ 20 g · 8 mm tall",
+   "head": "Plate 078 parts · ≈ 20 g · 8 mm tall",
    "tags": "Orange",
    "care": "",
    "rows": [
@@ -527,12 +527,12 @@
      "file": "Latch.stl"
     },
     {
-     "count": 3,
+     "count": 2,
      "label": "Springs (pair)",
      "file": "Springs.stl"
     },
     {
-     "count": 5,
+     "count": 4,
      "label": "Runner stopper",
      "file": "Runner Stopper.stl"
     }
@@ -541,7 +541,7 @@
     340,
     320
    ],
-   "shapes": 10,
+   "shapes": 8,
    "out_of_bed": [],
    "in_noprint": [],
    "clashes": []
@@ -568,5 +568,5 @@
    "clashes": []
   }
  ],
- "hardware": "Hardware to buy0 of 1 line bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts1 line 7× M4 × 14 mm button-head boltincl. 1 spare Drawer front to boxStack 1 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Include spares10% more of the bolts and inserts, at least one Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
+ "hardware": "Hardware to buy0 of 1 line bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts1 line 6× M4 × 14 mm button-head bolt Drawer front to boxStack 1 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
 }

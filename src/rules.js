@@ -136,7 +136,7 @@
     }
     // A pair of guides, slides and stoppers on every 48 mm level of the module (h levels), as the assembly has them:
     // one 2F/4F box rides on all of them, and the same module can take a 1F box per level instead
-    add('Runners', 'Runner stopper' + t, U + 'Runners/Runner Stopper.stl', 2 * h, { spare: true, ...x });
+    add('Runners', 'Runner stopper' + t, U + 'Runners/Runner Stopper.stl', 2 * h, x);
     if (o.gearedRails) add('Runners', 'Geared rails (pair)' + t, U + `Geared Rails/${w} Rails.stl`, n,
       { note: 'Optional in the manual. Adds locking force; use them if you put more than one box in a 2F/4F module. One file holds both racks, top and bottom.', ...x });
     // A hidden lock has no knob on the front: the removable key (part 2) turns it, and one serves the whole stack
@@ -145,16 +145,16 @@
       add('Lock', 'Hidden key' + t, U + 'Hidden Key (Turn On Supports).stl', n, { supports: true, ...x });
     } else {
       add('Lock', 'Key lock' + t, U + 'Key (Turn On Supports).stl', n, { supports: true, ...x });
-      add('Lock', 'Key cap' + t, U + 'Key Cap.stl', n, { spare: true, ...x });
+      add('Lock', 'Key cap' + t, U + 'Key Cap.stl', n, x);
     }
-    add('Lock', 'Springs (pair)' + t, U + 'Springs.stl', n, { note: 'One file holds both springs. Fit them flat side up.', spare: true, ...x });
+    add('Lock', 'Springs (pair)' + t, U + 'Springs.stl', n, { note: 'One file holds both springs. Fit them flat side up.', ...x });
     // One latch per latch frame under the module, whatever the drawers in it: S and M have one, in the middle; L and XL
     // two (measured on the modules). Drawer Assembly 8/8 pushes it into the module's underside.
     add('Lock', 'Latch' + t, U + 'Latch.stl', w === 'L' || w === 'XL' ? 2 : 1, x);
     add('Lock', 'Label' + t, U + 'Label.stl', n, { note: 'Add your own text with the slicer’s text tool.', ...x });
     // One cap per counterbore of a front: every bolt hole but the one the label covers (Drawer Assembly 6/8 shows
     // the one cap of an S 1F; the others are counted on the fronts)
-    add('Lock', 'Facade cap' + t, U + 'Facade Cap.stl', lay.reduce((a, dh) => a + frontBolts(w, dh) - 1, 0), { spare: true, ...x });
+    add('Lock', 'Facade cap' + t, U + 'Facade Cap.stl', lay.reduce((a, dh) => a + frontBolts(w, dh) - 1, 0), x);
     if (o.interior === 'gridfinity') {
       const subdir = fam + `${w}${d}/Gridfinity Baseplate/`;
       if (w === 'XL' && d >= 6) {
@@ -190,7 +190,7 @@
       add('Interior', 'Divider edge piece' + t, dir + `${o.gridEdge === 'rounded' ? 'Rounded' : 'Straight'} Edge Piece ${sfx}.stl`, 2 * (across + along),
         { note: 'Two per full-span divider, one at each wall.' });
       add('Interior', 'Divider pin' + t, U + `Grid Dividers/grid divider pin_${o.gridPin === 'loose' ? 'loose' : 'tight'}.stl`, 2 * (across + along),
-        { spare: true, inferred: 'The instructions don’t give a pin count. Two per divider is read from the drawings.' });
+        { inferred: 'The instructions don’t give a pin count. Two per divider is read from the drawings.' });
     }
   }
 
@@ -264,13 +264,13 @@
     if (sm) add('Hinges & locks', 'Hinge top', SUU + 'Hinges/' + (w === 'S' ? 'S Hinge Top.stl' : 'M Hinge Top.stl'), 1,
       { note: 'One long top spans both hinges.' });
     else add('Hinges & locks', 'Hinge tops (pair)', SUU + 'Hinges/L-XL Hinge Top.stl', 1, { note: 'This file already contains two hinge tops.' });
-    add('Hinges & locks', 'Hinge rods (pair)', SUU + 'Rods/' + (sm ? 'S-M Rods.stl' : 'L-XL Rods.stl'), 1, { note: 'One file holds both rods.', spare: true });
+    add('Hinges & locks', 'Hinge rods (pair)', SUU + 'Rods/' + (sm ? 'S-M Rods.stl' : 'L-XL Rods.stl'), 1, { note: 'One file holds both rods.' });
     // One lock per notch in the front's top edge: S and M fronts have one, L and XL two (Sustainers Naming shows two on L)
     const locks = big ? 2 : 1;
     add('Hinges & locks', 'Lock holder', SUU + 'Locks/LOCK HOLDER.stl', locks);
     add('Hinges & locks', 'Lock inner part', SUU + 'Locks/LOCK INNER PART.stl', locks);
     add('Hinges & locks', 'Lock outer part', SUU + 'Locks/' + (h === 1 ? 'LOCK OUTER PART 1F.stl' : 'LOCK OUTER PART 2-4F.stl'), locks);
-    add('Hinges & locks', 'Lock pin set', SUU + 'Locks/1 SET OF PINS FOR 1 LOCK.stl', locks, { note: 'Four pins per file, one file per lock.', spare: true });
+    add('Hinges & locks', 'Lock pin set', SUU + 'Locks/1 SET OF PINS FOR 1 LOCK.stl', locks, { note: 'Four pins per file, one file per lock.' });
     // The case body has a drawer module's underside, latch frames included, and stacks like one
     add('Hinges & locks', 'Latch', U + 'Latch.stl', big ? 2 : 1,
       { inferred: 'The manual doesn’t show a case from below. Its body has the same latch frames as a drawer module (one on S and M, two on L and XL), so it takes the same latches.' });
@@ -439,7 +439,7 @@
     return { lines: mergeSame(k.lines), missing: k.missing, hardware: unitHardware(c) };
   }
   // One line per file in a unit: the two bays of an L² or XL² list their shared parts (keys, springs, caps, stoppers…)
-  // once, without the bay's tag, so spares are added to the total as the Print step does
+  // once, without the bay's tag, so Design and Print list the same totals
   function mergeSame(lines) {
     const out = [], by = new Map();
     for (const l of lines) {
@@ -469,7 +469,7 @@
   function buildHiddenKey(resolve) {
     const k = collector(resolve);
     k.add('Lock', 'Hidden key, part 2', U + 'Hidden Key Part 2 (Turn on Supports).stl', 1, { supports: true, note: 'One per stack: it turns every hidden lock of the stack.' });
-    k.add('Lock', 'Key cap', U + 'Key Cap.stl', 1, { spare: true, note: 'Goes on the removable key’s grip.' });
+    k.add('Lock', 'Key cap', U + 'Key Cap.stl', 1, { note: 'Goes on the removable key’s grip.' });
     return { lines: k.lines, missing: k.missing, hardware: [] };
   }
 

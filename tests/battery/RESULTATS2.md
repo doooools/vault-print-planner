@@ -108,3 +108,11 @@ Avant, il y avait un dosseret par module 1F/2F, et une alerte pour les 4F ; c'es
 | D27 (base + S6 2F + 1F en haut) | S2F + S1F | S2F + S1F (l'oracle disait 1 × S2F, à faible confiance) |
 
 Après ce changement, les deux batteries correspondent partout, sauf C12 (toit lourd découpé, l'alternative donnée par l'oracle) et D15 (erreur de l'oracle). Les plateaux sont sans problème et `validate.js` est propre (il vérifie aussi la colonne).
+
+## Sans les +10 %
+
+À ta demande, les +10 % de rechange ont été supprimés partout : liste des pièces, plateaux, liste de visserie (la case « Include spares » de l'onglet Hardware a disparu aussi).
+
+Les totaux de la page sont maintenant exactement ceux de l'oracle. Par exemple, C13 donne 32 pièces, et C01 demande 2 vis M4 × 14 au lieu de 3.
+
+Rejeu des 44 configurations : mêmes résultats qu'avant (seuls restent C12, variante admise, et D15, erreur de l'oracle) ; plateaux sans problème.

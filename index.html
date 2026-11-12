@@ -749,7 +749,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   </footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><h3>Draft, not released yet: the Dols fork</h3><ul><li><b>A fork of Romy's planner,</b> kept at <a href="https://github.com/doooools/vault-print-planner" target="_blank" rel="noopener">github.com/doooools/vault-print-planner</a>. Everything below is new in it.</li><li><b>Your stacks in 3D,</b> made from your own Vault files: every drawer, case, roof, base and wheel where the assembled unit puts it, with its bolts. Turn it, spread the units apart, hide the roof. Parts are simplified in your browser and kept there for next time; nothing is uploaded.</li><li><b>Open drawers and cases in 3D:</b> hold Ctrl or Shift and click. A drawer's key turns and its racks slide before it pulls out; a case's latches flip before the lid opens, with the roof riding on it.</li><li><b>Several drawers in one module:</b> a 2F module can hold two 1F drawers, a 4F module two 2F, four 1F, or a 2F and two 1F in any order. Parts, bolts and geared rails are counted per drawer. The mixed ones are marked Inferred: the manuals don't show them.</li><li><b>Colors:</b> the Paint tool gives each kind of part a filament, for a whole stack or a single module, from your own filaments or Bambu Lab's PLA and PETG colours. Each stack keeps its own colours. Plates, filament totals and the Bambu Studio project follow them, one filament slot per colour.</li><li><b>A new layout:</b> Design, Print, Hardware and Assemble tabs. In Design, your stacks on the left, the 3D view in the middle, the selected level or stack on the right. Start from a template or a blank stack, and set a level across the width as L, L² or two modules side by side.</li><li><b>Print what you want:</b> tick the stacks, and the loose parts, to plan. The plates follow every change made in Design.</li><li><b>Hardware has its own tab:</b> one shopping list for the whole build, ticks for what you've bought, copy or CSV, and the bolts' finish (black or zinc) shown in 3D.</li><li><b>Save and open designs:</b> in Chrome and Edge, Save writes your stacks, loose parts and colours into your Vault folder, next to the part files. Save as… and Open… work anywhere; other browsers download the file.</li><li><b>Bases in 3D:</b> the base, wheels, front foot bar and casters are drawn where they go. A base without wheels now stands on its own: no feet. A roof can sit on a top-opening case.</li><li><b>Fixed:</b> Bambu Studio projects with several colours no longer fail with "Invalid configuration file". The heavyweight roof's carry handle no longer drops out of the print list when the roof is swapped. Store links are plain product pages.</li><li><b>Part counts checked against the manuals:</b> a case now gets one label (the case label on 1F, the drawer label on 2F and 4F), not both. The removable hidden key and its key cap are printed once per stack, not once per drawer. A wall mount gets one wall cleat per opening in its plate. Backbones follow the manual: a column on the back of the stack, from the base to the module under the top one (where the pull-out handle lock goes), in 2F backbones with a 1F for an odd remainder; a pegboard extends it to its module. On an L² or XL², shared parts are listed once, and Design and Print give the same totals.</li><li><b>Works the same on Linux, macOS and Windows:</b> the files macOS adds to a copied folder are ignored, and Firefox and Safari fall back to a folder upload and downloads.</li></ul><h3>2026-11-09</h3><ul><li><b>XL units really fit the H2S now:</b> the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.</li><li><b>Closer filament estimates:</b> checked against the weights USSA publishes per module, the planner was reading about 17% high. It's now within a few percent.</li><li><b>Stack heights with 1F cases:</b> the planner listed a 1F case as 71 mm tall instead of about 66, so stack drawings and overall heights came out a little tall. Only the numbers on the page were off; the parts and print files are unchanged.</li><li><b>Assembly:</b> step 4 now also passes on USSA's advice to put a 2F module right under the roof when you use the base, backbones or handles.</li></ul><h3>2026-11-08</h3><ul><li><b>Filament per color:</b> step 3 shows roughly how much of each color the whole build needs, so you can check your spools before you start.</li><li><b>Labels get their own plate,</b> so you can add your text and print them in several colors without touching the other plates. Turn it off in step 3 to print them with the rest.</li><li><b>Manual supports go where they help:</b> each one prints standing against the end of a roof of the same depth. Ones with no roof to brace are left out (step 3 says which), and STL folder names say where to stand them.</li><li><b>Download names say what's inside:</b> the build, the printer, and which plates if some are already printed, like "Vault - 3 units in 2 stacks - P1S - plates 4-12.3mf".</li><li><b>Printer not listed?</b> Pick "My printer isn't listed" and type its name: the bed size for about 380 printers fills in, taken from OrcaSlicer's printer profiles. Or enter your bed size yourself. The bed size is all the planner needs.</li><li><b>Voron presets:</b> 2.4 and Trident (250, 300, 350) and the 0.2. Like other non-Bambu printers, they get plate files for OrcaSlicer or PrusaSlicer.</li></ul><h3>2026-11-07</h3><ul><li><b>More printers:</b> presets for Prusa (MK4/MK4S, CORE One, MINI+, XL), Creality (K1/K1C, K1 Max, K2 Plus, Ender-3 V3 SE), Elegoo (Centauri Carbon, Neptune 4 Pro and Max), Anycubic (Kobra 3, Kobra S1) and Qidi (Q1 Pro, Plus4), plus Custom size for anything else.</li><li><b>Plate files for non-Bambu printers:</b> step 3 now saves a zip with one standard .3mf per plate. Parts are already laid out, and the parts that need supports or a brim are already marked. Works in OrcaSlicer, PrusaSlicer and the slicers built on them; a settings.txt lists the same settings for any other slicer.</li><li><b>STL folders</b> now name each part's settings in its file name, with a settings.txt per plate.</li><li><b>XL units fit the H2S:</b> facades and backbones that are too long for the bed go on the diagonal, at whatever angle fits.</li><li><b>Missing parts are named:</b> if your Vault folder is missing files, step 3 lists them. File names that an unzip or a newer download changed are still matched.</li><li><b>Print and Assemble stay empty</b> until you add something to your build, with a button to add the unit you picked in step 1.</li><li><b>Fewer slicer conflicts:</b> parts with supports keep clear of neighbouring parts, the rows around them and the bed edge.</li></ul><h3>2026-11-06</h3><ul><li><b>First public version.</b></li><li><b>More Bambu printers:</b> P2S, X2D, A2L, H2D Pro, H2C and H3C; plate spacing fixed on dual-nozzle printers.</li><li><b>Stack pictures:</b> front and side views, overall size with dimension lines, and wheels, feet, casters and handles drawn where USSA's manual puts them.</li><li><b>Step 1 checks whether a unit stacks</b> before adding it and offers a matching size.</li><li><b>Hardware list:</b> bolt head shapes, drawer front bolts counted from the holes in each front, and links to matching products.</li><li><b>Choosing the Vault folder</b> is its own step, with a heads-up about the browser's permission prompt.</li><li><b>Plate numbers stay put</b> when you mark plates as printed.</li><li><b>Tree supports</b> no longer run into the next part.</li><li><b>Part pictures</b> at full size.</li></ul></div></dialog>
+<dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><h3>Draft, not released yet: the Dols fork</h3><ul><li><b>A fork of Romy's planner,</b> kept at <a href="https://github.com/doooools/vault-print-planner" target="_blank" rel="noopener">github.com/doooools/vault-print-planner</a>. Everything below is new in it.</li><li><b>Your stacks in 3D,</b> made from your own Vault files: every drawer, case, roof, base and wheel where the assembled unit puts it, with its bolts. Turn it, spread the units apart, hide the roof. Parts are simplified in your browser and kept there for next time; nothing is uploaded.</li><li><b>Open drawers and cases in 3D:</b> hold Ctrl or Shift and click. A drawer's key turns and its racks slide before it pulls out; a case's latches flip before the lid opens, with the roof riding on it.</li><li><b>Several drawers in one module:</b> a 2F module can hold two 1F drawers, a 4F module two 2F, four 1F, or a 2F and two 1F in any order. Parts, bolts and geared rails are counted per drawer. The mixed ones are marked Inferred: the manuals don't show them.</li><li><b>Colors:</b> the Paint tool gives each kind of part a filament, for a whole stack or a single module, from your own filaments or Bambu Lab's PLA and PETG colours. Each stack keeps its own colours. Plates, filament totals and the Bambu Studio project follow them, one filament slot per colour.</li><li><b>A new layout:</b> Design, Print, Hardware and Assemble tabs. In Design, your stacks on the left, the 3D view in the middle, the selected level or stack on the right. Start from a template or a blank stack, and set a level across the width as L, L² or two modules side by side.</li><li><b>Print what you want:</b> tick the stacks, and the loose parts, to plan. The plates follow every change made in Design.</li><li><b>Hardware has its own tab:</b> one shopping list for the whole build, ticks for what you've bought, copy or CSV, and the bolts' finish (black or zinc) shown in 3D.</li><li><b>Save and open designs:</b> in Chrome and Edge, Save writes your stacks, loose parts and colours into your Vault folder, next to the part files. Save as… and Open… work anywhere; other browsers download the file.</li><li><b>Bases in 3D:</b> the base, wheels, front foot bar and casters are drawn where they go. A base without wheels now stands on its own: no feet. A roof can sit on a top-opening case.</li><li><b>Fixed:</b> Bambu Studio projects with several colours no longer fail with "Invalid configuration file". The heavyweight roof's carry handle no longer drops out of the print list when the roof is swapped. Store links are plain product pages.</li><li><b>No more 10% spares:</b> the part list, the plates and the hardware list give exactly what the build needs. Print or buy extras yourself if you want them (Loose parts takes any single part).</li><li><b>Part counts checked against the manuals:</b> a case now gets one label (the case label on 1F, the drawer label on 2F and 4F), not both. The removable hidden key and its key cap are printed once per stack, not once per drawer. A wall mount gets one wall cleat per opening in its plate. Backbones follow the manual: a column on the back of the stack, from the base to the module under the top one (where the pull-out handle lock goes), in 2F backbones with a 1F for an odd remainder; a pegboard extends it to its module. On an L² or XL², shared parts are listed once, and Design and Print give the same totals.</li><li><b>Works the same on Linux, macOS and Windows:</b> the files macOS adds to a copied folder are ignored, and Firefox and Safari fall back to a folder upload and downloads.</li></ul><h3>2026-11-09</h3><ul><li><b>XL units really fit the H2S now:</b> the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.</li><li><b>Closer filament estimates:</b> checked against the weights USSA publishes per module, the planner was reading about 17% high. It's now within a few percent.</li><li><b>Stack heights with 1F cases:</b> the planner listed a 1F case as 71 mm tall instead of about 66, so stack drawings and overall heights came out a little tall. Only the numbers on the page were off; the parts and print files are unchanged.</li><li><b>Assembly:</b> step 4 now also passes on USSA's advice to put a 2F module right under the roof when you use the base, backbones or handles.</li></ul><h3>2026-11-08</h3><ul><li><b>Filament per color:</b> step 3 shows roughly how much of each color the whole build needs, so you can check your spools before you start.</li><li><b>Labels get their own plate,</b> so you can add your text and print them in several colors without touching the other plates. Turn it off in step 3 to print them with the rest.</li><li><b>Manual supports go where they help:</b> each one prints standing against the end of a roof of the same depth. Ones with no roof to brace are left out (step 3 says which), and STL folder names say where to stand them.</li><li><b>Download names say what's inside:</b> the build, the printer, and which plates if some are already printed, like "Vault - 3 units in 2 stacks - P1S - plates 4-12.3mf".</li><li><b>Printer not listed?</b> Pick "My printer isn't listed" and type its name: the bed size for about 380 printers fills in, taken from OrcaSlicer's printer profiles. Or enter your bed size yourself. The bed size is all the planner needs.</li><li><b>Voron presets:</b> 2.4 and Trident (250, 300, 350) and the 0.2. Like other non-Bambu printers, they get plate files for OrcaSlicer or PrusaSlicer.</li></ul><h3>2026-11-07</h3><ul><li><b>More printers:</b> presets for Prusa (MK4/MK4S, CORE One, MINI+, XL), Creality (K1/K1C, K1 Max, K2 Plus, Ender-3 V3 SE), Elegoo (Centauri Carbon, Neptune 4 Pro and Max), Anycubic (Kobra 3, Kobra S1) and Qidi (Q1 Pro, Plus4), plus Custom size for anything else.</li><li><b>Plate files for non-Bambu printers:</b> step 3 now saves a zip with one standard .3mf per plate. Parts are already laid out, and the parts that need supports or a brim are already marked. Works in OrcaSlicer, PrusaSlicer and the slicers built on them; a settings.txt lists the same settings for any other slicer.</li><li><b>STL folders</b> now name each part's settings in its file name, with a settings.txt per plate.</li><li><b>XL units fit the H2S:</b> facades and backbones that are too long for the bed go on the diagonal, at whatever angle fits.</li><li><b>Missing parts are named:</b> if your Vault folder is missing files, step 3 lists them. File names that an unzip or a newer download changed are still matched.</li><li><b>Print and Assemble stay empty</b> until you add something to your build, with a button to add the unit you picked in step 1.</li><li><b>Fewer slicer conflicts:</b> parts with supports keep clear of neighbouring parts, the rows around them and the bed edge.</li></ul><h3>2026-11-06</h3><ul><li><b>First public version.</b></li><li><b>More Bambu printers:</b> P2S, X2D, A2L, H2D Pro, H2C and H3C; plate spacing fixed on dual-nozzle printers.</li><li><b>Stack pictures:</b> front and side views, overall size with dimension lines, and wheels, feet, casters and handles drawn where USSA's manual puts them.</li><li><b>Step 1 checks whether a unit stacks</b> before adding it and offers a matching size.</li><li><b>Hardware list:</b> bolt head shapes, drawer front bolts counted from the holes in each front, and links to matching products.</li><li><b>Choosing the Vault folder</b> is its own step, with a heads-up about the browser's permission prompt.</li><li><b>Plate numbers stay put</b> when you mark plates as printed.</li><li><b>Tree supports</b> no longer run into the next part.</li><li><b>Part pictures</b> at full size.</li></ul></div></dialog>
 <dialog id="viewer" aria-label="Part preview"><button type="button" class="vclose" id="viewerClose" aria-label="Close preview">&times;</button><div id="viewerBody" class="vbody"></div></dialog>
 <div id="v3home" hidden><div class="v3-view" id="v3view">
   <div class="v3-stage"><div class="v3-canvas" id="v3dCanvas"></div><div class="v3-tools" id="v3dTools"></div><div id="v3dBrush" hidden></div></div>
@@ -905,7 +905,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     }
     // A pair of guides, slides and stoppers on every 48 mm level of the module (h levels), as the assembly has them:
     // one 2F/4F box rides on all of them, and the same module can take a 1F box per level instead
-    add('Runners', 'Runner stopper' + t, U + 'Runners/Runner Stopper.stl', 2 * h, { spare: true, ...x });
+    add('Runners', 'Runner stopper' + t, U + 'Runners/Runner Stopper.stl', 2 * h, x);
     if (o.gearedRails) add('Runners', 'Geared rails (pair)' + t, U + `Geared Rails/${w} Rails.stl`, n,
       { note: 'Optional in the manual. Adds locking force; use them if you put more than one box in a 2F/4F module. One file holds both racks, top and bottom.', ...x });
     // A hidden lock has no knob on the front: the removable key (part 2) turns it, and one serves the whole stack
@@ -914,16 +914,16 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       add('Lock', 'Hidden key' + t, U + 'Hidden Key (Turn On Supports).stl', n, { supports: true, ...x });
     } else {
       add('Lock', 'Key lock' + t, U + 'Key (Turn On Supports).stl', n, { supports: true, ...x });
-      add('Lock', 'Key cap' + t, U + 'Key Cap.stl', n, { spare: true, ...x });
+      add('Lock', 'Key cap' + t, U + 'Key Cap.stl', n, x);
     }
-    add('Lock', 'Springs (pair)' + t, U + 'Springs.stl', n, { note: 'One file holds both springs. Fit them flat side up.', spare: true, ...x });
+    add('Lock', 'Springs (pair)' + t, U + 'Springs.stl', n, { note: 'One file holds both springs. Fit them flat side up.', ...x });
     // One latch per latch frame under the module, whatever the drawers in it: S and M have one, in the middle; L and XL
     // two (measured on the modules). Drawer Assembly 8/8 pushes it into the module's underside.
     add('Lock', 'Latch' + t, U + 'Latch.stl', w === 'L' || w === 'XL' ? 2 : 1, x);
     add('Lock', 'Label' + t, U + 'Label.stl', n, { note: 'Add your own text with the slicer’s text tool.', ...x });
     // One cap per counterbore of a front: every bolt hole but the one the label covers (Drawer Assembly 6/8 shows
     // the one cap of an S 1F; the others are counted on the fronts)
-    add('Lock', 'Facade cap' + t, U + 'Facade Cap.stl', lay.reduce((a, dh) => a + frontBolts(w, dh) - 1, 0), { spare: true, ...x });
+    add('Lock', 'Facade cap' + t, U + 'Facade Cap.stl', lay.reduce((a, dh) => a + frontBolts(w, dh) - 1, 0), x);
     if (o.interior === 'gridfinity') {
       const subdir = fam + `${w}${d}/Gridfinity Baseplate/`;
       if (w === 'XL' && d >= 6) {
@@ -959,7 +959,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       add('Interior', 'Divider edge piece' + t, dir + `${o.gridEdge === 'rounded' ? 'Rounded' : 'Straight'} Edge Piece ${sfx}.stl`, 2 * (across + along),
         { note: 'Two per full-span divider, one at each wall.' });
       add('Interior', 'Divider pin' + t, U + `Grid Dividers/grid divider pin_${o.gridPin === 'loose' ? 'loose' : 'tight'}.stl`, 2 * (across + along),
-        { spare: true, inferred: 'The instructions don’t give a pin count. Two per divider is read from the drawings.' });
+        { inferred: 'The instructions don’t give a pin count. Two per divider is read from the drawings.' });
     }
   }
 
@@ -1033,13 +1033,13 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (sm) add('Hinges & locks', 'Hinge top', SUU + 'Hinges/' + (w === 'S' ? 'S Hinge Top.stl' : 'M Hinge Top.stl'), 1,
       { note: 'One long top spans both hinges.' });
     else add('Hinges & locks', 'Hinge tops (pair)', SUU + 'Hinges/L-XL Hinge Top.stl', 1, { note: 'This file already contains two hinge tops.' });
-    add('Hinges & locks', 'Hinge rods (pair)', SUU + 'Rods/' + (sm ? 'S-M Rods.stl' : 'L-XL Rods.stl'), 1, { note: 'One file holds both rods.', spare: true });
+    add('Hinges & locks', 'Hinge rods (pair)', SUU + 'Rods/' + (sm ? 'S-M Rods.stl' : 'L-XL Rods.stl'), 1, { note: 'One file holds both rods.' });
     // One lock per notch in the front's top edge: S and M fronts have one, L and XL two (Sustainers Naming shows two on L)
     const locks = big ? 2 : 1;
     add('Hinges & locks', 'Lock holder', SUU + 'Locks/LOCK HOLDER.stl', locks);
     add('Hinges & locks', 'Lock inner part', SUU + 'Locks/LOCK INNER PART.stl', locks);
     add('Hinges & locks', 'Lock outer part', SUU + 'Locks/' + (h === 1 ? 'LOCK OUTER PART 1F.stl' : 'LOCK OUTER PART 2-4F.stl'), locks);
-    add('Hinges & locks', 'Lock pin set', SUU + 'Locks/1 SET OF PINS FOR 1 LOCK.stl', locks, { note: 'Four pins per file, one file per lock.', spare: true });
+    add('Hinges & locks', 'Lock pin set', SUU + 'Locks/1 SET OF PINS FOR 1 LOCK.stl', locks, { note: 'Four pins per file, one file per lock.' });
     // The case body has a drawer module's underside, latch frames included, and stacks like one
     add('Hinges & locks', 'Latch', U + 'Latch.stl', big ? 2 : 1,
       { inferred: 'The manual doesn’t show a case from below. Its body has the same latch frames as a drawer module (one on S and M, two on L and XL), so it takes the same latches.' });
@@ -1208,7 +1208,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     return { lines: mergeSame(k.lines), missing: k.missing, hardware: unitHardware(c) };
   }
   // One line per file in a unit: the two bays of an L² or XL² list their shared parts (keys, springs, caps, stoppers…)
-  // once, without the bay's tag, so spares are added to the total as the Print step does
+  // once, without the bay's tag, so Design and Print list the same totals
   function mergeSame(lines) {
     const out = [], by = new Map();
     for (const l of lines) {
@@ -1238,7 +1238,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   function buildHiddenKey(resolve) {
     const k = collector(resolve);
     k.add('Lock', 'Hidden key, part 2', U + 'Hidden Key Part 2 (Turn on Supports).stl', 1, { supports: true, note: 'One per stack: it turns every hidden lock of the stack.' });
-    k.add('Lock', 'Key cap', U + 'Key Cap.stl', 1, { spare: true, note: 'Goes on the removable key’s grip.' });
+    k.add('Lock', 'Key cap', U + 'Key Cap.stl', 1, { note: 'Goes on the removable key’s grip.' });
     return { lines: k.lines, missing: k.missing, hardware: [] };
   }
 
@@ -1327,7 +1327,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   let printer = store.get('printer', { id: 'p1s', v: [256, 256, 250] });
   { const pp = PRINTERS.find(p => p.id === printer.id); if (!pp) printer = { id: 'p1s', v: PRINTERS[0].v }; else if (pp.id !== 'custom') printer = { id: pp.id, v: pp.v }; }
   const preset = () => PRINTERS.find(p => p.id === printer.id) || {};
-  const spares = true; // +10% on small loseable parts and bolts
   // Filament colours: a palette (USSA's three render colours to start with), a colour per part role (R.ROLES), and
   // per-unit choices kept in the unit's own settings (cfg.colors, so they travel with duplicates and edits). A part
   // with no choice keeps its role's default, which is what colorOf has always given it.
@@ -1464,16 +1463,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       (p.notes || []).forEach(n => notes.includes(n) || notes.push(n));
     }
     return { lines: [...lines.values()], hardware: [...hw.values()], notes };
-  }
-
-  // Spares: +10% (at least one) on small loseable parts and on bolts and inserts
-  function withSpares(res) {
-    if (!spares) return res;
-    return {
-      ...res,
-      lines: res.lines.map(l => l.spare ? { ...l, spareN: Math.max(1, Math.ceil(l.total * 0.1)), total: l.total + Math.max(1, Math.ceil(l.total * 0.1)) } : l),
-      hardware: res.hardware.map(h => /bolt|insert/i.test(h.item) ? { ...h, spareN: Math.max(1, Math.ceil(h.total * 0.1)), total: h.total + Math.max(1, Math.ceil(h.total * 0.1)) } : h),
-    };
   }
 
   // ---------- towers ----------
@@ -1629,7 +1618,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     list.forEach(t => { const a = analyzeTower(t); all.push(...a.parts); a.issues.filter(i => i.k === 'bad').forEach(i => issues.push(t.name + ': ' + i.m)); });
     if (withX) all.push({ lines: xl, hardware: [] });
     const scope = whole ? 'all' : onlyExtras ? 'extras' : 'pick:' + [...list.map(t => t.id), ...(withX ? ['loose'] : [])].join(',');
-    return { ...withSpares(merge(all)), towerIssues: issues, empty, list, extras: withX ? xl.length : 0, onlyExtras, whole, scope };
+    return { ...merge(all), towerIssues: issues, empty, list, extras: withX ? xl.length : 0, onlyExtras, whole, scope };
   }
 
   // ---------- part previews ----------
@@ -1881,7 +1870,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       ${g.items.map(l => `<div class="row" style="grid-template-columns: 0 64px 40px minmax(0,1fr) auto 38px">
           <span></span>${thumb(l, 'sm')}
           <div class="qty">${l.total}<small>\u00d7</small></div>
-          <div style="min-width:0"><div class="pname">${esc(l.label)}${l.spareN ? ` <small style="color:var(--muted);font-weight:400">incl. ${l.spareN} spare</small>` : ''}</div>
+          <div style="min-width:0"><div class="pname">${esc(l.label)}</div>
             <div class="pfile mono" title="${esc(l.file.path)}">${esc(fileName(l.file.path))} <span style="opacity:.7">\u2014 ${esc(folder(l.file.path))}</span></div>
             ${l.note ? `<div class="pnote">${esc(l.note)}</div>` : ''}
             ${l.inferred ? `<div class="pnote">Inferred: ${esc(l.inferred)}</div>` : ''}</div>
@@ -1897,7 +1886,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     lines.forEach(l => { let g = groups.find(g => g.name === l.group); if (!g) groups.push(g = { name: l.group, items: [] }); g.items.push(l); });
     const bad = l => l.fit.s === 'no' || l.fit.s === 'reorient';
     return `<div class="ilist">${groups.map(g => `<h3><span>${esc(g.name)}</span><span class="mono">${plural(g.items.reduce((a, l) => a + l.total, 0), 'print')}</span></h3>
-        <ul>${g.items.map(l => `<li><span class="q mono">${l.total}\u00d7</span><span class="n" title="${esc(l.file.path)}">${esc(l.label)}${l.spareN ? ` <small>incl. ${l.spareN} spare</small>` : ''}${l.inferred ? ' <small>inferred</small>' : ''}</span>${bad(l) ? '<span class="badge no">Too big</span>' : ''}</li>`).join('')}</ul>`).join('')}
+        <ul>${g.items.map(l => `<li><span class="q mono">${l.total}\u00d7</span><span class="n" title="${esc(l.file.path)}">${esc(l.label)}${l.inferred ? ' <small>inferred</small>' : ''}</span>${bad(l) ? '<span class="badge no">Too big</span>' : ''}</li>`).join('')}</ul>`).join('')}
       ${hw.length ? `<h3><span>Bolts and hardware</span><span class="mono">not printed</span></h3><ul>${hw.map(h => `<li><span class="q mono">${h.total}\u00d7</span><span class="n">${esc(h.item)}</span></li>`).join('')}</ul>` : ''}
       <button type="button" class="linkbtn" data-go="print">Files, sizes and plates in Print</button></div>`;
   }
@@ -2518,7 +2507,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (dsel.l == null || !t.levels[dsel.l]) return stackInspector(box, t);
     const i = dsel.l, L = t.levels, lv = L[i], ui = Math.min(dsel.u || 0, lv.length - 1), u = lv[ui], top = i === L.length - 1;
     const k = clean(u); if (!top) k.roof = 'none';
-    const res = withSpares(computeUnit(k)), s = summary(res.lines), ext = unitExt(u), nf = unitNoFit(u, top);
+    const res = computeUnit(k), s = summary(res.lines), ext = unitExt(u), nf = unitNoFit(u, top);
     const trial = patch => { const x = clean({ ...u, ...patch, roof: 'none' }); fixUnit(x); return !tooBig(x); };
     const typeOpts = [{ v: 'drawer', label: 'Drawer', sub: 'pulls out' }, { v: 'case', label: 'Case', sub: 'opens on top' }].filter(o => o.v === u.type || trial({ type: o.v }));
     // Heights: on an XL or XL\u00b2 level, 2F and 4F make it an S and an M side by side
@@ -3020,7 +3009,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
             <div class="panel popbox" id="plateOptsBox" ${plateOptsOpen ? '' : 'hidden'}><h2>Plate options</h2>
               <label class="opt"><input type="checkbox" id="mixSupports" ${mixSupports ? 'checked' : ''}><span>Fewer plates<small>Support parts share plates; supports stay on just for them</small></span></label>
               ${hasLabels ? `<label class="opt"><input type="checkbox" id="labelsApart" ${labelsApart ? 'checked' : ''}><span>Labels on their own plate<small>Add text and colors in the slicer without touching other plates</small></span></label>` : ''}
-              <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Small parts that are easy to lose come with 10% spares. Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
+              <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
               <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}<button type="button" class="btn" id="clearPlates">${b.onlyExtras ? 'Clear loose parts' : 'Clear all plates'}</button></div>
             </div></span></div>
           <div class="pnote" style="margin:0">Plates follow the colors chosen in Design.${labelsApart && hasLabels ? ' Labels on their own plate.' : ''}${mixSupports ? '' : ' Parts with supports kept apart.'}</div>
@@ -4468,10 +4457,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   const ICON_OK = '<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8.2l2.3 2.3 4.7-4.9" fill="none" stroke="var(--sheet)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const ICON_BAD = '<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M8 4.2v4.6M8 11.3v.2" stroke="var(--sheet)" stroke-width="1.9" stroke-linecap="round"/></svg>';
   // ---------- 3 · hardware: one shopping list for the whole build ----------
-  // Same data as the hardware tables (the rules' hardware, merged, with spares). Lines are grouped by what is bought;
-  // each says which stacks need it. "Bought" ticks are kept per item; "Include spares" only changes this list.
+  // Same data as the hardware tables (the rules' hardware, merged). Lines are grouped by what is bought; each says which
+  // stacks need it. "Bought" ticks are kept per item.
   let hwBought = store.get('hwBought', {});
-  let hwSpares = store.get('hwSpares', true);
   const HW_GROUPS = [['M4 bolts', /^M4\b/], ['M6 bolts and inserts', /^M6\b/], ['Axle, rods and bearings', /M16|bearing|collar/i], ['Other', /./]];
   const hwGroupOf = item => HW_GROUPS.find(([, re]) => re.test(item))[0];
   function hardwareList() {
@@ -4490,14 +4478,14 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       return [...set].join(', ');
     };
     const rows = b.hardware.map(h => {
-      const spare = hwSpares ? h.spareN || 0 : 0, qty = h.total - (h.spareN || 0) + spare, shop = shopOf(h.item);
-      return { item: h.item, qty, spare, why: h.why, where: whereText(h.item), group: hwGroupOf(h.item), head: headOf(h.item), link: shop.link, note: shop.note, bought: !!hwBought[h.item] };
+      const qty = h.total, shop = shopOf(h.item);
+      return { item: h.item, qty, why: h.why, where: whereText(h.item), group: hwGroupOf(h.item), head: headOf(h.item), link: shop.link, note: shop.note, bought: !!hwBought[h.item] };
     }).sort((x, y) => HW_GROUPS.findIndex(g => g[0] === x.group) - HW_GROUPS.findIndex(g => g[0] === y.group));
     return { b, rows };
   }
-  const hwText = rows => 'Vault hardware\n' + rows.map(r => `${r.qty}x  ${r.item}${r.spare ? ` (incl. ${r.spare} spare)` : ''}  \u2014  ${r.why}${r.where ? ' \u00b7 ' + r.where : ''}${r.bought ? '  [bought]' : ''}`).join('\n');
+  const hwText = rows => 'Vault hardware\n' + rows.map(r => `${r.qty}x  ${r.item}  \u2014  ${r.why}${r.where ? ' \u00b7 ' + r.where : ''}${r.bought ? '  [bought]' : ''}`).join('\n');
   const csvCell = v => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
-  const hwCsv = rows => ['Bought,Quantity,Item,Spares included,Used for,Stacks,Store link', ...rows.map(r => [r.bought ? 'yes' : '', r.qty, r.item, r.spare || '', r.why, r.where, r.link || ''].map(csvCell).join(','))].join('\r\n');
+  const hwCsv = rows => ['Bought,Quantity,Item,Used for,Stacks,Store link', ...rows.map(r => [r.bought ? 'yes' : '', r.qty, r.item, r.why, r.where, r.link || ''].map(csvCell).join(','))].join('\r\n');
   function renderHardware() {
     const { b, rows } = hardwareList();
     if (b.empty) return emptyStep('view-hardware', 'to buy');
@@ -4511,7 +4499,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <label class="hwtick"><input type="checkbox" data-hw-bought="${esc(r.item)}" ${r.bought ? 'checked' : ''} aria-label="${esc(r.item)} bought"></label>
         <span class="hwq num">${r.qty}\u00d7</span>
         <span class="hwhead">${headIcon(r.item)}</span>
-        <span class="hwname"><b>${esc(r.item)}</b><small>${[r.spare ? `incl. ${r.spare} spare` : '', r.note || ''].filter(Boolean).map(esc).join(' \u00b7 ')}</small></span>
+        <span class="hwname"><b>${esc(r.item)}</b><small>${esc(r.note || '')}</small></span>
         <span class="hwuse"><span>${esc(r.why)}</span><small class="mono">${esc(r.where)}</small></span>
         <span class="hwbuy">${r.link ? `<a class="btn" href="${r.link}" target="_blank" rel="noopener">Amazon</a>` : ''}</span></div>`;
     }).join('');
@@ -4529,7 +4517,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <div class="panel hwbox">
           <button type="button" class="btn primary big" id="hwCopy">Copy the list</button>
           <button type="button" class="btn" id="hwCsv">Export as CSV</button>
-          <label class="opt"><input type="checkbox" id="hwSpares" ${hwSpares ? 'checked' : ''}><span>Include spares<small>10% more of the bolts and inserts, at least one</small></span></label>
         </div>
         ${rows.some(r => r.head) ? `<div class="panel hwbox hwlegend"><div class="v3-sec">Match the head shape</div>
           ${headIcon('button-head')}<span><b>Button head</b>, domed</span>
@@ -4541,7 +4528,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       if (cb.checked) hwBought[cb.dataset.hwBought] = 1; else delete hwBought[cb.dataset.hwBought];
       store.set('hwBought', hwBought); renderHardware(); renderTabs();
     });
-    $('hwSpares').onchange = () => { hwSpares = $('hwSpares').checked; store.set('hwSpares', hwSpares); renderHardware(); };
     $('hwCopy').onclick = () => copy(hwText(rows), 'Hardware list copied');
     V.querySelectorAll('[data-hwfin]').forEach(b => b.onclick = () => { if (b.dataset.hwfin === HW_STEEL) delete colorPrefs.hardware; else colorPrefs.hardware = b.dataset.hwfin; saveColors(); renderHardware(); });
     $('hwCsv').onclick = () => {
@@ -4630,7 +4616,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (!sections.length) { $('view-assemble').innerHTML = '<div class="panel empty">Loose parts only: nothing to assemble.</div>'; return; }
     if (!sections.some(g => g.id === asmSec)) asmSec = sections[0].id;
     // Which stacks each section concerns, read from each stack's own parts
-    const per = b.list.map(t => ({ t, b: { ...withSpares(merge(analyzeTower(t).parts)), list: [t] } }));
+    const per = b.list.map(t => ({ t, b: { ...merge(analyzeTower(t).parts), list: [t] } }));
     const scopeOf = g => { const ts = per.filter(x => g.when(x.b)).map(x => x.t.name); return ts.length > 1 && ts.length === b.list.length ? (ts.length === 2 ? 'Both stacks' : 'All stacks') : ts.join(', ') || 'Loose parts'; };
     const units = b.list.flatMap(t => t.levels.flat());
     const repeatOf = g => ASM_UNIT[g.id] ? units.reduce((a, u) => a + ASM_UNIT[g.id][1](u), 0) : 0;
@@ -4665,7 +4651,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       <aside class="panel asm-need" aria-label="What this section needs"><div class="v3-sec">Have ready for this section</div>
         ${need.length ? `<div class="aneed">${need.map(h => `<div><span class="num">${h.total}×</span><span>${esc(h.item)}</span></div>`).join('')}</div>` : '<p class="pnote" style="margin:0">No hardware in this section, printed parts only.</p>'}
         <button type="button" class="btn" data-go="hardware">Open the hardware list</button>
-        <p class="pnote" style="margin:0">Quantities are for the whole build, spares included.</p></aside></div>`;
+        <p class="pnote" style="margin:0">Quantities are for the whole build.</p></aside></div>`;
     const V = $('view-assemble');
     V.querySelectorAll('[data-sec]').forEach(btn => btn.onclick = () => { asmSec = btn.dataset.sec; store.set('asmSec', asmSec); renderAssemble(); });
     V.querySelectorAll('[data-go]').forEach(btn => btn.onclick = () => { view = btn.dataset.go; renderAll(); });

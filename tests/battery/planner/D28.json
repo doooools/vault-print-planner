@@ -5,7 +5,7 @@
   "printer": "h2s",
   "towers": "[{\"name\":\"Stack 1\",\"fp\":{\"w\":\"L\",\"d\":6},\"st\":\"feet\",\"L\":[[\"case L 6 1F roof=grid rails std empty ci=flat\"]]}]"
  },
- "when": "2026-11-12T10:25:24.523Z",
+ "when": "2026-11-12T10:44:52.092Z",
  "printer": {
   "id": "h2s"
  },
@@ -71,7 +71,7 @@
  "levels": [
   {
    "unit": "L6 · 1F case",
-   "head": "Level 1 of 1 L6 · 1F case330 × 282 × 66 mm · 20 parts · ≈ 1.28 kg",
+   "head": "Level 1 of 1 L6 · 1F case330 × 282 × 66 mm · 18 parts · ≈ 1.27 kg",
    "alerts": [],
    "parts": [
     {
@@ -105,8 +105,8 @@
      "bad": false
     },
     {
-     "q": 2,
-     "label": "Hinge rods (pair) incl. 1 spare",
+     "q": 1,
+     "label": "Hinge rods (pair)",
      "file": "02. SUSTAINERS/05. Universal/Rods/L-XL Rods.stl",
      "bad": false
     },
@@ -129,8 +129,8 @@
      "bad": false
     },
     {
-     "q": 3,
-     "label": "Lock pin set incl. 1 spare",
+     "q": 2,
+     "label": "Lock pin set",
      "file": "02. SUSTAINERS/05. Universal/Locks/1 SET OF PINS FOR 1 LOCK.stl",
      "bad": false
     },
@@ -153,19 +153,19 @@
      "bad": false
     },
     {
-     "q": 18,
+     "q": 16,
      "label": "M4 × 14 mm button-head bolt",
      "file": "",
      "bad": false
     },
     {
-     "q": 9,
+     "q": 8,
      "label": "M4 × 10 mm button-head bolt",
      "file": "",
      "bad": false
     },
     {
-     "q": 8,
+     "q": 7,
      "label": "M4 × 20 mm button-head bolt",
      "file": "",
      "bad": false
@@ -174,7 +174,7 @@
   }
  ],
  "scope": [],
- "top": "0% printed 0 of 20 parts · 6 of 6 plates left · ≈ 0 g of 1.28 kg",
+ "top": "0% printed 0 of 18 parts · 6 of 6 plates left · ≈ 0 g of 1.27 kg",
  "alerts": [],
  "parts": [
   {
@@ -233,8 +233,8 @@
    "bed": "var(--ok)"
   },
   {
-   "q": 2,
-   "label": "Hinge rods (pair) incl. 1 spare",
+   "q": 1,
+   "label": "Hinge rods (pair)",
    "file": "02. SUSTAINERS/05. Universal/Rods/L-XL Rods.stl",
    "tags": [
     "Fits",
@@ -279,8 +279,8 @@
    "bed": "var(--ok)"
   },
   {
-   "q": 3,
-   "label": "Lock pin set incl. 1 spare",
+   "q": 2,
+   "label": "Lock pin set",
    "file": "02. SUSTAINERS/05. Universal/Locks/1 SET OF PINS FOR 1 LOCK.stl",
    "tags": [
     "Fits",
@@ -327,7 +327,7 @@
  "groups": [
   "Module2 prints",
   "Lid1 print",
-  "Hinges & locks16 prints",
+  "Hinges & locks14 prints",
   "Roof1 print"
  ],
  "plates": [
@@ -385,7 +385,7 @@
   },
   {
    "n": 3,
-   "head": "Plate 037 parts · ≈ 50 g · 50 mm tall",
+   "head": "Plate 036 parts · ≈ 50 g · 50 mm tall",
    "tags": "Charcoal",
    "care": "",
    "rows": [
@@ -405,7 +405,7 @@
      "file": "LOCK OUTER PART 1F.stl"
     },
     {
-     "count": 3,
+     "count": 2,
      "label": "Lock pin set",
      "file": "1 SET OF PINS FOR 1 LOCK.stl"
     }
@@ -414,7 +414,7 @@
     340,
     320
    ],
-   "shapes": 7,
+   "shapes": 6,
    "out_of_bed": [],
    "in_noprint": [],
    "clashes": []
@@ -447,12 +447,12 @@
   },
   {
    "n": 5,
-   "head": "Plate 054 parts · ≈ 20 g · 13 mm tall",
+   "head": "Plate 053 parts · ≈ 20 g · 13 mm tall",
    "tags": "Orange",
    "care": "",
    "rows": [
     {
-     "count": 2,
+     "count": 1,
      "label": "Hinge rods (pair)",
      "file": "L-XL Rods.stl"
     },
@@ -466,7 +466,7 @@
     340,
     320
    ],
-   "shapes": 4,
+   "shapes": 3,
    "out_of_bed": [],
    "in_noprint": [],
    "clashes": []
@@ -493,5 +493,5 @@
    "clashes": []
   }
  ],
- "hardware": "Hardware to buy0 of 3 lines bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts3 lines 18× M4 × 14 mm button-head boltincl. 2 spare Case hinge tops and locksStack 1 Amazon 9× M4 × 10 mm button-head boltincl. 1 spare Case hingesStack 1 Amazon 8× M4 × 20 mm button-head boltincl. 1 spare Case front and bodyStack 1 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Include spares10% more of the bolts and inserts, at least one Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
+ "hardware": "Hardware to buy0 of 3 lines bought Everything that is not printed, for the whole build. Order it while the plates run. M4 bolts3 lines 16× M4 × 14 mm button-head bolt Case hinge tops and locksStack 1 Amazon 8× M4 × 10 mm button-head bolt Case hingesStack 1 Amazon 7× M4 × 20 mm button-head bolt Case front and bodyStack 1 Amazon Bolt finish Blackraw steelGreyzinc-plated or stainless The bolts in the 3D view take this finish. Copy the list Export as CSV Match the head shape Button head, domed Countersunk, flat and flush Hex head, for a wrench Store links go to Amazon US product pages that match the manual’s sizes and head shapes. Any store with the same sizes will do."
 }

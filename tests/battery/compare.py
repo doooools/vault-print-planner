@@ -1,7 +1,7 @@
 """Compare the frozen oracle (tests/battery/expected.json) with the planner captures (tests/battery/planner/*.json).
 
-Planner quantities include the planner's own +10 % spares on small loose parts ("incl. N spare" in the label): the
-comparison uses the quantity without them (base) and shows the spares apart.
+The planner used to add +10 % spares on small loose parts ("incl. N spare" in the label, removed since): the
+comparison uses the quantity without them (base), so older captures (before_fix/) compare the same way.
 Run: python -I tests/battery/compare.py [1c|2|2c] -> tests/battery/comparison_raw.md (comparison2_raw.md for the second battery)
 """
 import json, os, re, sys
