@@ -1480,8 +1480,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     hex: '<path d="M5 3.5h10v13H5z"/><path d="M5 10h10" style="stroke:var(--sheet);stroke-width:1.2"/>',
   };
   const headIcon = item => { const k = headOf(item); return k ? `<svg class="bolt" viewBox="0 0 48 20" role="img" aria-label="${k === 'button' ? 'button head' : k === 'hex' ? 'hex head' : 'countersunk head'}">${HEADS[k]}<path d="M15 7h30v6H15z"/><path d="M17 7v6M20 7v6M23 7v6M26 7v6M29 7v6M32 7v6M35 7v6M38 7v6M41 7v6" style="stroke:var(--sheet);stroke-width:1"/></svg>` : ''; };
-  // Where to buy each item: Amazon US products checked against the manual's sizes and head shapes. Plain product pages
-  // (upstream's affiliate short links resolved to the product they point at, without any tag)
+  // Where to buy each item. Amazon US: products checked against the manual's sizes and head shapes, plain product pages
+  // (upstream's affiliate short links resolved to the product they point at, without any tag). Other stores, chosen by
+  // continent in step 3: a search for the same size, head and standard, since product pages differ from store to store.
   const SHOP = [
     [/^M4 × 10 mm button-head/, 'https://www.amazon.com/dp/B0GJHS5HJB'],
     [/^M4 × 14 mm button-head/, 'https://www.amazon.com/dp/B0GGH948S6'],
@@ -1496,10 +1497,49 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     [/^6205ZZ/, 'https://www.amazon.com/dp/B081JY2RTV'],
     [/shaft collar/, 'https://www.amazon.com/dp/B0C9QV89FQ'],
     [/^M16 /, 'https://www.amazon.com/dp/B0F3L62Z9J', '1 m rod, cut to length'],
-    [/^M6 × 35 mm hex/, null, 'not found on Amazon; try a hardware store'],
     [/60–100 mm/, null, 'length depends on your build; buy what fits'],
   ];
-  const shopOf = item => { const s = SHOP.find(([re]) => re.test(item)); return s ? { link: s[1], note: s[2] } : {}; };
+  // What to search for, from the item's name: size, head and the ISO standard sellers list them under
+  const SHOP_QUERY = [
+    [/^(M\d+) × (\d+) mm button-head/, (m, d, l) => `${d} x ${l}mm button head socket screw ISO 7380`],
+    [/^(M\d+) × (\d+) mm countersunk/, (m, d, l) => `${d} x ${l}mm countersunk socket screw ISO 10642`],
+    [/^(M\d+) × (\d+) mm hex/, (m, d, l) => `${d} x ${l}mm hex head bolt ISO 4017`],
+    [/^(M\d+) × (\d+) × (\d+) heat insert/, (m, d, l, o) => `${d} heat set insert ${l} x ${o}mm`],
+    [/^6205ZZ/, () => '6205ZZ bearing'],
+    [/shaft collar \((\d+) mm bore\)/, (m, b) => `${b}mm shaft collar`],
+    [/^M16 /, () => 'M16 threaded rod 1m'],
+  ];
+  const shopQuery = item => { for (const [re, f] of SHOP_QUERY) { const m = item.match(re); if (m) return f(...m); } return item.replace(/×/g, 'x').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim(); };
+  // Stores by continent: [id, store name, country]. Every Amazon store takes the same search address.
+  const SHOP_STORES = [
+    ['North America', [['com', 'Amazon.com', 'United States'], ['ca', 'Amazon.ca', 'Canada'], ['com.mx', 'Amazon.com.mx', 'Mexico']]],
+    ['South America', [['com.br', 'Amazon.com.br', 'Brazil']]],
+    ['Europe', [['fr', 'Amazon.fr', 'France'], ['de', 'Amazon.de', 'Germany, Austria'], ['co.uk', 'Amazon.co.uk', 'United Kingdom, Ireland'], ['it', 'Amazon.it', 'Italy'],
+      ['es', 'Amazon.es', 'Spain, Portugal'], ['nl', 'Amazon.nl', 'Netherlands'], ['com.be', 'Amazon.com.be', 'Belgium'], ['se', 'Amazon.se', 'Sweden'], ['pl', 'Amazon.pl', 'Poland'], ['com.tr', 'Amazon.com.tr', 'Türkiye']]],
+    ['Asia', [['co.jp', 'Amazon.co.jp', 'Japan'], ['in', 'Amazon.in', 'India'], ['sg', 'Amazon.sg', 'Singapore'], ['ae', 'Amazon.ae', 'United Arab Emirates'], ['sa', 'Amazon.sa', 'Saudi Arabia']]],
+    ['Oceania', [['com.au', 'Amazon.com.au', 'Australia, New Zealand']]],
+    ['Africa', [['co.za', 'Amazon.co.za', 'South Africa'], ['eg', 'Amazon.eg', 'Egypt']]],
+  ];
+  const SHOP_BY_ID = new Map(SHOP_STORES.flatMap(([cont, list]) => list.map(([id, name, where]) => [id, { id, name, where, cont }])));
+  // First visit: the browser's region (fr-FR → Amazon.fr), else its time zone's continent, else Amazon.com
+  function guessShop() {
+    const CC = { US: 'com', CA: 'ca', MX: 'com.mx', BR: 'com.br', FR: 'fr', LU: 'fr', MC: 'fr', DE: 'de', AT: 'de', CH: 'de', GB: 'co.uk', IE: 'co.uk', IT: 'it',
+      ES: 'es', PT: 'es', NL: 'nl', BE: 'com.be', SE: 'se', PL: 'pl', TR: 'com.tr', JP: 'co.jp', IN: 'in', SG: 'sg', AE: 'ae', SA: 'sa', AU: 'com.au', NZ: 'com.au', ZA: 'co.za', EG: 'eg' };
+    try {
+      for (const l of navigator.languages || [navigator.language]) { const cc = (String(l).match(/-([A-Za-z]{2})\b/) || [])[1]; if (cc && CC[cc.toUpperCase()]) return CC[cc.toUpperCase()]; }
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      const BY_TZ = { Europe: 'de', 'America/Sao_Paulo': 'com.br', Australia: 'com.au', 'Pacific/Auckland': 'com.au', Africa: 'co.za', 'Africa/Cairo': 'eg', 'Asia/Tokyo': 'co.jp', 'Asia/Kolkata': 'in', 'Asia/Singapore': 'sg', 'Asia/Dubai': 'ae' };
+      return BY_TZ[tz] || BY_TZ[tz.split('/')[0]] || 'com';
+    } catch (e) { return 'com'; }
+  }
+  let shopStore = store.get('shopStore', '');
+  if (!SHOP_BY_ID.has(shopStore)) shopStore = guessShop();
+  const shopOf = item => {
+    const s = SHOP.find(([re]) => re.test(item)) || [], st = SHOP_BY_ID.get(shopStore);
+    if (s.length && s[1] === null) return { note: s[2] };
+    const page = st.id === 'com' && s[1];
+    return { link: page || `https://www.amazon.${st.id}/s?k=${encodeURIComponent(shopQuery(item))}`, store: st.name, page: !!page, note: s[2] };
+  };
 
   // ---------- copy helpers ----------
   function copy(text, msg, fallbackEl) {
@@ -1582,11 +1622,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
 
 
-  let folderHeroSkipped = false, folderHeroError = '';
+  // "Later: plan without the files" holds for the visit (this tab, reloads included): no folder popup until a folder is chosen
+  let folderHeroSkipped = (() => { try { return sessionStorage.getItem('vpp.folderLater') === '1'; } catch (e) { return false; } })(), folderHeroError = '';
+  function skipFolder(on) {
+    folderHeroSkipped = on;
+    try { if (on) sessionStorage.setItem('vpp.folderLater', '1'); else sessionStorage.removeItem('vpp.folderLater'); } catch (e) {}
+  }
   async function openFolder(fresh) {
     folderHeroError = '';
     try {
-      vaultFolder = await pickVaultFolder(fresh); rememberedFolder = ''; meshMemo.clear();
+      vaultFolder = await pickVaultFolder(fresh); rememberedFolder = ''; meshMemo.clear(); skipFolder(false);
       toast(`${vaultFolder.name}: ${plural(vaultFolder.files.size, 'part file')} found`);
     } catch (e) { if (e.name !== 'AbortError') folderHeroError = e.message || String(e); }
     renderAll();
@@ -1984,7 +2029,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     $('startPrinter').onclick = e => { e.stopPropagation(); printerPop(true); };
     if ($('startOpen')) $('startOpen').onclick = openDesign;
     if ($('startFolder')) $('startFolder').onclick = () => openFolder(false);
-    if ($('startLater')) $('startLater').onclick = () => { folderHeroSkipped = true; renderAll(); };
+    if ($('startLater')) $('startLater').onclick = () => { skipFolder(true); renderAll(); };
     $('startEmpty').onclick = () => { newStack(); renderAll(); };
     $('view-build').querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => addPreset(PRESETS[+b.dataset.tpl]));
   }
@@ -3111,9 +3156,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     meshMemo.clear(); renderAll(); renderHeader(); maybeRelink();
   }
   window.addEventListener('focus', () => { recheckFolder(); });
-  // Shown when the 3D view is on screen and has parts to read, once per visit (or once per loss)
+  // Shown when the 3D view is on screen and has parts to read, once per visit (or once per loss), never after "Later"
   function maybeRelink() {
-    if (!folderLink || vaultFolder || relinkShown || !canPickFolder) return;
+    if (!folderLink || vaultFolder || relinkShown || folderHeroSkipped || !canPickFolder) return;
     const box = $('v3view'); if (!box || !box.closest('.v3-slot, #v3d')) return;
     if (v3 && v3.units && !v3.units.some(u => u.place)) return; // only boxes in this stack anyway
     if (document.querySelector('dialog[open]')) { setTimeout(maybeRelink, 1500); return; } // after the other dialog
@@ -3139,7 +3184,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   };
   $('relinkGo').onclick = () => relinkTry(folderLink === 'gone' || folderLink === 'none');
   $('relinkOther').onclick = () => relinkTry(true);
-  $('relinkLater').onclick = relinkClose;
+  $('relinkLater').onclick = () => { skipFolder(true); relinkClose(); };
   $('relinkClose').onclick = relinkClose;
   // ---------- 3D stack view ----------
   // Opened from a stack card. three.js and meshoptimizer's simplifier come from a pinned CDN version only when it opens,
@@ -4646,7 +4691,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     };
     const rows = b.hardware.map(h => {
       const qty = h.total, shop = shopOf(h.item);
-      return { item: h.item, qty, why: h.why, where: whereText(h.item), group: hwGroupOf(h.item), head: headOf(h.item), link: shop.link, note: shop.note, bought: !!hwBought[h.item] };
+      return { item: h.item, qty, why: h.why, where: whereText(h.item), group: hwGroupOf(h.item), head: headOf(h.item), link: shop.link, store: shop.store, page: shop.page, note: shop.note, bought: !!hwBought[h.item] };
     }).sort((x, y) => HW_GROUPS.findIndex(g => g[0] === x.group) - HW_GROUPS.findIndex(g => g[0] === y.group));
     return { b, rows };
   }
@@ -4668,7 +4713,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <span class="hwhead">${headIcon(r.item)}</span>
         <span class="hwname"><b>${esc(r.item)}</b><small>${esc(r.note || '')}</small></span>
         <span class="hwuse"><span>${esc(r.why)}</span><small class="mono">${esc(r.where)}</small></span>
-        <span class="hwbuy">${r.link ? `<a class="btn" href="${r.link}" target="_blank" rel="noopener">Amazon</a>` : ''}</span></div>`;
+        <span class="hwbuy">${r.link ? `<a class="btn" href="${esc(r.link)}" target="_blank" rel="noopener" title="${esc(r.page ? `${r.store}: the product page` : `${r.store}: search for ${shopQuery(r.item)}`)}">${esc(r.store)}</a>` : ''}</span></div>`;
     }).join('');
     V.innerHTML = `<div class="hwpage">
       <section class="panel hwlist" aria-label="Shopping list">
@@ -4681,6 +4726,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="panel hwbox"><div class="v3-sec">Bolt finish</div>
           <div class="seg" role="group" aria-label="Bolt finish">${[[HW_BLACK, 'Black', 'raw steel'], [HW_STEEL, 'Grey', 'zinc-plated or stainless']].map(([hex, n, sub]) => `<button type="button" data-hwfin="${hex}" aria-pressed="${hwColor() === hex}"><span class="dot2" style="background:${hex};vertical-align:-2px;margin-right:6px"></span>${n}<small>${sub}</small></button>`).join('')}</div>
           <small class="pnote" style="margin:0">The bolts in the 3D view take this finish.</small></div>
+        <div class="panel hwbox"><label class="v3-sec" for="hwShop">Where you buy</label>
+          <select class="full" id="hwShop">${SHOP_STORES.map(([cont, list]) => `<optgroup label="${esc(cont)}">${list.map(([id, name, where]) => `<option value="${id}" ${id === shopStore ? 'selected' : ''}>${esc(name)} · ${esc(where)}</option>`).join('')}</optgroup>`).join('')}</select>
+          <small class="pnote" style="margin:0">${shopStore === 'com' ? 'Links go to product pages checked against the manual’s sizes and head shapes.' : 'Links search this store for the same size, head shape and standard.'} Any store with the same sizes will do.</small></div>
         <div class="panel hwbox">
           <button type="button" class="btn primary big" id="hwCopy">Copy the list</button>
           <button type="button" class="btn" id="hwCsv">Export as CSV</button>
@@ -4689,12 +4737,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           ${headIcon('button-head')}<span><b>Button head</b>, domed</span>
           ${headIcon('countersunk')}<span><b>Countersunk</b>, flat and flush</span>
           ${headIcon('hex bolt')}<span><b>Hex head</b>, for a wrench</span></div>` : ''}
-        ${rows.some(r => r.link) ? '<p class="pnote">Store links go to Amazon US product pages that match the manual\u2019s sizes and head shapes. Any store with the same sizes will do.</p>' : ''}
       </aside></div>`;
     V.querySelectorAll('[data-hw-bought]').forEach(cb => cb.onchange = () => {
       if (cb.checked) hwBought[cb.dataset.hwBought] = 1; else delete hwBought[cb.dataset.hwBought];
       store.set('hwBought', hwBought); renderHardware(); renderTabs();
     });
+    $('hwShop').onchange = e => { shopStore = e.target.value; store.set('shopStore', shopStore); renderHardware(); };
     $('hwCopy').onclick = () => copy(hwText(rows), 'Hardware list copied');
     V.querySelectorAll('[data-hwfin]').forEach(b => b.onclick = () => { if (b.dataset.hwfin === HW_STEEL) delete colorPrefs.hardware; else colorPrefs.hardware = b.dataset.hwfin; saveColors(); renderHardware(); });
     $('hwCsv').onclick = () => {
