@@ -2438,6 +2438,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     return `<button type="button" class="tpl" data-tpl="${i}"><b>${esc(p.name)}</b><span>${esc(p.why)}</span><span class="mono">${w} mm wide · ${h} mm tall</span></button>`;
   }
   function renderBuild() {
+    inspSave();
     v3park();
     if (!towers.length && !extras.length) { closeTpl(); renderStart(); v3sync(); return; }
     let t = curTower();
@@ -2516,13 +2517,30 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     bindCatalog();
   }
   // The inspector: the selected level, or the stack's settings
+  // A change made in the selection panel redraws it (and step 1): keep its scroll and its folded sections as they were,
+  // while it shows the same level, so the option just changed stays under the pointer
+  let inspKeep = null;
+  const inspSel = () => `${dsel.t}|${dsel.l}|${dsel.u}|${painting() && inspPaint}`;
+  const inspDetails = b => [...b.querySelectorAll('details')].map(d => { const sm = d.querySelector('summary'); return [sm && sm.firstChild ? sm.firstChild.textContent.trim() : '', d]; });
+  function inspSave() {
+    const b = $('dInsp'); if (!b || !b.childElementCount) return; // a panel just made, still empty: keep what was saved
+    inspKeep = { sel: inspSel(), top: b.scrollTop, open: new Map(inspDetails(b).map(([k, d]) => [k, d.open])) };
+  }
+  function inspRestore(b) {
+    const k = inspKeep; inspKeep = null;
+    if (!k || k.sel !== inspSel()) return;
+    inspDetails(b).forEach(([key, d]) => { if (k.open.has(key)) d.open = k.open.get(key); });
+    b.scrollTop = k.top;
+  }
   function renderInspector() {
     const box = $('dInsp'); if (!box || !curTower()) return;
+    inspSave();
     renderInspector0(box, curTower());
     if (painting() && !inspPaint) {
       box.insertAdjacentHTML('afterbegin', '<div class="ipaint"><span>Paint is on in the view.</span><button type="button" class="btn" data-insp-colors>Show the colors</button></div>');
       box.querySelector('[data-insp-colors]').onclick = () => { inspPaint = true; renderInspector(); };
     }
+    inspRestore(box);
   }
   function renderInspector0(box, t) {
     if (painting() && inspPaint) return paintPanel(box);
