@@ -2202,9 +2202,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (view === 'build' && t && dsel && dsel.l != null && t.levels[dsel.l]) {
       const u0 = t.levels[dsel.l][dsel.u || 0], col = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#d9622b';
       // the module's own parts once they are in (shell, guides, latches: not its drawers, lid or roof, which move or
-      // stand over it), else its box
+      // stand over it), else its box. Bounds from the parts' vertices: some are exported on edge at 45° (L 1F modules),
+      // and their file's box turned upright is far taller and deeper than the part.
       v3markObj = v.units.filter(u => u.cfg === u0 && !u.roof && !u.stack && u.g.visible).map(u => {
-        const y = u.g.position.y, solid = u.parts && u.parts.children.length ? new v.T.Box3().setFromObject(u.parts) : null;
+        if (u.parts) u.g.updateWorldMatrix(true, true);
+        const y = u.g.position.y, solid = u.parts && u.parts.children.length ? new v.T.Box3().setFromObject(u.parts, true) : null;
         const box = solid && !solid.isEmpty() ? solid.expandByScalar(1) : new v.T.Box3(new v.T.Vector3(u.x - u.w / 2 - 1, y - 1, -u.d - 1), new v.T.Vector3(u.x + u.w / 2 + 1, y + u.h + 1, 1));
         const h = new v.T.Box3Helper(box, col); v.scene.add(h); return h;
       });
@@ -3479,7 +3481,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         boxes.add(shell);
       }
       if (u.casters) u.casters.forEach(at => g.add(v.caster(at)));
-      const place = placeParts(u), lay = place && place.lay;
+      const place = placeParts(u), lay = place && (place.lay || sideDrawers(u));
       const front = u.drawer && !lay ? painted(new T.BoxGeometry(u.w - 8, u.h - 8, 4), 'facade', u.cfg) : null;
       if (front) { front.position.set(0, u.h / 2, 2); drawer.add(front); }
       // A case's lid (and its hinge tops) turns about the hinge axis: a pivot on the axis holding the parts set back by it
@@ -3495,13 +3497,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const dur = st => Math.min(1, Math.max(0.6, st.reduce((a, s) => a + (s.s || 0.5), 0)));
       // Several drawers in the module: each its own group, front, steps (its key and racks, then its slide) and joints
       const movers = lay ? lay.drawers.map(dr => {
-        const dg = new T.Group(), fw = dr.side ? u.w / 2 : u.w, fh = 48 * dr.h;
-        const f = painted(new T.BoxGeometry(fw - 8, fh - 6, 4), 'facade', u.cfg);
-        f.position.set(dr.side ? (dr.side === 'left' ? -1 : 1) * u.w / 4 : 0, 2 + 48 * dr.level + fh / 2, 2); dg.add(f); g.add(dg);
-        return { id: (dr.side || '') + dr.drawer, side: dr.side || null, level: dr.level, h: dr.h, drawer: dg, front: f, travel: Math.round(u.d * 0.6),
+        const dg = new T.Group(), sp = lay.split || 0, [x0, x1] = !dr.side ? [-u.w / 2, u.w / 2] : dr.side === 'left' ? [-u.w / 2, sp] : [sp, u.w / 2], fh = 48 * dr.h;
+        const f = painted(new T.BoxGeometry(x1 - x0 - 8, fh - 6, 4), 'facade', u.cfg);
+        f.position.set((x0 + x1) / 2, 2 + 48 * dr.level + fh / 2, 2); dg.add(f); g.add(dg);
+        return { id: (dr.side || '') + dr.drawer, side: dr.side || null, tag: dr.tag, level: dr.level, h: dr.h, drawer: dg, front: f, travel: Math.round(u.d * 0.6),
           open: false, t: 0, jn: new Map(), motion: lay.motion, steps: dr.open, dur: dur(dr.open) };
       }) : null;
-      v.units.push({ ...u, g, drawer, boxes, front, lid, place, movers, travel: u.drawer && !movers ? Math.round(u.d * 0.6) : 0, open: false,
+      v.units.push({ ...u, g, drawer, boxes, front, lid, place, movers, split: lay ? lay.split || 0 : 0, sorted: !!(lay && lay.sorted), travel: u.drawer && !movers ? Math.round(u.d * 0.6) : 0, open: false,
         motion, steps, t: 0, jn: new Map(), dur: dur(steps) });
     }
     v.units.forEach(v3pose);
@@ -3541,7 +3543,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       for (let o = h.mesh; o && o !== h.u.g; o = o.parent) { const m = ms.find(x => x.drawer === o); if (m) return m; }
       const p = h.u.g.worldToLocal(h.point.clone()), top = Math.max(...ms.map(m => m.level + m.h)) - 1;
       const k = Math.min(top, Math.max(0, Math.floor((p.y - 2) / 48)));
-      return ms.find(m => (!m.side || (m.side === 'left') === (p.x < 0)) && k >= m.level && k < m.level + m.h) || null;
+      return ms.find(m => (!m.side || (m.side === 'left') === (p.x < h.u.split)) && k >= m.level && k < m.level + m.h) || null;
     };
     v.glide = () => glide();
     // A drawer opens any time; a case once its lid's parts are in
@@ -3747,6 +3749,30 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     colorPrefs.palette.push({ id: 'c' + n, ...entry });
     return 'c' + n;
   }
+  // An L² or XL² module with one drawer on each side (1F, or 2F holding one 2F drawer) has no per-drawer tags in its
+  // placements (only its 2F and 4F layouts do): each side gets a drawer of its own, with its key and racks (joints
+  // key_<side>, rack_lo_<side>, rack_hi_<side>), and its parts are sorted by side when they come in (sideOf). The line
+  // between the two drawers: each key sits in the middle of its drawer, so the left one ends at twice its key's x plus
+  // half the width (0 on an L², 164.8 mm from the left on an XL², S then M).
+  function sideDrawers(u) {
+    if (!u.drawer || (u.cfg.w !== 'L2' && u.cfg.w !== 'XL2')) return null;
+    const mo = (PLACE.units[u.key] || {}).motion;
+    const keys = mo ? Object.entries(mo.joints).filter(([id, j]) => /^key_/.test(id) && j.turn).map(([id, j]) => ({ tag: id.slice(4), x: j.turn.origin[0] })).sort((a, b) => a.x - b.x) : [];
+    if (keys.length !== 2) return null;
+    const ofSide = (id, tag) => id === 'drawer' || id.endsWith('_' + tag);
+    return { split: 2 * keys[0].x + u.w / 2, sorted: true, motion: mo,
+      drawers: keys.map((k, i) => ({ drawer: 0, side: i ? 'right' : 'left', tag: k.tag, level: 0, h: u.cfg.h,
+        open: mo.open.map(st => ({ ...st, joints: st.joints.filter(id => ofSide(id, k.tag)) })).filter(st => st.joints.length) })) };
+  }
+  // Which of those drawers a part rides in: its joint's side (a key, a rack), else the side its middle is on
+  function sideOf(u, joint, mesh) {
+    const id = joint && joint.split('.')[0], ms = u.movers;
+    const m = id && ms.find(x => id.endsWith('_' + x.tag));
+    if (m) return m;
+    const g = mesh.geometry; if (!g.boundingBox) g.computeBoundingBox();
+    const c = g.boundingBox.getCenter(new (v3.T.Vector3)()).applyMatrix4(mesh.matrix);
+    return ms.find(x => (x.side === 'left') === (c.x < u.split));
+  }
   async function loadParts(v) {
     v.folder = vaultFolder;
     const todo = v.units.filter(u => u.place && u.place.parts.length), token = v.token = {};
@@ -3788,7 +3814,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         const mesh = v.painted(geomFor(p.piece), p.role, p.cfg), m = p.m;
         mesh.matrixAutoUpdate = false;
         mesh.matrix.set(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], 0, 0, 0, 1);
-        const own = p.mv != null && u.movers && u.movers.find(x => x.id === p.mv) || u;
+        const own = p.mv != null && u.movers && u.movers.find(x => x.id === p.mv) || (u.sorted && p.group === 'drawer' && sideOf(u, p.joint, mesh)) || u;
         const at = p.group === 'drawer' ? own.drawer : p.group === 'lid' && u.lid ? u.lid.userData.inner : u.parts;
         (p.joint && v3joint(T, own, p.joint, at) || at).add(mesh);
         u.loaded++;
@@ -3803,7 +3829,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         mesh.visible = v3hw;
         mesh.matrixAutoUpdate = false;
         mesh.matrix.set(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], 0, 0, 0, 1);
-        const own = b.mv != null && u.movers && u.movers.find(x => x.id === b.mv) || u;
+        const own = b.mv != null && u.movers && u.movers.find(x => x.id === b.mv) || (u.sorted && b.group === 'drawer' && sideOf(u, b.joint, mesh)) || u;
         const at = b.group === 'drawer' ? own.drawer : b.group === 'lid' && u.lid ? u.lid.userData.inner : u.parts;
         (b.joint && v3joint(T, own, b.joint, at) || at).add(mesh);
         u.bolts++;
