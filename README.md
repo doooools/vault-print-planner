@@ -1,6 +1,6 @@
 # Vault Print Planner, Dols fork
 
-An unofficial, fan-made planner for [Vault by USSA](https://www.ussadesign.com/products/vault), the 3D-printable modular storage system. This is a fork of [Romy Macasieb's Vault Print Planner](https://github.com/rmacasieb/vault-print-planner) ([vault.romy.io](https://vault.romy.io)) that adds a 3D view of your stacks, colours, several drawers per module and a redesigned page.
+An unofficial, fan-made planner for [Vault by USSA](https://www.ussadesign.com/products/vault), the 3D-printable modular storage system. This is a fork of [Romy Macasieb's Vault Print Planner](https://github.com/rmacasieb/vault-print-planner) ([vault.romy.io](https://vault.romy.io)) that adds a 3D view of your stacks, colours, several drawers per module and a redesigned page. Everything it changes is listed in **[Differences from the original planner](docs/differences-from-upstream.md)**.
 
 Open it at **https://doooools.github.io/vault-print-planner/** (nothing to install).
 
