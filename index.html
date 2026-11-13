@@ -511,6 +511,8 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .imore { border-top: 1px solid var(--line); padding-top: 10px; }
 .imore > summary { cursor: pointer; font-weight: 700; font-size: 14px; min-height: 32px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .imore > summary .mono { color: var(--muted); font-size: 12px; font-weight: 400; }
+.isec { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px; margin-bottom: -4px; font-size: 14px; }
+.isec .hint, .iback > summary .hint { font-size: 12px; font-weight: 400; color: var(--muted); }
 .ilist { display: grid; gap: 6px; margin-top: 8px; }
 .ilist h3 { display: flex; justify-content: space-between; gap: 8px; margin: 6px 0 0; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .ilist h3 .mono { text-transform: none; letter-spacing: 0; }
@@ -3027,8 +3029,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         ${across && across.length > 1 ? `<div class="field"><div class="lbl">Across the width</div><div class="seg across" role="group" aria-label="Across the width">${across.map(([v, label, sub]) => `<button type="button" data-across="${v}" aria-pressed="${acrossOf(lv) === v}">${acrossIcon(v)}<span>${label}</span><small>${sub}</small></button>`).join('')}</div></div>` : ''}
         <div class="field"><div class="lbl">Type</div><div class="seg">${useg('type', typeOpts, u.type)}</div></div>
         <div class="field"><div class="lbl">Module height</div><div class="seg">${useg('h', hOpts, u.h)}</div></div>
+        <div class="isec"><b>Front and inside</b><span class="hint">${u.type === 'drawer' ? 'drawers, what goes in them, lock' : 'case body and dividers'}</span></div>
         ${o}
-        <details class="imore" ${moreOn ? 'open' : ''}><summary>More options: wall mount, pegboard, backbone${moreOn ? ` <span class="mono">${moreOn} on</span>` : ''}</summary><div class="ibody">${more}</div></details>
+        <details class="imore iback" ${moreOn ? 'open' : ''}><summary><span>Back of the stack</span><span class="hint">wall mount, pegboard, backbone</span>${moreOn ? ` <span class="mono">${moreOn} on</span>` : ''}</summary><div class="ibody">${more}</div></details>
         <details class="imore iparts"><summary>Parts and bolts of this level <span class="mono">${s.prints} parts · ${aboutG(s.g)}</span></summary>
           ${levelParts(res.lines, res.hardware)}</details>
         ${lv.length > 1 ? '<p class="pnote" style="margin:0">With two modules side by side, each is set up on its own (pick it above or click it in the view). Their height stays the same.</p>' : ''}
