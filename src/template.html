@@ -852,7 +852,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       prusa: { support_material_style: 'organic', support_material_threshold: 80, support_material_buildplate_only: 1 },
       why: 'Light tree supports: on the build plate only, critical regions only, 80\u00b0 threshold',
       note: 'shell supports',
-      help: 'shell supports: tree (auto) supports, threshold angle 80\u00b0, on build plate only, support critical regions only, remove small overhangs.' } };
+      help: 'shell supports: tree (auto) supports, threshold angle 80\u00b0, on build plate only, support critical regions only, remove small overhangs.',
+      // Room the plate keeps clear on each side of the module's top and bottom walls, for those supports (Dols, 2026-11-13)
+      room: 15 } };
   const supportKeys = (p, prusa) => Object.entries(SUPPORT_SETS[p.supports]?.[prusa ? 'prusa' : 'bambu'] || {});
   const resolve = R.makeResolver(FILES);
   const SRC_DEFAULT = '261021_VAULT_USSA_S';
@@ -2960,6 +2962,24 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const needsBrim = f => f.dims[2] > 60 && f.dims[2] / Math.min(f.dims[0], f.dims[1]) > 4;
   const brimFits = f => Math.max(f.dims[0], f.dims[1]) + 2 * BRIM <= Math.max(printer.v[0], printer.v[1]) - 2 && Math.min(f.dims[0], f.dims[1]) + 2 * BRIM <= Math.min(printer.v[0], printer.v[1]) - 2;
   const brimOf = f => needsBrim(f) && brimFits(f);
+  // Room a part's support set keeps clear across its module's top and bottom walls (SUPPORT_SETS[..].room, each side),
+  // as extra room on the footprint side that is the module's height (9 + 48 mm per F: 57, 105, 201), the other side
+  // being its width. Less when the full room wouldn't fit the bed. [on the long side A, on the short side B]
+  function roomOf(l, A, B, pad) {
+    const s = SUPPORT_SETS[l.supports]?.room; if (!s) return [0, 0];
+    const f = +(/Module (\d)F/i.exec(l.file.path) || [])[1] || 1, hh = 9 + 48 * f, V = printer.v;
+    const along = Math.abs(A - hh) < Math.abs(B - hh) ? 0 : 1;
+    const fits = e => { const a = A + 2 * pad + (along ? 0 : 2 * e), b = B + 2 * pad + (along ? 2 * e : 0); return (a <= V[0] + eps && b <= V[1] + eps) || (b <= V[0] + eps && a <= V[1] + eps); };
+    let e = s; while (e > 0 && !fits(e)) e = Math.max(0, e - 0.5);
+    return along ? [0, e] : [e, 0];
+  }
+  // How far in from a placed item's box the part itself sits, along x and y: its brim, plus any support room
+  function insetOf(it) {
+    const p = it.p, pad = p.pad || 0;
+    if (!(p.ea || p.eb) || it.diag || it.asis) return [pad, pad];
+    const turned = Math.abs(it.w - p.a) > eps;
+    return [pad + (turned ? p.eb : p.ea), pad + (turned ? p.ea : p.eb)];
+  }
   function planPlates(lines, base) {
     const V = printer.v, W = V[0] - 2 * MARGIN, H = V[1] - 2 * MARGIN;
     const ex = preset().excl, KX = ex ? ex[0] + EXCL_CLEAR : 0, KY = ex ? ex[1] + EXCL_CLEAR : 0;
@@ -2972,8 +2992,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         // Parts that would only fit tipped onto another face are left out too: a drawer box printed on its side
         // needs heavy supports and is weak along its layers, and as exported it would hang off the plate
         if (l.fit.s === 'no' || l.fit.s === 'reorient') { skipped.push(l); continue; }
-        const [a, b] = l.file.dims, pad = brimOf(l.file) ? BRIM : 0;
-        pieces.push({ l, pad, a: Math.max(a, b) + 2 * pad, b: Math.min(a, b) + 2 * pad, care: l.fit.s !== 'ok',
+        const [a, b] = l.file.dims, pad = brimOf(l.file) ? BRIM : 0, A = Math.max(a, b), B = Math.min(a, b), [ea, eb] = roomOf(l, A, B, pad);
+        pieces.push({ l, pad, ea, eb, a: A + 2 * pad + 2 * ea, b: B + 2 * pad + 2 * eb, care: l.fit.s !== 'ok',
           group: colorKey(l) + (l.supports === true && !mixSupports ? '|sup' : '') }); // a named support set (module shells) stays with the rest
       }
     });
@@ -3022,7 +3042,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           const A = Math.max(...p.l.file.dims.slice(0, 2)), B = Math.min(...p.l.file.dims.slice(0, 2));
           let pad = Math.min(p.pad, 3);
           while (pad > 0 && diagAngle(A + 2 * pad, B + 2 * pad, V[0] - 1, V[1] - 1) === null) pad = Math.max(0, pad - 0.5);
-          p.pad = pad; p.a = A + 2 * pad; p.b = B + 2 * pad;
+          p.pad = pad; p.ea = p.eb = 0; p.a = A + 2 * pad; p.b = B + 2 * pad;
           const d = diagAngle(p.a, p.b, V[0], V[1]), t = d * Math.PI / 180;
           const w = p.a * Math.cos(t) + p.b * Math.sin(t), h = p.a * Math.sin(t) + p.b * Math.cos(t);
           plates.push({ group: g, care: true, shelves: [], items: [{ p, diag: d, x: (V[0] - w) / 2, y: (V[1] - h) / 2, w, h }] });
@@ -3030,7 +3050,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         }
         if (p.care && p.l.fit.s === 'asis') {
           // Kept exactly as USSA exported it (already turned to fit), alone and centred on the bed, with no brim
-          const [w, h] = p.l.file.ex; p.pad = 0;
+          const [w, h] = p.l.file.ex; p.pad = p.ea = p.eb = 0;
           plates.push({ group: g, care: true, shelves: [], items: [{ p, asis: true, x: (V[0] - w) / 2, y: (V[1] - h) / 2, w, h }] });
           continue;
         }
@@ -3127,8 +3147,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         return `<rect x="${cx - rw / 2}" y="${cy - rh / 2}" width="${rw}" height="${rh}" rx="2" transform="rotate(${it.diag} ${cx} ${cy})" fill="${f}" fill-opacity=".9" stroke="var(--ink)" stroke-opacity=".35" stroke-width="1"/>` +
           `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="11" font-weight="700" fill="${LIGHT_FILL(pl.color) ? '#222' : '#fff'}">${label}</text>`;
       }
-      const rx = it.x + pad, ry = fy + pad, rw = it.w - 2 * pad, rh = it.h - 2 * pad;
-      return (pad ? `<rect x="${it.x}" y="${fy}" width="${it.w}" height="${it.h}" rx="3" fill="none" stroke="var(--muted)" stroke-dasharray="3 2" stroke-width="1"/>` : '') +
+      const [ix, iy] = insetOf(it), rx = it.x + ix, ry = fy + iy, rw = it.w - 2 * ix, rh = it.h - 2 * iy;
+      return (ix || iy ? `<rect x="${it.x}" y="${fy}" width="${it.w}" height="${it.h}" rx="3" fill="none" stroke="var(--muted)" stroke-dasharray="3 2" stroke-width="1"/>` : '') +
         `<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" rx="2" fill="${f}" fill-opacity="${LIGHT_FILL(pl.color) ? .9 : .8}" stroke="var(--ink)" stroke-opacity=".35" stroke-width="1"/>` +
         (Math.min(rw, rh) > 12 ? `<text x="${rx + rw / 2}" y="${ry + rh / 2 + 4}" text-anchor="middle" font-size="11" font-weight="700" fill="${LIGHT_FILL(pl.color) ? '#222' : '#fff'}">${label}</text>` : '');
     }).join('');
@@ -3294,7 +3314,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
               <label class="opt"><input type="checkbox" id="mixSupports" ${mixSupports ? 'checked' : ''}><span>Fewer plates<small>Support parts share plates; supports stay on just for them</small></span></label>
               <label class="opt"><input type="checkbox" id="printAids" ${printAids ? 'checked' : ''}><span>Manual supports<small>USSA's prop for each drawer roof, printed standing against it on the same plate</small></span></label>
               ${hasLabels ? `<label class="opt"><input type="checkbox" id="labelsApart" ${labelsApart ? 'checked' : ''}><span>Labels on their own plate<small>Add text and colors in the slicer without touching other plates</small></span></label>` : ''}
-              <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
+              <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Each shell keeps 15 mm clear beyond its top and bottom walls for them (dashed). Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
               <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}<button type="button" class="btn" id="clearPlates">${b.onlyExtras ? 'Clear loose parts' : 'Clear all plates'}</button></div>
             </div></span></div>
           <div class="pnote" style="margin:0">Plates follow the colors chosen in Design.${labelsApart && hasLabels ? ' Labels on their own plate.' : ''}${mixSupports ? '' : ' Parts with supports kept apart.'}</div>
@@ -3384,7 +3404,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // The plate plan the project builder reads: each part's file, position on its plate, and per-part print settings
   function planFor(plates) {
     return { bed: [printer.v[0], printer.v[1]], ...(preset().plate ? { plate: preset().plate } : {}), bambu: preset().bambu || null, plates: plates.map(pl => ({ name: plateFolder(pl), color: pl.color, hex: colorHex(pl.color),
-      pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, spin: it.asis ? 0 : +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + (it.p.pad || 0)).toFixed(2), y: +(it.y + (it.p.pad || 0)).toFixed(2), w: +(it.w - 2 * (it.p.pad || 0)).toFixed(2), h: +(it.h - 2 * (it.p.pad || 0)).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: it.diag === 45 ? true : it.diag } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: it.p.l.supports, ...(it.p.l.supports === true && needsBrim(it.p.l.file) ? { standing: true } : {}) } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
+      pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, spin: it.asis ? 0 : +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + insetOf(it)[0]).toFixed(2), y: +(it.y + insetOf(it)[1]).toFixed(2), w: +(it.w - 2 * insetOf(it)[0]).toFixed(2), h: +(it.h - 2 * insetOf(it)[1]).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: it.diag === 45 ? true : it.diag } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: it.p.l.supports, ...(it.p.l.supports === true && needsBrim(it.p.l.file) ? { standing: true } : {}) } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
   }
   // ---------- Bambu Studio project, built right here in the browser ----------
   // Reads the STLs from the Vault folder the user picks (nothing is uploaded) and writes the same .3mf layout

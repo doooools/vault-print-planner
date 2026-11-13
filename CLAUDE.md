@@ -225,6 +225,10 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   `SUPPORT_SETS` (tree(auto), default style, threshold 80°, on build plate only, critical regions only, remove small
   overhangs), written per object into the Bambu project and the plate files (`supportKeys`; PrusaSlicer: organic, 80°,
   build plate only). A named set doesn't move a part onto the "supports" plates (only `supports: true` does).
+  Plates keep 15 mm clear beyond each shell's top and bottom walls for those supports (`room` in the set, Dols
+  2026-11-13): `roomOf` adds it on the footprint side that is the module's height (57 / 105 / 201 mm), less if the bed
+  is too small; `insetOf` gives the part's place inside its box (brim + room) to the export and the plate drawing.
+  Diagonal and as-exported shells (L 1F, L 2F) sit alone on their plate and get no room.
 
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
