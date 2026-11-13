@@ -173,7 +173,8 @@
   // holes 10.5 mm apart and a divider's file number is how many holes it covers (5 ... 32). A full-span divider is the
   // file named after the box (width 10-S, 18-M, 26-L, 32-XL; depth 4 x depth - 2: x3 = 10 ... x7 = 26) with a straight
   // edge piece at each wall. A partial one, stopping at another divider, ends there with a rounded edge piece (its arrow
-  // rides over that divider's foot); at a wall it ends with a straight piece ("N - 1" + piece) or alone ("N").
+  // rides over that divider's foot); at a wall it ends with a straight piece where the gap is one the piece bridges
+  // ("N - 1" + piece) or alone ("N"); past 32 holes it is two files end to end.
   // The page lays out each box's plan and passes the pieces in `o.gridPieces[<w><d>]` ({n: {N: qty}, straight,
   // rounded}); without one (no measured grid), `gridAcross` full-width dividers and `gridAlong` front-to-back ones,
   // the latter cut in two by each full-width one.

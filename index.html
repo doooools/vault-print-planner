@@ -134,6 +134,17 @@ select.full { width: 100%; background: var(--sheet-2); border: 1px solid var(--l
 .dvplan text { fill: var(--muted); font-size: 11px; }
 .gplan svg { cursor: crosshair; }
 .gplan .gh { fill: var(--edge); }
+.gplan .gh.ok { fill: var(--accent); }
+.gplan .gstart { fill: none; stroke: var(--accent); stroke-width: 2; }
+.gplan .ghot { fill: none; stroke: var(--muted); stroke-width: 1.5; pointer-events: none; }
+.gplan .gprev { pointer-events: none; }
+.gplan .gseg.preview .foot { opacity: .3; }
+.gplan .gseg.preview .wall { stroke-dasharray: 5 3; }
+.gplan .gseg.hot .foot { stroke: var(--bad); opacity: .3; }
+.gplan .gseg.hot .wall { stroke: var(--bad); }
+.gplan .gseg .joint { stroke: var(--ink); stroke-width: 1.2; }
+.gplan .gstatus { font-size: 12.5px; color: var(--muted); }
+.gplan .gstatus.on { color: var(--accent); font-weight: 600; }
 .gplan .gseg .foot { stroke: var(--accent); opacity: .18; stroke-linecap: butt; }
 .gplan .gseg .reach { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 2 3; }
 .gplan .gseg .wall { stroke: var(--accent); stroke-width: 3; }
@@ -783,7 +794,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   </footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><h3>Draft, not released yet: the Dols fork</h3><ul><li><b>A fork of Romy's planner,</b> kept at <a href="https://github.com/doooools/vault-print-planner" target="_blank" rel="noopener">github.com/doooools/vault-print-planner</a>. Everything below is new in it.</li><li><b>Your stacks in 3D,</b> made from your own Vault files: every drawer, case, roof, base and wheel where the assembled unit puts it, with its bolts. Turn it, spread the units apart, hide the roof. Parts are simplified in your browser and kept there for next time; nothing is uploaded.</li><li><b>Open drawers and cases in 3D:</b> double-click it, or hold Ctrl or Shift and click. A drawer's key turns and its racks slide before it pulls out; a case's latches flip before the lid opens, with the roof riding on it.</li><li><b>Several drawers in one module:</b> a 2F module can hold two 1F drawers, a 4F module two 2F, four 1F, or a 2F and two 1F in any order. Parts, bolts and geared rails are counted per drawer. The mixed ones are marked Inferred: the manuals don't show them.</li><li><b>Colors:</b> the Paint tool gives each kind of part a filament, for a whole stack or a single module, from your own filaments or Bambu Lab's PLA and PETG colours. Each stack keeps its own colours. Plates, filament totals and the Bambu Studio project follow them, one filament slot per colour.</li><li><b>A new layout:</b> Design, Print, Hardware and Assemble tabs. In Design, your stacks on the left, the 3D view in the middle, the selected level or stack on the right. Start from a template or a blank stack, and set a level across the width as L, L² or two modules side by side.</li><li><b>Print what you want:</b> tick the stacks, and the loose parts, to plan. The plates follow every change made in Design.</li><li><b>Hardware has its own tab:</b> one shopping list for the whole build, ticks for what you've bought, copy or CSV, and the bolts' finish (black or zinc) shown in 3D. Store links follow where you buy: pick your store by continent (Amazon in North and South America, Europe, Asia, Oceania and Africa); the page guesses it from your browser the first time. Amazon.com links are the original planner's affiliate links, so US purchases keep supporting Romy's project; the other stores' links carry this fork's affiliate tag where it has one, and the page says so beside them.</li><li><b>Save and open designs:</b> in Chrome and Edge, Save writes your stacks, loose parts and colours into your Vault folder, next to the part files. Save as… and Open… work anywhere; other browsers download the file.</li><li><b>Lost folder, said plainly:</b> when the page can no longer read your Vault folder (the browser asks again after a reload, the folder was moved, or Firefox and Safari don't keep it between visits), a popup says the 3D view needs it, with a button to reconnect it. Chrome and Edge reconnect on their own when you chose "Allow on every visit". "Later: plan without the files" or "Not now" keeps it away for the rest of the visit.</li><li><b>Bases in 3D:</b> the base, wheels, front foot bar and casters are drawn where they go. A base without wheels now stands on its own: no feet. A roof can sit on a top-opening case.</li><li><b>Universal handle lock and module connectors:</b> two parts in the Vault download the planner never offered. On M, L and XL stacks with the pull-out handle, pick the universal lock: two small locks, one per rod, that fit any printer instead of the one-piece lock (up to 419 mm long). "Module connectors", in a stack's settings, screws a small bar over each joint between two drawer modules at the back corners, into the holes every drawer module has there; a 2F one spans a 1F module. Both are drawn in 3D, with their bolts.</li><li><b>Report a bug or an idea:</b> the link at the top of the page opens a short form on GitHub. The bug form gets your browser and printer filled in.</li><li><b>Fixed:</b> Bambu Studio projects with several colours no longer fail with "Invalid configuration file". The heavyweight roof's carry handle no longer drops out of the print list when the roof is swapped. Store links are plain product pages.</li><li><b>Supports only where USSA asks for them</b> (from Romy's planner, 2026-11-10): supports go only on the files USSA names "Turn On Supports" and on the XL drawer front. Bambu Studio's overhang warnings no longer turn them on: on drawer boxes they filled the channel the bottom geared rail slides into.</li><li><b>No more 10% spares:</b> the part list, the plates and the hardware list give exactly what the build needs. Print or buy extras yourself if you want them (Loose parts takes any single part).</li><li><b>Part counts checked against the manuals:</b> a case now gets one label (the case label on 1F, the drawer label on 2F and 4F), not both. The removable hidden key and its key cap are printed once per stack, not once per drawer. A wall mount gets one wall cleat per opening in its plate. Backbones follow the manual: a column on the back of the stack, from the base to the module under the top one (where the pull-out handle lock goes), in 2F backbones with a 1F for an odd remainder; a pegboard extends it to its module. On an L² or XL², shared parts are listed once, and Design and Print give the same totals.</li><li><b>Works the same on Linux, macOS and Windows:</b> the files macOS adds to a copied folder are ignored, and Firefox and Safari fall back to a folder upload and downloads.</li></ul><h3>2026-11-10</h3><ul><li><b>Shorter drawers in taller modules:</b> a 2F or 4F drawer module can now hold shorter drawers, like two 1F drawers in a 2F, or two 1F drawers above a 2F in a 4F. Pick them under "Drawers inside" in step 1 (each half on its own for L²). The parts list, front bolts and stack picture follow. Thanks to the viewer who pointed out they fit.</li><li><b>Supports only where USSA asks for them:</b> Out of an abundance of caution, supports are now only added if USSA says "Turn On Supports" (plus the XL drawer front, which has the same lock pocket as the fronts USSA labels) since there are some facets that could use supports but aren't mandatory. The onus is on you to think through what makes sense with the part you're building.</li></ul><h3>2026-11-09</h3><ul><li><b>XL units really fit the H2S now:</b> the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.</li><li><b>Closer filament estimates:</b> checked against the weights USSA publishes per module, the planner was reading about 17% high. It's now within a few percent.</li><li><b>Stack heights with 1F cases:</b> the planner listed a 1F case as 71 mm tall instead of about 66, so stack drawings and overall heights came out a little tall. Only the numbers on the page were off; the parts and print files are unchanged.</li><li><b>Assembly:</b> step 4 now also passes on USSA's advice to put a 2F module right under the roof when you use the base, backbones or handles.</li></ul><h3>2026-11-08</h3><ul><li><b>Filament per color:</b> step 3 shows roughly how much of each color the whole build needs, so you can check your spools before you start.</li><li><b>Labels get their own plate,</b> so you can add your text and print them in several colors without touching the other plates. Turn it off in step 3 to print them with the rest.</li><li><b>Manual supports go where they help:</b> each one prints standing against the end of a roof of the same depth. Ones with no roof to brace are left out (step 3 says which), and STL folder names say where to stand them.</li><li><b>Download names say what's inside:</b> the build, the printer, and which plates if some are already printed, like "Vault - 3 units in 2 stacks - P1S - plates 4-12.3mf".</li><li><b>Printer not listed?</b> Pick "My printer isn't listed" and type its name: the bed size for about 380 printers fills in, taken from OrcaSlicer's printer profiles. Or enter your bed size yourself. The bed size is all the planner needs.</li><li><b>Voron presets:</b> 2.4 and Trident (250, 300, 350) and the 0.2. Like other non-Bambu printers, they get plate files for OrcaSlicer or PrusaSlicer.</li></ul><h3>2026-11-07</h3><ul><li><b>More printers:</b> presets for Prusa (MK4/MK4S, CORE One, MINI+, XL), Creality (K1/K1C, K1 Max, K2 Plus, Ender-3 V3 SE), Elegoo (Centauri Carbon, Neptune 4 Pro and Max), Anycubic (Kobra 3, Kobra S1) and Qidi (Q1 Pro, Plus4), plus Custom size for anything else.</li><li><b>Plate files for non-Bambu printers:</b> step 3 now saves a zip with one standard .3mf per plate. Parts are already laid out, and the parts that need supports or a brim are already marked. Works in OrcaSlicer, PrusaSlicer and the slicers built on them; a settings.txt lists the same settings for any other slicer.</li><li><b>STL folders</b> now name each part's settings in its file name, with a settings.txt per plate.</li><li><b>XL units fit the H2S:</b> facades and backbones that are too long for the bed go on the diagonal, at whatever angle fits.</li><li><b>Missing parts are named:</b> if your Vault folder is missing files, step 3 lists them. File names that an unzip or a newer download changed are still matched.</li><li><b>Print and Assemble stay empty</b> until you add something to your build, with a button to add the unit you picked in step 1.</li><li><b>Fewer slicer conflicts:</b> parts with supports keep clear of neighbouring parts, the rows around them and the bed edge.</li></ul><h3>2026-11-06</h3><ul><li><b>First public version.</b></li><li><b>More Bambu printers:</b> P2S, X2D, A2L, H2D Pro, H2C and H3C; plate spacing fixed on dual-nozzle printers.</li><li><b>Stack pictures:</b> front and side views, overall size with dimension lines, and wheels, feet, casters and handles drawn where USSA's manual puts them.</li><li><b>Step 1 checks whether a unit stacks</b> before adding it and offers a matching size.</li><li><b>Hardware list:</b> bolt head shapes, drawer front bolts counted from the holes in each front, and links to matching products.</li><li><b>Choosing the Vault folder</b> is its own step, with a heads-up about the browser's permission prompt.</li><li><b>Plate numbers stay put</b> when you mark plates as printed.</li><li><b>Tree supports</b> no longer run into the next part.</li><li><b>Part pictures</b> at full size.</li></ul></div></dialog>
+<dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><h3>Draft, not released yet: the Dols fork</h3><ul><li><b>A fork of Romy's planner,</b> kept at <a href="https://github.com/doooools/vault-print-planner" target="_blank" rel="noopener">github.com/doooools/vault-print-planner</a>. Everything below is new in it.</li><li><b>Your stacks in 3D,</b> made from your own Vault files: every drawer, case, roof, base and wheel where the assembled unit puts it, with its bolts. Turn it, spread the units apart, hide the roof. Parts are simplified in your browser and kept there for next time; nothing is uploaded.</li><li><b>Open drawers and cases in 3D:</b> double-click it, or hold Ctrl or Shift and click. A drawer's key turns and its racks slide before it pulls out; a case's latches flip before the lid opens, with the roof riding on it.</li><li><b>Several drawers in one module:</b> a 2F module can hold two 1F drawers, a 4F module two 2F, four 1F, or a 2F and two 1F in any order. Parts, bolts and geared rails are counted per drawer. The mixed ones are marked Inferred: the manuals don't show them.</li><li><b>Colors:</b> the Paint tool gives each kind of part a filament, for a whole stack or a single module, from your own filaments or Bambu Lab's PLA and PETG colours. Each stack keeps its own colours. Plates, filament totals and the Bambu Studio project follow them, one filament slot per colour.</li><li><b>A new layout:</b> Design, Print, Hardware and Assemble tabs. In Design, your stacks on the left, the 3D view in the middle, the selected level or stack on the right. Start from a template or a blank stack, and set a level across the width as L, L² or two modules side by side.</li><li><b>Print what you want:</b> tick the stacks, and the loose parts, to plan. The plates follow every change made in Design.</li><li><b>Hardware has its own tab:</b> one shopping list for the whole build, ticks for what you've bought, copy or CSV, and the bolts' finish (black or zinc) shown in 3D. Store links follow where you buy: pick your store by continent (Amazon in North and South America, Europe, Asia, Oceania and Africa); the page guesses it from your browser the first time. Amazon.com links are the original planner's affiliate links, so US purchases keep supporting Romy's project; the other stores' links carry this fork's affiliate tag where it has one, and the page says so beside them.</li><li><b>Save and open designs:</b> in Chrome and Edge, Save writes your stacks, loose parts and colours into your Vault folder, next to the part files. Save as… and Open… work anywhere; other browsers download the file.</li><li><b>Lost folder, said plainly:</b> when the page can no longer read your Vault folder (the browser asks again after a reload, the folder was moved, or Firefox and Safari don't keep it between visits), a popup says the 3D view needs it, with a button to reconnect it. Chrome and Edge reconnect on their own when you chose "Allow on every visit". "Later: plan without the files" or "Not now" keeps it away for the rest of the visit.</li><li><b>Bases in 3D:</b> the base, wheels, front foot bar and casters are drawn where they go. A base without wheels now stands on its own: no feet. A roof can sit on a top-opening case.</li><li><b>Universal handle lock and module connectors:</b> two parts in the Vault download the planner never offered. On M, L and XL stacks with the pull-out handle, pick the universal lock: two small locks, one per rod, that fit any printer instead of the one-piece lock (up to 419 mm long). "Module connectors", in a stack's settings, screws a small bar over each joint between two drawer modules at the back corners, into the holes every drawer module has there; a 2F one spans a 1F module. Both are drawn in 3D, with their bolts.</li><li><b>Dividers where you want them:</b> a case's plan seen from above fills the slots moulded in its walls with a click. A drawer's grid dividers go in with two clicks on the box's holes: where the divider starts, then where it ends, among the holes the plan marks (a divider covers 5 to 32 holes). It closes against a wall, meets a divider running across, or stops open; the part list and the 3D view count the right file and edge pieces. A click on a divider removes it.</li><li><b>Report a bug or an idea:</b> the link at the top of the page opens a short form on GitHub. The bug form gets your browser and printer filled in.</li><li><b>Fixed:</b> Bambu Studio projects with several colours no longer fail with "Invalid configuration file". The heavyweight roof's carry handle no longer drops out of the print list when the roof is swapped. Store links are plain product pages.</li><li><b>Supports only where USSA asks for them</b> (from Romy's planner, 2026-11-10): supports go only on the files USSA names "Turn On Supports" and on the XL drawer front. Bambu Studio's overhang warnings no longer turn them on: on drawer boxes they filled the channel the bottom geared rail slides into.</li><li><b>No more 10% spares:</b> the part list, the plates and the hardware list give exactly what the build needs. Print or buy extras yourself if you want them (Loose parts takes any single part).</li><li><b>Part counts checked against the manuals:</b> a case now gets one label (the case label on 1F, the drawer label on 2F and 4F), not both. The removable hidden key and its key cap are printed once per stack, not once per drawer. A wall mount gets one wall cleat per opening in its plate. Backbones follow the manual: a column on the back of the stack, from the base to the module under the top one (where the pull-out handle lock goes), in 2F backbones with a 1F for an odd remainder; a pegboard extends it to its module. On an L² or XL², shared parts are listed once, and Design and Print give the same totals.</li><li><b>Works the same on Linux, macOS and Windows:</b> the files macOS adds to a copied folder are ignored, and Firefox and Safari fall back to a folder upload and downloads.</li></ul><h3>2026-11-10</h3><ul><li><b>Shorter drawers in taller modules:</b> a 2F or 4F drawer module can now hold shorter drawers, like two 1F drawers in a 2F, or two 1F drawers above a 2F in a 4F. Pick them under "Drawers inside" in step 1 (each half on its own for L²). The parts list, front bolts and stack picture follow. Thanks to the viewer who pointed out they fit.</li><li><b>Supports only where USSA asks for them:</b> Out of an abundance of caution, supports are now only added if USSA says "Turn On Supports" (plus the XL drawer front, which has the same lock pocket as the fronts USSA labels) since there are some facets that could use supports but aren't mandatory. The onus is on you to think through what makes sense with the part you're building.</li></ul><h3>2026-11-09</h3><ul><li><b>XL units really fit the H2S now:</b> the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.</li><li><b>Closer filament estimates:</b> checked against the weights USSA publishes per module, the planner was reading about 17% high. It's now within a few percent.</li><li><b>Stack heights with 1F cases:</b> the planner listed a 1F case as 71 mm tall instead of about 66, so stack drawings and overall heights came out a little tall. Only the numbers on the page were off; the parts and print files are unchanged.</li><li><b>Assembly:</b> step 4 now also passes on USSA's advice to put a 2F module right under the roof when you use the base, backbones or handles.</li></ul><h3>2026-11-08</h3><ul><li><b>Filament per color:</b> step 3 shows roughly how much of each color the whole build needs, so you can check your spools before you start.</li><li><b>Labels get their own plate,</b> so you can add your text and print them in several colors without touching the other plates. Turn it off in step 3 to print them with the rest.</li><li><b>Manual supports go where they help:</b> each one prints standing against the end of a roof of the same depth. Ones with no roof to brace are left out (step 3 says which), and STL folder names say where to stand them.</li><li><b>Download names say what's inside:</b> the build, the printer, and which plates if some are already printed, like "Vault - 3 units in 2 stacks - P1S - plates 4-12.3mf".</li><li><b>Printer not listed?</b> Pick "My printer isn't listed" and type its name: the bed size for about 380 printers fills in, taken from OrcaSlicer's printer profiles. Or enter your bed size yourself. The bed size is all the planner needs.</li><li><b>Voron presets:</b> 2.4 and Trident (250, 300, 350) and the 0.2. Like other non-Bambu printers, they get plate files for OrcaSlicer or PrusaSlicer.</li></ul><h3>2026-11-07</h3><ul><li><b>More printers:</b> presets for Prusa (MK4/MK4S, CORE One, MINI+, XL), Creality (K1/K1C, K1 Max, K2 Plus, Ender-3 V3 SE), Elegoo (Centauri Carbon, Neptune 4 Pro and Max), Anycubic (Kobra 3, Kobra S1) and Qidi (Q1 Pro, Plus4), plus Custom size for anything else.</li><li><b>Plate files for non-Bambu printers:</b> step 3 now saves a zip with one standard .3mf per plate. Parts are already laid out, and the parts that need supports or a brim are already marked. Works in OrcaSlicer, PrusaSlicer and the slicers built on them; a settings.txt lists the same settings for any other slicer.</li><li><b>STL folders</b> now name each part's settings in its file name, with a settings.txt per plate.</li><li><b>XL units fit the H2S:</b> facades and backbones that are too long for the bed go on the diagonal, at whatever angle fits.</li><li><b>Missing parts are named:</b> if your Vault folder is missing files, step 3 lists them. File names that an unzip or a newer download changed are still matched.</li><li><b>Print and Assemble stay empty</b> until you add something to your build, with a button to add the unit you picked in step 1.</li><li><b>Fewer slicer conflicts:</b> parts with supports keep clear of neighbouring parts, the rows around them and the bed edge.</li></ul><h3>2026-11-06</h3><ul><li><b>First public version.</b></li><li><b>More Bambu printers:</b> P2S, X2D, A2L, H2D Pro, H2C and H3C; plate spacing fixed on dual-nozzle printers.</li><li><b>Stack pictures:</b> front and side views, overall size with dimension lines, and wheels, feet, casters and handles drawn where USSA's manual puts them.</li><li><b>Step 1 checks whether a unit stacks</b> before adding it and offers a matching size.</li><li><b>Hardware list:</b> bolt head shapes, drawer front bolts counted from the holes in each front, and links to matching products.</li><li><b>Choosing the Vault folder</b> is its own step, with a heads-up about the browser's permission prompt.</li><li><b>Plate numbers stay put</b> when you mark plates as printed.</li><li><b>Tree supports</b> no longer run into the next part.</li><li><b>Part pictures</b> at full size.</li></ul></div></dialog>
 <dialog id="report" aria-labelledby="reportTitle"><button type="button" class="vclose" id="reportClose" aria-label="Close">&times;</button><h2 id="reportTitle">Report a bug or an idea</h2>
   <p>Something wrong, broken or confusing, or something you'd like the planner to do? Tell us on GitHub: the form opens in a new tab and asks a few short questions.</p>
   <div class="acts"><a class="btn primary" id="reportBug" target="_blank" rel="noopener" href="https://github.com/doooools/vault-print-planner/issues/new?template=bug.yml">Report a bug</a><a class="btn" id="reportIdea" target="_blank" rel="noopener" href="https://github.com/doooools/vault-print-planner/issues/new?template=idea.yml">Suggest an improvement</a></div>
@@ -983,7 +994,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // holes 10.5 mm apart and a divider's file number is how many holes it covers (5 ... 32). A full-span divider is the
   // file named after the box (width 10-S, 18-M, 26-L, 32-XL; depth 4 x depth - 2: x3 = 10 ... x7 = 26) with a straight
   // edge piece at each wall. A partial one, stopping at another divider, ends there with a rounded edge piece (its arrow
-  // rides over that divider's foot); at a wall it ends with a straight piece ("N - 1" + piece) or alone ("N").
+  // rides over that divider's foot); at a wall it ends with a straight piece where the gap is one the piece bridges
+  // ("N - 1" + piece) or alone ("N"); past 32 holes it is two files end to end.
   // The page lays out each box's plan and passes the pieces in `o.gridPieces[<w><d>]` ({n: {N: qty}, straight,
   // rounded}); without one (no measured grid), `gridAcross` full-width dividers and `gridAlong` front-to-back ones,
   // the latter cut in two by each full-width one.
@@ -2864,6 +2876,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     box.querySelectorAll('[data-ustep]').forEach(b => b.onclick = () => {
       const id = b.dataset.ustep, d = +b.dataset.d;
       // the grid steppers lay out an even grid again, over every box size of the unit
+      if (id === 'gridAcross' || id === 'gridAlong') gpend = null;
       set({ [id]: Math.max(0, Math.min(12, (u[id] || 0) + d)), ...(id === 'gridAcross' || id === 'gridAlong' ? { gridPlans: {} } : {}) });
     });
     box.querySelectorAll('[data-dvslot]').forEach(g => {
@@ -2871,8 +2884,12 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       g.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set(divToggle(u, g.dataset.dvslot)); } };
     });
     box.querySelectorAll('[data-dvall]').forEach(b => b.onclick = () => set(divAll(u, b.dataset.dvall)));
-    box.querySelectorAll('[data-gplan]').forEach(svg => svg.onclick = e => { const pt = gridClick(u, svg.dataset.gplan, svg, e); if (pt) set(pt); });
-    box.querySelectorAll('[data-gclear]').forEach(b => b.onclick = () => set({ gridPlans: { ...(u.gridPlans || {}), [b.dataset.gclear]: [] } }));
+    box.querySelectorAll('[data-gplan]').forEach(svg => {
+      svg.onclick = e => { const pt = gridClick(u, svg.dataset.gplan, svg, e); if (pt) set(pt); };
+      svg.onpointermove = e => gridHover(u, svg.dataset.gplan, svg, e);
+      svg.onpointerleave = () => gridHover(u, svg.dataset.gplan, svg, null);
+    });
+    box.querySelectorAll('[data-gclear]').forEach(b => b.onclick = () => { gpend = null; set({ gridPlans: { ...(u.gridPlans || {}), [b.dataset.gclear]: [] } }); });
   }
   // The measured placements a shell's drawer layouts need before the inspector offers them
   const layoutsReady = u => !!((PLACE.units[`drawer|${u.w}|${u.d}|${u.h}`] || {}).layouts);
@@ -2962,15 +2979,32 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // Drawer grid dividers (tools/placements/measure_grid.py, rules.js gridDividers). Each box's floor is a grid of peg
   // holes (PLACE.grid[<w><d>]: first hole and count across (x) and front to back (z), walls, floor, in the frame of its
   // 1F unit). The unit keeps one plan per box size (cfg.gridPlans[<w><d>], shared by its drawers of that size): a list
-  // of lines [o, at, s], o 'x' a divider running side to side on hole row `at`, 'z' one running front to back on
-  // column `at`, s a hole along it that the divider passes. Lines are laid out in order: a line runs from s both ways to
-  // the walls, or to a divider laid out before it that crosses its path. That divider's foot covers its own row and
-  // the next one on each side, so the line's holes start two rows away from it, and it ends there with a rounded edge
-  // piece. Between two walls it is the box's full-span file; at a wall, "N - 1" with a straight edge piece
-  // (cfg.gridSeal, the default) or "N" alone. Files go from 5 to 32 holes.
+  // of lines [o, at, a, b], o 'x' a divider running side to side on hole row `at`, 'z' one running front to back on
+  // column `at`, from hole a to hole b (the two holes clicked). An end on the outermost hole is at the wall: there the
+  // divider ends with a straight edge piece where the gap left is one the piece bridges (8 to 20 mm: "N - 1" + piece,
+  // or N + piece on L's sides; cfg.gridSeal, the default) or alone, a few mm short of the wall (instructions, option
+  // 1). An end two rows from a divider running across meets it: that divider's foot covers its own row and the next
+  // one each side, and a rounded edge piece rides over it. Any other end is open. Wall to wall, it is the box's
+  // full-span file, centred. A divider covers 5 to 32 holes; a longer one is two files end to end. Plans saved before
+  // (lines [o, at, s]: from hole s both ways to the walls or the dividers in its way) are read as their spans.
   const GRID_FOOT = 12.68;   // half a divider's foot, mm
+  const GRID_MIN = 5, GRID_MAX = 32, GRID_TONGUE = [8, 20];   // files; the gap a straight edge piece bridges, mm
   const gridFams = u => (u.w === 'L2' ? ['S'] : u.w === 'XL2' ? ['M', 'S'] : [u.w]).map(w => w + u.d);
   const gridOf = fam => (PLACE.grid || {})[fam] || null;
+  // A box's holes along each axis, its walls and the room between them and the outer holes (mm)
+  function gridBox(G, fam) {
+    const p = G.pitch, n = { x: G.x[1], z: G.z[1] }, pos = (o, i) => (o === 'x' ? G.x[0] : G.z[0]) + i * p;
+    const wall = { x: [G.walls[0], G.walls[1]], z: [G.walls[2], G.walls[3]] };
+    const gap = { x: [G.x[0] - G.walls[0], G.walls[1] - pos('x', n.x - 1)], z: [G.z[0] - G.walls[2], G.walls[3] - pos('z', n.z - 1)] };
+    return { p, n, pos, wall, gap, full: R.gridFull(fam.replace(/\d+$/, ''), +fam.match(/\d+$/)[0]) };
+  }
+  // At a wall: how many outer holes the file leaves free, and whether a straight edge piece closes the gap
+  function gridWallEnd(B, o, side, seal) {
+    if (seal) for (let k = 0; k < 3; k++) { const d = B.gap[o][side] + k * B.p - B.p / 2; if (d >= GRID_TONGUE[0] && d <= GRID_TONGUE[1]) return { k, piece: true }; }
+    return { k: 0, piece: false };
+  }
+  // n holes in files of 5 to 32: one, or a few of about the same length end to end
+  const gridSplit = n => { const k = Math.max(1, Math.ceil(n / GRID_MAX)), b = Math.floor(n / k); return Array.from({ length: k }, (_, i) => b + (i < n - b * k ? 1 : 0)); };
   // An even grid: `a` dividers side to side spread over the rows, `b` front to back over the columns. One way runs
   // wall to wall and the other is cut into one piece per compartment; whichever leaves fewer pieces too short to make
   // (the shortest file covers 5 holes), side to side running through when both do as well.
@@ -2979,46 +3013,66 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const at = { x: spread(n.z, a), z: spread(n.x, b) };
     const make = (o, q) => { const bounds = [-1, ...at[o], n[q]], out = at[o].map(r => [o, r, Math.round((n[o] - 1) / 2)]);
       at[q].forEach(c => { for (let i = 1; i < bounds.length; i++) out.push([q, c, Math.round((bounds[i - 1] + bounds[i]) / 2)]); });
-      return out; };
+      return gridSpans(G, out); };
     const plans = [make('x', 'z'), make('z', 'x')], bad = l => gridLayout(G, l, seal, fam).filter(s => s.bad).length;
     return bad(plans[1]) < bad(plans[0]) ? plans[1] : plans[0];
   }
-  // The plan laid out: each line's span, file, edge pieces and whether it fits (`bad`: why not)
-  function gridLayout(G, lines, seal, fam) {
-    const w = fam.replace(/\d+$/, ''), d = +fam.match(/\d+$/)[0], full = R.gridFull(w, d), p = G.pitch;
-    const n = { x: G.x[1], z: G.z[1] }, pos = (o, i) => (o === 'x' ? G.x[0] : G.z[0]) + i * p;
-    // room between the first / last row (column) and its wall: a divider standing there must clear the wall
-    const gap = { x: [G.x[0] - G.walls[0], G.walls[1] - pos('x', n.x - 1)], z: [G.z[0] - G.walls[2], G.walls[3] - pos('z', n.z - 1)] };
-    const segs = [];
-    lines.forEach((ln, idx) => {
+  // Lines of the older kind [o, at, s] as spans [o, at, a, b]: each runs from s to the walls, or stops two rows short
+  // of a divider before it in the list that crosses its path
+  function gridSpans(G, lines) {
+    const n = { x: G.x[1], z: G.z[1] }, segs = [];
+    lines.forEach(ln => {
+      if (ln.length >= 4) { segs.push({ o: ln[0], at: ln[1], a: ln[2], b: ln[3], ln }); return; }
       const [o, at, s] = ln, q = o === 'x' ? 'z' : 'x', len = n[o];
-      const seg = { o, at, s, idx, lo: -1, hi: len, bad: '' };
       if (!(at >= 0 && at < n[q] && s >= 0 && s < len)) return;
-      // dividers laid out before it that cross its path
-      for (const c of segs) if (!c.bad && c.o === q && c.lo < at && at < c.hi) { if (c.at <= s && c.at > seg.lo) seg.lo = c.at; if (c.at >= s && c.at < seg.hi) seg.hi = c.at; }
-      if (seg.lo === s || seg.hi === s || (seg.lo >= 0 && s - seg.lo < 2) || (seg.hi < len && seg.hi - s < 2)) seg.bad = 'on another divider';
-      const wl = seg.lo < 0, wh = seg.hi >= len;
-      let a = wl ? 0 : seg.lo + 2, b = wh ? len - 1 : seg.hi - 2;
-      if (wl && wh) { const f = full[o], off = Math.round((len - f) / 2); a = off; b = off + f - 1; seg.ends = ['straight', 'straight']; }
+      let lo = -1, hi = len;
+      for (const c of segs) if (c.o === q && c.b - c.a >= GRID_MIN - 1 && c.a <= at && at <= c.b) { if (c.at <= s && c.at > lo) lo = c.at; if (c.at >= s && c.at < hi) hi = c.at; }
+      const a = lo < 0 ? 0 : lo + 2, b = hi >= len ? len - 1 : hi - 2;
+      if (lo !== s && hi !== s && b > a) segs.push({ o, at, a, b, ln: [o, at, a, b] });
+    });
+    return segs.map(s => s.ln);
+  }
+  // The plan laid out: each line's files (fa..fb, `files`), its ends ('straight', 'rounded' or null) and where they
+  // stop (e0, e1, mm along its axis), and whether it fits (`bad`: why not). Lines earlier in the list win.
+  function gridLayout(G, lines, seal, fam) {
+    const B = gridBox(G, fam), segs = [];
+    lines.forEach((ln, idx) => {
+      const [o, at, a, b] = ln, q = o === 'x' ? 'z' : 'x', len = B.n[o];
+      if (ln.length < 4 || !(at >= 0 && at < B.n[q] && a >= 0 && b < len && b > a)) return;
+      const seg = { o, at, a, b, idx, bad: '', ends: [null, null] }, wl = a === 0, wh = b === len - 1;
+      let fa = a, fb = b;
+      if (wl && wh) { const f = B.full[o], off = Math.round((len - f) / 2); fa = off; fb = off + f - 1; seg.ends = ['straight', 'straight']; }
       else {
-        seg.ends = [wl ? (seal ? 'straight' : null) : 'rounded', wh ? (seal ? 'straight' : null) : 'rounded'];
-        if (wl && seal) a++;
-        if (wh && seal) b--;
+        if (wl) { const w = gridWallEnd(B, o, 0, seal); fa += w.k; if (w.piece) seg.ends[0] = 'straight'; }
+        if (wh) { const w = gridWallEnd(B, o, 1, seal); fb -= w.k; if (w.piece) seg.ends[1] = 'straight'; }
       }
-      seg.a = a; seg.b = b; seg.n = b - a + 1;
-      if (!seg.bad && seg.n < 5) seg.bad = 'too short: the shortest divider covers 5 holes';
-      if (!seg.bad && seg.n > 32) seg.bad = 'too long';
-      if (!seg.bad && ((at === 0 && gap[q][0] < GRID_FOOT) || (at === n[q] - 1 && gap[q][1] < GRID_FOOT))) seg.bad = 'too close to the wall';
-      if (!seg.bad) for (const c of segs) if (!c.bad && c.o === o && Math.abs(c.at - at) <= 2 && c.lo < seg.hi && seg.lo < c.hi) { seg.bad = 'too close to another divider'; break; }
+      Object.assign(seg, { fa, fb, n: fb - fa + 1, e0: wl ? B.wall[o][0] : B.pos(o, fa) - B.p / 2, e1: wh ? B.wall[o][1] : B.pos(o, fb) + B.p / 2 });
+      seg.files = gridSplit(seg.n);
+      if (seg.n < GRID_MIN) seg.bad = 'too short: the shortest divider covers 5 holes';
+      else if ((at === 0 && B.gap[q][0] < GRID_FOOT) || (at === B.n[q] - 1 && B.gap[q][1] < GRID_FOOT)) seg.bad = 'too close to the wall';
+      else for (const c of segs) {
+        if (c.bad) continue;
+        if (c.o === o ? Math.abs(c.at - at) <= 2 && c.a <= b && a <= c.b : c.at >= a - 1 && c.at <= b + 1 && at >= c.a - 1 && at <= c.b + 1) {
+          seg.bad = c.o === o ? (c.at === at ? 'on another divider' : 'too close to another divider') : 'crosses another divider'; break;
+        }
+      }
       segs.push(seg);
+    });
+    // an open end two rows from a divider running across meets it: a rounded edge piece, its tip on that divider
+    const good = segs.filter(s => !s.bad);
+    good.forEach(s => {
+      const meet = t => good.find(c => c.o !== s.o && c.at === t && c.fa <= s.at && s.at <= c.fb);
+      if (s.a > 0) { const c = meet(s.a - 2); if (c) { s.ends[0] = 'rounded'; s.e0 = B.pos(s.o, c.at); s.meets = [c.idx, ...(s.meets || [])]; } }
+      if (s.b < B.n[s.o] - 1) { const c = meet(s.b + 2); if (c) { s.ends[1] = 'rounded'; s.e1 = B.pos(s.o, c.at); s.meets = [...(s.meets || []), c.idx]; } }
     });
     return segs;
   }
-  const gridLines = (u, fam) => ((u.gridPlans || {})[fam]) || (gridOf(fam) ? gridEven(gridOf(fam), +u.gridAcross || 0, +u.gridAlong || 0, u.gridSeal !== false, fam) : []);
+  const gridLines = (u, fam) => { const G = gridOf(fam), l = (u.gridPlans || {})[fam];
+    return !G ? l || [] : l ? (l.some(x => x.length < 4) ? gridSpans(G, l) : l) : gridEven(G, +u.gridAcross || 0, +u.gridAlong || 0, u.gridSeal !== false, fam); };
   // The pieces a box's plan takes, for the rules: {n: {N: qty}, straight, rounded}
   function gridPieces(segs) {
     const pc = { n: {}, straight: 0, rounded: 0 };
-    segs.filter(s => !s.bad).forEach(s => { pc.n[s.n] = (pc.n[s.n] || 0) + 1; s.ends.forEach(e => { if (e) pc[e]++; }); });
+    segs.filter(s => !s.bad).forEach(s => { s.files.forEach(n => { pc.n[n] = (pc.n[n] || 0) + 1; }); s.ends.forEach(e => { if (e) pc[e]++; }); });
     return pc;
   }
   // Keep a drawer's plans and the pieces the rules read in step (from the counts for a drawer saved before it had one)
@@ -3036,56 +3090,121 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const first = plans[gridFams(u)[0]];
     if (first) { u.gridAcross = new Set(first.filter(l => l[0] === 'x').map(l => l[1])).size; u.gridAlong = new Set(first.filter(l => l[0] === 'z').map(l => l[1])).size; }
   }
-  // A box seen from above, back at the top: its holes, and the dividers laid out on them. A click on a row or a column
-  // of holes adds a divider there (it runs to the walls or to the dividers already in its way) or takes it away.
+  // Placing a divider takes two clicks on a box's plan: where it starts, then where it ends. `gpend` is the first one
+  // ({u, fam, i, j}: the hole, column i, row j) until the second; the plan then shows the holes it can end on.
+  let gpend = null;
+  // Where a divider starting on hole (i, j) can end, on its row and its column: each with its line and its layout
+  function gridEnds(u, fam, i, j) {
+    const G = gridOf(fam), lines = gridLines(u, fam), seal = u.gridSeal !== false, out = [], why = [];
+    for (const o of ['x', 'z']) {
+      const at = o === 'x' ? j : i, s = o === 'x' ? i : j, len = o === 'x' ? G.x[1] : G.z[1];
+      for (let e = 0; e < len; e++) {
+        if (e === s) continue;
+        const line = [o, at, Math.min(s, e), Math.max(s, e)], seg = gridLayout(G, [...lines, line], seal, fam).pop();
+        if (seg && !seg.bad) out.push({ o, at, e, line, seg }); else if (seg) why.push([Math.abs(e - s), seg.bad]);
+      }
+    }
+    out.why = why.sort((x, y) => y[0] - x[0]).map(w => w[1])[0] || 'off the grid';
+    return out;
+  }
+  // The plan's drawing scale, and a pointer event as a point in hole units (i across, j front to back)
+  const gridScale = G => { const [xl, xr, zb, zf] = G.walls, W = 300, k = (W - 16) / (xr - xl); return { W, k, H: Math.round((zf - zb) * k + 30), X: x => 8 + (x - xl) * k, Z: z => 8 + (z - zb) * k }; };
+  function gridPoint(G, svg, ev) {
+    const { k } = gridScale(G), r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+    const x = G.walls[0] + ((ev.clientX - r.left) * vb.width / r.width - 8) / k, z = G.walls[2] + ((ev.clientY - r.top) * vb.height / r.height - 8) / k;
+    return { i: (x - G.x[0]) / G.pitch, j: (z - G.z[0]) / G.pitch };
+  }
+  // What a point of the plan is: a divider laid out (`seg`, under its foot), an end the pending divider can take
+  // (`end`, from its hole to what it stops against), its start again (`back`), or a hole (`hole`)
+  function gridHit(u, fam, P) {
+    const G = gridOf(fam), B = gridBox(G, fam), segs = gridLayout(G, gridLines(u, fam), u.gridSeal !== false, fam);
+    const nearest = { i: Math.max(0, Math.min(G.x[1] - 1, Math.round(P.i))), j: Math.max(0, Math.min(G.z[1] - 1, Math.round(P.j))) };
+    if (gpend && gpend.u === u && gpend.fam === fam) {
+      let best = null;
+      for (const c of gridEnds(u, fam, gpend.i, gpend.j)) {
+        const t = c.o === 'x' ? P.i : P.j, off = Math.abs((c.o === 'x' ? P.j : P.i) - c.at), hu = mm => (mm - B.pos(c.o, 0)) / B.p;
+        const far = c.e === c.line[2] ? hu(c.seg.e0) : hu(c.seg.e1), lo = Math.min(c.e, far), hi = Math.max(c.e, far);
+        const d = Math.hypot(off, t < lo ? lo - t : t > hi ? t - hi : 0);
+        if (d <= 0.9 && (!best || d < best.d)) best = { ...c, d };
+      }
+      if (best) return { kind: 'end', end: best };
+      if (Math.hypot(P.i - gpend.i, P.j - gpend.j) <= 0.7) return { kind: 'back' };
+    } else {
+      let best = null;
+      for (const s of segs) {
+        const t = s.o === 'x' ? P.i : P.j, off = Math.abs((s.o === 'x' ? P.j : P.i) - s.at);
+        if (off <= GRID_FOOT / G.pitch && t >= Math.min(s.a, s.fa) - 0.5 && t <= Math.max(s.b, s.fb) + 0.5 && (!best || off < best.off)) best = { s, off };
+      }
+      if (best) return { kind: 'seg', seg: best.s };
+    }
+    return { kind: 'hole', ...nearest };
+  }
+  // One divider drawn on the plan: its foot under the files, a dashed line to what its ends stop against, the files
+  function gridSegSvg(G, s, cls = '') {
+    const { X, Z } = gridScale(G), p = G.pitch, f1 = v => v.toFixed(1), k = gridScale(G).k;
+    const along = i => (s.o === 'x' ? G.x[0] : G.z[0]) + i * p, at = s.o === 'x' ? G.z[0] + s.at * p : G.x[0] + s.at * p;
+    const P = (t, v) => s.o === 'x' ? [X(t), Z(v)] : [X(v), Z(t)], A = P(s.e0, at), Bp = P(s.e1, at);
+    const c0 = P(along(s.fa) - p / 2, at), c1 = P(along(s.fb) + p / 2, at);
+    const what = s.files.length > 1 ? `${s.files.join(' + ')} holes, two files end to end` : `${s.n}-hole divider`;
+    const ends = s.ends.map(e => e === 'straight' ? 'a straight edge piece at the wall' : e === 'rounded' ? 'a rounded edge piece on a divider' : null).filter(Boolean);
+    const lbl = s.bad ? `Can't go here: ${s.bad}` : what + (ends.length ? ', ' + [...new Set(ends)].join(' and ') : '');
+    const joints = s.files.slice(0, -1).map((_, n) => { const t = along(s.fa + s.files.slice(0, n + 1).reduce((x, y) => x + y, 0)) - p / 2, a = P(t, at - p), b = P(t, at + p); return `<line class="joint" x1="${f1(a[0])}" y1="${f1(a[1])}" x2="${f1(b[0])}" y2="${f1(b[1])}"/>`; }).join('');
+    return `<g class="gseg${s.bad ? ' bad' : ''}${cls}" data-gi="${s.idx}"><title>${lbl}</title><line class="foot" x1="${f1(c0[0])}" y1="${f1(c0[1])}" x2="${f1(c1[0])}" y2="${f1(c1[1])}" stroke-width="${f1(2 * GRID_FOOT * k)}"/>`
+      + `<line class="reach" x1="${f1(A[0])}" y1="${f1(A[1])}" x2="${f1(Bp[0])}" y2="${f1(Bp[1])}"/><line class="wall" x1="${f1(c0[0])}" y1="${f1(c0[1])}" x2="${f1(c1[0])}" y2="${f1(c1[1])}"/>${joints}`
+      + (s.bad ? '' : `<text x="${f1((c0[0] + c1[0]) / 2 + (s.o === 'z' ? 7 : 0))}" y="${f1((c0[1] + c1[1]) / 2 + (s.o === 'x' ? -6 : 3))}" text-anchor="${s.o === 'z' ? 'start' : 'middle'}">${s.files.join('+')}</text>`) + '</g>';
+  }
+  // A box seen from above, back at the top: its holes, and the dividers laid out on them. Click a hole to start a
+  // divider, then the hole it ends on (the plan marks those it can reach); click a divider to take it away.
   function gridPlan(u) {
     const fams = gridFams(u).filter(gridOf);
     if (!fams.length) return '';
+    if (gpend && (gpend.u !== u || !fams.includes(gpend.fam))) gpend = null;
     const seal = u.gridSeal !== false;
     const one = fam => {
-      const G = gridOf(fam), [xl, xr, zb, zf] = G.walls, p = G.pitch, W = 300, k = (W - 16) / (xr - xl), H = Math.round((zf - zb) * k + 30);
-      const X = x => 8 + (x - xl) * k, Z = z => 8 + (z - zb) * k, f1 = v => v.toFixed(1);
+      const G = gridOf(fam), [xl, xr, zb, zf] = G.walls, p = G.pitch, { W, H, X, Z, k } = gridScale(G), f1 = v => v.toFixed(1);
       const hx = i => G.x[0] + i * p, hz = j => G.z[0] + j * p, segs = gridLayout(G, gridLines(u, fam), seal, fam);
+      const pend = gpend && gpend.fam === fam ? gpend : null, ends = pend ? gridEnds(u, fam, pend.i, pend.j) : [];
+      if (pend && !ends.length) gpend = null;
+      const ok = new Set(ends.map(c => c.o === 'x' ? c.e + ',' + c.at : c.at + ',' + c.e));
       let g = `<rect class="dvin" x="${f1(X(xl))}" y="${f1(Z(zb))}" width="${f1(X(xr) - X(xl))}" height="${f1(Z(zf) - Z(zb))}" rx="3"/>`;
-      for (let j = 0; j < G.z[1]; j++) for (let i = 0; i < G.x[1]; i++) g += `<circle class="gh" cx="${f1(X(hx(i)))}" cy="${f1(Z(hz(j)))}" r="${Math.max(1, 2 * k).toFixed(2)}"/>`;
-      segs.forEach(s => {
-        const along = s.o === 'x' ? hx : hz, at = s.o === 'x' ? hz(s.at) : hx(s.at);
-        const lim = (b, wall) => b < 0 || b >= (s.o === 'x' ? G.x[1] : G.z[1]) ? wall : along(b);
-        const e0 = lim(s.lo, s.o === 'x' ? xl : zb), e1 = lim(s.hi, s.o === 'x' ? xr : zf);
-        const P = (t, v) => s.o === 'x' ? [X(t), Z(v)] : [X(v), Z(t)], A = P(e0, at), B = P(e1, at);
-        const c0 = P(along(s.a) - p / 2, at), c1 = P(along(s.b) + p / 2, at);
-        const lbl = s.bad ? `Can't go here: ${s.bad}` : `${s.n}-hole divider${s.ends.includes('rounded') ? ', stops at a divider' : ''}`;
-        g += `<g class="gseg${s.bad ? ' bad' : ''}"><title>${lbl}</title><line class="foot" x1="${f1(c0[0])}" y1="${f1(c0[1])}" x2="${f1(c1[0])}" y2="${f1(c1[1])}" stroke-width="${f1(2 * GRID_FOOT * k)}"/>`
-          + `<line class="reach" x1="${f1(A[0])}" y1="${f1(A[1])}" x2="${f1(B[0])}" y2="${f1(B[1])}"/><line class="wall" x1="${f1(c0[0])}" y1="${f1(c0[1])}" x2="${f1(c1[0])}" y2="${f1(c1[1])}"/>`
-          + (s.bad ? '' : `<text x="${f1((c0[0] + c1[0]) / 2 + (s.o === 'z' ? 7 : 0))}" y="${f1((c0[1] + c1[1]) / 2 + (s.o === 'x' ? -6 : 3))}" text-anchor="${s.o === 'z' ? 'start' : 'middle'}">${s.n}</text>`) + '</g>';
-      });
-      g += `<text x="${W / 2}" y="${H - 6}" text-anchor="middle">Front</text>`;
-      const ok = segs.filter(s => !s.bad), bad = segs.length - ok.length;
-      return `${fams.length > 1 ? `<div class="hint">${fam.replace(/\d+$/, '')} drawer</div>` : ''}<svg viewBox="0 0 ${W} ${H}" data-gplan="${fam}" role="img" aria-label="The ${fam} box from above, back at the top: ${plural(ok.length, 'divider')}">${g}</svg>
-        <div class="dvfoot"><span class="mono">${plural(ok.length, 'divider')}${bad ? ` · <span style="color:var(--bad)">${bad} can't fit (red)</span>` : ''}</span><span class="dvacts"><button type="button" class="btn" data-gclear="${fam}">Clear</button></span></div>`;
+      for (let j = 0; j < G.z[1]; j++) for (let i = 0; i < G.x[1]; i++) g += `<circle class="gh${ok.has(i + ',' + j) ? ' ok' : ''}" cx="${f1(X(hx(i)))}" cy="${f1(Z(hz(j)))}" r="${(ok.has(i + ',' + j) ? Math.max(1.8, 2.6 * k) : Math.max(1, 2 * k)).toFixed(2)}"/>`;
+      segs.forEach(s => { g += gridSegSvg(G, s); });
+      if (pend && ends.length) g += `<circle class="gstart" cx="${f1(X(hx(pend.i)))}" cy="${f1(Z(hz(pend.j)))}" r="${f1(Math.max(4, 6 * k))}"/>`;
+      g += `<g class="gprev"></g><circle class="ghot" r="${f1(Math.max(4, 6 * k))}" cx="-50" cy="-50"/><text x="${W / 2}" y="${H - 6}" text-anchor="middle">Front</text>`;
+      const good = segs.filter(s => !s.bad), bad = segs.length - good.length;
+      const status = pend && ends.length ? `Now click where it ends: one of the ${plural(ends.length, 'marked hole')}. Esc or a click on its start cancels.` : 'Click a hole to start a divider. Click a divider to remove it.';
+      return `${fams.length > 1 ? `<div class="hint">${fam.replace(/\d+$/, '')} drawer</div>` : ''}<svg viewBox="0 0 ${W} ${H}" data-gplan="${fam}" role="img" aria-label="The ${fam} box from above, back at the top: ${plural(good.length, 'divider')}">${g}</svg>
+        <div class="gstatus${pend && ends.length ? ' on' : ''}">${status}</div>
+        <div class="dvfoot"><span class="mono">${plural(good.length, 'divider')}${bad ? ` · <span style="color:var(--bad)">${bad} can't fit (red)</span>` : ''}</span><span class="dvacts"><button type="button" class="btn" data-gclear="${fam}" ${segs.length ? '' : 'disabled'}>Clear</button></span></div>`;
     };
-    return `<div class="field dvplan gplan"><div class="lbl">Grid dividers <span class="hint">click a row of holes to add or remove one</span></div>
+    return `<div class="field dvplan gplan"><div class="lbl">Grid dividers <span class="hint">two clicks: where it starts, where it ends</span></div>
       ${fams.map(one).join('')}
       <div class="lbl" style="margin-top:8px">Even grid <span class="hint">starts the plan again</span></div>
       <div class="steppers">${stepRow('gridAcross', 'Side to side', u.gridAcross || 0)}${stepRow('gridAlong', 'Front to back', u.gridAlong || 0)}</div>
-      <p class="pnote" style="margin:0">A divider runs to the walls, or stops at a divider already in its way (a rounded edge piece rides over that one's foot). The number is the file: how many holes it covers.${u.w === 'L2' || u.w === 'XL2' || R.drawersOf(u).length > 1 ? ' Drawers of one size share their plan.' : ''}</p></div>`;
+      <p class="pnote" style="margin:0">A divider covers 5 to 32 holes: the number on it is the file. On a hole by a wall it closes against the wall (straight edge piece); on the hole next to a divider running across it meets that one (rounded edge piece, over its foot); anywhere else it stops open.${u.w === 'L2' || u.w === 'XL2' || R.drawersOf(u).length > 1 ? ' Drawers of one size share their plan.' : ''}</p></div>`;
   }
-  // A click on a plan: the row or column of holes nearest to it, and the hole along it
+  // A click on a plan: the start, the end (the divider goes in), a divider taken away, or the start dropped
   function gridClick(u, fam, svg, ev) {
-    const G = gridOf(fam), [xl, xr, zb] = G.walls, k = (300 - 16) / (xr - xl), r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
-    const x = xl + ((ev.clientX - r.left) * vb.width / r.width - 8) / k, z = zb + ((ev.clientY - r.top) * vb.height / r.height - 8) / k;
-    const fi = (x - G.x[0]) / G.pitch, fj = (z - G.z[0]) / G.pitch, i = Math.max(0, Math.min(G.x[1] - 1, Math.round(fi))), j = Math.max(0, Math.min(G.z[1] - 1, Math.round(fj)));
-    const o = Math.abs(fj - Math.round(fj)) <= Math.abs(fi - Math.round(fi)) ? 'x' : 'z', at = o === 'x' ? j : i, s = o === 'x' ? i : j;
-    const lines = gridLines(u, fam), segs = gridLayout(G, lines, u.gridSeal !== false, fam);
-    const hit = segs.find(g => g.o === o && g.at === at && g.lo < s && s < g.hi);
-    let next;
-    if (hit) next = lines.filter((_, n) => n !== hit.idx);
-    else {
-      next = [...lines, [o, at, s]];
-      const got = gridLayout(G, next, u.gridSeal !== false, fam).pop();
-      if (!got || got.bad) { toast(`No divider there: ${got ? got.bad : 'off the grid'}.`); return null; }
-    }
-    return { gridPlans: { ...(u.gridPlans || {}), [fam]: next } };
+    const G = gridOf(fam), h = gridHit(u, fam, gridPoint(G, svg, ev)), lines = gridLines(u, fam);
+    if (h.kind === 'end') { gpend = null; return { gridPlans: { ...(u.gridPlans || {}), [fam]: [...lines, h.end.line] } }; }
+    if (h.kind === 'seg') { const s = h.seg; toast(`Divider removed${s.bad ? '' : ` (${s.files.join(' + ')} holes)`}.`); return { gridPlans: { ...(u.gridPlans || {}), [fam]: lines.filter((_, n) => n !== s.idx) } }; }
+    if (h.kind === 'back' || (gpend && gpend.fam === fam && gpend.i === h.i && gpend.j === h.j)) { gpend = null; renderInspector(); return null; }
+    const ends = gridEnds(u, fam, h.i, h.j);
+    if (!ends.length) { const was = gpend; gpend = null; toast(`No divider can start on this hole: ${ends.why}.`); if (was) renderInspector(); return null; }
+    gpend = { u, fam, i: h.i, j: h.j }; renderInspector();
+    return null;
+  }
+  // The pointer over a plan: the divider a click would place (or take away), or the hole it would start on
+  function gridHover(u, fam, svg, ev) {
+    const G = gridOf(fam), prev = svg.querySelector('.gprev'), hot = svg.querySelector('.ghot'), { X, Z } = gridScale(G);
+    svg.querySelectorAll('.gseg.hot').forEach(g => g.classList.remove('hot'));
+    prev.innerHTML = ''; hot.setAttribute('cx', -50); hot.setAttribute('cy', -50);
+    if (!ev) { svg.style.cursor = ''; return; }
+    const h = gridHit(u, fam, gridPoint(G, svg, ev));
+    if (h.kind === 'end') { prev.innerHTML = gridSegSvg(G, h.end.seg, ' preview'); svg.style.cursor = 'pointer'; return; }
+    if (h.kind === 'seg') { const g = svg.querySelector(`.gseg[data-gi="${h.seg.idx}"]`); if (g) g.classList.add('hot'); svg.style.cursor = 'pointer'; return; }
+    if (h.kind === 'hole' && !(gpend && gpend.fam === fam)) { hot.setAttribute('cx', X(G.x[0] + h.i * G.pitch).toFixed(1)); hot.setAttribute('cy', Z(G.z[0] + h.j * G.pitch).toFixed(1)); }
+    svg.style.cursor = h.kind === 'back' ? 'pointer' : 'crosshair';
   }
   const layIcon = (l, h) => `<svg width="26" height="34" viewBox="0 0 26 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">${(() => { let y = 2; return l.map(dh => { const hh = 30 * dh / h, r = `<rect x="2" y="${y + 0.75}" width="22" height="${hh - 1.5}" rx="1.5"/><path d="M10 ${y + hh / 2}h6"/>`; y += hh; return r; }).join(''); })()}</svg>`;
   // Segmented settings of a module: buttons read "key=value" from data-useg
@@ -4106,14 +4225,17 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       const p = G.pitch, hx = i => G.x[0] + i * p, hz = j => G.z[0] + j * p, y = G.floor;
       gridLayout(G, (u.gridPlans || {})[fam] || [], u.gridSeal !== false, fam).filter(s => !s.bad).forEach(s => {
         const X = s.o === 'x', along = X ? hx : hz, at = X ? hz(s.at) : hx(s.at), d = X ? [1, 0, 0] : [0, 0, 1], back = d.map(v => -v);
-        const pt = t => X ? [t, at] : [at, t], len = X ? G.x[1] : G.z[1];
-        const c = pt((along(s.a) + along(s.b)) / 2);
-        put(R.gridFile(dh, u, s.n), m34At(d, c[0], y, c[1]));
+        const pt = t => X ? [t, at] : [at, t];
+        // its files end to end (one, or two past 32 holes), each with its pins in its 2nd and (N - 1)th holes
+        let a = s.fa;
+        s.files.forEach(n => {
+          const c = pt((along(a) + along(a + n - 1)) / 2);
+          put(R.gridFile(dh, u, n), m34At(d, c[0], y, c[1]));
+          [a + 1, a + n - 2].forEach(i => { const q = pt(along(i)); put(R.gridPinFile(u), m34At([1, 0, 0], q[0], y - 2.8, q[1])); });
+          a += n;
+        });
         // edge pieces: at a wall its face on the wall, at a divider its tip on that divider's middle; tongue inwards
-        const e0 = s.lo < 0 ? (X ? G.walls[0] : G.walls[2]) : along(s.lo), e1 = s.hi >= len ? (X ? G.walls[1] : G.walls[3]) : along(s.hi);
-        [[s.ends[0], e0, d], [s.ends[1], e1, back]].forEach(([kind, e, dir]) => { if (kind) { const q = pt(e); put(R.gridEdgeFile(dh, u, kind), m34At(dir, q[0], y, q[1])); } });
-        // pins, in the holes 1.5 pitches in from the divider's ends, down in the floor's holes
-        [s.a + 1, s.b - 1].forEach(i => { const q = pt(along(i)); put(R.gridPinFile(u), m34At([1, 0, 0], q[0], y - 2.8, q[1])); });
+        [[s.ends[0], s.e0, d], [s.ends[1], s.e1, back]].forEach(([kind, e, dir]) => { if (kind) { const q = pt(e); put(R.gridEdgeFile(dh, u, kind), m34At(dir, q[0], y, q[1])); } });
       });
     });
     return out;
@@ -5602,6 +5724,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   $('printerBtn').onclick = e => { e.stopPropagation(); printerPop($('printerBox').hidden); };
   document.addEventListener('click', e => { if (!$('printerBox').hidden && !e.target.closest('#printerBox, #printerBtn')) printerPop(false); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('printerBox').hidden) { printerPop(false); $('printerBtn').focus(); } });
+  // Esc drops a grid divider's start (the plan's first click)
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && gpend) { gpend = null; renderInspector(); } });
   checkFolderLink().catch(() => {});
   document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { view = b.dataset.tab; renderAll(); });
 
