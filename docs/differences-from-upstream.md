@@ -39,7 +39,7 @@ The original has no 3D view (only small pictures of each part). The fork shows t
 - The backbone column and the stationary or pull-out handles, with the handle lock and its knobs.
 - Pegboards, wall mounts and their cleats, the Gridfinity baseplates of XL drawers and cases, the latches' lock pins.
 - Case dividers in their slots and the drawers' grid dividers.
-- Bolts, drawn from their ISO size, in black or zinc (the "Bolts" button).
+- Bolts, drawn from their ISO size, always shown, in raw steel (black) or zinc-plated / stainless (grey): the toolbar button switches the finish, which also names the bolts and rods in the Hardware list and its store searches.
 
 **What you can do in it**
 

@@ -130,8 +130,11 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   holes each bolt goes in and writes `hardware: [[spec, group, m, {part, why}]]` per unit plus `hardware_sizes` (ISO
   sizes) into `stl-placements.json`; rerun it after every export. The page makes the bolts from the sizes
   (`hwProfile`/`hwRevolve`, section "hardware" in `src/template.html`), draws each with the part that holds it (`part`),
-  in its group; toolbar toggle "Bolts" (`v3hw`, saved), metal colour in `colorPrefs.hardware` (not a filament role:
-  plates and the tray ignore it), set from the "Selected" card (`v3selHw`). The grid roof's top handle now stands
+  in its group; always shown (Dols, 2026-11-13: the old "Bolts" show/hide toggle is gone); the toolbar button (`data-v3fin`)
+  switches the build's bolt finish, raw steel (black) or zinc-plated / stainless (grey), saved in `colorPrefs.hardware`
+  (`hwFinish`/`setHwFinish`; Hardware's "Bolt finish" and the "Selected" card set the same one). It also names the
+  bolts and rods in Hardware (`hwItem`) and goes into the store searches (`shopQuery`); Amazon.com product pages stay
+  as they are. Not a filament role: plates and the tray ignore it. The grid roof's top handle now stands
   (it was flat). Counts that differ from the planner: `tools/placements/COVERAGE.md`, "Hardware".
 - Backbone column and handles in 3D: `tools/placements/measure_column.py` (numpy, on the files) writes `column|<w>`
   (S, M, L, XL; `column|U` the universal backbones): backbones, pull-out handle lock + knobs, stationary and pull-out

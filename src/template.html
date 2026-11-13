@@ -1605,7 +1605,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     [/shaft collar \((\d+) mm bore\)/, (m, b) => `${b}mm shaft collar`],
     [/^M16 /, () => 'M16 threaded rod 1m'],
   ];
-  const shopQuery = item => { for (const [re, f] of SHOP_QUERY) { const m = item.match(re); if (m) return f(...m); } return item.replace(/×/g, 'x').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim(); };
+  const shopBase = item => { for (const [re, f] of SHOP_QUERY) { const m = item.match(re); if (m) return f(...m); } return item.replace(/×/g, 'x').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim(); };
+  // The bolts and rods come in the build's finish (hwFinish: set in step 3 or from the 3D view). Bolts in the light
+  // finish are mostly sold as stainless (A2), M16 rods as zinc plated; both dark ones as black.
+  const HW_FINISHED = /bolt$|^M16 /;
+  const shopQuery = item => shopBase(item) + (HW_FINISHED.test(item) ? ' ' + (hwFinish() === 'black' ? 'black' : /^M16 /.test(item) ? 'zinc plated' : 'stainless') : '');
+  const hwItem = item => HW_FINISHED.test(item) ? `${item}, ${hwFin()[3]}` : item;
   // Stores by continent: [id, store name, country]. Every Amazon store takes the same search address.
   const SHOP_STORES = [
     ['North America', [['com', 'Amazon.com', 'United States'], ['ca', 'Amazon.ca', 'Canada'], ['com.mx', 'Amazon.com.mx', 'Mexico']]],
@@ -4088,11 +4093,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // tools/placements/hardware.py: ISO 7380 button, ISO 10642 countersunk and ISO 4762 socket heads, ISO 4017 hex
   // heads, ISO 4032 nuts), without threads, with a simplified hex key hole. A bolt's own frame: +Y from its tip to its
   // head, the origin on its axis where the head bears (the top of a countersunk head), the shank from y = 0 to
-  // y = -length. They are bought, not printed, so their colour is only the view's: a metal finish, kept apart from
-  // the filament colours (colorPrefs.hardware).
-  const HW_STEEL = '#b4b9be', HW_BLACK = '#2b2d30', HW_FINISHES = [['#b4b9be', 'Zinc or stainless'], ['#2b2d30', 'Black steel'], ['#c8a04c', 'Brass']];
-  const hwColor = () => colorPrefs.hardware || HW_STEEL;
-  const hwName = hex => (HW_FINISHES.find(f => f[0] === hex) || [0, 'your own color'])[1];
+  // y = -length. They are bought, not printed, so their colour is their finish, kept apart from the filament colours.
+  // One finish for the whole build, raw steel (black) or zinc-plated / stainless (grey), saved as colorPrefs.hardware
+  // (HW_BLACK, or none for grey; an older brass or custom colour reads as grey): the 3D view's bolts, rods and casters
+  // take its colour, and step 3's list its name and store searches (hwItem, shopQuery). [id, colour, label, in a name]
+  const HW_STEEL = '#b4b9be', HW_BLACK = '#2b2d30';
+  const HW_FINISHES = [['black', HW_BLACK, 'Raw steel', 'black steel'], ['zinc', HW_STEEL, 'Zinc or stainless', 'zinc-plated or stainless']];
+  const hwFinish = () => colorPrefs.hardware === HW_BLACK ? 'black' : 'zinc';
+  const hwFin = () => HW_FINISHES.find(f => f[0] === hwFinish());
+  const hwColor = () => hwFin()[1];
+  const setHwFinish = id => { if (id === 'black') colorPrefs.hardware = HW_BLACK; else delete colorPrefs.hardware; saveColors(); };
   const hwLabel = spec => spec.replace(/^(M\d+)x([\d.]+) (\w+)$/, '$1 × $2 mm $3 head').replace(/ (rod|nut) head$/, ' $1');
   function hwSpec(spec) {
     const m = /^(M(\d+))(?:x([\d.]+))? (\w+)$/.exec(spec); if (!m) return null;
@@ -4208,7 +4218,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // kept for the page's life; each model (a unit, a stack) gets its own scene, and the tools and the camera's
   // direction carry over from one to the next (v3ui).
   let v3gl = null, v3want = null;
-  let v3hw = store.get('v3hardware', true); // show the bolts
   const v3ui = { tool: null, pscope: 'project', brush: null, explode: false, hideRoof: false, view: '3q', dir: null };
   async function open3d(t, mode = {}) {
     const want = v3want = {};
@@ -4273,7 +4282,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       for (const sx of [-1, 1]) add(new T.BoxGeometry(2.5, 38, 22), 'hardware', sx * 12.25, -29, -12, 'Caster (bought)');
       add(new T.CylinderGeometry(25, 25, 20, 40).rotateZ(Math.PI / 2), 'caster', 0, -CASTER_H + 25, -15, 'Caster wheel (bought)');
       const bg = v.hwGeom('M8x25 rod');
-      if (bg) { const b = painted(bg, 'hardware', null); b.rotation.x = Math.PI; Object.assign(b.userData, { name: 'Caster stem, M8 × 25 mm', hw: true }); b.visible = v3hw; c.add(b); }
+      if (bg) { const b = painted(bg, 'hardware', null); b.rotation.x = Math.PI; Object.assign(b.userData, { name: 'Caster stem, M8 × 25 mm', hw: true }); c.add(b); }
       return c;
     };
     const sig = { signal: v.ac.signal };
@@ -4515,7 +4524,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <div class="v3-right"><div class="v3-seg" role="group" aria-label="View">${seg(V3_VIEWS.map(x => [x[0], x[1]]), v.view, 'data-v3view')}</div>
         ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}">Spread units</button>` : ''}
         ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}">Hide roof</button>` : ''}
-        ${v.units.some(u => u.place && u.place.bolts.length) ? `<button type="button" class="v3-tog" data-v3hw aria-pressed="${v3hw}" title="Show or hide the bolts (bought hardware, drawn from their standard sizes)">Bolts</button>` : ''}</div>`;
+        ${v.units.some(u => u.place && u.place.bolts.length) ? `<button type="button" class="v3-tog" data-v3fin title="Bolt finish, for the whole build (also in Hardware): click for ${hwFinish() === 'black' ? 'zinc-plated or stainless' : 'raw steel'}"><span class="dot2" style="background:${hwColor()};vertical-align:-2px;margin-right:6px"></span>${hwFin()[2]}</button>` : ''}</div>`;
     const B = $('v3dBrush');
     if (v.tool === 'paint') {
       B.hidden = false; B.className = 'v3-brush';
@@ -4535,12 +4544,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     on('[data-v3view]', b => { v.view = b.dataset.v3view; v.aim(V3_VIEWS.find(x => x[0] === v.view)[2]); v3tools(); });
     on('[data-v3tog]', b => { v[b.dataset.v3tog] = !v[b.dataset.v3tog]; v.arrange(); v3tools(); v3side(); });
     on('[data-v3scope]', b => { v.pscope = b.dataset.v3scope; v3tools(); });
-    on('[data-v3hw]', () => {
-      v3hw = !v3hw; store.set('v3hardware', v3hw);
-      v.scene.traverse(o => { if (o.userData.hw) o.visible = v3hw; });
-      if (!v3hw && v.sel && v.sel.role === 'hardware') v.sel = null;
-      v.render(); v3tools(); v3side();
-    });
+    on('[data-v3fin]', () => { setHwFinish(hwFinish() === 'black' ? 'zinc' : 'black'); v.recolor(); v3tools(); v3side(); });
   }
   // The side column: what is selected, then the units top to bottom, then the project's colours
   function v3side() { v3sel(); v3list(); v3colors(); v3picked(); }
@@ -4566,17 +4570,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       owner.save(); v3refresh(v);
     };
   }
-  // A bolt: what it is, and the bolts' colour (every bolt: they are bought, so it is only the view's)
+  // A bolt: what it is, and the build's bolt finish (the same setting as the toolbar's button and Hardware's)
   function v3selHw(v, box, s) {
-    const cur = hwColor();
+    const fin = hwFin();
     box.innerHTML = `<div class="v3-card"><div class="v3-sec">Selected</div>
-      <div class="v3-selrow"><span class="v3-selsw" style="background:${cur}"></span><div><b>${esc(s.name || 'Bolt')}${s.u ? ` \u00b7 ${esc(s.u.name)}` : ''}</b>
-        <small>Bought, not printed. Bolts and casters: ${esc(hwName(cur))}, in this view only.</small></div></div>
-      <div class="v3-selact">${HW_FINISHES.map(([hex, n]) => `<button type="button" class="btn" data-v3hwc="${hex}" aria-pressed="${cur === hex}">${n}</button>`).join('')}
-        <label class="btn" style="position:relative">Other\u2026<input type="color" data-v3hwx value="${cur}" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer"></label></div></div>`;
-    const set = hex => { if (hex === HW_STEEL) delete colorPrefs.hardware; else colorPrefs.hardware = hex; saveColors(); v.recolor(); v3selHw(v, box, s); };
-    box.querySelectorAll('[data-v3hwc]').forEach(b => b.onclick = () => set(b.dataset.v3hwc));
-    box.querySelector('[data-v3hwx]').onchange = e => set(e.target.value);
+      <div class="v3-selrow"><span class="v3-selsw" style="background:${fin[1]}"></span><div><b>${esc(s.name || 'Bolt')}${s.u ? ` \u00b7 ${esc(s.u.name)}` : ''}</b>
+        <small>Bought, not printed. Every bolt and rod of the build: ${esc(fin[3])}, also in the Hardware list.</small></div></div>
+      <div class="v3-selact">${HW_FINISHES.map(([id, , n]) => `<button type="button" class="btn" data-v3hwc="${id}" aria-pressed="${fin[0] === id}">${n}</button>`).join('')}</div></div>`;
+    box.querySelectorAll('[data-v3hwc]').forEach(b => b.onclick = () => { setHwFinish(b.dataset.v3hwc); v.recolor(); v3tools(); v3selHw(v, box, s); });
   }
   // The project's colours (tray and map), at the foot of the side column
   function v3colors() { const box = $('v3dColors'); if (box) box.replaceChildren(); } // colours are set with the Paint tool
@@ -4700,7 +4701,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         const g = v.hwGeom(b.spec); if (!g) continue;
         const mesh = v.painted(g, 'hardware', b.cfg), m = b.m;
         Object.assign(mesh.userData, { name: hwLabel(b.spec), hw: true });
-        mesh.visible = v3hw;
         mesh.matrixAutoUpdate = false;
         mesh.matrix.set(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], 0, 0, 0, 1);
         const own = b.mv != null && u.movers && u.movers.find(x => x.id === b.mv) || (u.sorted && b.group === 'drawer' && sideOf(u, b.joint, mesh)) || u;
@@ -5166,13 +5166,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     };
     const rows = b.hardware.map(h => {
       const qty = h.total, shop = shopOf(h.item);
-      return { item: h.item, qty, why: h.why, where: whereText(h.item), group: hwGroupOf(h.item), head: headOf(h.item), link: shop.link, store: shop.store, page: shop.page, aff: shop.aff, note: shop.note, bought: !!hwBought[h.item] };
+      return { item: h.item, name: hwItem(h.item), qty, why: h.why, where: whereText(h.item), group: hwGroupOf(h.item), head: headOf(h.item), link: shop.link, store: shop.store, page: shop.page, aff: shop.aff, note: shop.note, bought: !!hwBought[h.item] };
     }).sort((x, y) => HW_GROUPS.findIndex(g => g[0] === x.group) - HW_GROUPS.findIndex(g => g[0] === y.group));
     return { b, rows };
   }
-  const hwText = rows => 'Vault hardware\n' + rows.map(r => `${r.qty}x  ${r.item}  \u2014  ${r.why}${r.where ? ' \u00b7 ' + r.where : ''}${r.bought ? '  [bought]' : ''}`).join('\n');
+  const hwText = rows => 'Vault hardware\n' + rows.map(r => `${r.qty}x  ${r.name}  \u2014  ${r.why}${r.where ? ' \u00b7 ' + r.where : ''}${r.bought ? '  [bought]' : ''}`).join('\n');
   const csvCell = v => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
-  const hwCsv = rows => ['Bought,Quantity,Item,Used for,Stacks,Store link', ...rows.map(r => [r.bought ? 'yes' : '', r.qty, r.item, r.why, r.where, r.link || ''].map(csvCell).join(','))].join('\r\n');
+  const hwCsv = rows => ['Bought,Quantity,Item,Used for,Stacks,Store link', ...rows.map(r => [r.bought ? 'yes' : '', r.qty, r.name, r.why, r.where, r.link || ''].map(csvCell).join(','))].join('\r\n');
   function renderHardware() {
     const { b, rows } = hardwareList();
     if (b.empty) return emptyStep('view-hardware', 'to buy');
@@ -5183,10 +5183,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       let head = '';
       if (r.group !== group) { group = r.group; head = `<div class="hwg"><h2>${esc(group)}</h2><span class="mono">${plural(rows.filter(x => x.group === group).length, 'line')}</span></div>`; }
       return head + `<div class="hwrow${r.bought ? ' got' : ''}">
-        <label class="hwtick"><input type="checkbox" data-hw-bought="${esc(r.item)}" ${r.bought ? 'checked' : ''} aria-label="${esc(r.item)} bought"></label>
+        <label class="hwtick"><input type="checkbox" data-hw-bought="${esc(r.item)}" ${r.bought ? 'checked' : ''} aria-label="${esc(r.name)} bought"></label>
         <span class="hwq num">${r.qty}\u00d7</span>
         <span class="hwhead">${headIcon(r.item)}</span>
-        <span class="hwname"><b>${esc(r.item)}</b><small>${esc(r.note || '')}</small></span>
+        <span class="hwname"><b>${esc(r.name)}</b><small>${esc(r.note || '')}</small></span>
         <span class="hwuse"><span>${esc(r.why)}</span><small class="mono">${esc(r.where)}</small></span>
         <span class="hwbuy">${r.link ? `<a class="btn" href="${esc(r.link)}" data-buy="${esc(r.item)}" target="_blank" rel="${r.aff ? 'sponsored noopener' : 'noopener'}" title="${esc(r.page ? `${r.store}: the product page` : `${r.store}: search for ${shopQuery(r.item)}`)}">${esc(r.store)}</a>` : ''}</span></div>`;
     }).join('');
@@ -5199,8 +5199,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       </section>
       <aside class="hwside" aria-label="List options">
         <div class="panel hwbox"><div class="v3-sec">Bolt finish</div>
-          <div class="seg" role="group" aria-label="Bolt finish">${[[HW_BLACK, 'Black', 'raw steel'], [HW_STEEL, 'Grey', 'zinc-plated or stainless']].map(([hex, n, sub]) => `<button type="button" data-hwfin="${hex}" aria-pressed="${hwColor() === hex}"><span class="dot2" style="background:${hex};vertical-align:-2px;margin-right:6px"></span>${n}<small>${sub}</small></button>`).join('')}</div>
-          <small class="pnote" style="margin:0">The bolts in the 3D view take this finish.</small></div>
+          <div class="seg" role="group" aria-label="Bolt finish">${HW_FINISHES.map(([id, hex, n, sub]) => `<button type="button" data-hwfin="${id}" aria-pressed="${hwFinish() === id}"><span class="dot2" style="background:${hex};vertical-align:-2px;margin-right:6px"></span>${n}<small>${id === 'black' ? 'black' : 'grey'}</small></button>`).join('')}</div>
+          <small class="pnote" style="margin:0">Names the bolts and rods in this list and in the store searches, and colors them in the 3D view (its toolbar button sets it too).${shopStore === 'com' && rows.some(r => r.page && HW_FINISHED.test(r.item)) ? ' Amazon.com product pages stay the original planner’s picks: choose the finish on the page when it offers one.' : ''}</small></div>
         <div class="panel hwbox"><label class="v3-sec" for="hwShop">Where you buy</label>
           <select class="full" id="hwShop">${SHOP_STORES.map(([cont, list]) => `<optgroup label="${esc(cont)}">${list.map(([id, name, where]) => `<option value="${id}" ${id === shopStore ? 'selected' : ''}>${esc(name)} · ${esc(where)}</option>`).join('')}</optgroup>`).join('')}</select>
           <small class="pnote" style="margin:0">${shopStore === 'com' ? 'Links go to product pages checked against the manual’s sizes and head shapes.' : 'Links search this store for the same size, head shape and standard.'} Any store with the same sizes will do.</small>
@@ -5220,7 +5220,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     });
     $('hwShop').onchange = e => { shopStore = e.target.value; store.set('shopStore', shopStore); renderHardware(); };
     $('hwCopy').onclick = () => copy(hwText(rows), 'Hardware list copied');
-    V.querySelectorAll('[data-hwfin]').forEach(b => b.onclick = () => { if (b.dataset.hwfin === HW_STEEL) delete colorPrefs.hardware; else colorPrefs.hardware = b.dataset.hwfin; saveColors(); renderHardware(); });
+    V.querySelectorAll('[data-hwfin]').forEach(b => b.onclick = () => { setHwFinish(b.dataset.hwfin); renderHardware(); });
     $('hwCsv').onclick = () => {
       const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob(['\ufeff' + hwCsv(rows)], { type: 'text/csv' })), download: 'Vault hardware.csv' });
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
