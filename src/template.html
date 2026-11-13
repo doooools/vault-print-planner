@@ -517,6 +517,8 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .imore { border-top: 1px solid var(--line); padding-top: 10px; }
 .imore > summary { cursor: pointer; font-weight: 700; font-size: 14px; min-height: 32px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .imore > summary .mono { color: var(--muted); font-size: 12px; font-weight: 400; }
+.isec { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px; margin-bottom: -4px; font-size: 14px; }
+.isec .hint { font-size: 12px; font-weight: 400; color: var(--muted); }
 .ilist { display: grid; gap: 6px; margin-top: 8px; }
 .ilist h3 { display: flex; justify-content: space-between; gap: 8px; margin: 6px 0 0; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .ilist h3 .mono { text-transform: none; letter-spacing: 0; }
@@ -2177,6 +2179,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   const segBtns = (items, cur, attr) => items.map(it => `<button type="button" ${attr}="${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}"${it.dis ? ' disabled' : ''}>${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   const useg = (key, items, cur) => items.map(it => `<button type="button" data-useg="${key}=${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
+  // An on/off setting of the selected module as two segmented buttons (data-ubool="key=1" / "key=0")
+  const ubool = (key, off, on, cur) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-ubool="${key}=${it.v}" aria-pressed="${!!cur === !!it.v}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   const optRow = (attr, label, sub, val) => `<label class="opt"><input type="checkbox" ${attr} ${val ? 'checked' : ''}><span>${label}${sub ? `<small>${sub}</small>` : ''}</span></label>`;
   const selRow = (attr, label, options, val) => `<div class="field"><div class="lbl">${label}</div><select class="full" ${attr}>${options.map(o => `<option value="${o[0]}" ${String(o[0]) === String(val) ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></div>`;
   const stepRow = (key, label, val) => `<div class="stepper"><span>${label}</span><div><button type="button" data-ustep="${key}" data-d="-1" aria-label="Fewer: ${label}">−</button><output>${val}</output><button type="button" data-ustep="${key}" data-d="1" aria-label="More: ${label}">+</button></div></div>`;
@@ -2438,7 +2442,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         o += optRow('data-ucheck="gridSeal"', 'Close against the walls', 'A divider that ends at a wall takes one hole less and a straight edge piece, which closes the gap (instructions, option 2). Off: the longer divider alone, a few mm short of the wall.', dv.gridSeal !== false);
       }
       o += `<div class="field"><div class="lbl">Lock${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${useg('lock', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], dv.lock)}</div></div>`;
-      o += optRow('data-ucheck="gearedRails"', 'Geared rails', dids.length > 1 ? 'USSA: use them when a module holds more than one drawer.' : 'Optional in the manual. Recommended for 2F and 4F, and for extra locking force.', dv.gearedRails);
+      o += `<div class="field"><div class="lbl">Geared rails${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${ubool('gearedRails', { label: 'Without', sub: 'optional in the manual' }, { label: 'With', sub: dids.length > 1 ? 'USSA: several drawers' : 'for 2F, 4F, more locking' }, dv.gearedRails)}</div></div>`;
       if (dv !== u) o += `<div class="dvfoot"><span class="mono">${esc(insideSum(u, dids))}</span><span class="dvacts"><button type="button" class="btn" data-dcopy>Same settings in every drawer</button></span></div>`;
     } else {
       if (u.w === 'L' || u.w === 'XL') o += selRow('data-usel="caseInterior"', 'Case body style', [['flat', 'Flat (open box)'], ['dividers', 'Dividers (slotted walls)'], ['sealed', 'Sealed (slots for seal dividers)']], u.caseInterior);
@@ -2446,13 +2450,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       else o += optRow('data-ucheck="caseBaseplate"', 'Gridfinity baseplate inside', 'Instead of dividers: it covers the floor grooves they stand in.', u.caseBaseplate);
       o += casePlate(u) ? `<div class="field"><div class="lbl">Dividers</div><p class="pnote" style="margin:0">The baseplate covers the floor from wall to wall, grooves included, so this case takes no divider. Untick it to place dividers${(Object.values(divSel(u) || {}).flat(2).length) ? ': the ones you placed are kept' : ''}.</p></div>` : dividerPlan(u);
     }
-    let more = '';
-    more += optRow('data-ucheck="wallMount"', 'Wall mount plate and cleats', 'Plate on the back of this module, plus two wall cleats.', u.wallMount);
+    // Back of the stack: what goes on the module's back, laid out like the front's settings
+    let back = `<div class="field"><div class="lbl">Wall mount <span class="hint">plate on this module\u2019s back</span></div><div class="seg">${ubool('wallMount', { label: 'None', sub: 'stands free' }, { label: 'Plate and cleats', sub: 'two wall cleats' }, u.wallMount)}</div></div>`;
     if (u.h <= 2) {
-      more += selRow('data-usel="pegboard"', 'Pegboard attachment <span class="hint">1F and 2F only, on a backbone</span>', [['none', 'None'], ['ikea', 'IKEA Skådis'], ['ussa', 'USSA pegboard']], u.pegboard);
-      more += selRow('data-usel="backbone"', 'Backbone <span class="hint">the column on the back reaches this level</span>', [['none', 'None'], ['family', 'Sized to this width'], ['universal', 'Universal']], u.backbone);
-    }
-    const moreOn = (u.wallMount ? 1 : 0) + (u.pegboard && u.pegboard !== 'none' ? 1 : 0) + (u.backbone && u.backbone !== 'none' ? 1 : 0);
+      back += `<div class="field"><div class="lbl">Pegboard attachment <span class="hint">hangs on a backbone</span></div><div class="seg">${useg('pegboard', [{ v: 'none', label: 'None', sub: 'no board' }, { v: 'ikea', label: 'IKEA', sub: 'Sk\u00e5dis' }, { v: 'ussa', label: 'USSA', sub: 'pegboard' }], u.pegboard || 'none')}</div></div>`;
+      back += `<div class="field"><div class="lbl">Backbone <span class="hint">the column reaches this level</span></div><div class="seg">${useg('backbone', [{ v: 'none', label: 'None' }, { v: 'family', label: 'This width' }, { v: 'universal', label: 'Universal' }], u.backbone || 'none')}</div></div>`;
+    } else back += '<p class="pnote" style="margin:0">Pegboards and backbones are made for 1F and 2F modules only.</p>';
     box.innerHTML = `<div class="ihead"><div class="ipos"><span class="v3-sec">Level ${i + 1} of ${L.length}</span>
         <div class="iacts"><button type="button" class="iconbtn sq" data-lop="up" aria-label="Move this level up" ${top ? 'disabled' : ''}>${icon('up')}</button><button type="button" class="iconbtn sq" data-lop="down" aria-label="Move this level down" ${i ? '' : 'disabled'}>${icon('down')}</button><button type="button" class="iconbtn sq" data-lop="dup" aria-label="Duplicate this level">${icon('dup')}</button><button type="button" class="iconbtn sq" data-lop="del" aria-label="Remove this level">${icon('del')}</button></div></div>
         <h2>${esc(title)}</h2><div class="mono">${Math.round(levelWidth(lv))} × ${Math.round(ext[1])} × ${Math.round(levelHeight(lv))} mm · ${s.prints} parts · ${aboutG(s.g)}</div></div>
@@ -2462,8 +2465,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         ${across && across.length > 1 ? `<div class="field"><div class="lbl">Across the width</div><div class="seg across" role="group" aria-label="Across the width">${across.map(([v, label, sub]) => `<button type="button" data-across="${v}" aria-pressed="${acrossOf(lv) === v}">${acrossIcon(v)}<span>${label}</span><small>${sub}</small></button>`).join('')}</div></div>` : ''}
         <div class="field"><div class="lbl">Type</div><div class="seg">${useg('type', typeOpts, u.type)}</div></div>
         <div class="field"><div class="lbl">Module height</div><div class="seg">${useg('h', hOpts, u.h)}</div></div>
+        <div class="isec"><b>Front and inside</b><span class="hint">${u.type === 'drawer' ? 'drawers, what goes in them, lock' : 'case body and dividers'}</span></div>
         ${o}
-        <details class="imore" ${moreOn ? 'open' : ''}><summary>More options: wall mount, pegboard, backbone${moreOn ? ` <span class="mono">${moreOn} on</span>` : ''}</summary><div class="ibody">${more}</div></details>
+        <div class="isec"><b>Back of the stack</b><span class="hint">wall mount, pegboard, backbone</span></div>
+        ${back}
         <details class="imore iparts"><summary>Parts and bolts of this level <span class="mono">${s.prints} parts · ${aboutG(s.g)}</span></summary>
           ${levelParts(res.lines, res.hardware)}</details>
         ${lv.length > 1 ? '<p class="pnote" style="margin:0">With two modules side by side, each is set up on its own (pick it above or click it in the view). Their height stays the same.</p>' : ''}
@@ -2506,6 +2511,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     }; }
     box.querySelectorAll('[data-usel]').forEach(el => el.onchange = () => set({ [el.dataset.usel]: el.value }));
     box.querySelectorAll('[data-ucheck]').forEach(el => el.onchange = () => set({ [el.dataset.ucheck]: el.checked }));
+    box.querySelectorAll('[data-ubool]').forEach(b => b.onclick = () => { const [key, val] = b.dataset.ubool.split('='); set({ [key]: val === '1' }); });
     box.querySelectorAll('[data-ustep]').forEach(b => b.onclick = () => {
       const id = b.dataset.ustep, d = +b.dataset.d, grid = id === 'gridAcross' || id === 'gridAlong';
       // the grid steppers lay out an even grid again, over every box size of the unit (of the drawer shown)
