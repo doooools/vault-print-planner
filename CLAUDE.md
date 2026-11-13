@@ -216,6 +216,11 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   `buy/<store>`, title = the item: which Amazon stores deserve an Associates tag). Only on `doooools.github.io`, never
   with `navigator.webdriver` (Playwright, the video), nor after "Don't count this browser" in the footer (`noCount`).
 
+- Print: plate ticks select (Dols, 2026-11-13). A plate card's checkbox ticks it for the download (`plateSel`, kept for
+  the page's life per print scope, not saved); the downloads (Bambu project, plate files, STL folders) hold the ticked
+  plates (`target`), or every plate left when none is ticked. Marking printed is a button: the selected plate's "Mark as
+  printed", or the bar above the sheet for every ticked plate. `printed` and `plateState` are unchanged.
+
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
   main checkout's root, which is not committed.
