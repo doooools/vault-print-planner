@@ -2110,7 +2110,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     v3park();
     if (!towers.length && !extras.length) { closeTpl(); renderStart(); v3sync(); return; }
     let t = curTower();
-    if (!(dsel && dsel.t === 'loose' && extras.length) && !t) { t = towers[0]; dsel = t ? { t: t.id, l: t.levels.length ? t.levels.length - 1 : null, u: 0 } : { t: 'loose' }; saveSel(); }
+    // Loose parts open even with none yet: that is where they are added.
+    if (!(dsel && dsel.t === 'loose') && !t) { t = towers[0]; dsel = t ? { t: t.id, l: t.levels.length ? t.levels.length - 1 : null, u: 0 } : { t: 'loose' }; saveSel(); }
     if (t && dsel.l != null && !t.levels[dsel.l]) { dsel.l = t.levels.length ? t.levels.length - 1 : null; dsel.u = 0; }
     if (t && dsel.l != null && !t.levels[dsel.l][dsel.u || 0]) dsel.u = 0;
     const info = towers.map(x => ({ t: x, a: analyzeTower(x) }));
