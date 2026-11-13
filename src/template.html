@@ -1668,10 +1668,19 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   let shopStore = store.get('shopStore', '');
   if (!SHOP_BY_ID.has(shopStore)) shopStore = guessShop();
+  // Product pages picked by Dols for other stores, one per bolt finish (hwFinish): [item, store, {finish: ASIN}]. Each
+  // page sells every length as a variant, so the row says which one to pick. They take this fork's tag for that store.
+  // Amazon.fr (Dols, 2026-11-13): B0DCY82LTF carbon steel, black; B0FQBX529T stainless.
+  const SHOP_PAGES = [
+    [/^M4 × (\d+) mm button-head/, 'fr', { black: 'B0DCY82LTF', zinc: 'B0FQBX529T' }],
+  ];
   const shopOf = item => {
     const s = SHOP.find(([re]) => re.test(item)) || [], st = SHOP_BY_ID.get(shopStore);
     if (s.length && s[1] === null) return { note: s[2] };
-    const page = st.id === 'com' && s[1], tag = shopTag(st.id);
+    const tag = shopTag(st.id), mine = SHOP_PAGES.find(([re, id]) => id === st.id && re.test(item)), asin = mine && mine[2][hwFinish()];
+    if (asin) return { link: `https://www.amazon.${st.id}/dp/${asin}${tag ? '?tag=' + encodeURIComponent(tag) : ''}`, store: st.name, page: true, aff: !!tag,
+      note: [s[2], `On the page, pick ${item.replace(/ button-head.*$/, '')}`].filter(Boolean).join('. ') };
+    const page = st.id === 'com' && s[1];
     return { link: page || `https://www.amazon.${st.id}/s?k=${encodeURIComponent(shopQuery(item))}${tag ? '&tag=' + encodeURIComponent(tag) : ''}`,
       store: st.name, page: !!page, aff: !!(page || tag), note: s[2] };
   };
@@ -5203,7 +5212,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           <small class="pnote" style="margin:0">Names the bolts and rods in this list and in the store searches, and colors them in the 3D view (its toolbar button sets it too).${shopStore === 'com' && rows.some(r => r.page && HW_FINISHED.test(r.item)) ? ' Amazon.com product pages stay the original planner’s picks: choose the finish on the page when it offers one.' : ''}</small></div>
         <div class="panel hwbox"><label class="v3-sec" for="hwShop">Where you buy</label>
           <select class="full" id="hwShop">${SHOP_STORES.map(([cont, list]) => `<optgroup label="${esc(cont)}">${list.map(([id, name, where]) => `<option value="${id}" ${id === shopStore ? 'selected' : ''}>${esc(name)} · ${esc(where)}</option>`).join('')}</optgroup>`).join('')}</select>
-          <small class="pnote" style="margin:0">${shopStore === 'com' ? 'Links go to product pages checked against the manual’s sizes and head shapes.' : 'Links search this store for the same size, head shape and standard.'} Any store with the same sizes will do.</small>
+          <small class="pnote" style="margin:0">${shopStore === 'com' ? 'Links go to product pages checked against the manual’s sizes and head shapes.' : SHOP_PAGES.some(([, id]) => id === shopStore) ? 'Some bolts open a product page in the chosen finish: pick the length there. Other links search this store for the same size, head shape and standard.' : 'Links search this store for the same size, head shape and standard.'} Any store with the same sizes will do.</small>
           ${rows.some(r => r.aff) ? `<small class="pnote aff" style="margin:0">${esc(shopDisclosure(shopStore))}</small>` : ''}</div>
         <div class="panel hwbox">
           <button type="button" class="btn primary big" id="hwCopy">Copy the list</button>

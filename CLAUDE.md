@@ -201,7 +201,10 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
 - Store links and affiliation (Hardware, "Where you buy"): Amazon.com keeps upstream's affiliate short links
   (`link.amazon/…`, Romy's tag inside; `SHOP`, the product each opens in a comment), at the user's request
   (2026-11-13). Every other store's search link takes this fork's tag from `SHOP_TAGS` (one per store, '' = no tag
-  and no `tag=` parameter; `shopTag` never gives one to `com`). Disclosure: under the store picker (`shopDisclosure`)
+  and no `tag=` parameter; `shopTag` never gives one to `com`).
+  `SHOP_PAGES` (Dols, 2026-11-13): product pages for one store and one bolt finish instead of the search (Amazon.fr's M4
+  button-head bolts: B0DCY82LTF black carbon steel, B0FQBX529T stainless), with that store's tag; the row says which
+  length to pick on the page. Disclosure: under the store picker (`shopDisclosure`)
   and in the footer's "Store links" (`footShop`). Affiliate links get `rel="sponsored"`.
   First visit: `guessShop` takes the time zone's country first (`SHOP_TZ`: Europe/Paris → fr even with an en-US
   browser), then the browser's region unless it is on another continent than the time zone, then the continent. No IP
