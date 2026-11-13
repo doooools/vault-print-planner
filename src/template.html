@@ -1088,7 +1088,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       }
     });
     // One removable key turns every hidden lock of the stack
-    if (L.some(lv => lv.some(u => u.type === 'drawer' && u.lock === 'hidden'))) parts.push(paintLines(finish(R.buildHiddenKey(resolve)), null));
+    if (L.some(lv => lv.some(u => R.anyHidden(u)))) parts.push(paintLines(finish(R.buildHiddenKey(resolve)), null));
     const topLv = L[L.length - 1];
     if (topLv.every(u => u.type === 'drawer') && roofOf(topLv).roof === 'none') issues.push({ k: 'warn', m: 'The top drawer has no roof. Pick a roof for it in the editor, unless something else sits on top.' });
     const fam = R.familyForWidth(levelWidth(L[0])), s = t.stack || STACK_DEFAULT;
@@ -2318,9 +2318,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         o += selRow('data-usel="gridHeight"', 'Divider height', [['20', '20 mm (low)'], ['full', dv.h === 1 ? 'Full height, 34.5 mm' : 'Tall, 82.5 mm']], dv.gridHeight);
         o += optRow('data-ucheck="gridSeal"', 'Close against the walls', 'A divider that ends at a wall takes one hole less and a straight edge piece, which closes the gap (instructions, option 2). Off: the longer divider alone, a few mm short of the wall.', dv.gridSeal !== false);
       }
-      if (dv !== u) o += `<div class="dvfoot"><span class="mono">${esc(insideSum(u, dids))}</span><span class="dvacts"><button type="button" class="btn" data-dcopy>Same inside in every drawer</button></span></div>`;
-      o += `<div class="field"><div class="lbl">Lock</div><div class="seg">${useg('lock', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], u.lock)}</div></div>`;
-      o += optRow('data-ucheck="gearedRails"', 'Geared rails', lay.length > 1 ? 'USSA: use them when a module holds more than one drawer.' : 'Optional in the manual. Recommended for 2F and 4F, and for extra locking force.', u.gearedRails);
+      o += `<div class="field"><div class="lbl">Lock${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${useg('lock', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], dv.lock)}</div></div>`;
+      o += optRow('data-ucheck="gearedRails"', 'Geared rails', dids.length > 1 ? 'USSA: use them when a module holds more than one drawer.' : 'Optional in the manual. Recommended for 2F and 4F, and for extra locking force.', dv.gearedRails);
+      if (dv !== u) o += `<div class="dvfoot"><span class="mono">${esc(insideSum(u, dids))}</span><span class="dvacts"><button type="button" class="btn" data-dcopy>Same settings in every drawer</button></span></div>`;
     } else {
       if (u.w === 'L' || u.w === 'XL') o += selRow('data-usel="caseInterior"', 'Case body style', [['flat', 'Flat (open box)'], ['dividers', 'Dividers (slotted walls)'], ['sealed', 'Sealed (slots for seal dividers)']], u.caseInterior);
       if (caseStyle(u) === 'sealed') o += `<div class="field"><div class="lbl">Gridfinity baseplate</div><p class="pnote" style="margin:0">A sealed body's fixed walls make its cells narrower than the baseplate, so it takes none. Pick <b>Flat</b> or <b>Dividers</b> above for one.</p></div>`;
@@ -2348,7 +2348,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <details class="imore iparts"><summary>Parts and bolts of this level <span class="mono">${s.prints} parts · ${aboutG(s.g)}</span></summary>
           ${levelParts(res.lines, res.hardware)}</details>
         ${lv.length > 1 ? '<p class="pnote" style="margin:0">With two modules side by side, each is set up on its own (pick it above or click it in the view). Their height stays the same.</p>' : ''}
-        ${dv !== u ? '<p class="pnote" style="margin:0">Each drawer has its own inside. The lock, the geared rails and the options above are the module\u2019s, for all its drawers.</p>' : ''}
+        ${dv !== u ? '<p class="pnote" style="margin:0">Each drawer has its own inside, lock and geared rails. The options above are the module\u2019s, for all its drawers.</p>' : ''}
       </div>`;
     const set = patch => {
       // a drawer's inside goes to that drawer when the module holds several
@@ -2383,7 +2383,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     { const cp = box.querySelector('[data-dcopy]'); if (cp) cp.onclick = () => {
       dids.forEach(dr => { if (dr.id !== dv.dr.id) { const c = insideCopy(dv.gk, dr.w + u.d), o = u.inside[dr.id]; Object.assign(o, c, { gridPlans: { ...(o.gridPlans || {}), ...(c.gridPlans || {}) } }); } });
       fixUnit(u); fixTower(t); save(); renderAll();
-      toast(`Every drawer of this module now has the ${drawerName(u, dv.dr, false)} drawer\u2019s inside${new Set(dids.map(x => x.w)).size > 1 ? ' (the other box size keeps its own divider plan)' : ''}.`);
+      toast(`Every drawer of this module now has the ${drawerName(u, dv.dr, false)} drawer\u2019s inside, lock and rails${new Set(dids.map(x => x.w)).size > 1 ? ' (the other box size keeps its own divider plan)' : ''}.`);
     }; }
     box.querySelectorAll('[data-usel]').forEach(el => el.onchange = () => set({ [el.dataset.usel]: el.value }));
     box.querySelectorAll('[data-ucheck]').forEach(el => el.onchange = () => set({ [el.dataset.ucheck]: el.checked }));
@@ -2783,7 +2783,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function insideSum(u, ids) {
     const by = new Map(); ids.forEach(dr => { const w = (u.inside[dr.id] || {}).interior || 'empty'; by.set(w, (by.get(w) || 0) + 1); });
     const name = { gridfinity: 'Gridfinity', grid: 'with dividers', empty: 'empty' };
-    return by.size === 1 ? `All ${ids.length} drawers ${name[[...by.keys()][0]] || ''}` : [...by].map(([w, n]) => `${n} ${name[w] || w}`).join(' \u00b7 ');
+    const of = k => ids.map(dr => (u.inside[dr.id] || {})[k] !== undefined ? u.inside[dr.id][k] : u[k]), hk = of('lock').filter(v => v === 'hidden').length, nr = of('gearedRails').filter(v => !v).length;
+    return [by.size === 1 ? `All ${ids.length} drawers ${name[[...by.keys()][0]] || ''}` : [...by].map(([w, n]) => `${n} ${name[w] || w}`).join(' \u00b7 '),
+      hk ? (hk === ids.length ? 'hidden keys' : `${hk} hidden ${hk > 1 ? 'keys' : 'key'}`) : '', nr ? (nr === ids.length ? 'no geared rails' : `${nr} without geared rails`) : ''].filter(Boolean).join(' \u00b7 ');
   }
   // Segmented settings of a module: buttons read "key=value" from data-useg
   function bindUnitSeg(box, u, set) {
@@ -3625,7 +3627,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       y += Math.max(...lv.map(rise));
     });
     // The stack's one removable hidden key: shown in the top hidden lock
-    const hk = units.filter(u => u.drawer && !u.roof && !u.stack && u.cfg.lock === 'hidden').pop();
+    const hk = units.filter(u => u.drawer && !u.roof && !u.stack && R.anyHidden(u.cfg)).pop();
     if (hk) hk.lines = hk.lines.concat(linesOf(R.buildHiddenKey(resolve)).filter(l => /Hidden Key Part 2/i.test(l.file.path)).map(l => ({ ...l, cfg: hk.cfg })));
     // The backbone column on the back, with the handles and the pull-out handle's lock (stackColumn)
     const col = columnPlan(t);
@@ -3666,7 +3668,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (bb) {
         let [[x0, y0, z0], [x1, y1, z1]] = bb;
         if (u.roof && /\|grid$/.test(u.key) && !u.cfg.topHandle && E.grid_plate) y1 = E.grid_plate;
-        if (!u.roof && u.cfg.type === 'drawer' && u.cfg.lock === 'hidden' && E.front) z1 = E.front;
+        if (!u.roof && R.anyHidden(u.cfg) && E.front) z1 = E.front;
         add(u.x + x0, u.y + y0, z0, u.x + x1, u.y + y1, z1);
       } else add(u.x - u.w / 2, u.y, back, u.x + u.w / 2, u.y + u.h, 10);
       const wall = !u.roof && u.lines.some(l => l.group === 'Wall mount') && PLACE.units[`wall|${R.familyForWidth(R.WIDTH_MM[u.cfg.w]) || u.cfg.w}|${u.cfg.h}`];
@@ -3906,12 +3908,23 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     { const gp = gridParts(unit, pl.parts); if (gp.length) pl = { ...pl, parts: [...pl.parts, ...gp] }; }
     const mvOf = o => o && o.drawer != null ? (o.side || '') + o.drawer : null;
     const has = new Map([...(unit.shared || []), ...unit.lines].map(l => [R.norm(l.file.path), l]));
-    const parts = pl.parts.filter(([p]) => has.has(R.norm(p)) && !NOT_DRAWN.test(p)).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, piece: o && o.piece, joint: o && o.joint, mv: mvOf(o), role: l.role, cfg: l.cfg }; });
+    // In a module holding several drawers, a drawer's key (or hidden key) and racks are its own choice: the lines list
+    // both kinds of lock, so each drawer keeps the parts of its own (drawer from the tags, else from the joint's side)
+    const cfg = unit.cfg, many = cfg.type === 'drawer' && !!cfg.inside && R.drawerIds(cfg).length > 1;
+    const SIDE = { left: 'left', right: 'right', S: 'left', M: 'right' };
+    const mine = (p, o) => {
+      if (!many || !/\/(Key \(|Key Cap|Hidden Key \(|[A-Z]+ Rails\.stl)/i.test(p)) return true;
+      const sd = o && o.joint && (o.joint.match(/_(left|right|S|M)$/) || [])[1];
+      const id = o && o.drawer != null ? (o.side || '') + o.drawer : (sd ? SIDE[sd] : '') + 0, d = drawerView(cfg, id);
+      if (/Rails\.stl$/i.test(p)) return !!d.gearedRails;
+      return /Hidden Key/i.test(p) === (d.lock === 'hidden');
+    };
+    const parts = pl.parts.filter(([p, , , , o]) => has.has(R.norm(p)) && !NOT_DRAWN.test(p) && mine(p, o)).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, piece: o && o.piece, joint: o && o.joint, mv: mvOf(o), role: l.role, cfg: l.cfg }; });
     const placed = new Set(pl.parts.map(([p]) => R.norm(p)));
     const unplaced = unit.lines.filter(l => !placed.has(R.norm(l.file.path))).map(l => l.label + (l.qty > 1 ? ' ×' + l.qty : ''));
     // Its bolts (tools/placements/hardware.py): each is held by a part (`part`, an index in `parts`) and is drawn with
     // it, so a variant that isn't in the list (another lock, no top handle) takes its bolts away too
-    const bolts = (pl.hardware || []).filter(([, , , o]) => { const p = pl.parts[o.part]; return p && has.has(R.norm(p[0])) && !NOT_DRAWN.test(p[0]); })
+    const bolts = (pl.hardware || []).filter(([, , , o]) => { const p = pl.parts[o.part]; return p && has.has(R.norm(p[0])) && !NOT_DRAWN.test(p[0]) && mine(p[0], p[4]); })
       .map(([spec, group, m, o]) => { const q = pl.parts[o.part]; return { spec, group, m, path: q[0], joint: q[4] && q[4].joint, mv: mvOf(q[4]), cfg: has.get(R.norm(q[0])).cfg }; });
     return { parts, unplaced, bolts, lay };
   }
