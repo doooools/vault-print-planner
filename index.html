@@ -684,6 +684,19 @@ details.info > p { margin: 6px 0 0; color: var(--muted); font-size: 13px; max-wi
 .xsearch { padding: 0 18px 10px; }
 .xsearch input { width: 100%; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 15px; }
 .xresults, .xlist { display: grid; gap: 8px; padding: 0 18px 14px; }
+/* Every part, scrolled inside the panel: the search box stays in sight */
+.xresults { max-height: min(62vh, 640px); overflow-y: auto; overscroll-behavior: contain; align-content: start; margin: 0 18px 14px; padding: 0 6px 0 0; }
+.xresults > .xhead:first-child { border-top: 0; padding-top: 0; }
+.xfam > summary { cursor: pointer; list-style: none; display: flex; gap: 10px; min-height: 40px; align-items: center; padding: 0 4px; border-radius: 8px; font-size: 14px; }
+.xfam > summary::-webkit-details-marker { display: none; }
+.xfam > summary::before { content: "+"; width: 1ch; color: var(--muted); font-size: 18px; line-height: 1; text-align: center; }
+.xfam[open] > summary::before { content: "\2212"; }
+.xfam[open] > summary { position: sticky; top: 0; z-index: 1; background: var(--sheet); }
+.xfam > summary:hover { background: var(--sheet-2); }
+.xfam > summary small { color: var(--muted); font-size: 12.5px; margin-left: auto; }
+.xfamlist { display: grid; gap: 8px; padding: 6px 0 10px; }
+.xin { color: var(--accent); font-weight: 600; }
+.xcount { margin: 0; }
 .xitem { grid-template-columns: 56px minmax(0, 1fr) auto; }
 .xitem .thumb { width: 56px; height: 56px; }
 /* Built without part pictures: collapse the picture columns */
@@ -1564,6 +1577,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   let printSkip = store.get('printSkip', store.get('printScope', 'all') === 'extras' ? null : []);
   const savePrintSkip = () => store.set('printSkip', printSkip);
   let xq = '';                                        // current part search
+  const xOpen = new Set(); let xScroll = 0;           // the parts list: families unfolded, and where it was scrolled
   const saveExtras = () => store.set('extras', extras);
   // Progress key: extras are tracked apart from the same file used in a tower
   const pkey = l => l.key || l.file.path;
@@ -2404,9 +2418,39 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
 
 
 
+  // One part's row in the list: picture, name, where it is (folder from `from` on), size, how many are in the list
+  function xItem(f, from = 0) {
+    const l = extraLine(f.path, 0), e = extras.find(x => x.path === f.path), where = f.path.split('/').slice(from, -1).map(x => x.replace(/^\d+\.\s+/, '')).join(' / ');
+    return `<div class="pitem xitem">${thumb(l, 'sm')}<span class="lbl"><b>${esc(l.label)}</b>${tagsFor(l).join('')}<small class="mono">${where ? esc(where) + ' \u00b7 ' : ''}${dimStr(f.dims)}${e ? ` \u00b7 <span class="xin">${e.qty} in your list</span>` : ''}</small></span><button class="btn" data-addextra="${esc(f.path)}">Add</button></div>`;
+  }
+  // Every part, by family as the Vault folder has them ("Drawers", "S Families"…), each family folded until opened.
+  // A family's rows are drawn when it opens: all of them at once would be 700 rows with pictures.
+  const XTOP = { DRAWERS: 'Drawers', SUSTAINERS: 'Cases', MODIFICATIONS: 'Modifications' };
+  let XFAM = null;
+  function xFamilies() {
+    if (XFAM) return XFAM;
+    const m = new Map();
+    for (const f of [...FILES].sort((a, b) => a.path.localeCompare(b.path, 'en', { numeric: true }))) {
+      const seg = f.path.split('/'), k = seg.slice(0, 2).join('/');
+      if (!m.has(k)) {
+        const top = seg[0].replace(/^\d+\.\s+/, ''), fam = seg[1].replace(/^\d+\.\s+/, '').replace(/ Families$/, ' family');
+        m.set(k, { k, top: XTOP[top.toUpperCase()] || top, name: fam, files: [] });
+      }
+      m.get(k).files.push(f);
+    }
+    return (XFAM = [...m.values()]);
+  }
+  function xBrowse() {
+    let top = '';
+    return xFamilies().map(g => {
+      const head = g.top !== top ? `<div class="xhead">${esc(top = g.top)}</div>` : '', n = g.files.reduce((a, f) => a + (extras.some(x => x.path === f.path) ? 1 : 0), 0);
+      return `${head}<details class="xfam" data-xfam="${esc(g.k)}" ${xOpen.has(g.k) ? 'open' : ''}><summary><b>${esc(g.name)}</b><small>${plural(g.files.length, 'part')}${n ? ` \u00b7 ${n} in your list` : ''}</small></summary>
+        <div class="xfamlist">${xOpen.has(g.k) ? g.files.map(f => xItem(f, 2)).join('') : ''}</div></details>`;
+    }).join('');
+  }
   function xResults() {
     const q = xq.trim().toLowerCase();
-    if (q.length < 2) return '';
+    if (q.length < 2) return xBrowse();
     const toks = q.split(/\s+/), hits = [];
     for (const f of FILES) {
       const m = partMeta(f.path);
@@ -2416,18 +2460,17 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     }
     if (!hits.length) return '<p class="pnote">No parts match. Try fewer words, like \u201croof\u201d or \u201cS3\u201d.</p>';
     hits.sort((a, b) => niceName(a.path).length - niceName(b.path).length || a.path.localeCompare(b.path));
-    return hits.slice(0, 12).map(f => {
-      const l = extraLine(f.path, 0);
-      return `<div class="pitem xitem">${thumb(l, 'sm')}<span class="lbl"><b>${esc(l.label)}</b>${tagsFor(l).join('')}<small class="mono">${esc(folder(f.path))} \u00b7 ${dimStr(f.dims)}</small></span><button class="btn" data-addextra="${esc(f.path)}">Add</button></div>`;
-    }).join('') + (hits.length > 12 ? `<p class="pnote">${hits.length - 12} more match. Add a word to narrow it down.</p>` : '');
+    const MAX = 60;
+    return `<p class="pnote xcount">${plural(hits.length, 'part')} match.</p>` + hits.slice(0, MAX).map(f => xItem(f)).join('') +
+      (hits.length > MAX ? `<p class="pnote">${hits.length - MAX} more match. Add a word to narrow it down.</p>` : '');
   }
   function extrasPanel() {
     const xl = extraLines();
     return `<div class="panel">
       <h3 class="ph">Loose parts</h3>
-      <p class="pp">Spares, replacements or single parts outside any stack. Search by name, like \u201cS3 grid roof\u201d or \u201clatch\u201d.</p>
+      <p class="pp">Spares, replacements or single parts outside any stack. Browse every part by family below, or search by name, like \u201cS3 grid roof\u201d or \u201clatch\u201d.</p>
       <div class="xsearch"><input id="xq" type="search" placeholder="Search all ${FILES.length} parts\u2026" value="${esc(xq)}" autocomplete="off" aria-label="Search parts"></div>
-      <div class="xresults" id="xresults">${xResults()}</div>
+      <div class="xresults" id="xresults" tabindex="-1">${xResults()}</div>
       ${xl.length ? `<div class="xlist"><div class="xhead">Your loose parts</div>
         ${xl.map(l => `<div class="pitem xitem">${thumb(l, 'sm')}<span class="lbl"><b>${esc(l.label)}</b>${tagsFor(l).join('')}<small class="mono">${esc(folder(l.file.path))}</small></span>
           <span class="stepper" style="padding:4px 4px 4px 10px">\u00d7<div><button type="button" data-xstep="${esc(l.file.path)}" data-d="-1" aria-label="Fewer ${esc(l.label)}">\u2212</button><output>${l.qty}</output><button type="button" data-xstep="${esc(l.file.path)}" data-d="1" aria-label="More ${esc(l.label)}">+</button></div></span></div>`).join('')}
@@ -2436,7 +2479,16 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   }
   function bindExtras() {
     const inp = $('xq'); if (!inp) return;
-    inp.oninput = () => { xq = inp.value; $('xresults').innerHTML = xResults(); };
+    const box = $('xresults');
+    inp.oninput = () => { const was = xq.trim().length >= 2; xq = inp.value; box.innerHTML = xResults(); if (was !== xq.trim().length >= 2) box.scrollTop = 0; };
+    // Back where it was after an Add (the whole step is redrawn); a family's rows drawn as it opens
+    box.scrollTop = xScroll;
+    box.onscroll = () => { xScroll = box.scrollTop; };
+    box.addEventListener('toggle', e => {
+      const d = e.target; if (!d.matches || !d.matches('details.xfam')) return;
+      const g = xFamilies().find(x => x.k === d.dataset.xfam), list = d.querySelector('.xfamlist');
+      if (d.open) { xOpen.add(g.k); if (!list.children.length) list.innerHTML = g.files.map(f => xItem(f, 2)).join(''); } else xOpen.delete(g.k);
+    }, true);
     document.querySelectorAll('#view-build [data-xstep]').forEach(b => b.onclick = () => {
       const e = extras.find(x => x.path === b.dataset.xstep); if (!e) return;
       e.qty += +b.dataset.d; if (e.qty <= 0) extras = extras.filter(x => x !== e);
