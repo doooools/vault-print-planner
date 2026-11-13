@@ -122,6 +122,18 @@ for (const w of ['S', 'M', 'L', 'L2']) for (const d of R.DEPTHS) for (const h of
     const bolts = r.hardware.filter(x => /M4 × 14/.test(x.item)).reduce((a, x) => a + x.qty, 0);
     if (bolts !== sides * lay.reduce((a, dh) => a + FRONT_BOLTS(fw, dh), 0)) layoutClash.push(`${what}: ${bolts} front bolts`);
   }
+// Each drawer of a module holding several keeps its own inside (c.inside[id], ids from R.drawerIds): only the middle
+// drawer asks for a baseplate here, and the top one for dividers
+for (const w of ['S', 'L2', 'XL2']) {
+  const c = { type: 'drawer', w, d: 5, h: w === 'XL2' ? 1 : 4, drawers: [2, 1, 1], lock: 'std', interior: 'empty', gearedRails: true, roof: 'none',
+    gridPieces: {} };
+  const ids = R.drawerIds(c), sides = w === 'S' ? 1 : 2, n = R.drawersOf(c).length;
+  c.inside = Object.fromEntries(ids.map(dr => [dr.id, dr.i === Math.min(1, n - 1) ? { interior: 'gridfinity' } : dr.i === 0 && n > 1 ? { interior: 'grid', gridPieces: { [dr.w + 5]: { n: { 10: 1 }, straight: 2, rounded: 0 } } } : { interior: 'empty' }]));
+  const r = R.buildUnit(c, resolve), qty = re => r.lines.filter(l => re.test(l.file.path)).reduce((a, l) => a + l.qty, 0);
+  if (ids.length !== sides * n || new Set(ids.map(x => x.id)).size !== ids.length) layoutClash.push(`drawerIds(${w} ${c.h}F): ${ids.map(x => x.id).join(' ')}`);
+  if (qty(/Baseplate[^/]*\.stl$/) !== sides) layoutClash.push(`${w} per-drawer inside: ${qty(/Baseplate[^/]*\.stl$/)} baseplates, want ${sides}`);
+  if (qty(/\/10-S, x3\.stl$/) !== (n > 1 ? sides : 0)) layoutClash.push(`${w} per-drawer inside: ${qty(/\/10-S, x3\.stl$/)} dividers, want ${n > 1 ? sides : 0}`);
+}
 // A list that isn't one of the shell's layouts plans one drawer of the shell's height, and XL is always one 1F drawer
 for (const [c, want] of [[{ w: 'S', h: 2, drawers: [1] }, '2'], [{ w: 'M', h: 4, drawers: [3, 1] }, '4'], [{ w: 'XL', h: 1, drawers: [1, 1] }, '1'], [{ w: 'L', h: 2 }, '2']])
   if (R.drawersOf(c).join() !== want) layoutClash.push(`drawersOf(${JSON.stringify(c)}) = ${R.drawersOf(c).join(' ')}, want ${want}`);

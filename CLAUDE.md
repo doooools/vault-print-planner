@@ -178,6 +178,15 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   walls" (`gridSeal`) picks the straight piece or the file alone at a wall.
   `gridParts` draws them in 3D with the box.
 
+- Each drawer its own inside (branch `claude/project-thread-fvvql3`, Dols 2026-11-13): in a module holding several
+  drawers (2F/4F layouts, the two sides of an L² or XL²) each drawer keeps its interior, baseplate cut-outs and grid
+  plan in `cfg.inside[<id>]` (`R.drawerIds`: id = side + index top to bottom, the 3D view's mover ids; `R.INSIDE` the
+  fields). `syncInside` (in `syncGrid`) gives each drawer a copy of the module's fields when it has none (saved states
+  and templates plan as before), prunes gone drawers and folds back to the module's fields at one drawer. The inspector
+  picks the drawer (`dsel.d`, "Drawer to set up", or a click on it in the view: `v.sel.mv`), shows it through
+  `drawerView` and outlines it in 3D (`v3mark`); "Same inside in every drawer" copies it. `rules.js` `drawerInsert`
+  reads each drawer's own; `gridParts` lays out each box's own plan. Lock, rails and the rest stay per module.
+
 - Stack size (branch `claude/project-thread-mam5az`, Dols 2026-11-13): the stack header and the template cards give
   the outside size as it stands, drawers closed (`stackSize`): units' `bbox` placed by `stackLayout`, base, wheels,
   foot, casters (70 mm, a guess), roof and its handle, key locks, latches, hinges, column pieces, wall plates.

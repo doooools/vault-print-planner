@@ -105,6 +105,19 @@
     return c.w === 'XL' || c.w === 'XL2' || !lay ? [c.h] : lay;
   }
   const mixedLayout = lay => new Set(lay).size > 1;
+  // Every drawer of a unit, top to bottom (left side first on an L² or XL²): its id (side + index, the 3D view's own),
+  // the box width it takes and its height. Each drawer of a module holding more than one keeps its own inside
+  // (`c.inside[id]`: interior, baseplate cut-outs, grid dividers); a module holding one drawer keeps it in its own fields.
+  function drawerIds(c) {
+    if (c.type && c.type !== 'drawer') return [];
+    const lay = drawersOf(c), one = (side, w) => lay.map((h, i) => ({ id: side + i, side: side || null, i, w, h }));
+    return c.w === 'L2' ? [...one('left', 'S'), ...one('right', 'S')] : c.w === 'XL2' ? [...one('left', 'S'), ...one('right', 'M')] : one('', c.w);
+  }
+  // The fields a drawer's inside is made of: all of them per drawer, or the module's for all
+  const INSIDE = ['interior', 'baseplateHandles', 'gridHeight', 'gridSeal', 'gridAcross', 'gridAlong', 'gridPlans', 'gridPieces'];
+  const SIDE_ID = { left: 'left', right: 'right', 'S side': 'left', 'M side': 'right' };
+  // A drawer's settings: the unit's, with its own inside over them when the module holds more than one drawer
+  const insideOf = (c, side, i, many) => many && c.inside && c.inside[side + i] ? { ...c, ...c.inside[side + i] } : c;
   // One "drawer insert": the drawers of one width in a module of height h (S, M, L or XL), with the module's runners and
   // latch. `lay` is the drawers' heights, top to bottom (one drawer of height h unless the module holds several). Per
   // module: runner guides, slides and stoppers (a pair per 48 mm level), latch. Per drawer: box and front of its own
@@ -114,7 +127,7 @@
     const t = tag ? ' (' + tag + ')' : '';
     const why = inferred || (mixedLayout(lay) ? MIXED_WHY : '');
     const x = why ? { inferred: why } : {};
-    const n = lay.length;
+    const n = lay.length, side = SIDE_ID[tag] || '', many = n > 1 || !!side;
     // Drawers of the same height share their lines: tallest first
     const byH = [...new Set(lay)].sort((p, q) => q - p).map(dh => [dh, lay.filter(v => v === dh).length]);
     if (w === 'XL') {
@@ -155,18 +168,23 @@
     // One cap per counterbore of a front: every bolt hole but the one the label covers (Drawer Assembly 6/8 shows
     // the one cap of an S 1F; the others are counted on the fronts)
     add('Lock', 'Facade cap' + t, U + 'Facade Cap.stl', lay.reduce((a, dh) => a + frontBolts(w, dh) - 1, 0), x);
-    if (o.interior === 'gridfinity') {
-      const subdir = fam + `${w}${d}/Gridfinity Baseplate/`;
-      if (w === 'XL' && d >= 6) {
-        add('Interior', 'Gridfinity baseplate, part 1' + t, subdir + `XL${d} Baseplate Part 1.stl`, 1, x);
-        add('Interior', 'Gridfinity baseplate, part 2' + t, subdir + `XL${d} Baseplate Part 2.stl`, 1, x);
-      } else {
-        const v = o.baseplateHandles && o.baseplateHandles !== '0' ? `_With ${o.baseplateHandles} Handle${o.baseplateHandles === '1' ? '' : 's'}` : '';
-        add('Interior', 'Gridfinity baseplate' + (v ? ` (${o.baseplateHandles}-handle cut-out)` : '') + t, subdir + `${w}${d} Baseplate${v}.stl`, n,
-          { fallback: subdir + `${w}${d} Baseplate.stl`, ...x });
+    // Each drawer's inside, its own when the module holds several (tallest first, as above; buildUnit merges the
+    // lines of drawers that take the same files)
+    lay.map((dh, i) => [dh, i]).sort((p, q) => q[0] - p[0]).forEach(([dh, i]) => {
+      const oi = insideOf(o, side, i, many);
+      if (oi.interior === 'gridfinity') {
+        const subdir = fam + `${w}${d}/Gridfinity Baseplate/`;
+        if (w === 'XL' && d >= 6) {
+          add('Interior', 'Gridfinity baseplate, part 1' + t, subdir + `XL${d} Baseplate Part 1.stl`, 1, x);
+          add('Interior', 'Gridfinity baseplate, part 2' + t, subdir + `XL${d} Baseplate Part 2.stl`, 1, x);
+        } else {
+          const v = oi.baseplateHandles && oi.baseplateHandles !== '0' ? `_With ${oi.baseplateHandles} Handle${oi.baseplateHandles === '1' ? '' : 's'}` : '';
+          add('Interior', 'Gridfinity baseplate' + (v ? ` (${oi.baseplateHandles}-handle cut-out)` : '') + t, subdir + `${w}${d} Baseplate${v}.stl`, 1,
+            { fallback: subdir + `${w}${d} Baseplate.stl`, ...x });
+        }
       }
-    }
-    if (o.interior === 'grid') byH.forEach(([dh, k]) => gridDividers(add, w, d, dh, o, t, k));
+      if (oi.interior === 'grid') gridDividers(add, w, d, dh, oi, t, 1);
+    });
   }
 
   // Grid dividers (Grid Dividers/01. INSTRUCTIONS; tools/placements/measure_grid.py): a box's floor is a grid of peg
@@ -540,6 +558,6 @@
     return { lines: k.lines, missing: k.missing, hardware: [] };
   }
 
-  const api = { buildUnit, buildStack, buildRoof, buildHiddenKey, buildBackbones, buildConnectors, makeResolver, exterior, familyForWidth, drawersOf, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, LAYOUTS, norm, gridFull, gridFile, gridEdgeFile, gridPinFile };
+  const api = { buildUnit, buildStack, buildRoof, buildHiddenKey, buildBackbones, buildConnectors, makeResolver, exterior, familyForWidth, drawersOf, drawerIds, INSIDE, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, LAYOUTS, norm, gridFull, gridFile, gridEdgeFile, gridPinFile };
   if (typeof module !== 'undefined') module.exports = api; else root.VaultRules = api;
 })(this);
