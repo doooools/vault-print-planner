@@ -124,9 +124,6 @@ dialog#news h2, dialog#relink h2, dialog#report h2 { margin: 0 32px 4px 0; font-
 .seg button.nofit:not([aria-pressed=true]) { color: var(--muted); }
 .ring { display: inline-block; width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--warn, #c98a12); box-sizing: border-box; flex: none; }
 .seg button .ring { position: absolute; top: 5px; right: 5px; }
-.opt { display: flex; gap: 10px; align-items: flex-start; }
-.opt input[type=checkbox] { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
-.opt span small { display: block; color: var(--muted); font-size: 12.5px; }
 select.full { width: 100%; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
 .dvplan svg { display: block; width: 100%; max-width: 340px; height: auto; margin: 4px 0; }
 .dvplan .dvin { fill: var(--sheet-2); stroke: var(--edge); stroke-width: 1.5; }
@@ -382,7 +379,6 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .hwbox { display: grid; gap: 8px; padding: 16px; }
 .hwbox .btn { min-height: 44px; }
 .btn.big { min-height: 48px; font-size: 15px; font-weight: 700; }
-.hwbox .opt { align-items: center; min-height: 44px; }
 .hwlegend { grid-template-columns: auto 1fr; align-items: center; gap: 10px 12px; }
 .hwlegend .v3-sec { grid-column: 1 / -1; margin: 0; }
 .hwside .pnote { margin: 0 4px; }
@@ -1802,9 +1798,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       el.appendChild(b);
     });
   }
-  function checkbox(id, label, sub, val) {
-    return `<label class="opt"><input type="checkbox" id="${id}" ${val ? 'checked' : ''}><span>${label}${sub ? `<small>${sub}</small>` : ''}</span></label>`;
-  }
   function stepper(id, label, val) {
     return `<div class="stepper"><span>${label}</span><div><button type="button" data-step="${id}" data-d="-1" aria-label="Fewer ${label}">\u2212</button><output>${val}</output><button type="button" data-step="${id}" data-d="1" aria-label="More ${label}">+</button></div></div>`;
   }
@@ -2200,7 +2193,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const sbool = (key, off, on, cur) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-sbool="${key}=${it.v}" aria-pressed="${!!cur === !!it.v}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   // A print setting (plate options) as two segmented buttons (data-pbool="key=1" / "key=0")
   const pbool = (key, off, on, cur) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-pbool="${key}=${it.v}" aria-pressed="${!!cur === !!it.v}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
-  const optRow = (attr, label, sub, val) => `<label class="opt"><input type="checkbox" ${attr} ${val ? 'checked' : ''}><span>${label}${sub ? `<small>${sub}</small>` : ''}</span></label>`;
   const stepRow = (key, label, val) => `<div class="stepper"><span>${label}</span><div><button type="button" data-ustep="${key}" data-d="-1" aria-label="Fewer: ${label}">−</button><output>${val}</output><button type="button" data-ustep="${key}" data-d="1" aria-label="More: ${label}">+</button></div></div>`;
   const ICON = {
     up: '<path d="M12 19V5M6 11l6-6 6 6"/>', down: '<path d="M12 5v14M6 13l6 6 6-6"/>', dup: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
@@ -2467,16 +2459,20 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (dv.interior === 'grid') {
         o += gridPlan(dv) || `<div class="field"><div class="lbl">Grid dividers <span class="hint">full-span pieces</span></div><div class="steppers">${stepRow('gridAcross', 'Side to side', dv.gridAcross || 0)}${stepRow('gridAlong', 'Front to back', dv.gridAlong || 0)}</div></div>`;
         o += `<div class="field"><div class="lbl">Divider height</div><div class="seg">${useg('gridHeight', [{ v: '20', label: 'Low', sub: '20 mm' }, { v: 'full', label: dv.h === 1 ? 'Full height' : 'Tall', sub: dv.h === 1 ? '34.5 mm' : '82.5 mm' }], dv.gridHeight)}</div></div>`;
-        o += optRow('data-ucheck="gridSeal"', 'Close against the walls', 'A divider that ends at a wall takes one hole less and a straight edge piece, which closes the gap (instructions, option 2). Off: the longer divider alone, a few mm short of the wall.', dv.gridSeal !== false);
+        o += `<div class="field"><div class="lbl">At a wall <span class="hint">where a divider ends against one</span></div><div class="seg">${ubool('gridSeal', { label: 'Divider alone', sub: 'a few mm short' }, { label: 'Closed', sub: 'recommended \u00b7 straight edge piece' }, dv.gridSeal !== false)}</div></div>`;
       }
       o += `<div class="field"><div class="lbl">Lock${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${useg('lock', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], dv.lock)}</div></div>`;
       o += `<div class="field"><div class="lbl">Geared rails${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${ubool('gearedRails', { label: 'Without', sub: 'optional in the manual' }, { label: 'With', sub: dids.length > 1 ? 'USSA: several drawers' : 'for 2F, 4F, more locking' }, dv.gearedRails)}</div></div>`;
       if (dv !== u) o += `<div class="dvfoot"><span class="mono">${esc(insideSum(u, dids))}</span><span class="dvacts"><button type="button" class="btn" data-dcopy>Same settings in every drawer</button></span></div>`;
     } else {
       if (u.w === 'L' || u.w === 'XL') o += `<div class="field"><div class="lbl">Case body style</div><div class="seg">${useg('caseInterior', [{ v: 'flat', label: 'Flat', sub: 'open box' }, { v: 'dividers', label: 'Dividers', sub: 'slotted walls' }, { v: 'sealed', label: 'Sealed', sub: 'seal dividers' }], u.caseInterior || 'flat')}</div></div>`;
-      if (caseStyle(u) === 'sealed') o += `<div class="field"><div class="lbl">Gridfinity baseplate</div><p class="pnote" style="margin:0">A sealed body's fixed walls make its cells narrower than the baseplate, so it takes none. Pick <b>Flat</b> or <b>Dividers</b> above for one.</p></div>`;
-      else o += optRow('data-ucheck="caseBaseplate"', 'Gridfinity baseplate inside', 'Instead of dividers: it covers the floor grooves they stand in.', u.caseBaseplate);
-      o += casePlate(u) ? `<div class="field"><div class="lbl">Dividers</div><p class="pnote" style="margin:0">The baseplate covers the floor from wall to wall, grooves included, so this case takes no divider. Untick it to place dividers${(Object.values(divSel(u) || {}).flat(2).length) ? ': the ones you placed are kept' : ''}.</p></div>` : dividerPlan(u);
+      // What is on the case's floor: nothing, dividers in its slots, or a Gridfinity baseplate over the grooves
+      const st = caseStyle(u), floor = caseFloor(u), kept = Object.values(divSel(u) || {}).flat(2).length;
+      const floors = [{ v: 'empty', label: 'Empty', sub: 'nothing inside' }, ...(st === 'flat' ? [] : [{ v: 'dividers', label: 'Dividers', sub: 'in the floor slots' }]), ...(st === 'sealed' ? [] : [{ v: 'plate', label: 'Gridfinity', sub: 'baseplate' }])];
+      o += `<div class="field"><div class="lbl">Floor</div><div class="seg">${floors.map(f => `<button type="button" data-cfloor="${f.v}" aria-pressed="${floor === f.v}">${f.label}<small>${f.sub}</small></button>`).join('')}</div>
+        ${st === 'flat' ? '<p class="pnote" style="margin:0">A flat body has no slots for dividers: pick <b>Dividers</b> or <b>Sealed</b> above for some.</p>' : st === 'sealed' ? '<p class="pnote" style="margin:0">A sealed body\u2019s fixed walls make its cells narrower than a baseplate: pick <b>Flat</b> or <b>Dividers</b> above for one.</p>' : ''}
+        ${floor !== 'dividers' && kept ? `<p class="pnote" style="margin:0">The ${plural(kept, 'divider')} you placed ${kept === 1 ? 'is' : 'are'} kept for when you pick <b>Dividers</b> again.</p>` : ''}</div>`;
+      if (floor === 'dividers') o += dividerPlan(u);
     }
     // Back of the stack: what goes on the module's back, laid out like the front's settings
     let back = `<div class="field"><div class="lbl">Wall mount <span class="hint">plate on this module\u2019s back</span></div><div class="seg">${ubool('wallMount', { label: 'None', sub: 'stands free' }, { label: 'Plate and cleats', sub: 'two wall cleats' }, u.wallMount)}</div></div>`;
@@ -2539,7 +2535,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       fixUnit(u); fixTower(t); save(); renderAll();
       toast(`Every drawer of this module now has the ${drawerName(u, dv.dr, false)} drawer\u2019s inside, lock and rails${new Set(dids.map(x => x.w)).size > 1 ? ' (the other box size keeps its own divider plan)' : ''}.`);
     }; }
-    box.querySelectorAll('[data-ucheck]').forEach(el => el.onchange = () => set({ [el.dataset.ucheck]: el.checked }));
+    box.querySelectorAll('[data-cfloor]').forEach(b => b.onclick = () => { const f = b.dataset.cfloor; set({ caseEmpty: f === 'empty', caseBaseplate: f === 'plate' }); });
     box.querySelectorAll('[data-ubool]').forEach(b => b.onclick = () => { const [key, val] = b.dataset.ubool.split('='); set({ [key]: val === '1' }); });
     box.querySelectorAll('[data-ustep]').forEach(b => b.onclick = () => {
       const id = b.dataset.ustep, d = +b.dataset.d, grid = id === 'gridAcross' || id === 'gridAlong';
@@ -2569,6 +2565,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const caseStyle = u => u.w === 'L' || u.w === 'XL' ? u.caseInterior || 'flat' : 'plain';
   // A baseplate covers the floor grooves the dividers stand in, so it takes their place (rules.js); a sealed body takes none
   const casePlate = u => u.type === 'case' && !!u.caseBaseplate && caseStyle(u) !== 'sealed';
+  // A case's floor as the inspector shows it: a baseplate, the dividers placed in its slots, or empty (caseEmpty:
+  // nothing inside, the dividers placed kept for later; a flat body has no slot, so no divider)
+  const caseFloor = u => casePlate(u) ? 'plate' : u.caseEmpty || caseStyle(u) === 'flat' ? 'empty' : 'dividers';
   const caseSlots = u => { const p = PLACE.units[`case|${u.w}|${u.d}|${u.h}`]; return (p && p.dividers && p.dividers[caseStyle(u)]) || null; };
   const spreadIdx = (n, k) => Array.from({ length: Math.min(k || 0, n) }, (_, i) => Math.round((i + 0.5) * n / Math.min(k, n) - 0.5));
   // A case saved before it had slots: its counts spread evenly over the slots
@@ -2600,7 +2599,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     u.divSlots = { ...(u.divSlots || {}), [st]: sel };
     const dv = { plain: 0, depth: 0, width: 0, seal: 0 };
     // under a baseplate: none, the slots kept for when it is taken out
-    if (casePlate(u)) { u.dividers = dv; return; }
+    if (casePlate(u) || u.caseEmpty) { u.dividers = dv; return; }
     if (st === 'plain') dv.plain = sel.rows.length;
     else if (st === 'dividers') { dv.width = sel.rows.length; dv.depth = sel.cols.length; }
     else if (sel.cells.length === 3) { dv.seal = sel.cells[1].length; dv.sealSide = sel.cells[0].length + sel.cells[2].length; }

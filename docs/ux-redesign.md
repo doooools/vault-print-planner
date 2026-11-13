@@ -153,8 +153,10 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   *selected*: tabs, segmented buttons, toggles of the 3D toolbar. There is no dark action button (`.btn.ink` is gone).
 - **Controls**: a setting is a row of segmented buttons (`.seg`: `useg`/`ubool` for a module, `sbool` for the stack,
   `pbool` for plate options), with sublabels in `<small>`. A dropdown only where the choices don't fit (printers,
-  stores). A tick box marks an item of a list (plates, hardware bought, assembly steps, stacks to print). Two
-  checkboxes are left for Dols to decide: "Close against the walls", "Gridfinity baseplate inside".
+  stores). A tick box marks an item of a list (plates, hardware bought, assembly steps, stacks to print), never a
+  setting (Dols, 2026-11-14: "on enlève tout ce qui se coche"). A case's floor is Empty / Dividers / Gridfinity
+  (`caseFloor`; Empty sets `caseEmpty`, which keeps the dividers placed but counts none); a drawer's grid dividers
+  "At a wall": Divider alone / Closed (recommended).
 - **Headings**: each step's main title is 28 px display (`.dtitle`, `.ptop-prog`, `.hwtitle`, `.asm-title`, `.xtitle`);
   a side panel has an eyebrow saying what it is (`.v3-sec`: Stack settings, Level 2 of 4, Colors, Selected plate)
   over a 22 px title naming which one. Inside a panel: sections (`.isec`, bold, with a hint and a rule above), then field

@@ -42,7 +42,7 @@ window.B2 = (() => {
     D23: async () => { await T.footprint('S', 4); await h(2); await noRails(); await c('[data-useg="interior=gridfinity"]'); await sel('baseplateHandles', '2'); await topHandle(false); },
     D24: async () => { await T.footprint('M', 5); await lv(); await noRails(); await c('[data-ubool="wallMount=1"]'); await topHandle(false); },
     D25: async () => { await T.footprint('S', 3); await lv(); await noRails(); await sel('pegboard', 'ikea'); await topHandle(false); },
-    D26: async () => { await T.footprint('S', 3); await type('case'); await h(2); await chk('[data-ucheck=caseBaseplate]', true); await step('dv_plain', 3); await topHandle(false); },
+    D26: async () => { await T.footprint('S', 3); await type('case'); await h(2); await c('[data-cfloor="plate"]'); await step('dv_plain', 3); await topHandle(false); },
     D27: async () => { await T.footprint('S', 6); await h(2); await noRails(); await addTop(); await h(1); await st('base', true); await st('wheels', false); await st('stationaryHandle', true); await topHandle(false); },
     D28: async () => { await T.footprint('L', 6); await type('case'); await h(1); await sel('caseInterior', 'flat'); await topHandle(false); },
   };
