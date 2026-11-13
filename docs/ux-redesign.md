@@ -162,6 +162,13 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   the level's: Module, Front and inside, Back of the stack.
 - **Type**: the mono font for figures (sizes, counts, grams), never for names or sentences.
 - **Words**: "Remove" (not "Delete") for stacks, levels and filaments.
+- **Removing or clearing** is pressed and held for half a second (`holdButton`, `HOLD_MS`), the button filling in red;
+  let go sooner and a toast says to hold it: a stack (its cross and "Remove stack"), a level, a filament, the loose
+  parts, a divider plan, the plates, the print progress, an assembly count (Dols, 2026-11-14).
+- **Rails**: Design, Print and Assemble each have a left rail with an eyebrow naming its items (Stacks, What to
+  print, Sections). Every tab past Design shows its progress (Print and Assemble in %, Hardware the lines to buy).
+- The 3D view has no Front / ¾ / Side buttons any more (Dols, 2026-11-14): a stack opens from three quarters, then
+  one drags to turn it.
 
 ## Steps, each testable on its own
 

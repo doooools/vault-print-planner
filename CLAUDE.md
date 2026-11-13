@@ -68,7 +68,7 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   One view since step 3 of `docs/colors-3d-redesign.md` (`open3d`):
   toolbar `v3tools` (Turn: a click selects; Paint: brush bar with the tray's colours, "More…" adds one, "Same part
   everywhere" / "This unit only", hover tints what a click would paint via `v.hot`; Drawers: a click opens or closes a
-  drawer), views Front / ¾ / Side (`v.aim`), "Spread units" and "Hide roof" (`v.arrange`). Side column `v3side`:
+  drawer), the first framing from three quarters (`V3_DIR`, `v.aim`; the Front / ¾ / Side buttons went on 2026-11-14), "Spread units" and "Hide roof" (`v.arrange`). Side column `v3side`:
   "Selected" card (`v3sel`, "Change color…" opens the picker, "Back to the project color"), units top to bottom
   (`v3list`: progress, role swatches ringed when the unit has its own). `v3paint` writes the colour; `v3owner` says
   whose `cfg.colors` a part's own colour goes in (a roof's parts are its unit's).
@@ -232,7 +232,8 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
 
 - One look everywhere (thread "Unifier l'interface de tout le planner", Dols 2026-11-13): orange fill = action, dark
   fill = selected, settings as segmented buttons (the stack's too, and the plate options), ticks only for list items,
-  the same title and section sizes on every step. Rules: `docs/ux-redesign.md`, "One look for each kind of thing".
+  the same title and section sizes on every step, removing by press and hold (`holdButton`), a left rail on Print
+  too, progress in every tab. Rules: `docs/ux-redesign.md`, "One look for each kind of thing".
 
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the

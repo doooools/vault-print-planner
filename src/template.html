@@ -443,9 +443,16 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .dsdel:hover, .dsdel:focus-visible { color: var(--bad); background: var(--bad-soft); }
 .dsdel::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(var(--bad) 0turn, transparent 0turn); -webkit-mask: radial-gradient(circle, transparent 12px, #000 13px); mask: radial-gradient(circle, transparent 12px, #000 13px); opacity: 0; }
 .dsdel.holding { color: var(--bad); background: var(--bad-soft); }
-.dsdel.holding::after { opacity: 1; animation: dshold .9s linear forwards; }
+.dsdel.holding::after { opacity: 1; animation: dshold var(--hold-ms, .5s) linear forwards; }
 @property --hold { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 @keyframes dshold { from { --hold: 0deg; } to { --hold: 360deg; } }
+/* Press and hold (holdButton): the button fills in red from the left while it is held */
+.hold:not(.dsdel) { position: relative; overflow: hidden; isolation: isolate; }
+.hold:not(.dsdel)::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--bad-soft); transform: scaleX(0); transform-origin: left; }
+.hold.holding:not(.dsdel) { color: var(--bad); border-color: var(--bad); }
+.hold.holding:not(.dsdel)::before { animation: holdfill var(--hold-ms, .5s) linear forwards; }
+@keyframes holdfill { to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .hold.holding:not(.dsdel)::before { animation-duration: 0s; animation-delay: var(--hold-ms, .5s); } }
 .dsdel.holding::after { background: conic-gradient(var(--bad) var(--hold), transparent var(--hold)); }
 .dbadge { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; background: var(--ink); color: var(--sheet); font-weight: 800; font-stretch: 112%; font-size: 16px; }
 .dst { display: grid; min-width: 0; line-height: 1.25; }
@@ -485,8 +492,10 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .design .v3-side { max-height: none; overflow: visible; border-left: 0; border-top: 1px solid var(--line); padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
 .design .v3-side > :not(#v3dStatus):not(#v3dPick) { display: none; }
 .design .v3-side .v3-status { flex: 1 1 300px; font-size: 12.5px; }
-.pscope { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
-.pscope .pnote { flex-basis: 100%; margin: 0; }
+.prt { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
+.pmain { flex: 999 1 720px; min-width: 0; display: grid; gap: 14px; }
+.prail .pchip { width: 100%; min-height: 60px; }
+.prail .pnote { margin: 0 2px; }
 .pchip { display: grid; gap: 1px; min-height: 44px; padding: 6px 14px 6px 34px; position: relative; text-align: left; border: 2px solid var(--line); border-radius: 10px; background: var(--sheet); }
 .pchip::before { content: ''; position: absolute; left: 10px; top: 50%; width: 16px; height: 16px; margin-top: -8px; border: 2px solid var(--edge); border-radius: 4px; }
 .pchip[aria-pressed=true] { border-color: var(--ink); background: var(--raised); }
@@ -785,7 +794,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     <button role="tab" id="tab-build" data-tab="build">1 · Design <span class="count" id="countBuild"></span></button>
     <button role="tab" id="tab-print" data-tab="print">2 · Print <span class="count" id="countPrint"></span></button>
     <button role="tab" id="tab-hardware" data-tab="hardware">3 · Hardware <span class="count" id="countHw"></span></button>
-    <button role="tab" id="tab-assemble" data-tab="assemble">4 · Assemble</button>
+    <button role="tab" id="tab-assemble" data-tab="assemble">4 · Assemble <span class="count" id="countAsm"></span></button>
   </nav>
   <div class="hbtns">
     <button type="button" class="hbtn" id="printerBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="printerBox"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg><b id="printerName"></b><span class="mono" id="printerBed"></span></button>
@@ -1940,7 +1949,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       saveExtras(); renderTabs(); renderBuild();
     });
     if ($('xprint')) $('xprint').onclick = () => { printSkip = towers.map(t => t.id); savePrintSkip(); view = 'print'; renderAll(); window.scrollTo(0, 0); };
-    if ($('xclear')) $('xclear').onclick = () => { extras = []; saveExtras(); renderTabs(); renderBuild(); };
+    holdButton($('xclear'), () => { extras = []; saveExtras(); renderTabs(); renderBuild(); }, 'Hold the button down to clear the loose parts');
   }
 
   // Bambu Lab's own PLA and PETG colours (src/bambu-colors.tsv): [line, colour code, name, hex]
@@ -2042,7 +2051,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (Object.keys(c).length) x.u.colors = c; else delete x.u.colors;
       save(); done();
     });
-    box.querySelectorAll('[data-pal-del]').forEach(b => b.onclick = () => {
+    box.querySelectorAll('[data-pal-del]').forEach(b => holdButton(b, () => {
       const id = b.dataset.palDel;
       colorPrefs.palette = colorPrefs.palette.filter(p => p.id !== id);
       for (const k of Object.keys(colorPrefs.roles)) if (colorPrefs.roles[k] === id) delete colorPrefs.roles[k];
@@ -2050,7 +2059,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       // Parts that used it go back to their role's colour; module colours using it are dropped
       towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { if (u.colors) { for (const k of Object.keys(u.colors)) if (u.colors[k] === id) delete u.colors[k]; if (!Object.keys(u.colors).length) delete u.colors; } })));
       save(); done();
-    });
+    }, 'Hold the cross down to remove this filament'));
     box.querySelectorAll('[data-cpreset]').forEach(b => b.onclick = () => {
       if (b.dataset.cpreset === 'render' && colorsCustom() && !confirm(stackNow() ? `Go back to USSA’s render colors on ${stackNow().name}? This also removes the colors chosen for its single modules. Other stacks keep theirs.` : 'Go back to USSA’s render colors? This removes the filaments you added.')) return;
       applyColorPreset(b.dataset.cpreset); renderAll();
@@ -2351,18 +2360,28 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     v3sync();
   }
   function closeTpl() { const d = $('tplDlg'); if (d && d.open) d.close(); }
-  // A stack card's cross: held down for a second it deletes the stack (the ring fills meanwhile); let go sooner, nothing
-  const HOLD_MS = 900;
+  // Everything that removes or clears is pressed and held (Dols, 2026-11-13): half a second, while the button fills
+  // in red (the stack's cross: its ring); let go sooner and nothing happens but a hint
+  const HOLD_MS = 500;
   function removeStack(t) { towers = towers.filter(x => x.id !== t.id); printSkip = printSkip ? printSkip.filter(x => x !== t.id) : printSkip; savePrintSkip(); if (dsel && dsel.t === t.id) dsel = null; saveSel(); save(); renderAll(); toast(`${t.name} removed`); }
-  function holdToDelete(b) {
+  function holdButton(b, act, hint = 'Press and hold to confirm') {
+    if (!b) return;
     let timer = null;
-    const t = () => towers.find(x => x.id === +b.dataset.sdel);
-    const start = e => { if (timer || (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ')) return; if (e.type === 'keydown') e.preventDefault(); b.classList.add('holding'); timer = setTimeout(() => { timer = null; b.classList.remove('holding'); if (t()) removeStack(t()); }, HOLD_MS); };
-    const stop = e => { if (!timer) return; clearTimeout(timer); timer = null; b.classList.remove('holding'); if (e && e.type !== 'pointerleave') toast('Hold the cross down to remove the stack'); };
+    b.classList.add('hold'); b.style.setProperty('--hold-ms', HOLD_MS + 'ms');
+    if (!/hold/i.test(b.title)) b.title = b.title ? b.title + ' (press and hold)' : 'Press and hold';
+    const al = b.getAttribute('aria-label'); if (al && !/hold/i.test(al)) b.setAttribute('aria-label', al + ': press and hold');
+    const start = e => {
+      if (timer || b.disabled || (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') || (e.type === 'pointerdown' && e.button !== 0)) return;
+      if (e.type === 'keydown') e.preventDefault();
+      b.classList.add('holding');
+      timer = setTimeout(() => { timer = null; b.classList.remove('holding'); act(); }, HOLD_MS);
+    };
+    const stop = e => { if (!timer) return; clearTimeout(timer); timer = null; b.classList.remove('holding'); if (e && (e.type === 'pointerup' || e.type === 'keyup')) toast(hint); };
     b.addEventListener('pointerdown', start); b.addEventListener('keydown', start);
     b.addEventListener('pointerup', stop); b.addEventListener('pointerleave', stop); b.addEventListener('pointercancel', stop); b.addEventListener('keyup', stop);
     b.onclick = e => e.preventDefault();
   }
+  const holdToDelete = b => holdButton(b, () => { const t = towers.find(x => x.id === +b.dataset.sdel); if (t) removeStack(t); }, 'Hold the cross down to remove the stack');
   function designCenter(t, a) {
     const fp = fpOf(t);
     const wOpts = FP_W.filter(w => sizeFits(w, R.DEPTHS[0]) || w === fp.w).map(w => ({ v: w, label: w, sub: Math.round(R.WIDTH_MM[w]) + ' mm' }));
@@ -2392,7 +2411,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // A change made in the selection panel redraws it (and step 1): keep its scroll and its folded sections as they were,
   // while it shows the same level, so the option just changed stays under the pointer
   let inspKeep = null;
-  const inspSel = () => `${dsel.t}|${dsel.l}|${dsel.u}|${painting() && inspPaint}`;
+  const inspSel = () => dsel ? `${dsel.t}|${dsel.l}|${dsel.u}|${painting() && inspPaint}` : ''; // no selection: a stack was just removed
   const inspDetails = b => [...b.querySelectorAll('details')].map(d => { const sm = d.querySelector('summary'); return [sm && sm.firstChild ? sm.firstChild.textContent.trim() : '', d]; });
   function inspSave() {
     const b = $('dInsp'); if (!b || !b.childElementCount) return; // a panel just made, still empty: keep what was saved
@@ -2506,6 +2525,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       fixTower(t); saveSel(); save(); renderAll();
     });
     box.querySelectorAll('[data-lop]').forEach(b => b.onclick = () => levelOp(t, b.dataset.lop, i));
+    holdButton(box.querySelector('[data-lop="del"]'), () => levelOp(t, 'del', i), 'Hold the bin down to remove this level');
     box.querySelectorAll('[data-umod]').forEach(b => b.onclick = () => { dsel.u = +b.dataset.umod; saveSel(); renderInspector(); v3mark(); });
     bindUnitSeg(box, u, set);
     box.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { view = b.dataset.go; renderAll(); window.scrollTo(0, 0); });
@@ -2537,7 +2557,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       svg.onpointermove = e => gridHover(dv, svg.dataset.gplan, svg, e);
       svg.onpointerleave = () => gridHover(dv, svg.dataset.gplan, svg, null);
     });
-    box.querySelectorAll('[data-gclear]').forEach(b => b.onclick = () => { gpend = null; set({ gridPlans: { ...(dv.gridPlans || {}), [b.dataset.gclear]: [] } }); });
+    box.querySelectorAll('[data-gclear]').forEach(b => holdButton(b, () => { gpend = null; set({ gridPlans: { ...(dv.gridPlans || {}), [b.dataset.gclear]: [] } }); }, 'Hold the button down to clear the plan'));
   }
   // The measured placements a shell's drawer layouts need before the inspector offers them
   const layoutsReady = u => !!((PLACE.units[`drawer|${u.w}|${u.d}|${u.h}`] || {}).layouts);
@@ -2972,11 +2992,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     });
     box.querySelectorAll('[data-hlock]').forEach(b => b.onclick = () => { t.stack = { ...s, handleLock: b.dataset.hlock }; save(); renderAll(); });
     box.querySelector('[data-tdup]').onclick = () => { const x = { ...JSON.parse(JSON.stringify(t)), id: newId(), name: t.name + ' copy' }; towers.push(x); dsel = { t: x.id, l: null }; saveSel(); save(); renderAll(); };
-    box.querySelector('[data-tdel]').onclick = e => {
-      const btn = e.currentTarget;
-      if (!btn.dataset.confirm) { btn.dataset.confirm = '1'; btn.textContent = 'Press again to remove'; return; }
-      removeStack(t);
-    };
+    holdButton(box.querySelector('[data-tdel]'), () => removeStack(t), 'Hold the button down to remove the stack');
   }
   // The 3D view tells the inspector which level was clicked; the inspector's level is outlined in the view
   let v3markObj = null;
@@ -3378,11 +3394,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <div class="plist">${sel.lines.map((x, i) => `<div class="prow"><span class="pk" style="background:${colorHex(sel.color)};color:${LIGHT_FILL(sel.color) ? '#222' : '#fff'}">${i + 1}</span><span class="q num">${x.count}×</span><span class="lbl"><b>${esc(x.l.label)}</b><small class="mono">${esc(fileName(x.l.file.path))}</small></span>${x.l.walls ? `<span class="tag wall">${x.l.walls} walls${x.l.infill ? ' · ' + x.l.infill + '%' : ''}</span>` : ''}${x.l.supports ? '<span class="tag sup">supports</span>' : ''}</div>`).join('')}</div>
       <button type="button" class="btn ${sel.done ? '' : 'primary'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button></aside>`;
     const hasLabels = b.lines.some(isLabel);
-    $('view-print').innerHTML = `
-      ${towers.length + (extras.length ? 1 : 0) > 1 ? `<div class="pscope" role="group" aria-label="What to print"><span class="v3-sec">What to print</span>
+    $('view-print').innerHTML = `<div class="prt">
+      <aside class="drail prail" role="group" aria-label="What to print"><div class="v3-sec">What to print</div>
         ${towers.map(t => `<button type="button" class="pchip" data-pskip="${t.id}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small></button>`).join('')}
         ${extras.length ? `<button type="button" class="pchip" data-pskip="loose" aria-pressed="${b.extras > 0}"><b>Loose parts</b><small class="mono">${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button>` : ''}
-        <span class="pnote">${b.whole ? 'Everything is in these plates.' : 'Only what is ticked is in these plates and in the file.'}</span></div>` : ''}
+        <p class="pnote">${towers.length + (extras.length ? 1 : 0) < 2 ? 'Everything in Design is in these plates.' : b.whole ? 'Everything is in these plates. Untick a stack to leave it out.' : 'Only what is ticked is in these plates and in the file.'}</p></aside>
+      <div class="pmain">
       <section class="panel ptop" aria-label="Progress and export">
         <div class="ptop-prog"><h1>${pct}% printed</h1><div class="bar2" aria-hidden="true"><i style="width:${pct}%"></i></div>
           <div class="mono">${done} of ${total} parts · ${plates.length} of ${plural(allPlates.length, 'plate')} left · ${aboutG(gDone)} of ${gramsStr(s.g)}</div></div>
@@ -3407,7 +3424,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       </div>
       <details class="panel fold"><summary>All parts in this build <small>${s.prints} parts · ${s.files} files</small></summary>
         <div class="parts">${partRows(b.lines)}</div>
-        <div class="actions" style="padding:0 18px 16px"><button class="btn" id="copyAll">Copy part list</button></div></details>`;
+        <div class="actions" style="padding:0 18px 16px"><button class="btn" id="copyAll">Copy part list</button></div></details>
+      </div></div>`;
     const V = $('view-print');
     const markPlate = (pl, on, quiet) => {
       if (on) { pl.lines.forEach(x => { printed[pkey(x.l)] = (printed[pkey(x.l)] || 0) + x.count; }); pst.done.push({ n: pl.n, sig: pl.sig }); }
@@ -3456,21 +3474,15 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (key === 'printAids') { printAids = on; store.set('manualSupports', on); }
       renderPrint();
     });
-    if ($('resetPrinted')) $('resetPrinted').onclick = () => {
-      const btn = $('resetPrinted');
-      if (btn.dataset.confirm) { printed = {}; store.set('printed', printed); renderPrint(); renderTabs(); toast('Progress reset'); }
-      else { btn.dataset.confirm = '1'; btn.textContent = 'Press again to reset everything'; }
-    };
-    $('clearPlates').onclick = () => {
-      const btn = $('clearPlates');
-      if (!btn.dataset.confirm) { btn.dataset.confirm = '1'; btn.textContent = 'Press again to clear'; return; }
+    holdButton($('resetPrinted'), () => { printed = {}; store.set('printed', printed); renderPrint(); renderTabs(); toast('Progress reset'); }, 'Hold the button down to reset all progress');
+    holdButton($('clearPlates'), () => {
       // Only loose parts: drop them and their progress, keep the stacks. Otherwise wipe the whole build.
       if (b.onlyExtras) { for (const k of Object.keys(printed)) if (k.startsWith('extra:')) delete printed[k]; }
       else { towers = []; save(); printed = {}; }
       extras = []; saveExtras(); store.set('printed', printed);
       printSkip = []; savePrintSkip(); plateOptsOpen = false;
       renderAll(); toast(b.onlyExtras ? 'Loose parts cleared' : 'All plates cleared');
-    };
+    }, 'Hold the button down to clear');
     $('copyAll').onclick = () => copy(listText(b.lines, 'Vault build'), 'Part list copied');
     if ($('gMake')) $('gMake').onclick = () => hasFolder ? makeDownload(target, false, 'project') : openFolder(false);
     if ($('gFolders')) $('gFolders').onclick = () => makeDownload(target, false, 'folders');
@@ -4374,14 +4386,15 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // from the side; units can be spread apart and the roof hidden. It shows the stack picked in Design (v3sync).
   let v3 = null; // the open view: { t, T, renderer, scene, camera, controls, units: [...], token, tool, brush, ... }
   const v3status = msg => { $('v3dStatus').textContent = msg; };
-  const V3_VIEWS = [['front', 'Front', [0, 0.16, 1]], ['3q', '¾', [0.55, 0.42, 1]], ['side', 'Side', [1, 0.22, 0.02]]];
+  // A stack is first framed from three quarters (the Front / ¾ / Side buttons went, Dols 2026-11-13: drag to turn)
+  const V3_DIR = [0.55, 0.42, 1];
   const V3_SPREAD = 60; // mm between units when spread
   const V3_LIFT = 52 + 48 * 3; // mm the stack above an open case rises (with the case's lid): a 4F module's height
   // The view lives in the page (steps 1 and 2, see v3sync) or, enlarged, in the #v3d dialog. One WebGL renderer is
   // kept for the page's life; each model (a unit, a stack) gets its own scene, and the tools and the camera's
   // direction carry over from one to the next (v3ui).
   let v3gl = null, v3want = null;
-  const v3ui = { tool: null, pscope: 'project', brush: null, explode: false, hideRoof: false, view: '3q', dir: null };
+  const v3ui = { tool: null, pscope: 'project', brush: null, explode: false, hideRoof: false, dir: null };
   async function open3d(t, mode = {}) {
     const want = v3want = {};
     if (!v3gl) v3status('Loading the 3D viewer…');
@@ -4421,7 +4434,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     };
     const painted = (geo, role, cfg) => Object.assign(new T.Mesh(geo, mat(role, cfg)), { userData: { role, cfg } });
     const v = v3 = { t, key: mode.key, cfgs: mode.cfgs || [], ac: new AbortController(), extras: [], T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {},
-      tool: v3ui.tool === 'paint' ? 'paint' : 'turn', pscope: v3ui.pscope, brush: v3ui.brush, sel: null, hot: null, explode: v3ui.explode, hideRoof: v3ui.hideRoof, view: v3ui.view, hwGeo: new Map() };
+      tool: v3ui.tool === 'paint' ? 'paint' : 'turn', pscope: v3ui.pscope, brush: v3ui.brush, sel: null, hot: null, explode: v3ui.explode, hideRoof: v3ui.hideRoof, hwGeo: new Map() };
     // A bolt's shape, made once per size for this model
     v.hwGeom = spec => {
       if (!v.hwGeo.has(spec)) {
@@ -4471,7 +4484,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         v.framed = true;
         const k = v3ui.keep && v3ui.keep.tower === t.id && v3ui.keep.cam;
         if (k) { camera.position.fromArray(k.at); controls.target.fromArray(k.target); controls.update(); }
-        else v.aim(v3ui.dir || V3_VIEWS[1][2]);
+        else v.aim(v3ui.dir || V3_DIR);
       }
       render();
     };
@@ -4684,7 +4697,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const seg = (items, cur, attr) => items.map(([id, label]) => `<button type="button" ${attr}="${id}" aria-pressed="${cur === id}">${label}</button>`).join('');
     const roof = v.units.some(u => u.roof);
     $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool">${seg([['turn', 'Select'], ['paint', 'Paint']], v.tool, 'data-v3tool')}</div>
-      <div class="v3-right"><div class="v3-seg" role="group" aria-label="View">${seg(V3_VIEWS.map(x => [x[0], x[1]]), v.view, 'data-v3view')}</div>
+      <div class="v3-right">
         ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}">Spread units</button>` : ''}
         ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}">Hide roof</button>` : ''}
         ${v.units.some(u => u.place && u.place.bolts.length) ? `<button type="button" class="v3-tog" data-v3fin title="Bolt finish, for the whole build (also in Hardware): click for ${hwFinish() === 'black' ? 'zinc-plated or stainless' : 'raw steel'}"><span class="dot2" style="background:${hwColor()};vertical-align:-2px;margin-right:6px"></span>${hwFin()[2]}</button>` : ''}</div>`;
@@ -4704,7 +4717,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const on = (sel, f) => document.querySelectorAll(sel).forEach(b => b.onclick = () => f(b));
     on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; if (v.tool === 'paint') inspPaint = true; v.hot = null; v.recolor(); v3tools(); v3side(); });
     on('[data-v3tipok]', () => { store.set('openTip', true); v3tools(); });
-    on('[data-v3view]', b => { v.view = b.dataset.v3view; v.aim(V3_VIEWS.find(x => x[0] === v.view)[2]); v3tools(); });
     on('[data-v3tog]', b => { v[b.dataset.v3tog] = !v[b.dataset.v3tog]; v.arrange(); v3tools(); v3side(); });
     on('[data-v3scope]', b => { v.pscope = b.dataset.v3scope; v3tools(); });
     on('[data-v3fin]', () => { setHwFinish(hwFinish() === 'black' ? 'zinc' : 'black'); v.recolor(); v3tools(); v3side(); });
@@ -4968,7 +4980,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // Let go of a model (its scene, controls and listeners); the renderer stays for the next one
   function close3d() {
     const v = v3; if (!v) return;
-    Object.assign(v3ui, { tool: v.tool, pscope: v.pscope, brush: v.brush, explode: v.explode, hideRoof: v.hideRoof, view: v.view });
+    Object.assign(v3ui, { tool: v.tool, pscope: v.pscope, brush: v.brush, explode: v.explode, hideRoof: v.hideRoof });
     v3keep(v);
     v3 = null; v.token = null; v.ac.abort();
     v.ro.disconnect(); v.controls.dispose();
@@ -5464,6 +5476,19 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // count how many are built ("Drawer 3 of 8"): "done, next one" clears the ticks and counts one more.
   let asmSec = store.get('asmSec', null);
   let asmBuilt = store.get('asmBuilt', {});
+  // How far the assembly is, as the tab says it: the mean of the sections' progress bars (units built where a
+  // section repeats per unit, else steps ticked)
+  function asmPct(b) {
+    const secs = GUIDE.filter(g => g.when(b)); if (!secs.length) return null;
+    const units = b.list.flatMap(t => t.levels.flat());
+    const part = secs.map(g => {
+      const r = ASM_UNIT[g.id] ? units.reduce((a, u) => a + ASM_UNIT[g.id][1](u), 0) : 0;
+      if (r) return Math.min(asmBuilt[g.id] || 0, r) / r;
+      const st = g.steps.filter(x => !x.when || x.when(b));
+      return st.length ? st.filter(x => stepsDone[g.id + ':' + x.t]).length / st.length : 0;
+    });
+    return Math.round(part.reduce((a, x) => a + x, 0) / part.length * 100);
+  }
   const ASM_UNIT = { drawer: ['Drawer', u => u.type !== 'drawer' ? 0 : R.drawersOf(u).length * (u.w === 'L2' || u.w === 'XL2' ? 2 : 1)], case: ['Case', u => u.type === 'case' ? 1 : 0] };
   function renderAssemble() {
     const b = computeBuild();
@@ -5513,14 +5538,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     V.querySelectorAll('[data-go]').forEach(btn => btn.onclick = () => { view = btn.dataset.go; renderAll(); });
     V.querySelectorAll('[data-stepkey]').forEach(cb => cb.onchange = () => {
       if (cb.checked) stepsDone[cb.dataset.stepkey] = 1; else delete stepsDone[cb.dataset.stepkey];
-      store.set('steps', stepsDone); renderAssemble();
+      store.set('steps', stepsDone); renderAssemble(); renderTabs();
     });
     if ($('asmNext')) $('asmNext').onclick = () => {
       steps.forEach(s => { delete stepsDone[g.id + ':' + s.t]; });
       asmBuilt[g.id] = built + 1; store.set('asmBuilt', asmBuilt); store.set('steps', stepsDone);
-      toast(built + 1 >= rep ? `All ${rep} ${unit.toLowerCase()}s built` : `${unit} ${built + 1} done`); renderAssemble();
+      toast(built + 1 >= rep ? `All ${rep} ${unit.toLowerCase()}s built` : `${unit} ${built + 1} done`); renderAssemble(); renderTabs();
     };
-    if ($('asmReset')) $('asmReset').onclick = () => { delete asmBuilt[g.id]; store.set('asmBuilt', asmBuilt); renderAssemble(); };
+    holdButton($('asmReset'), () => { delete asmBuilt[g.id]; store.set('asmBuilt', asmBuilt); renderAssemble(); renderTabs(); }, 'Hold it down to start the count again');
   }
 
   // ---------- tabs ----------
@@ -5545,6 +5570,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const hwLeft = b.empty ? 0 : b.hardware.filter(h => !hwBought[h.item]).length;
     $('countHw').textContent = hwLeft ? `(${hwLeft})` : '';
     $('countHw').title = hwLeft ? `${plural(hwLeft, 'line')} still to buy` : '';
+    const ab = b.empty ? null : computeBuild(), ap = ab && !ab.empty ? asmPct(ab) : null;
+    $('countAsm').textContent = ap == null ? '' : `${ap}%`;
+    $('countAsm').title = ap == null ? '' : `${ap}% assembled`;
     store.set('view', view);
     renderHeader();
   }
