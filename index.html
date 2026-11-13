@@ -1107,7 +1107,11 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     // 1F front, the drawers' label on a 2F or 4F front
     if (h === 1) add('Hinges & locks', 'Case label', SUU + 'Label for Sustainers.stl', 1);
     else add('Hinges & locks', 'Case label', U + 'Label.stl', 1);
-    if (c.caseBaseplate) {
+    // A Gridfinity baseplate covers the body's floor wall to wall, and with it the 2 mm floor grooves the dividers stand
+    // in (their slots run from those grooves up the walls): a case takes one or the other, the baseplate when both are
+    // asked. A sealed body's fixed walls split its floor into cells narrower than the baseplate: it takes none.
+    const plate = !!c.caseBaseplate && !(big && c.caseInterior === 'sealed');
+    if (plate) {
       if (w === 'XL') {
         if (d >= 6) {
           add('Interior', 'Gridfinity baseplate, part 1', SUU + `Baseplates/04. XL/XL${d} Part 1  Gridfinity Baseplate.stl`, 1);
@@ -1118,7 +1122,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     // Dividers slide into slots moulded in the body's walls (tools/placements/measure_dividers.py): S and M bodies
     // take plain ones, an L or XL "Dividers" body width and depth ones (an egg crate), a "Sealed" body seal ones
     // in its cells. A flat body has no slot, so dividers chosen for another style are left out.
-    const dv = c.dividers || {}, style = big ? c.caseInterior || 'flat' : 'plain';
+    const dv = plate ? {} : c.dividers || {}, style = big ? c.caseInterior || 'flat' : 'plain';
     if (style === 'plain') {
       if (dv.plain) add('Interior', 'Divider', SUU + `Dividers/${w} Dividers/${w}${h}F Divider.stl`, dv.plain);
     } else if (w === 'L') {
@@ -1710,7 +1714,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       const note = r => r.lines.forEach(l => { if (!META.has(l.file.path)) META.set(l.file.path, l); });
       const variants = [
         { lock: 'std', interior: 'gridfinity', roof: 'grid', topHandle: true, wallMount: true, pegboard: 'ikea', backbone: 'family', caseBaseplate: true, dividers: { plain: 1, depth: 1, width: 1, seal: 1 }, caseInterior: 'flat', manualSupports: true },
-        { lock: 'hidden', interior: 'grid', gridAcross: 1, gridAlong: 1, gridHeight: 'full', gridEdge: 'rounded', gridPin: 'loose', roof: 'table', pegboard: 'ussa', backbone: 'universal', caseInterior: 'dividers', baseplateHandles: '1', dividers: { depth: 1, width: 1 } },
+        { lock: 'hidden', interior: 'grid', gridAcross: 1, gridAlong: 1, gridHeight: 'full', gridEdge: 'rounded', gridPin: 'loose', roof: 'table', pegboard: 'ussa', backbone: 'universal', caseInterior: 'dividers', baseplateHandles: '1', dividers: { plain: 1, depth: 1, width: 1 } },
         { interior: 'grid', gridAcross: 1, gridAlong: 1, roof: 'bowl', baseplateHandles: '2', caseInterior: 'sealed', dividers: { seal: 1 } },
         { roof: 'undertable', interior: 'gridfinity' }, { roof: 'heavy' }, { roof: 'heavycut' }];
       for (const type of ['drawer', 'case']) for (const w of Object.keys(R.HEIGHTS[type])) for (const d of R.DEPTHS) for (const h of R.HEIGHTS[type][w]) for (const v of variants) {
@@ -2782,8 +2786,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       o += optRow('data-ucheck="gearedRails"', 'Geared rails', lay.length > 1 ? 'USSA: use them when a module holds more than one drawer.' : 'Optional in the manual. Recommended for 2F and 4F, and for extra locking force.', u.gearedRails);
     } else {
       if (u.w === 'L' || u.w === 'XL') o += selRow('data-usel="caseInterior"', 'Case body style', [['flat', 'Flat (open box)'], ['dividers', 'Dividers (slotted walls)'], ['sealed', 'Sealed (slots for seal dividers)']], u.caseInterior);
-      o += optRow('data-ucheck="caseBaseplate"', 'Gridfinity baseplate inside', '', u.caseBaseplate);
-      o += dividerPlan(u);
+      if (caseStyle(u) === 'sealed') o += `<div class="field"><div class="lbl">Gridfinity baseplate</div><p class="pnote" style="margin:0">A sealed body's fixed walls make its cells narrower than the baseplate, so it takes none. Pick <b>Flat</b> or <b>Dividers</b> above for one.</p></div>`;
+      else o += optRow('data-ucheck="caseBaseplate"', 'Gridfinity baseplate inside', 'Instead of dividers: it covers the floor grooves they stand in.', u.caseBaseplate);
+      o += casePlate(u) ? `<div class="field"><div class="lbl">Dividers</div><p class="pnote" style="margin:0">The baseplate covers the floor from wall to wall, grooves included, so this case takes no divider. Untick it to place dividers${(Object.values(divSel(u) || {}).flat(2).length) ? ': the ones you placed are kept' : ''}.</p></div>` : dividerPlan(u);
     }
     let more = '';
     more += optRow('data-ucheck="wallMount"', 'Wall mount plate and cleats', 'Plate on the back of this module, plus two wall cleats.', u.wallMount);
@@ -2852,6 +2857,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // cells (2 on L, 3 on XL). The unit keeps the slots it fills per style (cfg.divSlots, indices into the measured
   // ones: {rows, cols} or {cells: [[...], ...]}) and the counts the rules read (cfg.dividers) follow them.
   const caseStyle = u => u.w === 'L' || u.w === 'XL' ? u.caseInterior || 'flat' : 'plain';
+  // A baseplate covers the floor grooves the dividers stand in, so it takes their place (rules.js); a sealed body takes none
+  const casePlate = u => u.type === 'case' && !!u.caseBaseplate && caseStyle(u) !== 'sealed';
   const caseSlots = u => { const p = PLACE.units[`case|${u.w}|${u.d}|${u.h}`]; return (p && p.dividers && p.dividers[caseStyle(u)]) || null; };
   const spreadIdx = (n, k) => Array.from({ length: Math.min(k || 0, n) }, (_, i) => Math.round((i + 0.5) * n / Math.min(k, n) - 0.5));
   // A case saved before it had slots: its counts spread evenly over the slots
@@ -2882,6 +2889,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (!sel) return;
     u.divSlots = { ...(u.divSlots || {}), [st]: sel };
     const dv = { plain: 0, depth: 0, width: 0, seal: 0 };
+    // under a baseplate: none, the slots kept for when it is taken out
+    if (casePlate(u)) { u.dividers = dv; return; }
     if (st === 'plain') dv.plain = sel.rows.length;
     else if (st === 'dividers') { dv.width = sel.rows.length; dv.depth = sel.cols.length; }
     else if (sel.cells.length === 3) { dv.seal = sel.cells[1].length; dv.sealSide = sel.cells[0].length + sel.cells[2].length; }

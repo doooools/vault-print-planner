@@ -301,7 +301,11 @@
     // 1F front, the drawers' label on a 2F or 4F front
     if (h === 1) add('Hinges & locks', 'Case label', SUU + 'Label for Sustainers.stl', 1);
     else add('Hinges & locks', 'Case label', U + 'Label.stl', 1);
-    if (c.caseBaseplate) {
+    // A Gridfinity baseplate covers the body's floor wall to wall, and with it the 2 mm floor grooves the dividers stand
+    // in (their slots run from those grooves up the walls): a case takes one or the other, the baseplate when both are
+    // asked. A sealed body's fixed walls split its floor into cells narrower than the baseplate: it takes none.
+    const plate = !!c.caseBaseplate && !(big && c.caseInterior === 'sealed');
+    if (plate) {
       if (w === 'XL') {
         if (d >= 6) {
           add('Interior', 'Gridfinity baseplate, part 1', SUU + `Baseplates/04. XL/XL${d} Part 1  Gridfinity Baseplate.stl`, 1);
@@ -312,7 +316,7 @@
     // Dividers slide into slots moulded in the body's walls (tools/placements/measure_dividers.py): S and M bodies
     // take plain ones, an L or XL "Dividers" body width and depth ones (an egg crate), a "Sealed" body seal ones
     // in its cells. A flat body has no slot, so dividers chosen for another style are left out.
-    const dv = c.dividers || {}, style = big ? c.caseInterior || 'flat' : 'plain';
+    const dv = plate ? {} : c.dividers || {}, style = big ? c.caseInterior || 'flat' : 'plain';
     if (style === 'plain') {
       if (dv.plain) add('Interior', 'Divider', SUU + `Dividers/${w} Dividers/${w}${h}F Divider.stl`, dv.plain);
     } else if (w === 'L') {
