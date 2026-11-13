@@ -1614,20 +1614,44 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // Amazon.com is not here on purpose: its links stay the original planner's (SHOP above).
   const SHOP_TAGS = {
     ca: '', 'com.mx': '', 'com.br': '',
-    fr: '', de: '', 'co.uk': '', it: '', es: '', nl: '', 'com.be': '', se: '', pl: '', 'com.tr': '',
+    fr: 'dols0e-21', de: '', 'co.uk': '', it: '', es: '', nl: '', 'com.be': '', se: '', pl: '', 'com.tr': '',
     'co.jp': '', in: '', sg: '', ae: '', sa: '', 'com.au': '', 'co.za': '', eg: '',
   };
   const shopTag = id => id === 'com' ? '' : String(SHOP_TAGS[id] || '').trim();
   const SHOP_BY_ID = new Map(SHOP_STORES.flatMap(([cont, list]) => list.map(([id, name, where]) => [id, { id, name, where, cont }])));
-  // First visit: the browser's region (fr-FR → Amazon.fr), else its time zone's continent, else Amazon.com
-  function guessShop() {
+  // First visit: the country of the computer's time zone (Europe/Paris → Amazon.fr, even with an en-US browser), else the
+  // browser's region (fr-FR → Amazon.fr), else the time zone's continent, else Amazon.com. Nothing leaves the browser.
+  const SHOP_TZ = (() => {
+    const m = {}, add = (store, zones) => zones.split(' ').forEach(z => { m[z] = store; });
+    add('com', 'America/New_York America/Chicago America/Denver America/Los_Angeles America/Phoenix America/Anchorage America/Juneau America/Sitka America/Nome America/Yakutat America/Adak America/Boise America/Detroit America/Menominee America/Metlakatla America/Indianapolis America/Puerto_Rico Pacific/Honolulu US/Eastern US/Central US/Mountain US/Pacific US/Arizona US/Alaska US/Hawaii');
+    add('ca', 'America/Toronto America/Montreal America/Vancouver America/Edmonton America/Winnipeg America/Regina America/Halifax America/St_Johns America/Moncton America/Glace_Bay America/Goose_Bay America/Whitehorse America/Dawson America/Dawson_Creek America/Fort_Nelson America/Creston America/Swift_Current America/Iqaluit America/Rankin_Inlet America/Resolute America/Cambridge_Bay America/Inuvik America/Yellowknife America/Atikokan America/Blanc-Sablon America/Nipigon America/Thunder_Bay America/Rainy_River America/Pangnirtung');
+    add('com.mx', 'America/Mexico_City America/Cancun America/Merida America/Monterrey America/Matamoros America/Chihuahua America/Ciudad_Juarez America/Ojinaga America/Hermosillo America/Mazatlan America/Bahia_Banderas America/Tijuana');
+    add('com.br', 'America/Sao_Paulo America/Bahia America/Fortaleza America/Recife America/Maceio America/Belem America/Araguaina America/Santarem America/Manaus America/Boa_Vista America/Porto_Velho America/Cuiaba America/Campo_Grande America/Rio_Branco America/Eirunepe America/Noronha');
+    add('fr', 'Europe/Paris Europe/Monaco Europe/Luxembourg');
+    add('de', 'Europe/Berlin Europe/Busingen Europe/Vienna Europe/Zurich Europe/Vaduz');
+    add('co.uk', 'Europe/London Europe/Dublin Europe/Belfast Europe/Guernsey Europe/Jersey Europe/Isle_of_Man');
+    add('it', 'Europe/Rome Europe/Vatican Europe/San_Marino');
+    add('es', 'Europe/Madrid Africa/Ceuta Atlantic/Canary Europe/Lisbon Atlantic/Madeira Atlantic/Azores');
+    add('nl', 'Europe/Amsterdam'); add('com.be', 'Europe/Brussels'); add('se', 'Europe/Stockholm'); add('pl', 'Europe/Warsaw');
+    add('com.tr', 'Europe/Istanbul Asia/Istanbul'); add('co.jp', 'Asia/Tokyo'); add('in', 'Asia/Kolkata Asia/Calcutta');
+    add('sg', 'Asia/Singapore'); add('ae', 'Asia/Dubai'); add('sa', 'Asia/Riyadh');
+    add('com.au', 'Pacific/Auckland Pacific/Chatham'); add('co.za', 'Africa/Johannesburg'); add('eg', 'Africa/Cairo');
+    return m;
+  })();
+  function guessShop(langs = navigator.languages || [navigator.language], tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '') {
     const CC = { US: 'com', CA: 'ca', MX: 'com.mx', BR: 'com.br', FR: 'fr', LU: 'fr', MC: 'fr', DE: 'de', AT: 'de', CH: 'de', GB: 'co.uk', IE: 'co.uk', IT: 'it',
       ES: 'es', PT: 'es', NL: 'nl', BE: 'com.be', SE: 'se', PL: 'pl', TR: 'com.tr', JP: 'co.jp', IN: 'in', SG: 'sg', AE: 'ae', SA: 'sa', AU: 'com.au', NZ: 'com.au', ZA: 'co.za', EG: 'eg' };
     try {
-      for (const l of navigator.languages || [navigator.language]) { const cc = (String(l).match(/-([A-Za-z]{2})\b/) || [])[1]; if (cc && CC[cc.toUpperCase()]) return CC[cc.toUpperCase()]; }
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-      const BY_TZ = { Europe: 'de', 'America/Sao_Paulo': 'com.br', Australia: 'com.au', 'Pacific/Auckland': 'com.au', Africa: 'co.za', 'Africa/Cairo': 'eg', 'Asia/Tokyo': 'co.jp', 'Asia/Kolkata': 'in', 'Asia/Singapore': 'sg', 'Asia/Dubai': 'ae' };
-      return BY_TZ[tz] || BY_TZ[tz.split('/')[0]] || 'com';
+      if (SHOP_TZ[tz]) return SHOP_TZ[tz];
+      if (/^(America\/(Indiana|Kentucky|North_Dakota)\/)/.test(tz)) return 'com';
+      if (/^Australia\//.test(tz)) return 'com.au';
+      // A region on another continent than the time zone (en-US in Copenhagen) gives way to that continent's store
+      const BY_CONT = { Europe: 'de', Africa: 'co.za' }, near = BY_CONT[tz.split('/')[0]];
+      for (const l of langs) {
+        const cc = (String(l).match(/-([A-Za-z]{2})\b/) || [])[1], st = cc && CC[cc.toUpperCase()];
+        if (st && (!near || SHOP_BY_ID.get(st).cont === SHOP_BY_ID.get(near).cont)) return st;
+      }
+      return near || 'com';
     } catch (e) { return 'com'; }
   }
   let shopStore = store.get('shopStore', '');
