@@ -204,6 +204,12 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   browser), then the browser's region unless it is on another continent than the time zone, then the continent. No IP
   lookup (it would send every visitor's IP to a third party).
 
+- Visit count (Dols, 2026-11-13): GoatCounter account `dols` (https://dols.goatcounter.com), with **no script loaded**
+  (the "no external scripts" rule holds): `count()` in `src/template.html` requests `/count` as an image, once per visit
+  (page, referrer, screen width; GoatCounter works out the country) and once per store link opened in Hardware (event
+  `buy/<store>`, title = the item: which Amazon stores deserve an Associates tag). Only on `doooools.github.io`, never
+  with `navigator.webdriver` (Playwright, the video), nor after "Don't count this browser" in the footer (`noCount`).
+
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
   main checkout's root, which is not committed.

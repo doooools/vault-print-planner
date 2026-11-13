@@ -393,6 +393,8 @@ pre.code { margin: 0; background: var(--sheet-2); border-radius: 8px; padding: 1
 footer.site { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr); gap: 18px 40px; border-top: 1px solid var(--line); margin-top: 24px; padding: 22px 0 8px; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
 footer.site h2 { margin: 0 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--ink); }
 footer.site p { margin: 0; max-width: 75ch; text-wrap: pretty; }
+footer.site h2.h2next { margin-top: 14px; }
+footer.site .linkbtn { display: inline; margin: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 footer.site a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 @media (max-width: 760px) { footer.site { grid-template-columns: minmax(0, 1fr); } }
 /* ---- v3: tabs as top-level navigation, towers, plates, guide ---- */
@@ -787,6 +789,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     <section>
       <h2>Not affiliated with USSA</h2>
       <p>An unofficial, fan-made planner. <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault</a>, its designs and its files belong to USSA; you need your own copy of the files to print anything.</p>
+      <h2 class="h2next">Visit count</h2>
+      <p id="footCount"></p>
     </section>
     <section>
       <h2>Store links</h2>
@@ -2242,6 +2246,28 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       (tagged.length ? `Links to ${esc(tagged.length > 2 ? tagged.slice(0, -1).join(', ') + ' and ' + tagged.at(-1) : tagged.join(' and '))} are this fork’s affiliate links: as an Amazon Associate I earn from qualifying purchases, at no cost to you. Other stores’ links carry no affiliate tag.`
         : 'Links to the other Amazon stores carry no affiliate tag.');
   }
+
+  // ---------- visit count (GoatCounter, with no script loaded) ----------
+  // One request per visit, and one per store link opened in Hardware, to Dols's GoatCounter (the same requests its count.js
+  // makes): the page, the site the visitor came from, the screen width; GoatCounter works the country and browser out of
+  // the request itself, sets no cookie and keeps no IP address. Only from the published site: never from a local copy or
+  // a test browser (navigator.webdriver: Playwright, the video recordings), nor from a browser that opted out in the footer.
+  const COUNT_HOST = 'doooools.github.io', COUNT_URL = 'https://dols.goatcounter.com/count';
+  const counting = () => location.hostname === COUNT_HOST && !navigator.webdriver && !store.get('noCount', false);
+  function count(p, extra) {
+    if (!counting()) return;
+    try { new Image().src = COUNT_URL + '?' + new URLSearchParams(Object.assign({ p }, extra, { rnd: Math.random().toString(36).slice(2) })); } catch (e) {}
+  }
+  function footCount() {
+    const off = store.get('noCount', false);
+    $('footCount').innerHTML = 'Visits are counted with <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>: the page, the site you came from, your country, browser and screen width, and which store a Hardware link opens. No cookie, no IP address kept, nothing about your build. ' +
+      `<button type="button" class="linkbtn" id="countOff">${off ? 'Count this browser again' : 'Don’t count this browser'}</button>${off ? ' (not counted now)' : ''}`;
+    $('countOff').onclick = () => { store.set('noCount', !off); footCount(); toast(off ? 'Visits from this browser are counted again' : 'Visits from this browser are no longer counted'); };
+  }
+  // Which stores people open: what tells which Amazon stores are worth an Associates tag (SHOP_TAGS)
+  const countBuy = e => { const a = e.target.closest && e.target.closest('a[data-buy]'); if (a && (e.type === 'click' || e.button === 1)) count('buy/' + a.textContent.trim(), { e: true, t: a.dataset.buy }); };
+  document.addEventListener('click', countBuy);
+  document.addEventListener('auxclick', countBuy);
 
   // ---------- copy helpers ----------
   function copy(text, msg, fallbackEl) {
@@ -5729,7 +5755,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <span class="hwhead">${headIcon(r.item)}</span>
         <span class="hwname"><b>${esc(r.item)}</b><small>${esc(r.note || '')}</small></span>
         <span class="hwuse"><span>${esc(r.why)}</span><small class="mono">${esc(r.where)}</small></span>
-        <span class="hwbuy">${r.link ? `<a class="btn" href="${esc(r.link)}" target="_blank" rel="${r.aff ? 'sponsored noopener' : 'noopener'}" title="${esc(r.page ? `${r.store}: the product page` : `${r.store}: search for ${shopQuery(r.item)}`)}">${esc(r.store)}</a>` : ''}</span></div>`;
+        <span class="hwbuy">${r.link ? `<a class="btn" href="${esc(r.link)}" data-buy="${esc(r.item)}" target="_blank" rel="${r.aff ? 'sponsored noopener' : 'noopener'}" title="${esc(r.page ? `${r.store}: the product page` : `${r.store}: search for ${shopQuery(r.item)}`)}">${esc(r.store)}</a>` : ''}</span></div>`;
     }).join('');
     V.innerHTML = `<div class="hwpage">
       <section class="panel hwlist" aria-label="Shopping list">
@@ -5955,6 +5981,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
 
   $('footnote').innerHTML = `Part rules come from the four PDF manuals in the Vault download and USSA\u2019s published component counts; anything worked out beyond them is marked <span class="badge inf">Inferred</span>. Sizes are measured from each STL (${FILES.length} files)${HAS_PREVIEWS ? ' and pictures are rendered from them' : ''}. Filament is a rough figure from part volume at standard settings, calibrated against USSA\u2019s own gram estimates. Progress and stacks are saved in this browser only.${window.VAULT_PUBLIC ? ' Free and open source, provided as is, with no support.' : ''}`;
   footShop();
+  footCount();
+  if (document.visibilityState !== 'prerender') count(location.pathname, { t: document.title, r: document.referrer, s: screen.width, q: location.search });
 
   migrateTowers();
   renderAll();
