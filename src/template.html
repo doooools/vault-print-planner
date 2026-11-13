@@ -3593,11 +3593,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const back = -(unit.d - 10);
       pl = { ...pl, parts: [...pl.parts, ...wp.parts.map(([p, r, g, m, o]) => [p, r, g, m.map((v, k) => k === 11 ? v + back : v), o])] };
     }
-    // A case's Gridfinity baseplate (measure_baseplates.py "casebase|<w>|<d>", in the case's own frame)
-    const cb = unit.cfg.type === 'case' && PLACE.units[`casebase|${unit.cfg.w}|${unit.cfg.d}`];
+    // A case's Gridfinity baseplate (measure_baseplates.py "casebase|<w>|<d>", in the case's own frame). A roof on a
+    // case is a unit of its own whose cfg is the case's and which shares its lines: it takes neither the baseplate nor
+    // the dividers, else they would show a second time, in the roof, on top of the case.
+    const inCase = unit.cfg.type === 'case' && !unit.roof;
+    const cb = inCase && PLACE.units[`casebase|${unit.cfg.w}|${unit.cfg.d}`];
     if (cb) pl = { ...pl, parts: [...pl.parts, ...cb.parts] };
     // Its dividers, in the slots it fills (measure_dividers.py: each file standing in its own frame, moved to its slot)
-    if (unit.cfg.type === 'case') { const dp = dividerParts(unit); if (dp.length) pl = { ...pl, parts: [...pl.parts, ...dp] }; }
+    if (inCase) { const dp = dividerParts(unit); if (dp.length) pl = { ...pl, parts: [...pl.parts, ...dp] }; }
     { const gp = gridParts(unit, pl.parts); if (gp.length) pl = { ...pl, parts: [...pl.parts, ...gp] }; }
     const mvOf = o => o && o.drawer != null ? (o.side || '') + o.drawer : null;
     const has = new Map([...(unit.shared || []), ...unit.lines].map(l => [R.norm(l.file.path), l]));
