@@ -495,6 +495,9 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .seg.lays button { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; min-width: 0; }
 .seg.lays button small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 0; }
 .seg.lays button svg { color: var(--muted); } .seg.lays button[aria-pressed=true] svg { color: inherit; }
+.seg.drs button { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; }
+.seg.drs button svg { color: var(--muted); } .seg.drs button[aria-pressed=true] svg { color: inherit; }
+.seg.drs button small { line-height: 1.2; }
 .seg.across button { display: grid; justify-items: center; gap: 2px; padding: 8px 4px; }
 .seg.across button svg { color: var(--muted); }
 .seg.across button[aria-pressed=true] svg { color: inherit; }
@@ -2039,6 +2042,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function addPreset(p) {
     const t = { id: newId(), name: p.name, levels: p.levels.map(lv => lv.map(u => clean(u))), stack: { ...STACK_DEFAULT, ...(p.stack || {}) }, roles: { ...((stackNow() || {}).roles || colorPrefs.roles) } };
     t.fp = fpOf(t); fixRoof(t);
+    t.levels.flat().forEach(u => { syncDividers(u); syncGrid(u); });
     towers.push(t); dsel = { t: t.id, l: null }; saveSel(); save();
     view = 'build'; renderAll(); toast('Added “' + p.name + '”');
   }
@@ -2293,19 +2297,28 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const fw = fpOf(t).w, across = ACROSS[fw] ? ACROSS[fw].filter(([v]) => (u.type === 'drawer' || !v.endsWith('2')) && (v === acrossOf(lv) || acrossLevel(lv, v, { ...u, h: v === 'XL' || v === 'XL2' ? 1 : u.h }).every(x => !tooBig({ ...x, roof: 'none' })))) : null;
     const title = lv.length > 1 ? `${lv.map(x => WNAME[x.w]).join(' + ')} \u00b7 x${u.d} \u00b7 ${u.h}F` : unitCode(u);
     let o = '';
+    // the drawer whose inside is shown, when the module holds several (dsel.d, its id)
+    const dids = R.drawerIds(u), dv = u.type === 'drawer' ? drawerView(u, dsel.d) : u;
+    if (dv !== u && dsel.d !== dv.dr.id) { dsel.d = dv.dr.id; saveSel(); }
     if (u.type === 'drawer') {
       const lay = R.drawersOf(u), layOpts = layoutsReady(u) ? R.LAYOUTS[u.h] || [] : [];
       if (layOpts.length > 1) o += `<div class="field"><div class="lbl">Drawers in this module <span class="hint">${lay.map(x => x + 'F').join(' + ')}${lay.length > 1 ? ', top to bottom' : ''}</span></div>
         <div class="seg lays" role="group" aria-label="Drawers in this module, top to bottom">${layOpts.map(l => `<button type="button" data-lay="${l.join(',')}" aria-pressed="${l.join() === lay.join()}" aria-label="${l.length === 1 ? `One ${l[0]}F drawer` : l.map(x => x + 'F').join(', ') + ', top to bottom'}">${layIcon(l, u.h)}<small>${l.length === 1 ? l[0] + 'F' : new Set(l).size === 1 ? l.length + '\u00d7' + l[0] + 'F' : l.join('+') + 'F'}</small></button>`).join('')}</div>
         ${new Set(lay).size > 1 ? '<span class="badge inf" title="USSA\u2019s manuals don\u2019t show a 2F with two 1F in one 4F module">Inferred</span>' : ''}</div>`;
-      o += `<div class="field"><div class="lbl">Inside</div><div class="seg">${useg('interior', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], u.interior)}</div></div>`;
-      if (u.interior === 'gridfinity' && ['S', 'M', 'L2', 'XL2'].includes(u.w))
-        o += selRow('data-usel="baseplateHandles"', 'Baseplate cut-outs <span class="hint">for lifting it out</span>', [['0', 'None'], ...(u.w === 'M' ? [] : [['1', '1 handle']]), ['2', '2 handles']], u.baseplateHandles);
-      if (u.interior === 'grid') {
-        o += gridPlan(u) || `<div class="field"><div class="lbl">Grid dividers <span class="hint">per drawer, full-span pieces</span></div><div class="steppers">${stepRow('gridAcross', 'Side to side', u.gridAcross || 0)}${stepRow('gridAlong', 'Front to back', u.gridAlong || 0)}</div></div>`;
-        o += selRow('data-usel="gridHeight"', 'Divider height', [['20', '20 mm (low)'], ['full', u.h === 1 ? 'Full height, 34.5 mm' : 'Tall, 82.5 mm']], u.gridHeight);
-        o += optRow('data-ucheck="gridSeal"', 'Close against the walls', 'A divider that ends at a wall takes one hole less and a straight edge piece, which closes the gap (instructions, option 2). Off: the longer divider alone, a few mm short of the wall.', u.gridSeal !== false);
+      // Several drawers: each has its own inside, the one picked here (or clicked in the view) is shown
+      if (dv !== u) {
+        o += `<div class="field"><div class="lbl">Drawer to set up <span class="hint">or click it in the view</span></div>
+          <div class="seg drs" role="group" aria-label="Drawer to set up" style="${drGrid(dids)}">${dids.map(dr => `<button type="button" data-dpick="${dr.id}" aria-pressed="${dr.id === dv.dr.id}">${drIcon(u, dids, dr.id)}<span>${esc(drawerName(u, dr))}</span><small>${dr.side ? dr.w + ' \u00b7 ' : ''}${dr.h}F \u00b7 ${insideWord(u.inside[dr.id])}</small></button>`).join('')}</div></div>`;
       }
+      o += `<div class="field"><div class="lbl">Inside${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${useg('interior', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], dv.interior)}</div></div>`;
+      if (dv.interior === 'gridfinity' && ['S', 'M', 'L2', 'XL2'].includes(dv.w))
+        o += selRow('data-usel="baseplateHandles"', 'Baseplate cut-outs <span class="hint">for lifting it out</span>', [['0', 'None'], ...(dv.w === 'M' ? [] : [['1', '1 handle']]), ['2', '2 handles']], dv.baseplateHandles);
+      if (dv.interior === 'grid') {
+        o += gridPlan(dv) || `<div class="field"><div class="lbl">Grid dividers <span class="hint">full-span pieces</span></div><div class="steppers">${stepRow('gridAcross', 'Side to side', dv.gridAcross || 0)}${stepRow('gridAlong', 'Front to back', dv.gridAlong || 0)}</div></div>`;
+        o += selRow('data-usel="gridHeight"', 'Divider height', [['20', '20 mm (low)'], ['full', dv.h === 1 ? 'Full height, 34.5 mm' : 'Tall, 82.5 mm']], dv.gridHeight);
+        o += optRow('data-ucheck="gridSeal"', 'Close against the walls', 'A divider that ends at a wall takes one hole less and a straight edge piece, which closes the gap (instructions, option 2). Off: the longer divider alone, a few mm short of the wall.', dv.gridSeal !== false);
+      }
+      if (dv !== u) o += `<div class="dvfoot"><span class="mono">${esc(insideSum(u, dids))}</span><span class="dvacts"><button type="button" class="btn" data-dcopy>Same inside in every drawer</button></span></div>`;
       o += `<div class="field"><div class="lbl">Lock</div><div class="seg">${useg('lock', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], u.lock)}</div></div>`;
       o += optRow('data-ucheck="gearedRails"', 'Geared rails', lay.length > 1 ? 'USSA: use them when a module holds more than one drawer.' : 'Optional in the manual. Recommended for 2F and 4F, and for extra locking force.', u.gearedRails);
     } else {
@@ -2334,9 +2347,15 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <details class="imore" ${moreOn ? 'open' : ''}><summary>More options: wall mount, pegboard, backbone${moreOn ? ` <span class="mono">${moreOn} on</span>` : ''}</summary><div class="ibody">${more}</div></details>
         <details class="imore iparts"><summary>Parts and bolts of this level <span class="mono">${s.prints} parts · ${aboutG(s.g)}</span></summary>
           ${levelParts(res.lines, res.hardware)}</details>
-        ${lv.length > 1 ? '<p class="pnote" style="margin:0">With two modules side by side, each is set up on its own (pick it above or click it in the view). Their height stays the same.</p>' : u.w === 'L2' || u.w === 'XL2' ? '<p class="pnote" style="margin:0">Both drawers of this shell share these settings.</p>' : ''}
+        ${lv.length > 1 ? '<p class="pnote" style="margin:0">With two modules side by side, each is set up on its own (pick it above or click it in the view). Their height stays the same.</p>' : ''}
+        ${dv !== u ? '<p class="pnote" style="margin:0">Each drawer has its own inside. The lock, the geared rails and the options above are the module\u2019s, for all its drawers.</p>' : ''}
       </div>`;
     const set = patch => {
+      // a drawer's inside goes to that drawer when the module holds several
+      if (dv !== u && Object.keys(patch).every(k => R.INSIDE.includes(k))) {
+        Object.assign(dv.gk, patch); fixUnit(u); fixTower(t); saveSel(); save(); renderAll();
+        return;
+      }
       if ('h' in patch && xl && patch.h > 1) {
         L[i] = acrossLevel(lv, 'SM', { ...u, h: patch.h }); dsel.u = 0;
         toast(`XL modules only come in 1F: level ${i + 1} is now an S and an M side by side, ${patch.h}F.`);
@@ -2357,14 +2376,22 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     bindUnitSeg(box, u, set);
     box.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { view = b.dataset.go; renderAll(); window.scrollTo(0, 0); });
     // Several drawers in one module: geared rails on, as Drawer Assembly 4/8 advises
-    box.querySelectorAll('[data-lay]').forEach(b => b.onclick = () => { const l = b.dataset.lay.split(',').map(Number); set(l.length > 1 ? { drawers: l, gearedRails: true } : { drawers: undefined }); });
+    // Back to one drawer, the module keeps the inside of the drawer shown
+    box.querySelectorAll('[data-lay]').forEach(b => b.onclick = () => { const l = b.dataset.lay.split(',').map(Number);
+      set(l.length > 1 ? { drawers: l, gearedRails: true } : { drawers: undefined, ...(dv !== u && u.w !== 'L2' ? { ...insideCopy(dv.gk), inside: undefined } : {}) }); });
+    box.querySelectorAll('[data-dpick]').forEach(b => b.onclick = () => { dsel.d = b.dataset.dpick; gpend = null; saveSel(); renderInspector(); v3mark(); });
+    { const cp = box.querySelector('[data-dcopy]'); if (cp) cp.onclick = () => {
+      dids.forEach(dr => { if (dr.id !== dv.dr.id) { const c = insideCopy(dv.gk, dr.w + u.d), o = u.inside[dr.id]; Object.assign(o, c, { gridPlans: { ...(o.gridPlans || {}), ...(c.gridPlans || {}) } }); } });
+      fixUnit(u); fixTower(t); save(); renderAll();
+      toast(`Every drawer of this module now has the ${drawerName(u, dv.dr, false)} drawer\u2019s inside${new Set(dids.map(x => x.w)).size > 1 ? ' (the other box size keeps its own divider plan)' : ''}.`);
+    }; }
     box.querySelectorAll('[data-usel]').forEach(el => el.onchange = () => set({ [el.dataset.usel]: el.value }));
     box.querySelectorAll('[data-ucheck]').forEach(el => el.onchange = () => set({ [el.dataset.ucheck]: el.checked }));
     box.querySelectorAll('[data-ustep]').forEach(b => b.onclick = () => {
-      const id = b.dataset.ustep, d = +b.dataset.d;
-      // the grid steppers lay out an even grid again, over every box size of the unit
-      if (id === 'gridAcross' || id === 'gridAlong') gpend = null;
-      set({ [id]: Math.max(0, Math.min(12, (u[id] || 0) + d)), ...(id === 'gridAcross' || id === 'gridAlong' ? { gridPlans: {} } : {}) });
+      const id = b.dataset.ustep, d = +b.dataset.d, grid = id === 'gridAcross' || id === 'gridAlong';
+      // the grid steppers lay out an even grid again, over every box size of the unit (of the drawer shown)
+      if (grid) gpend = null;
+      set({ [id]: Math.max(0, Math.min(12, ((grid ? dv : u)[id] || 0) + d)), ...(grid ? { gridPlans: {} } : {}) });
     });
     box.querySelectorAll('[data-dvslot]').forEach(g => {
       g.onclick = () => set(divToggle(u, g.dataset.dvslot));
@@ -2372,11 +2399,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     });
     box.querySelectorAll('[data-dvall]').forEach(b => b.onclick = () => set(divAll(u, b.dataset.dvall)));
     box.querySelectorAll('[data-gplan]').forEach(svg => {
-      svg.onclick = e => { const pt = gridClick(u, svg.dataset.gplan, svg, e); if (pt) set(pt); };
-      svg.onpointermove = e => gridHover(u, svg.dataset.gplan, svg, e);
-      svg.onpointerleave = () => gridHover(u, svg.dataset.gplan, svg, null);
+      svg.onclick = e => { const pt = gridClick(dv, svg.dataset.gplan, svg, e); if (pt) set(pt); };
+      svg.onpointermove = e => gridHover(dv, svg.dataset.gplan, svg, e);
+      svg.onpointerleave = () => gridHover(dv, svg.dataset.gplan, svg, null);
     });
-    box.querySelectorAll('[data-gclear]').forEach(b => b.onclick = () => { gpend = null; set({ gridPlans: { ...(u.gridPlans || {}), [b.dataset.gclear]: [] } }); });
+    box.querySelectorAll('[data-gclear]').forEach(b => b.onclick = () => { gpend = null; set({ gridPlans: { ...(dv.gridPlans || {}), [b.dataset.gclear]: [] } }); });
   }
   // The measured placements a shell's drawer layouts need before the inspector offers them
   const layoutsReady = u => !!((PLACE.units[`drawer|${u.w}|${u.d}|${u.h}`] || {}).layouts);
@@ -2562,11 +2589,18 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     segs.filter(s => !s.bad).forEach(s => { s.files.forEach(n => { pc.n[n] = (pc.n[n] || 0) + 1; }); s.ends.forEach(e => { if (e) pc[e]++; }); });
     return pc;
   }
-  // Keep a drawer's plans and the pieces the rules read in step (from the counts for a drawer saved before it had one)
+  // Keep a drawer's plans and the pieces the rules read in step (from the counts for a drawer saved before it had one).
+  // A module holding several drawers keeps them per drawer (syncInside), each for its own box size.
   function syncGrid(u) {
-    if (u.type !== 'drawer' || u.interior !== 'grid') return;
+    if (u.type !== 'drawer') return;
+    syncInside(u);
+    if (u.inside) R.drawerIds(u).forEach(dr => syncGridOf(u.inside[dr.id], [dr.w + u.d]));
+    else syncGridOf(u, gridFams(u));
+  }
+  function syncGridOf(u, fams) {
+    if (u.interior !== 'grid') return;
     const plans = {}, pieces = {};
-    for (const fam of gridFams(u)) {
+    for (const fam of fams) {
       const G = gridOf(fam);
       if (!G) continue;
       plans[fam] = gridLines(u, fam);
@@ -2574,8 +2608,48 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     }
     u.gridPlans = { ...(u.gridPlans || {}), ...plans };
     u.gridPieces = pieces;
-    const first = plans[gridFams(u)[0]];
+    const first = plans[fams[0]];
     if (first) { u.gridAcross = new Set(first.filter(l => l[0] === 'x').map(l => l[1])).size; u.gridAlong = new Set(first.filter(l => l[0] === 'z').map(l => l[1])).size; }
+  }
+  // Each drawer of a module holding several (R.drawerIds: 2F and 4F layouts, the two sides of an L² or XL²) has its
+  // own inside, in cfg.inside[<id>] (R.INSIDE: interior, baseplate cut-outs, grid plan…); the module's own fields are
+  // then only what a drawer added later starts from. A module saved before (one inside for all) gives each drawer a
+  // copy, so it plans as it did. A drawer added starts as the one above it on its side; back to one drawer, the module
+  // takes the first one's (the inspector passes the selected one's).
+  const insideCopy = (o, fam) => { const c = JSON.parse(JSON.stringify(Object.fromEntries(R.INSIDE.filter(k => o[k] !== undefined).map(k => [k, o[k]]))));
+    if (fam && c.gridPlans) c.gridPlans = c.gridPlans[fam] ? { [fam]: c.gridPlans[fam] } : {};
+    delete c.gridPieces; return c; };
+  function syncInside(u) {
+    const ids = R.drawerIds(u);
+    if (ids.length < 2) {
+      if (u.inside) { const src = (ids[0] && u.inside[ids[0].id]) || Object.values(u.inside)[0]; if (src) Object.assign(u, insideCopy(src)); }
+      delete u.inside;
+      return;
+    }
+    const old = u.inside || {}, out = {};
+    let prev = null;
+    ids.forEach(dr => {
+      if (prev && prev.side !== dr.side) prev = null;
+      out[dr.id] = old[dr.id] || insideCopy(prev ? out[prev.id] : u, dr.w + u.d);
+      prev = dr;
+    });
+    u.inside = out;
+  }
+  // A drawer seen on its own: the unit's settings with the drawer's inside, its box width and height (`gk`: what stays
+  // the same from one redraw to the next, for the plan's pending click). A module with one drawer is its own.
+  const gk = u => u.gk || u;
+  function drawerView(u, id) {
+    const ids = R.drawerIds(u);
+    if (!u.inside || ids.length < 2) return u;
+    const dr = ids.find(x => x.id === id) || ids[0], ins = u.inside[dr.id];
+    return { ...u, ...ins, w: dr.w, h: dr.h, gk: ins, dr };
+  }
+  // A drawer's name in the inspector: top, middle…, and its side on an L² or XL²
+  function drawerName(u, dr, cap = true) {
+    const n = R.drawersOf(u).length, pos = n === 1 ? '' : dr.i === 0 ? 'top' : dr.i === n - 1 ? 'bottom' : n === 3 ? 'middle' : ['', '2nd', '3rd'][dr.i];
+    const s = dr.side ? (u.w === 'XL2' ? dr.w + ' side' : dr.side) : '';
+    const t = [s, pos].filter(Boolean).join(', ');
+    return cap ? t.charAt(0).toUpperCase() + t.slice(1) : t;
   }
   // Placing a divider takes two clicks on a box's plan: where it starts, then where it ends. `gpend` is the first one
   // ({u, fam, i, j}: the hole, column i, row j) until the second; the plan then shows the holes it can end on.
@@ -2606,7 +2680,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function gridHit(u, fam, P) {
     const G = gridOf(fam), B = gridBox(G, fam), segs = gridLayout(G, gridLines(u, fam), u.gridSeal !== false, fam);
     const nearest = { i: Math.max(0, Math.min(G.x[1] - 1, Math.round(P.i))), j: Math.max(0, Math.min(G.z[1] - 1, Math.round(P.j))) };
-    if (gpend && gpend.u === u && gpend.fam === fam) {
+    if (gpend && gpend.u === gk(u) && gpend.fam === fam) {
       let best = null;
       for (const c of gridEnds(u, fam, gpend.i, gpend.j)) {
         const t = c.o === 'x' ? P.i : P.j, off = Math.abs((c.o === 'x' ? P.j : P.i) - c.at), hu = mm => (mm - B.pos(c.o, 0)) / B.p;
@@ -2645,7 +2719,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function gridPlan(u) {
     const fams = gridFams(u).filter(gridOf);
     if (!fams.length) return '';
-    if (gpend && (gpend.u !== u || !fams.includes(gpend.fam))) gpend = null;
+    if (gpend && (gpend.u !== gk(u) || !fams.includes(gpend.fam))) gpend = null;
     const seal = u.gridSeal !== false;
     const one = fam => {
       const G = gridOf(fam), [xl, xr, zb, zf] = G.walls, p = G.pitch, { W, H, X, Z, k } = gridScale(G), f1 = v => v.toFixed(1);
@@ -2668,7 +2742,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       ${fams.map(one).join('')}
       <div class="lbl" style="margin-top:8px">Even grid <span class="hint">starts the plan again</span></div>
       <div class="steppers">${stepRow('gridAcross', 'Side to side', u.gridAcross || 0)}${stepRow('gridAlong', 'Front to back', u.gridAlong || 0)}</div>
-      <p class="pnote" style="margin:0">A divider covers 5 to 32 holes: the number on it is the file. On a hole by a wall it closes against the wall (straight edge piece); on the hole next to a divider running across it meets that one (rounded edge piece, over its foot); anywhere else it stops open.${u.w === 'L2' || u.w === 'XL2' || R.drawersOf(u).length > 1 ? ' Drawers of one size share their plan.' : ''}</p></div>`;
+      <p class="pnote" style="margin:0">A divider covers 5 to 32 holes: the number on it is the file. On a hole by a wall it closes against the wall (straight edge piece); on the hole next to a divider running across it meets that one (rounded edge piece, over its foot); anywhere else it stops open.</p></div>`;
   }
   // A click on a plan: the start, the end (the divider goes in), a divider taken away, or the start dropped
   function gridClick(u, fam, svg, ev) {
@@ -2678,7 +2752,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (h.kind === 'back' || (gpend && gpend.fam === fam && gpend.i === h.i && gpend.j === h.j)) { gpend = null; renderInspector(); return null; }
     const ends = gridEnds(u, fam, h.i, h.j);
     if (!ends.length) { const was = gpend; gpend = null; toast(`No divider can start on this hole: ${ends.why}.`); if (was) renderInspector(); return null; }
-    gpend = { u, fam, i: h.i, j: h.j }; renderInspector();
+    gpend = { u: gk(u), fam, i: h.i, j: h.j }; renderInspector();
     return null;
   }
   // The pointer over a plan: the divider a click would place (or take away), or the hole it would start on
@@ -2694,6 +2768,23 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     svg.style.cursor = h.kind === 'back' ? 'pointer' : 'crosshair';
   }
   const layIcon = (l, h) => `<svg width="26" height="34" viewBox="0 0 26 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">${(() => { let y = 2; return l.map(dh => { const hh = 30 * dh / h, r = `<rect x="2" y="${y + 0.75}" width="22" height="${hh - 1.5}" rx="1.5"/><path d="M10 ${y + hh / 2}h6"/>`; y += hh; return r; }).join(''); })()}</svg>`;
+  // The module's front with the drawer `id` filled in: its drawers top to bottom, two columns on an L² or XL²
+  function drIcon(u, ids, id) {
+    const cols = [...new Set(ids.map(d => d.side || ''))], W = 26, H = 34, cw = (W - 4) / cols.length;
+    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true" stroke="currentColor" stroke-width="1.5">${cols.map((c, k) => {
+      let y = 2; return ids.filter(d => (d.side || '') === c).map(d => { const hh = (H - 4) * d.h / u.h, r = `<rect x="${(2 + k * cw + 0.75).toFixed(1)}" y="${(y + 0.75).toFixed(1)}" width="${(cw - 1.5).toFixed(1)}" height="${(hh - 1.5).toFixed(1)}" rx="1.5" fill="${d.id === id ? 'currentColor' : 'none'}" fill-opacity="${d.id === id ? 0.35 : 0}"/>`; y += hh; return r; }).join('');
+    }).join('')}</svg>`;
+  }
+  // The drawer buttons laid out as the drawers are: a row, or on an L² or XL² a column per side
+  const drGrid = ids => { const sides = new Set(ids.map(d => d.side || '')).size, rows = ids.length / sides;
+    return sides > 1 ? `grid-auto-flow: column; grid-template-columns: repeat(${sides}, minmax(0, 1fr)); grid-template-rows: repeat(${rows}, auto)` : `grid-auto-flow: row; grid-template-columns: repeat(${ids.length}, minmax(0, 1fr))`; };
+  // A drawer's inside in a word, and the module's drawers in a line
+  const insideWord = o => !o ? '' : o.interior === 'gridfinity' ? 'Gridfinity' : o.interior === 'grid' ? plural(Object.values(o.gridPieces || {}).reduce((a, p) => a + Object.values(p.n || {}).reduce((x, y) => x + y, 0), 0), 'divider') : 'empty';
+  function insideSum(u, ids) {
+    const by = new Map(); ids.forEach(dr => { const w = (u.inside[dr.id] || {}).interior || 'empty'; by.set(w, (by.get(w) || 0) + 1); });
+    const name = { gridfinity: 'Gridfinity', grid: 'with dividers', empty: 'empty' };
+    return by.size === 1 ? `All ${ids.length} drawers ${name[[...by.keys()][0]] || ''}` : [...by].map(([w, n]) => `${n} ${name[w] || w}`).join(' \u00b7 ');
+  }
   // Segmented settings of a module: buttons read "key=value" from data-useg
   function bindUnitSeg(box, u, set) {
     box.querySelectorAll('[data-useg]').forEach(b => b.onclick = () => {
@@ -2763,6 +2854,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         const box = solid && !solid.isEmpty() ? solid.expandByScalar(1) : new v.T.Box3(new v.T.Vector3(u.x - u.w / 2 - 1, y - 1, -u.d - 1), new v.T.Vector3(u.x + u.w / 2 + 1, y + u.h + 1, 1));
         const h = new v.T.Box3Helper(box, col); v.scene.add(h); return h;
       });
+      // in a module holding several drawers, the one the inspector shows: its place in the shell, drawn in
+      const dv = u0.inside && drawerView(u0, dsel.d);
+      if (dv && dv !== u0) v.units.filter(u => u.cfg === u0 && u.movers && u.g.visible).forEach(u => {
+        const m = u.movers.find(x => x.id === dv.dr.id); if (!m) return;
+        const [x0, x1] = !m.side ? [-u.w / 2, u.w / 2] : m.side === 'left' ? [-u.w / 2, u.split] : [u.split, u.w / 2], p = u.g.position;
+        const box = new v.T.Box3(new v.T.Vector3(p.x + x0 + 3, p.y + 48 * m.level + 4, -u.d + 2), new v.T.Vector3(p.x + x1 - 3, p.y + 48 * (m.level + m.h), 6));
+        const h = new v.T.Box3Helper(box, col); v.scene.add(h); v3markObj.push(h);
+      });
     }
     v.render();
   }
@@ -2778,7 +2877,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const t = curTower(); if (!t || !v.sel.u) { v3mark(); return; }
     const cfg = v.sel.u.cfg, i = t.levels.findIndex(lv => lv.includes(cfg));
     if (i < 0) { v3mark(); return; }
-    if (v.sel.u.roof || v.sel.u.stack) dsel.l = null; else { dsel.l = i; dsel.u = t.levels[i].indexOf(cfg); }
+    if (v.sel.u.roof || v.sel.u.stack) dsel.l = null; else { dsel.l = i; dsel.u = t.levels[i].indexOf(cfg); if (v.sel.mv != null) { dsel.d = v.sel.mv; gpend = null; } }
     saveSel(); renderInspector(); v3mark();
     const sb = document.querySelector('[data-dstack]'); if (sb) sb.setAttribute('aria-pressed', String(dsel.l == null));
   }
@@ -3745,14 +3844,19 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     return R.flatMap((row, r) => [...row, -(row[0] * t[0] + row[1] * t[1] + row[2] * t[2])]); };
   // x along `d` (a unit vector in the floor's plane), y up, at (x, y, z)
   const m34At = (d, x, y, z) => [d[0], 0, -d[2], x, 0, 1, 0, y, d[2], 0, d[0], z];
+  // A module holding several drawers: each box takes its own drawer's plan (its tags, else on an L² or XL² with one
+  // drawer a side, the side its box is on).
   function gridParts(unit, parts) {
-    const u = unit.cfg, F = PLACE.grid_files || {}, GB = PLACE.grid_boxes || {};
-    if (u.type !== 'drawer' || u.interior !== 'grid') return [];
+    const cfg = unit.cfg, F = PLACE.grid_files || {}, GB = PLACE.grid_boxes || {};
+    if (cfg.type !== 'drawer' || !(cfg.inside ? Object.values(cfg.inside).some(x => x.interior === 'grid') : cfg.interior === 'grid')) return [];
     const out = [];
     parts.forEach(([path, , group, M, o]) => {
       const gb = GB[path], G = gb && gridOf(gb[0]);
       if (!G) return;
       const fam = gb[0], T = m34(M, inv34(gb[1])), dh = +((path.match(/ Box (\d)F/) || [])[1] || 1), tags = o && o.drawer != null ? { drawer: o.drawer, side: o.side } : undefined;
+      const side = tags ? tags.side || '' : cfg.w === 'L2' || cfg.w === 'XL2' ? (T[3] < 0 ? 'left' : 'right') : '';
+      const u = cfg.inside ? drawerView(cfg, side + (tags ? tags.drawer : 0)) : cfg;
+      if (u.interior !== 'grid') return;
       const put = (file, m) => { if (F[file]) out.push([file, 'interior', group, m34(T, m34(m, F[file])), tags]); };
       const p = G.pitch, hx = i => G.x[0] + i * p, hz = j => G.z[0] + j * p, y = G.floor;
       gridLayout(G, (u.gridPlans || {})[fam] || [], u.gridSeal !== false, fam).filter(s => !s.bad).forEach(s => {
@@ -4306,7 +4410,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const h = hitAt(ev);
       if (v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey) { toggleAt(h); return; }
       if (!h || !h.mesh.userData.role) { if (v.tool === 'turn') { v.sel = null; v3side(); } return; }
-      v.sel = { role: h.mesh.userData.role, cfg: h.mesh.userData.cfg, u: h.u || null, name: h.mesh.userData.name };
+      const mv = h.u && h.u.movers ? moverAt(h) : null;
+      v.sel = { role: h.mesh.userData.role, cfg: h.mesh.userData.cfg, u: h.u || null, name: h.mesh.userData.name, mv: mv ? mv.id : null };
       if (v.tool === 'paint') v3paint(v, h.mesh);
       else v3side();
     }, sig);
@@ -4383,7 +4488,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const tip = !store.get('openTip', false) && v.units.some(u => u.travel || u.movers || u.lid);
       B.hidden = false; B.className = 'v3-hintbar' + (tip ? ' tip' : '');
       B.innerHTML = tip ? '<span><b>Open a drawer:</b> double-click it, or hold <kbd>Ctrl</kbd> or <kbd>Shift</kbd> and click it. Cases open the same way.</span><button type="button" class="btn" data-v3tipok>Got it</button>'
-        : 'A double-click, or <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click, opens or closes a drawer or a case. A click selects a level. Drag to turn, scroll to zoom, right-drag to move.';
+        : 'A double-click, or <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click, opens or closes a drawer or a case. A click selects a level, and in a module holding several drawers the drawer. Drag to turn, scroll to zoom, right-drag to move.';
     }
     const on = (sel, f) => document.querySelectorAll(sel).forEach(b => b.onclick = () => f(b));
     on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; if (v.tool === 'paint') inspPaint = true; v.hot = null; v.recolor(); v3tools(); v3side(); });
