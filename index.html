@@ -535,6 +535,8 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .stext h2 { margin: 0; font-family: var(--f-display); font-size: 18px; font-weight: 800; font-stretch: 112%; }
 .stext p { margin: 4px 0 0; color: var(--muted); text-wrap: pretty; }
 .stext code { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink); }
+/* "The files are USSA's paid pack": under the Vault folder's text, on the start page and in #relink */
+.buyvault a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
 .sacts { display: grid; gap: 4px; justify-items: stretch; }
 .sacts .linkbtn { margin: 0 auto; font-size: 13px; }
 .sbig { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; background: var(--raised); }
@@ -800,7 +802,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   <div class="acts"><a class="btn primary" id="reportBug" target="_blank" rel="noopener" href="https://github.com/doooools/vault-print-planner/issues/new?template=bug.yml">Report a bug</a><a class="btn" id="reportIdea" target="_blank" rel="noopener" href="https://github.com/doooools/vault-print-planner/issues/new?template=idea.yml">Suggest an improvement</a></div>
   <p>You need a free GitHub account. Reports are public, so don't paste anything private, and don't attach Vault's part files: they belong to USSA. A design saved with Save as… helps with a bug. The bug form gets your browser and printer filled in; nothing else leaves this page.</p>
   <p><a href="https://github.com/doooools/vault-print-planner/issues" target="_blank" rel="noopener">See what's already been reported</a></p></dialog>
-<dialog id="relink" aria-labelledby="relinkTitle"><button type="button" class="vclose" id="relinkClose" aria-label="Not now">&times;</button><h2 id="relinkTitle">The 3D view needs your Vault folder</h2><p id="relinkWhy"></p><p class="fstat bad" id="relinkErr" hidden></p>
+<dialog id="relink" aria-labelledby="relinkTitle"><button type="button" class="vclose" id="relinkClose" aria-label="Not now">&times;</button><h2 id="relinkTitle">The 3D view needs your Vault folder</h2><p id="relinkWhy"></p><p class="buyvault" id="relinkBuy" hidden></p><p class="fstat bad" id="relinkErr" hidden></p>
   <div class="acts"><button type="button" class="btn primary" id="relinkGo" autofocus></button><button type="button" class="btn" id="relinkOther">Choose another folder…</button><button type="button" class="linkbtn" id="relinkLater">Not now: show boxes</button></div></dialog>
 <dialog id="viewer" aria-label="Part preview"><button type="button" class="vclose" id="viewerClose" aria-label="Close preview">&times;</button><div id="viewerBody" class="vbody"></div></dialog>
 <div id="v3home" hidden><div class="v3-view" id="v3view">
@@ -1373,6 +1375,10 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   const FILES = window.VAULT_FILES.map(r => ({ path: r[0], dims: [r[1], r[2], r[3]], vol: r[4], angle: r[5], sheet: r[6], cell: r[7], needsSupport: !!r[8], supReach: r[9] == null || r[9] < 0 ? null : r[9], ex: r[10] ? [r[10], r[11]] : null }));
   const resolve = R.makeResolver(FILES);
   const SRC_DEFAULT = '261021_VAULT_USSA_S';
+  // The part files are USSA's paid Vault pack: said wherever the page asks for the folder (start page, #relink)
+  const VAULT_SHOP = 'https://www.ussadesign.com/products/vault';
+  const BUY_VAULT = `The part files are USSA’s paid Vault pack and don’t come with this planner: you need to have bought it. <a href="${VAULT_SHOP}" target="_blank" rel="noopener">Get Vault from USSA</a>.`;
+  const buyVault = () => `<p class="buyvault">${BUY_VAULT}</p>`;
   // Filament estimate. Thin-walled parts print close to solid (0.78 g/cm³ of part volume, the median of USSA's published
   // weights across 99 parts). Chunky parts (base, feet, roofs) are mostly infill, so scale down by how solid the part is.
   // Rough grams of PLA. The last factor (0.85) brings drawer totals in line with the weights USSA publishes per module
@@ -2667,6 +2673,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <button type="button" class="btn sbig" id="startPrinter"><b>${esc(printerName())}</b><span class="mono">${printer.v.join(' × ')} mm</span></button></section>
       ${canPickFolder ? `<section class="panel srow ${done ? '' : 'now'}"><span class="snum ${done ? 'ok' : ''}" aria-hidden="true">${done ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>' : '2'}</span>
         <div class="stext"><h2>Your Vault folder</h2><p>Choose the unzipped <code>${esc(SRC_DEFAULT)}</code> folder you downloaded from USSA. The planner reads the part files in it to show your stacks in 3D, in your colors, and to make your print files. Nothing is uploaded.</p>
+          ${vaultFolder ? '' : buyVault()}
           ${folderHeroError ? `<p class="fstat bad">${ICON_BAD}<span>${esc(folderHeroError)}</span></p>` : ''}</div>
         <div class="sacts">${vaultFolder ? `<span class="fstat ok">${ICON_OK}<span><b>${esc(vaultFolder.name)}</b>: ${plural(vaultFolder.files.size, 'file')}</span></span>`
           : `<button type="button" class="btn primary big" id="startFolder">${rememberedFolder ? `Open ${esc(rememberedFolder)}` : 'Choose your Vault folder…'}</button>${folderHeroSkipped ? '' : '<button type="button" class="linkbtn" id="startLater">Later: plan without the files</button>'}`}</div></section>` : ''}
@@ -3936,6 +3943,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       : folderLink === 'again'
         ? `This browser doesn’t keep the link to ${name} between visits. Choose it again to see your parts in 3D: until then the 3D view shows boxes. Nothing is uploaded.`
         : `The page is no longer linked to ${name}: your browser asks again after the page is closed or reloaded. Allow it to read the folder again and the 3D view shows your parts. Nothing is uploaded.`;
+    $('relinkBuy').innerHTML = BUY_VAULT; $('relinkBuy').hidden = folderLink !== 'none'; // a folder seen before was bought
     $('relinkGo').textContent = folderLink === 'ask' ? `Reconnect ${folderLinkName || 'the folder'}` : folderLink === 'none' ? 'Choose your Vault folder…' : 'Choose the folder…';
     $('relinkOther').hidden = folderLink !== 'ask';
     $('relinkErr').hidden = true;
