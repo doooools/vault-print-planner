@@ -165,12 +165,17 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   (`dividers.sealSide`). `dividerParts` adds them to the 3D in their slots, standing in the floor grooves.
 - Drawer grid dividers (same branch): `tools/placements/measure_grid.py` measures every drawer box's peg-hole grid
   (`grid_boxes`, 10.5 mm pitch; README "Drawer grid dividers") and stands each divider / edge piece / pin file
-  (`grid_files`). The inspector's plan (`gridPlan`, a click on a row of holes adds or removes a divider) keeps one plan
-  per box size (`cfg.gridPlans[<w><d>]`: lines `[o, at, s]` laid out in order by `gridLayout`: a line runs to the walls
-  or stops two rows short of a divider laid out before it). `syncGrid` writes `cfg.gridPieces` (files by hole count,
-  straight / rounded edge pieces), which `rules.js` `gridDividers` reads; the old counts (`gridAcross`, `gridAlong`)
-  now make an even grid (`gridEven`). Rounded edge pieces are for where a divider meets another (the old "Edge pieces:
-  Rounded" option is gone); "Close against the walls" (`gridSeal`) picks "N − 1" + straight piece or "N" alone.
+  (`grid_files`). The inspector's plan (`gridPlan`) keeps one plan
+  per box size (`cfg.gridPlans[<w><d>]`: lines `[o, at, a, b]`, a divider on row/column `at` from hole a to hole b).
+  Since branch `claude/project-thread-8vupuk` (Dols, 2026-11-13) a divider is placed in two clicks, its start then
+  its end (`gpend` holds the first; `gridEnds` lists the holes the second can take, shown on the plan; `gridHover`
+  previews it); a click on a divider removes it. `gridLayout` reads the ends: the outermost hole = at the wall
+  (straight piece where the gap is 8 to 20 mm, the tongue's reach, else "N" alone), two rows from a divider running
+  across = meets it (rounded piece), else open; 5 to 32 holes, longer = two files end to end (`gridSplit`). Plans
+  saved as `[o, at, s]` (PR #13: to the walls or the dividers in the way) are read as spans by `gridSpans`.
+  `syncGrid` writes `cfg.gridPieces` (files by hole count, straight / rounded edge pieces), which `rules.js`
+  `gridDividers` reads; the old counts (`gridAcross`, `gridAlong`) make an even grid (`gridEven`). "Close against the
+  walls" (`gridSeal`) picks the straight piece or the file alone at a wall.
   `gridParts` draws them in 3D with the box.
 
 - Store links and affiliation (Hardware, "Where you buy"): Amazon.com keeps upstream's affiliate short links

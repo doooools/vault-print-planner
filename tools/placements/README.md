@@ -429,7 +429,9 @@ In the JSON: `grid_boxes[<box file>] = {m, floor, x: [x0, nx], z: [z0, nz], pitc
 in the frame of the unit the box was measured in (`m` its matrix there; XL6/XL7: under Part 1, for both parts), and
 `grid_files[path]`, the file to the piece's own frame (bottom at y = 0; a divider along x centred on 0; an edge piece
 with its face or tip at x = 0, tongue along +x; a pin standing). The page (`gridLayout`, `gridParts`) lays out the plan
-the unit keeps per box size (`cfg.gridPlans`) and moves it with the box: (box matrix here) × inverse(`m`).
+the unit keeps per box size (`cfg.gridPlans`, lines `[o, at, a, b]` from one clicked hole to the other) and moves it
+with the box: (box matrix here) × inverse(`m`). At a wall the page keeps the straight piece's gap within the 8–20 mm
+its tongue bridges: "N − 1" + piece on S, M, XL and front to back, N + piece on L's sides (16.1 mm to the wall).
 
 ## How it is measured
 
