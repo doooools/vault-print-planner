@@ -188,6 +188,9 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   (2026-11-13). Every other store's search link takes this fork's tag from `SHOP_TAGS` (one per store, '' = no tag
   and no `tag=` parameter; `shopTag` never gives one to `com`). Disclosure: under the store picker (`shopDisclosure`)
   and in the footer's "Store links" (`footShop`). Affiliate links get `rel="sponsored"`.
+  First visit: `guessShop` takes the time zone's country first (`SHOP_TZ`: Europe/Paris → fr even with an en-US
+  browser), then the browser's region unless it is on another continent than the time zone, then the continent. No IP
+  lookup (it would send every visitor's IP to a third party).
 
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
