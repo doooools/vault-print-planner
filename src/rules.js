@@ -114,7 +114,9 @@
     return c.w === 'L2' ? [...one('left', 'S'), ...one('right', 'S')] : c.w === 'XL2' ? [...one('left', 'S'), ...one('right', 'M')] : one('', c.w);
   }
   // The fields a drawer's inside is made of: all of them per drawer, or the module's for all
-  const INSIDE = ['interior', 'baseplateHandles', 'gridHeight', 'gridSeal', 'gridAcross', 'gridAlong', 'gridPlans', 'gridPieces'];
+  const INSIDE = ['interior', 'baseplateHandles', 'gridHeight', 'gridSeal', 'gridAcross', 'gridAlong', 'gridPlans', 'gridPieces', 'lock', 'gearedRails'];
+  // Whether any drawer of a unit has a hidden lock (the stack then takes the removable key)
+  const anyHidden = c => c.type === 'drawer' && (c.inside && drawerIds(c).length > 1 ? drawerIds(c).some(dr => (c.inside[dr.id] || c).lock === 'hidden') : c.lock === 'hidden');
   const SIDE_ID = { left: 'left', right: 'right', 'S side': 'left', 'M side': 'right' };
   // A drawer's settings: the unit's, with its own inside over them when the module holds more than one drawer
   const insideOf = (c, side, i, many) => many && c.inside && c.inside[side + i] ? { ...c, ...c.inside[side + i] } : c;
@@ -150,15 +152,17 @@
     // A pair of guides, slides and stoppers on every 48 mm level of the module (h levels), as the assembly has them:
     // one 2F/4F box rides on all of them, and the same module can take a 1F box per level instead
     add('Runners', 'Runner stopper' + t, U + 'Runners/Runner Stopper.stl', 2 * h, x);
-    if (o.gearedRails) add('Runners', 'Geared rails (pair)' + t, U + `Geared Rails/${w} Rails.stl`, n,
+    // Geared rails and lock: each drawer's own when the module holds several (insideOf)
+    const own = lay.map((dh, i) => insideOf(o, side, i, many));
+    const rails = own.filter(oi => oi.gearedRails).length, hidden = own.filter(oi => oi.lock === 'hidden').length;
+    if (rails) add('Runners', 'Geared rails (pair)' + t, U + `Geared Rails/${w} Rails.stl`, rails,
       { note: 'Optional in the manual. Adds locking force; use them if you put more than one box in a 2F/4F module. One file holds both racks, top and bottom.', ...x });
     // A hidden lock has no knob on the front: the removable key (part 2) turns it, and one serves the whole stack
     // (buildHiddenKey, added once per stack by the page)
-    if (o.lock === 'hidden') {
-      add('Lock', 'Hidden key' + t, U + 'Hidden Key (Turn On Supports).stl', n, { supports: true, ...x });
-    } else {
-      add('Lock', 'Key lock' + t, U + 'Key (Turn On Supports).stl', n, { supports: true, ...x });
-      add('Lock', 'Key cap' + t, U + 'Key Cap.stl', n, x);
+    if (hidden) add('Lock', 'Hidden key' + t, U + 'Hidden Key (Turn On Supports).stl', hidden, { supports: true, ...x });
+    if (n - hidden) {
+      add('Lock', 'Key lock' + t, U + 'Key (Turn On Supports).stl', n - hidden, { supports: true, ...x });
+      add('Lock', 'Key cap' + t, U + 'Key Cap.stl', n - hidden, x);
     }
     add('Lock', 'Springs (pair)' + t, U + 'Springs.stl', n, { note: 'One file holds both springs. Fit them flat side up.', ...x });
     // One latch per latch frame under the module, whatever the drawers in it: S and M have one, in the middle; L and XL
@@ -558,6 +562,6 @@
     return { lines: k.lines, missing: k.missing, hardware: [] };
   }
 
-  const api = { buildUnit, buildStack, buildRoof, buildHiddenKey, buildBackbones, buildConnectors, makeResolver, exterior, familyForWidth, drawersOf, drawerIds, INSIDE, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, LAYOUTS, norm, gridFull, gridFile, gridEdgeFile, gridPinFile };
+  const api = { buildUnit, buildStack, buildRoof, buildHiddenKey, buildBackbones, buildConnectors, makeResolver, exterior, familyForWidth, drawersOf, drawerIds, INSIDE, anyHidden, HEIGHTS, DEPTHS, ROOFS, ROLES, WIDTH_MM, LAYOUTS, norm, gridFull, gridFile, gridEdgeFile, gridPinFile };
   if (typeof module !== 'undefined') module.exports = api; else root.VaultRules = api;
 })(this);

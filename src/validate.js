@@ -134,6 +134,16 @@ for (const w of ['S', 'L2', 'XL2']) {
   if (qty(/Baseplate[^/]*\.stl$/) !== sides) layoutClash.push(`${w} per-drawer inside: ${qty(/Baseplate[^/]*\.stl$/)} baseplates, want ${sides}`);
   if (qty(/\/10-S, x3\.stl$/) !== (n > 1 ? sides : 0)) layoutClash.push(`${w} per-drawer inside: ${qty(/\/10-S, x3\.stl$/)} dividers, want ${n > 1 ? sides : 0}`);
 }
+// ...and its own lock and geared rails: here the top drawer has a hidden lock and the bottom one no rails
+for (const w of ['S', 'L2', 'XL2']) {
+  const c = { type: 'drawer', w, d: 5, h: w === 'XL2' ? 1 : 4, drawers: [1, 1, 1, 1], lock: 'std', gearedRails: true, interior: 'empty', roof: 'none' };
+  const ids = R.drawerIds(c), n = R.drawersOf(c).length, sides = w === 'S' ? 1 : 2;
+  c.inside = Object.fromEntries(ids.map(dr => [dr.id, { lock: dr.i === 0 ? 'hidden' : 'std', gearedRails: dr.i !== n - 1 }]));
+  const r = R.buildUnit(c, resolve), qty = re => r.lines.filter(l => re.test(l.file.path)).reduce((a, l) => a + l.qty, 0);
+  const want = [[/\/Hidden Key \(Turn On Supports\)\.stl$/, sides], [/\/Key \(Turn On Supports\)\.stl$/, sides * (n - 1)], [/\/Key Cap\.stl$/, sides * (n - 1)], [/ Rails\.stl$/, sides * (n - 1)]];
+  for (const [re, k] of want) if (qty(re) !== k) layoutClash.push(`${w} per-drawer lock and rails: ${qty(re)} × ${re}, want ${k}`);
+  if (!R.anyHidden(c) || R.anyHidden({ ...c, inside: Object.fromEntries(ids.map(dr => [dr.id, { lock: 'std' }])) })) layoutClash.push(`${w}: anyHidden is wrong`);
+}
 // A list that isn't one of the shell's layouts plans one drawer of the shell's height, and XL is always one 1F drawer
 for (const [c, want] of [[{ w: 'S', h: 2, drawers: [1] }, '2'], [{ w: 'M', h: 4, drawers: [3, 1] }, '4'], [{ w: 'XL', h: 1, drawers: [1, 1] }, '1'], [{ w: 'L', h: 2 }, '2']])
   if (R.drawersOf(c).join() !== want) layoutClash.push(`drawersOf(${JSON.stringify(c)}) = ${R.drawersOf(c).join(' ')}, want ${want}`);
