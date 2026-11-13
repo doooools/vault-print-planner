@@ -841,6 +841,19 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const R = window.VaultRules;
   // Row: path, true footprint a, b (smallest rectangle around the part seen from above), height z, volume mm³, export angle, sprite sheet, cell, Bambu says it needs supports
   const FILES = window.VAULT_FILES.map(r => ({ path: r[0], dims: [r[1], r[2], r[3]], vol: r[4], angle: r[5], sheet: r[6], cell: r[7], needsSupport: !!r[8], supReach: r[9] == null || r[9] < 0 ? null : r[9], ex: r[10] ? [r[10], r[11]] : null }));
+  // Named support settings a part's rule asks for (rules.js `supports: '<name>'` instead of `true`), written per object
+  // into the Bambu Studio project (and the plate files, for OrcaSlicer; `prusa` for PrusaSlicer). These parts stay on
+  // plates with the rest: the project turns their supports on for them alone.
+  // shell: module shells, Dols's Bambu settings (2026-11-13): tree (auto), default style, threshold 80°, on build plate
+  // only, critical regions only, remove small overhangs.
+  const SUPPORT_SETS = {
+    shell: {
+      bambu: { support_type: 'tree(auto)', support_style: 'default', support_threshold_angle: 80, support_on_build_plate_only: 1, support_critical_regions_only: 1, support_remove_small_overhang: 1 },
+      prusa: { support_material_style: 'organic', support_material_threshold: 80, support_material_buildplate_only: 1 },
+      why: 'Light tree supports: on the build plate only, critical regions only, 80\u00b0 threshold',
+      note: 'shell supports',
+      help: 'shell supports: tree (auto) supports, threshold angle 80\u00b0, on build plate only, support critical regions only, remove small overhangs.' } };
+  const supportKeys = (p, prusa) => Object.entries(SUPPORT_SETS[p.supports]?.[prusa ? 'prusa' : 'bambu'] || {});
   const resolve = R.makeResolver(FILES);
   const SRC_DEFAULT = '261021_VAULT_USSA_S';
   // The part files are USSA's paid Vault pack: said wherever the page asks for the folder (start page, #relink)
@@ -1526,7 +1539,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function tagsFor(l) {
     const tags = [], fit = l.fit || fitOf(l.file.dims, printer.v, l.file.ex);
     tags.push(`<span class="tag ${FIT_CLASS[fit.s]}">${FIT_TEXT[fit.s]}${fit.tight ? ', tight' : ''}</span>`);
-    if (l.supports) tags.push(`<span class="tag sup" title="${/turn on supports/i.test(l.file.path) ? 'USSA says to print this part with supports' : 'USSA names every other drawer front \u201cTurn On Supports\u201d; this one has the same overhangs'}">Supports on</span>`);
+    if (l.supports) tags.push(`<span class="tag sup" title="${SUPPORT_SETS[l.supports] ? SUPPORT_SETS[l.supports].why : /turn on supports/i.test(l.file.path) ? 'USSA says to print this part with supports' : 'USSA names every other drawer front \u201cTurn On Supports\u201d; this one has the same overhangs'}">Supports on</span>`);
     if (l.walls) tags.push(`<span class="tag wall" title="${l.infill ? 'Carries load: extra walls and infill' : 'Takes bolts or wear: one extra wall'}">${l.walls} walls${l.infill ? ' \u00b7 ' + l.infill + '% infill' : ''}</span>`);
     if (brimOf(l.file)) tags.push('<span class="tag wall" title="Tall and thin: a 5 mm brim keeps it from wobbling loose late in the print">Brim</span>');
     if (l.flex) tags.push('<span class="tag wall" title="This part has to bend. More walls make it stiff and it can crack.">Keep 2 walls</span>');
@@ -2961,7 +2974,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         if (l.fit.s === 'no' || l.fit.s === 'reorient') { skipped.push(l); continue; }
         const [a, b] = l.file.dims, pad = brimOf(l.file) ? BRIM : 0;
         pieces.push({ l, pad, a: Math.max(a, b) + 2 * pad, b: Math.min(a, b) + 2 * pad, care: l.fit.s !== 'ok',
-          group: colorKey(l) + (l.supports && !mixSupports ? '|sup' : '') });
+          group: colorKey(l) + (l.supports === true && !mixSupports ? '|sup' : '') }); // a named support set (module shells) stays with the rest
       }
     });
     // USSA's manual supports are props that stand touching the end of a tall, thin part of the same height (their
@@ -3281,7 +3294,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
               <label class="opt"><input type="checkbox" id="mixSupports" ${mixSupports ? 'checked' : ''}><span>Fewer plates<small>Support parts share plates; supports stay on just for them</small></span></label>
               <label class="opt"><input type="checkbox" id="printAids" ${printAids ? 'checked' : ''}><span>Manual supports<small>USSA's prop for each drawer roof, printed standing against it on the same plate</small></span></label>
               ${hasLabels ? `<label class="opt"><input type="checkbox" id="labelsApart" ${labelsApart ? 'checked' : ''}><span>Labels on their own plate<small>Add text and colors in the slicer without touching other plates</small></span></label>` : ''}
-              <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
+              <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
               <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}<button type="button" class="btn" id="clearPlates">${b.onlyExtras ? 'Clear loose parts' : 'Clear all plates'}</button></div>
             </div></span></div>
           <div class="pnote" style="margin:0">Plates follow the colors chosen in Design.${labelsApart && hasLabels ? ' Labels on their own plate.' : ''}${mixSupports ? '' : ' Parts with supports kept apart.'}</div>
@@ -3371,7 +3384,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // The plate plan the project builder reads: each part's file, position on its plate, and per-part print settings
   function planFor(plates) {
     return { bed: [printer.v[0], printer.v[1]], ...(preset().plate ? { plate: preset().plate } : {}), bambu: preset().bambu || null, plates: plates.map(pl => ({ name: plateFolder(pl), color: pl.color, hex: colorHex(pl.color),
-      pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, spin: it.asis ? 0 : +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + (it.p.pad || 0)).toFixed(2), y: +(it.y + (it.p.pad || 0)).toFixed(2), w: +(it.w - 2 * (it.p.pad || 0)).toFixed(2), h: +(it.h - 2 * (it.p.pad || 0)).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: it.diag === 45 ? true : it.diag } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: true, ...(needsBrim(it.p.l.file) ? { standing: true } : {}) } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
+      pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, spin: it.asis ? 0 : +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + (it.p.pad || 0)).toFixed(2), y: +(it.y + (it.p.pad || 0)).toFixed(2), w: +(it.w - 2 * (it.p.pad || 0)).toFixed(2), h: +(it.h - 2 * (it.p.pad || 0)).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: it.diag === 45 ? true : it.diag } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: it.p.l.supports, ...(it.p.l.supports === true && needsBrim(it.p.l.file) ? { standing: true } : {}) } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
   }
   // ---------- Bambu Studio project, built right here in the browser ----------
   // Reads the STLs from the Vault folder the user picks (nothing is uploaded) and writes the same .3mf layout
@@ -5007,6 +5020,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         rels.push(` <Relationship Target="/${file}" Id="rel-${rels.length + 1}" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>\n`);
         // Per-part print settings that override the printer profile for this object only
         let extra = p.supports ? '    <metadata key="enable_support" value="1"/>\n' : '';
+        extra += supportKeys(p).map(([k, v]) => `    <metadata key="${k}" value="${v}"/>\n`).join('');
         if (p.supports && p.standing) extra += '    <metadata key="support_type" value="normal(auto)"/>\n'; // tree supports would fan out ~40 mm
         if (p.walls) extra += `    <metadata key="wall_loops" value="${p.walls}"/>\n`;
         if (p.infill) extra += `    <metadata key="sparse_infill_density" value="${p.infill}%"/>\n`;
@@ -5039,7 +5053,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // The per-part settings the Bambu project sets for you, in words, for slicers that don't read them
   function notesOf(p) {
     const n = [];
-    if (p.supports) n.push(p.standing ? 'normal supports' : 'supports');
+    if (p.supports) n.push(SUPPORT_SETS[p.supports] ? SUPPORT_SETS[p.supports].note : p.standing ? 'normal supports' : 'supports');
     if (p.brim) n.push(`brim ${p.brim === true ? BRIM : p.brim} mm`);
     if (p.walls) n.push(`${p.walls} walls`);
     if (p.infill) n.push(`${p.infill}% infill`);
@@ -5050,6 +5064,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const NOTE_HELP = [
     'supports: turn supports on for this part.',
     'normal supports: supports on, but normal/grid/snug style, not tree or organic (this tall part prints on its edge, and tree supports fan out into the next part).',
+    ...Object.values(SUPPORT_SETS).map(x => x.help),
     'brim N mm: an outer brim this wide, so the tall, narrow part stays down.',
     'N walls / N% infill: what USSA asks for this part.',
     'TPU: print in TPU 95A (the tires).',
@@ -5118,14 +5133,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           // PrusaSlicer's per-part settings
           const md = (key, val) => `  <metadata type="object" key="${key}" value="${xmlEsc(val)}"/>\n`;
           let c = md('name', p.name);
-          if (p.supports) c += md('support_material', 1) + md('support_material_auto', 1) + (p.standing ? md('support_material_style', 'snug') : '');
+          if (p.supports) c += md('support_material', 1) + md('support_material_auto', 1) + (p.standing ? md('support_material_style', 'snug') : '') + supportKeys(p, true).map(([k, v]) => md(k, v)).join('');
           if (p.brim) c += md('brim_type', 'outer_only') + md('brim_width', p.brim === true ? BRIM : p.brim);
           if (p.walls) c += md('perimeters', p.walls);
           if (p.infill) c += md('fill_density', p.infill + '%');
           // The same settings the way OrcaSlicer (and Bambu Studio) read them
           const om = (key, val) => `    <metadata key="${key}" value="${xmlEsc(val)}"/>\n`;
           let o = om('name', p.name);
-          if (p.supports) o += om('enable_support', 1) + (p.standing ? om('support_type', 'normal(auto)') : '');
+          if (p.supports) o += om('enable_support', 1) + (p.standing ? om('support_type', 'normal(auto)') : '') + supportKeys(p).map(([k, v]) => om(k, v)).join('');
           if (p.brim) o += om('brim_type', 'outer_only') + om('brim_width', p.brim === true ? BRIM : p.brim);
           if (p.walls) o += om('wall_loops', p.walls);
           if (p.infill) o += om('sparse_infill_density', p.infill + '%');

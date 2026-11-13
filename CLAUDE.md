@@ -221,6 +221,11 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   plates (`target`), or every plate left when none is ticked. Marking printed is a button: the selected plate's "Mark as
   printed", or the bar above the sheet for every ticked plate. `printed` and `plateState` are unchanged.
 
+- Module shells' supports (Dols, 2026-11-13): rules.js gives them `supports: 'shell'`, a named set in the page's
+  `SUPPORT_SETS` (tree(auto), default style, threshold 80°, on build plate only, critical regions only, remove small
+  overhangs), written per object into the Bambu project and the plate files (`supportKeys`; PrusaSlicer: organic, 80°,
+  build plate only). A named set doesn't move a part onto the "supports" plates (only `supports: true` does).
+
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
   main checkout's root, which is not committed.
