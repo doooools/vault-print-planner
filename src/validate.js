@@ -18,7 +18,8 @@ const note = (r, what) => {
 const all = { gearedRails: true, interior: 'gridfinity', gridAcross: 1, gridAlong: 1, manualSupports: true, topHandle: true, wallMount: true,
   pegboard: 'ikea', backbone: 'family', caseBaseplate: true, dividers: { plain: 1, depth: 1, width: 1, seal: 1 } };
 const variants = [{ lock: 'std', roof: 'grid', baseplateHandles: '0', caseInterior: 'flat', pegboard: 'ussa', backbone: 'universal' },
-  { lock: 'hidden', roof: 'heavy', baseplateHandles: '2', caseInterior: 'dividers' },
+  // a case takes a baseplate or dividers (the baseplate covers their floor grooves), a sealed one no baseplate
+  { lock: 'hidden', roof: 'heavy', baseplateHandles: '2', caseInterior: 'dividers', caseBaseplate: false },
   { roof: 'table', baseplateHandles: '1', caseInterior: 'sealed' },
   { roof: 'bowl', interior: 'grid', gridHeight: 'full', gridEdge: 'rounded', gridPin: 'loose' },
   { roof: 'undertable', interior: 'grid' }, { roof: 'heavycut', interior: 'grid', gridEdge: 'rounded' },
