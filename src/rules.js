@@ -263,24 +263,28 @@
     add('Module', `${name} accessory, 2nd`, U + `L² Accessories/x${d} Accessory 2nd.stl`, h, { note: 'One set (1st + 2nd) per F.' });
   }
 
+  // Module shells print with Bambu Studio's supports set the way Dols prints them (2026-11-13): the page's SUPPORT_SETS
+  // has the settings. A named set, not `true`: these light supports don't move the shells onto plates of their own.
+  const SHELL = { supports: 'shell' };
+
   function drawer(add, c) {
     const { w, d, h } = c;
     const fam = D + DRAWER_FAM_DIR[w] + '/';
     if (w === 'L2') {
       const why = 'The manual doesn’t list L² contents. L = S + S, so this assumes two S drawers side by side.';
-      add('Module', 'Module shell', fam + `L${d}²/L${d}² Module ${h}F.stl`, 1);
+      add('Module', 'Module shell', fam + `L${d}²/L${d}² Module ${h}F.stl`, 1, SHELL);
       // Both sides of an L² take the same drawers
       drawerInsert(add, 'S', d, h, c, 'left', why, drawersOf(c));
       drawerInsert(add, 'S', d, h, c, 'right', why, drawersOf(c));
       l2Accessories(add, 'L²', d, h);
     } else if (w === 'XL2') {
       const why = 'The manual doesn’t list XL² contents. XL = S + M, so this assumes an S and an M drawer side by side.';
-      add('Module', 'Module shell', fam + `XL${d}²/XL${d}² Module 1F.stl`, 1);
+      add('Module', 'Module shell', fam + `XL${d}²/XL${d}² Module 1F.stl`, 1, SHELL);
       drawerInsert(add, 'S', d, 1, c, 'S side', why);
       drawerInsert(add, 'M', d, 1, c, 'M side', why);
       l2Accessories(add, 'XL²', d, 1);
     } else {
-      add('Module', 'Module shell', fam + `${w}${d}/Modules/${w}${d} Module ${h}F.stl`, 1);
+      add('Module', 'Module shell', fam + `${w}${d}/Modules/${w}${d} Module ${h}F.stl`, 1, SHELL);
       drawerInsert(add, w, d, h, c, '', '', drawersOf(c));
     }
     if (c.roof && c.roof !== 'none') roof(add, w === 'L2' ? 'L' : w === 'XL2' ? 'XL' : w, d, c.roof, c.topHandle, c.manualSupports);
