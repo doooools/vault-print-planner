@@ -1059,7 +1059,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function analyzeTower(t) { const was = colorStack; colorStack = t; try { return analyzeStack(t); } finally { colorStack = was; } }
   function analyzeStack(t) {
     const issues = [], parts = [], L = t.levels;
-    if (!L.length) return { issues: [{ k: 'info', m: 'This stack is empty. Press + Add a unit to start it.' }], parts, height: 0 };
+    if (!L.length) return { issues: [{ k: 'info', m: 'This stack is empty. Press + Add a unit to start it.' }], parts };
     L.forEach((lv, i) => {
       const top = i === L.length - 1;
       const pair = lv.length > 1;
@@ -1108,8 +1108,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (cp.ones + cp.twos) parts.push(paintLines(finish(R.buildConnectors(cp, resolve)), null));
       else issues.push({ k: 'info', m: 'No joint of this stack takes a module connector: they go between two drawer modules, at back corners that no backbone, handle lock or wall plate covers.' });
     }
-    const height = L.reduce((a, lv) => a + levelHeight(lv), 0);
-    return { issues, parts, height, fam };
+    return { issues, parts, fam };
   }
   // The backbone column on the back (Modifications Assembly 7-15): the handles bolt onto it, pegboards hang on it. It
   // runs from the base to the module under the top one (the pull-out handle lock goes there), or up to the highest
@@ -2039,7 +2038,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     del: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>', plus: '<path d="M12 5v14M5 12h14"/>',
   };
   const icon = k => `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
-  const stackDims = (t, a) => t.levels.length ? `${Math.round(levelWidth(t.levels[0]))} × ${Math.round(unitExt(t.levels[0][0])[1])} × ${Math.round(a.height)} mm` : 'empty';
+  // Width × depth × height of the whole stack as it stands, with its base, wheels, roof, handles… (stackSize)
+  const stackDims = t => { const z = stackSize(t); return z ? `${Math.round(z.w)} × ${Math.round(z.d)} × ${Math.round(z.h)} mm` : 'empty'; };
+  const DIMS_TIP = 'Outside size, width × depth × height, drawers closed: base, wheels, roof, handles and key locks included';
   // What this stack needs fixed or should know: analyzeTower's, plus parts that no longer fit
   function stackAlerts(t, a) {
     const out = a.issues.map(x => ({ ...x }));
@@ -2144,8 +2145,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     $('view-build').querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => addPreset(PRESETS[+b.dataset.tpl]));
   }
   function tplCard(p, i) {
-    const lv = p.levels, w = Math.round(levelWidth(lv[0])), h = Math.round(lv.reduce((a, l) => a + levelHeight(l), 0));
-    return `<button type="button" class="tpl" data-tpl="${i}"><b>${esc(p.name)}</b><span>${esc(p.why)}</span><span class="mono">${w} mm wide · ${h} mm tall</span></button>`;
+    const z = stackSize({ levels: p.levels.map(lv => lv.map(u => clean(u))), stack: { ...STACK_DEFAULT, ...(p.stack || {}) } });
+    return `<button type="button" class="tpl" data-tpl="${i}"><b>${esc(p.name)}</b><span>${esc(p.why)}</span><span class="mono" title="${DIMS_TIP}">${Math.round(z.w)} mm wide · ${Math.round(z.h)} mm tall</span></button>`;
   }
   function renderBuild() {
     inspSave();
@@ -2207,7 +2208,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const wOpts = FP_W.filter(w => sizeFits(w, R.DEPTHS[0]) || w === fp.w).map(w => ({ v: w, label: w, sub: Math.round(R.WIDTH_MM[w]) + ' mm' }));
     const dOpts = R.DEPTHS.filter(d => sizeFits(fp.w, d) || d === fp.d).map(d => ({ v: d, label: 'x' + d, sub: Math.round(unitExt({ type: 'drawer', w: fp.w, d, h: 1 })[1]) + ' mm' }));
     return `<section class="panel dcenter" aria-label="Stack">
-      <div class="dhead"><div class="dtitle"><h1>${esc(t.name)}</h1><span class="mono">${fpCode(fp)} · ${stackDims(t, a)}</span></div>
+      <div class="dhead"><div class="dtitle"><h1>${esc(t.name)}</h1><span class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></span></div>
         <div class="dacts"><button type="button" class="btn" data-dstack aria-pressed="${dsel.l == null}">Stack settings</button>
           <button type="button" class="btn" data-fp aria-expanded="${fpStrip}">Footprint <span class="mono">${fpCode(fp)}</span></button>
           <button type="button" class="btn ink" data-addtop>${icon('plus')} Add a level on top</button></div></div>
@@ -2684,7 +2685,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const roofs = [{ v: 'none', label: 'None' }, ...R.ROOFS.filter(r => r.widths.includes(rw) && (r.id === roof || roofFits(r.id))).map(r => ({ v: r.id, label: { grid: 'Grid', table: 'Table', bowl: 'Bowl', undertable: 'Under-table', heavy: 'Heavyweight', heavycut: 'Heavyweight, cut' }[r.id] || r.label }))];
     const alerts = stackAlerts(t, a);
     box.innerHTML = `<div class="ihead"><span class="v3-sec">Stack settings</span>
-        <input class="tname" value="${esc(t.name)}" data-rename aria-label="Stack name"><div class="mono">${fpCode(fp)} · ${stackDims(t, a)}</div></div>
+        <input class="tname" value="${esc(t.name)}" data-rename aria-label="Stack name"><div class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></div></div>
       <div class="ibody">
         <div class="ifp"><span><span class="v3-sec">Footprint, same for every level</span><b>${fpCode(fp)} · ${Math.round(R.WIDTH_MM[fp.w])} mm wide, x${fp.d} deep</b></span><button type="button" class="btn" data-fp>Change…</button></div>
         <div class="field"><div class="lbl">Roof ${topIsDrawer ? '' : '<span class="hint">the top level is a case: the roof latches onto its lid</span>'}</div><div class="seg wrap">${segBtns(roofs, roof, 'data-roof')}</div></div>
@@ -3463,7 +3464,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       // the base's four caster holes: { at (the mouth, on the underside), axis (up into the base), d, depth }
       const holes = !casters ? null : sp.casters ? sp.casters.map(h => Array.isArray(h) ? { at: h } : h)
         : [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => ({ at: [sx * (bw / 2 - 30), f.base, sz < 0 ? -30 : -(bd - 30)] }));
-      units.push({ cfg: L[0][0], name: `${fam}${L[0][0].d} · base${wheels ? ' and wheels' : ''}${feet ? ' and foot' : ''}${casters ? ' on casters' : ''}`, key: `stack|${fam}|${L[0][0].d}`, level: -1, stack: true, casters: holes,
+      units.push({ cfg: L[0][0], name: `${fam}${L[0][0].d} · base${wheels ? ' and wheels' : ''}${feet ? ' and foot' : ''}${casters ? ' on casters' : ''}`, key: `stack|${fam}|${L[0][0].d}`, level: -1, stack: true, casters: holes, wheels,
         x: 0, y: lift, w: bw, d: bd, h: 0, lines: linesOf(R.buildStack({ w: fam, d: L[0][0].d, ...s }, resolve)).filter(l => l.group !== 'Handles').map(l => ({ ...l, cfg: null })) });
       y = lift;
     } else if (base) {
@@ -3514,6 +3515,46 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (s.connectors) { const cu = stackConnectors(t, { levelAt, back: -(bd - 10), cfg: L[0][0] }); if (cu) units.push(cu); }
     return { units, extra, height: units.reduce((m, u) => Math.max(m, u.y + u.h), y), width: Math.max(...L.map(levelWidth)), depth: Math.max(...L.map(lv => unitExt(lv[0])[1])) };
   }
+  // A stack's outside size, drawers closed and lids shut: the box around everything on it, each unit where stackLayout
+  // puts it (the floor at y = 0: under the base, the wheels, the foot or the casters). A unit counts by its measured
+  // bbox (every part of it as placed: the fronts, the key locks' keys, the latches and hinge rods at the back, the
+  // alignment ribs on top), less what it doesn't have (PLACE.envelope, tools/placements/measure_envelope.py): a
+  // hidden key is flush with the front, a grid roof without its carry handle is a plate. The wheels stick out 47 mm
+  // each side and 50 mm behind; the backbone column's pieces (handles, lock knobs, pegboards) count where they stand,
+  // a wall mount plate by its thickness. Casters are bought: CASTER_H is a guess. Without placements, R.exterior.
+  function stackSize(t) {
+    if (!t.levels.length) return null;
+    const lay = stackLayout(t), E = PLACE.envelope || {}, b = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
+    const add = (...v) => v.forEach((x, i) => { b[i] = i < 3 ? Math.min(b[i], x) : Math.max(b[i], x); });
+    for (const u of lay.units) {
+      const back = -(u.d - 10);
+      if (u.column) {
+        const has = new Set(u.lines.map(l => R.norm(l.file.path))), env = (u.env || []).filter(e => has.has(R.norm(e.path)));
+        if (env.length) env.forEach(e => add(...e.box));
+        else (u.boxes || []).forEach(x => add((x.x || 0) - x.w / 2, x.y, x.z - x.d / 2, (x.x || 0) + x.w / 2, x.y + x.h, x.z + x.d / 2));
+        continue;
+      }
+      const pl = PLACE.units[u.key], bb = pl && pl.bbox;
+      if (u.stack) { // the base (as wide and deep as the modules) and what it stands on
+        add(-u.w / 2, 0, back, u.w / 2, u.y, 10);
+        if (u.wheels && bb) add(bb[0][0], 0, bb[0][2], bb[1][0], u.y + bb[1][1], bb[1][2]);
+        continue;
+      }
+      if (bb) {
+        let [[x0, y0, z0], [x1, y1, z1]] = bb;
+        if (u.roof && /\|grid$/.test(u.key) && !u.cfg.topHandle && E.grid_plate) y1 = E.grid_plate;
+        if (!u.roof && u.cfg.type === 'drawer' && u.cfg.lock === 'hidden' && E.front) z1 = E.front;
+        add(u.x + x0, u.y + y0, z0, u.x + x1, u.y + y1, z1);
+      } else add(u.x - u.w / 2, u.y, back, u.x + u.w / 2, u.y + u.h, 10);
+      const wall = !u.roof && u.lines.some(l => l.group === 'Wall mount') && PLACE.units[`wall|${R.familyForWidth(R.WIDTH_MM[u.cfg.w]) || u.cfg.w}|${u.cfg.h}`];
+      if (wall) add(u.x - u.w / 2, u.y, back - ((wall.wall && wall.wall.t) || 14), u.x + u.w / 2, u.y, back);
+    }
+    for (const e of lay.extra) {
+      const s = e.size || [40, e.wheel * 2, e.wheel * 2];
+      add(e.at[0] - s[0] / 2, e.at[1] - s[1] / 2, e.at[2] - s[2] / 2, e.at[0] + s[0] / 2, e.at[1] + s[1] / 2, e.at[2] + s[2] / 2);
+    }
+    return { w: b[3] - b[0], d: b[5] - b[2], h: b[4] - Math.min(0, b[1]) };
+  }
   // A unit's measured parts that its part list uses, matched by file. A file in the list gets every copy the assembly
   // places (the list may count fewer, e.g. facade caps); placed files not in the list (another lock, no baseplate) are
   // left out. A roof also takes the files its unit below lists (its latches). What the list has and the assembly doesn't
@@ -3542,12 +3583,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     o.levelAt.forEach(lv => { for (let k = 0; k < lv.f; k++) slots.push(lv.y + 28.2 + 48 * k); });
     const count = re => o.lines.filter(l => re.test(l.label)).reduce((a, l) => a + l.qty, 0);
     const pieces = [...Array(count(/backbone 2F$/i)).fill(2), ...Array(count(/backbone 1F$/i)).fill(1)];
-    const P = [], boxes = [];
-    // a piece: its matrix moved by (dx, dy, back) and, for the left universal one, turned half a turn about z first
+    const P = [], boxes = [], env = [];
+    // a piece: its matrix moved by (dx, dy, back) and, for the left universal one, turned half a turn about z first.
+    // Its measured bounds (measure_envelope.py `box`, in the column frame) move with it, for stackSize.
     const put = (q, dx, dy, turn = false, H = 0, cfg = null) => {
       const m = q[3], r = turn ? [-1, -1, 1] : [1, 1, 1];
       P.push([q[0], q[1], q[2], [r[0] * m[0], r[0] * m[1], r[0] * m[2], r[0] * m[3] + dx, r[1] * m[4], r[1] * m[5], r[1] * m[6], r[1] * m[7] + dy + (turn ? H : 0),
         m[8], m[9], m[10], m[11] + back], cfg && { cfg }]);
+      const b = q[4] && q[4].box;
+      if (b) env.push({ path: q[0], box: turn ? [dx - b[3], dy + H - b[4], b[2] + back, dx - b[0], dy + H - b[1], b[5] + back]
+        : [b[0] + dx, b[1] + dy, b[2] + back, b[3] + dx, b[4] + dy, b[5] + back] });
     };
     const of = (E, what) => E.parts.filter(q => q[4] && q[4].as === what);
     let slot = 0, top = -Infinity, bottom = null, last = null;
@@ -3610,7 +3655,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         unit.bolts.push({ spec: 'M4x40 button', group: 'module', path: qs[0][0], cfg: p.unit.cfg, m: [1, 0, 0, x, 0, 0, 1, y0 + 23.5 + K.section * k, 0, -1, 0, back + pk.face - pk.t] });
     }
     unit.h = top; unit.boxes = boxes.map(b => ({ ...b, z: back - (b.off || 0) - b.d / 2 }));
-    unit.placed = P;
+    unit.placed = P; unit.env = env;
     return unit;
   }
   // The module connectors (connectorPlan) as a column-like unit of their own: each at its back corner, its bottom hole on

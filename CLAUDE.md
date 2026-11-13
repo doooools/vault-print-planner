@@ -178,6 +178,11 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   walls" (`gridSeal`) picks the straight piece or the file alone at a wall.
   `gridParts` draws them in 3D with the box.
 
+- Stack size (branch `claude/project-thread-mam5az`, Dols 2026-11-13): the stack header and the template cards give
+  the outside size as it stands, drawers closed (`stackSize`): units' `bbox` placed by `stackLayout`, base, wheels,
+  foot, casters (70 mm, a guess), roof and its handle, key locks, latches, hinges, column pieces, wall plates.
+  `tools/placements/measure_envelope.py`; README "A stack's outside size". The level header still gives the module.
+
 - Store links and affiliation (Hardware, "Where you buy"): Amazon.com keeps upstream's affiliate short links
   (`link.amazon/…`, Romy's tag inside; `SHOP`, the product each opens in a comment), at the user's request
   (2026-11-13). Every other store's search link takes this fork's tag from `SHOP_TAGS` (one per store, '' = no tag
