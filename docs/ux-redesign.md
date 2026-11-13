@@ -115,8 +115,9 @@ Today's "Extra parts" (`extrasPanel`), as an entry of the rail: search among the
 ### 2 · Print
 - Top: progress (parts, plates left, grams), and one export button. On a Bambu printer "Download the Bambu Studio project" (`buildProject`); otherwise "Download the plate files" (`buildPlateFiles`). "STL folders (.zip)" (`buildFolders`) and "Plate options…" sit next to it.
 - Filament chips (all, one per filament, Printed) filter the sheet. Each shows its plate count and weight.
-- The plate sheet: one small card per plate with its nesting (`plateSvg` data: bed, no-print corner, parts, front edge), its number, part count, grams, a "Printed" checkbox, and "Up next" on the first unprinted plate. Grouped by filament.
-- Printed plates leave their filament group and move to a "Printed" group at the end, dimmed. Unticking one puts it back. Plate numbers never change (`stablePlates`).
+- The plate sheet: one small card per plate with its nesting (`plateSvg` data: bed, no-print corner, parts, front edge), its number, part count, grams, a checkbox that ticks it for the download, and "Up next" on the first unprinted plate. Grouped by filament.
+- Ticked plates (Dols, 2026-11-13): a bar above the sheet counts them; the Bambu project and the STL folders hold only them (every plate left when none is ticked), and its "Mark as printed" / "Put back on the list" acts on them all. A tick never marks a plate printed.
+- Printed plates leave their filament group and move to a "Printed" group at the end, dimmed. "Printed. Undo" (or ticking it and "Put back on the list") puts it back. Plate numbers never change (`stablePlates`).
 - The selected plate, on the right: large nesting with numbered parts, the numbered part list with file name and settings (walls, supports), "Mark as printed" (then selects the next unprinted plate), previous and next.
 - "Plate options…": "Fewer plates" (`mixSupports`), "Labels on their own plate" (`labelsApart`), and the folded "How plates are laid out" text.
 - States in `PrintStates.dc.html`: printer without a Bambu preset, folder not chosen, parts missing from the folder (today's "not found in" errors, shown before the download starts), parts that no longer fit after a change of printer.
