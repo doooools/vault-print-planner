@@ -433,6 +433,26 @@ the unit keeps per box size (`cfg.gridPlans`, lines `[o, at, a, b]` from one cli
 with the box: (box matrix here) × inverse(`m`). At a wall the page keeps the straight piece's gap within the 8–20 mm
 its tongue bridges: "N − 1" + piece on S, M, XL and front to back, N + piece on L's sides (16.1 mm to the wall).
 
+## A stack's outside size
+
+The page's stack header and template cards give width × depth × height of the stack as it stands, drawers closed
+(`stackSize` in src/template.html): the box around every unit's `bbox` where `stackLayout` puts it, the floor at the
+lowest of the base, tyres, foot or casters. Measured on the files (2026-11-13), the same on every size:
+
+- Height: a module's alignment ribs stand 5 mm above its rise (1F 57, 2F 105, 4F 201); a case's lid 5.3 (71.7, 105.7,
+  201.7). Roofs: table 14.8, bowl 21.3 (S and M 21.8), under-table 21.3, heavyweight 88.3 (x6, x7: 87.8), grid 14.8
+  without its carry handle and 62.2 with it (`envelope.grid_plate`, measured on S3, M5, L7, L²7, XL3, XL²3). Base
+  52.2; wheels or foot 60 more (tyres 112.2, foot 112.7 under the module); casters are bought, 70 mm is a guess
+  (`CASTER_H`). The pull-out handle can stand above the top unit (`stackColumn`'s top).
+- Width: the units, and the wheels: 47 mm out on each side (cover's outer face).
+- Depth: front, the key lock's key with its cap at 30.9 mm (21 mm proud of the front); with the hidden key, the front
+  at 10.2 (`envelope.front`, the highest of 510 fronts, caps, labels and hidden keys). Back, from the modules' back
+  face: drawer and roof latches 11 mm, case hinges and rods 16.5, wheels 50, wall mount plate 14, backbone 33, handle
+  lock 35 and its knobs 51 (S: 73, its lock is in two parts), pull-out handle 36.5, stationary handle 80, pegboards 42
+  (USSA) or 35 (IKEA). The column's pieces carry their bounds (`box`) and the page moves them with the pieces.
+
+`measure_envelope.py` writes `envelope` and the column pieces' `box`; the rest is the units' `bbox` from the export.
+
 ## How it is measured
 
 The files are exported in print orientation (some at 45° to fit the bed) and scattered around one big CAD scene. Some parts are already in their assembled place relative to each other: the box, the baseplate, the stopper and the latch (X/Y). The rest is found by measurement in Blender:
@@ -457,6 +477,7 @@ The files are exported in print orientation (some at 45° to fit the bed) and sc
 | `measure_levels.py` | Where each level of a 2F/4F shell is: its cut through the racks' channels against the 1F shell's, slid level by level (README "Layouts"). |
 | `measure_stack.py` | A tower's base, wheels and foot, measured on the files (README "Stacks"); `make_recipes.py STK` places them by its matrices. |
 | `measure_column.py` | The backbone column, handles, lock and knobs (`column|<w>`), measured on the files and written straight into the placements (README "Backbone column and handles"). |
+| `measure_envelope.py` | What a stack's outside size needs beyond the units' bboxes: the column pieces' bounds, a front without the key lock, a grid roof without its handle (README "A stack's outside size"). |
 | `measure_wall.py` | The wall mount plates and cleats (`wall|<w>|<h>`), measured on the files (README "Pegboards, wall mounts, baseplates and lock pins"). |
 | `measure_baseplates.py` | The XL drawers' Gridfinity baseplates (into `drawer|XL|<d>|1`) and the cases' (`casebase|<w>|<d>`). |
 | `measure_lock_pins.py` | The case locks' pins, one `piece` each, on the latches' pins A and B (every `case|*`). |
@@ -492,6 +513,8 @@ blender -b --factory-startup --python tools/placements/blender_export_placements
 # after every export (it rewrites a unit with only its own parts): the XL drawers' and cases' baseplates, the lock pins
 python -I tools/placements/measure_baseplates.py src/stl-placements.json xl case
 python -I tools/placements/measure_lock_pins.py src/stl-placements.json
+# after measure_column.py and every export: the column pieces' bounds, the fronts without a key lock, the grid roofs' plate
+python -I tools/placements/measure_envelope.py src/stl-placements.json
 # the bolts: after every export (the export rewrites a unit without its `hardware`)
 python -I tools/placements/hardware.py src/stl-placements.json "$VAULT_ASSEMBLY/_hardware/hardware_report.json"
 python -I tools/placements/check_layouts.py src/stl-placements.json "/path/to/261021_VAULT_USSA_S" "$VAULT_ASSEMBLY/_layout_checks.json"

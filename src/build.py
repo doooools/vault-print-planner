@@ -71,10 +71,15 @@ if pf.exists():
     sizes = {k: v for k, v in pl.get("hardware_sizes", {}).items() if k != "note"}
     hw = lambda u: {"hardware": [[b[0], b[1], b[2], {k: v for k, v in b[3].items() if k != "why"}] for b in u["hardware"]]} if u.get("hardware") else {}
     dvs = lambda u: {"dividers": {st: {k: v for k, v in d.items() if k in ("floor", "rows", "cols", "back", "back_face", "cells")} for st, d in u["dividers"].items()}} if u.get("dividers") else {}
+    # bbox: every part of the unit as placed, for the stack's outside size (stackSize in template.html)
+    box = lambda u: {"bbox": [[round(v, 1) for v in c] for c in u["bbox"]]} if u.get("bbox") else {}
     # layouts: several drawers in a 2F/4F module (tools/placements/README.md "Layouts"): drawers, parts, motion, bolts
     lays = lambda u: {"layouts": {i: {"drawers": l["drawers"], "parts": l["parts"], "motion": l["motion"], **hw(l)}
                                   for i, l in u["layouts"].items()}} if u.get("layouts") else {}
-    place = {"stack": {**{k: pl["stack"][k] for k in ("first", "per_level")}, **({"case": pl["stack"]["case"]["rise"]} if "case" in pl["stack"] else {})}, **({"sizes": sizes} if sizes else {}), "units": {k: {"parts": u["parts"], **({"hinge": {x: u["hinge"][x] for x in ("origin", "axis", "open_deg")}} if "hinge" in u else {}), **({"motion": u["motion"]} if "motion" in u else {}), **({"floor": {k: v for k, v in u["floor"].items() if k != "note"}} if "floor" in u else {}), **({"casters": u["casters"]} if "casters" in u else {}), **({"column": u["column"]} if "column" in u else {}), **dvs(u), **hw(u), **lays(u)} for k, u in pl["units"].items()}}
+    place = {"stack": {**{k: pl["stack"][k] for k in ("first", "per_level")}, **({"case": pl["stack"]["case"]["rise"]} if "case" in pl["stack"] else {})}, **({"sizes": sizes} if sizes else {}), "units": {k: {"parts": u["parts"], **({"hinge": {x: u["hinge"][x] for x in ("origin", "axis", "open_deg")}} if "hinge" in u else {}), **({"motion": u["motion"]} if "motion" in u else {}), **({"floor": {k: v for k, v in u["floor"].items() if k != "note"}} if "floor" in u else {}), **({"casters": u["casters"]} if "casters" in u else {}), **({"column": u["column"]} if "column" in u else {}), **({"wall": {"t": u["wall"]["t"]}} if "wall" in u else {}), **box(u), **dvs(u), **hw(u), **lays(u)} for k, u in pl["units"].items()}}
+    # what a unit's bbox holds that only some builds have (tools/placements/measure_envelope.py)
+    if "envelope" in pl:
+        place["envelope"] = {k: pl["envelope"][k] for k in ("front", "grid_plate")}
     # case dividers (tools/placements/measure_dividers.py): each body style's wall slots, and each divider file standing
     if "divider_files" in pl:
         place["divider_files"] = pl["divider_files"]
