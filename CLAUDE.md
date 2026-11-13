@@ -173,6 +173,12 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   Rounded" option is gone); "Close against the walls" (`gridSeal`) picks "N − 1" + straight piece or "N" alone.
   `gridParts` draws them in 3D with the box.
 
+- Store links and affiliation (Hardware, "Where you buy"): Amazon.com keeps upstream's affiliate short links
+  (`link.amazon/…`, Romy's tag inside; `SHOP`, the product each opens in a comment), at the user's request
+  (2026-11-13). Every other store's search link takes this fork's tag from `SHOP_TAGS` (one per store, '' = no tag
+  and no `tag=` parameter; `shopTag` never gives one to `com`). Disclosure: under the store picker (`shopDisclosure`)
+  and in the footer's "Store links" (`footShop`). Affiliate links get `rel="sponsored"`.
+
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
   main checkout's root, which is not committed.
