@@ -178,6 +178,10 @@ select.full { width: 100%; background: var(--sheet-2); border: 1px solid var(--l
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .btn { border: 1px solid var(--line); background: var(--sheet); border-radius: 8px; padding: 8px 12px; font-weight: 600; }
 .btn.primary { background: var(--accent-btn); border-color: var(--accent-btn); color: var(--accent-ink); }
+.btn.primary:hover:not(:disabled) { border-color: var(--accent-btn); filter: brightness(1.08); }
+/* One look for each kind of thing, on every step: a filled orange button does the step's main action; dark fill only
+   ever means selected (tabs, segmented buttons, toggles); a ticked box marks an item of a list (plates, hardware,
+   steps); settings are segmented buttons, a list only when the choices don't fit (printers, stores) */
 .btn:hover { border-color: var(--ink); }
 
 .group { padding: 4px 0 6px; }
@@ -286,7 +290,7 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .fp-head .vclose { position: static; padding: 0 2px; font-size: 22px; }
 .fp-scope { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 3px; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 10px; }
 .fp-scope button { border: 0; border-radius: 7px; background: transparent; color: var(--muted); padding: 7px 8px; font-size: 13px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fp-scope button[aria-pressed=true] { background: var(--sheet); color: var(--ink); font-weight: 650; box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
+.fp-scope button[aria-pressed=true] { background: var(--ink); color: var(--sheet); font-weight: 650; }
 .fp-sec { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: -4px; }
 .fp-sec small { font-size: 12px; letter-spacing: 0; text-transform: none; font-weight: 400; }
 .fp-tray { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -319,8 +323,7 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .fp-own input { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; }
 /* Colors: the Paint panel's "Start from" presets */
 .cstart { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-left: 18px; font-size: 13px; color: var(--muted); }
-.cstart .chip { border: 1px solid var(--line); border-radius: 999px; background: var(--sheet-2); color: var(--ink); padding: 6px 12px; font-size: 13px; cursor: pointer; }
-.cstart .chip:hover { border-color: var(--ink); }
+.cstart .btn { padding: 6px 10px; font-size: 13px; }
 @media (max-width: 760px) { dialog#v3d .v3-view { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } dialog#v3d .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } .v3-brush-hint { display: none; } }
 .row.done { opacity: .45; }
 .row.done .pname { text-decoration: line-through; }
@@ -354,7 +357,7 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .hwside { flex: 1 1 280px; min-width: 0; display: grid; gap: 12px; position: sticky; top: 12px; }
 .hwtop { display: grid; gap: 8px; padding: 18px 20px; }
 .hwtitle { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
-.hwtitle h1 { margin: 0; font-family: var(--f-display); font-size: 30px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
+.hwtitle h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
 .hwtitle .mono, .hwg .mono { color: var(--muted); }
 .hwtop p { margin: 0; color: var(--muted); font-size: 13px; }
 .hwtop .bar { height: 8px; border-radius: 4px; background: var(--ground); overflow: hidden; }
@@ -383,6 +386,8 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .hwlegend { grid-template-columns: auto 1fr; align-items: center; gap: 10px 12px; }
 .hwlegend .v3-sec { grid-column: 1 / -1; margin: 0; }
 .hwside .pnote { margin: 0 4px; }
+.xtitle { padding: 18px 18px 4px; }
+.xtitle h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
 .panel > h3.ph { margin: 0; padding: 14px 18px 4px; font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
 .panel > p.pp { margin: 0; padding: 0 18px 10px; color: var(--muted); font-size: 13.5px; }
 pre.code { margin: 0; background: var(--sheet-2); border-radius: 8px; padding: 12px; overflow-x: auto; font-family: var(--f-mono); font-size: 12px; line-height: 1.55; max-height: 240px; }
@@ -446,19 +451,19 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .dst { display: grid; min-width: 0; line-height: 1.25; }
 .dst b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dst small { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
-.dfile { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-top: 4px; }
+.dfile { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-top: 8px; }
 .dfile .v3-sec { grid-column: 1 / -1; padding: 0 2px; display: flex; gap: 6px; min-width: 0; }
 .dfile .dfname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: none; letter-spacing: 0; color: var(--ink); }
 .dfile .dsave { grid-column: 1 / -1; }
 .dfile .btn { min-height: 40px; }
 .drail > .btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-.dloose { display: grid; gap: 4px; margin-top: 8px; padding: 12px; text-align: left; background: transparent; border: 1px dashed var(--edge); border-radius: 10px; font-size: 13px; color: var(--muted); }
+.dloose { display: grid; gap: 4px; padding: 12px; text-align: left; background: transparent; border: 1px dashed var(--edge); border-radius: 10px; font-size: 13px; color: var(--muted); }
 .dloose[aria-pressed=true] { border: 2px solid var(--ink); background: var(--raised); color: var(--ink); }
 .dcenter { flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
 .dcenter.loose { overflow: visible; }
 .dhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
 .dtitle { display: grid; min-width: 0; }
-.dtitle h1 { margin: 0; font-family: var(--f-display); font-size: 22px; font-weight: 800; font-stretch: 112%; line-height: 1.15; }
+.dtitle h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
 .dtitle .mono { color: var(--muted); }
 .dacts { display: flex; flex-wrap: wrap; gap: 8px; }
 .dacts .btn { min-height: 40px; display: inline-flex; align-items: center; gap: 6px; }
@@ -466,6 +471,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .dacts .btn .mono { color: var(--muted); font-size: 12px; }
 .fpstrip { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 32px; padding: 12px 16px; background: var(--sheet-2); border-bottom: 1px solid var(--line); }
 .fpstrip .field { flex: 1 1 260px; }
+.fpstrip .seg { background: var(--sheet); box-shadow: inset 0 0 0 1px var(--line); }
 .fpstrip .pnote { flex-basis: 100%; margin: 0; }
 .design .v3-slot { border-bottom: 1px solid var(--line); }
 .design .v3-view { grid-template-columns: minmax(0, 1fr); }
@@ -519,6 +525,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .imore > summary .mono { color: var(--muted); font-size: 12px; font-weight: 400; }
 .isec { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px; margin-bottom: -4px; font-size: 14px; }
 .isec .hint { font-size: 12px; font-weight: 400; color: var(--muted); }
+.isec.first { border-top: 0; padding-top: 0; }
 .ilist { display: grid; gap: 6px; margin-top: 8px; }
 .ilist h3 { display: flex; justify-content: space-between; gap: 8px; margin: 6px 0 0; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .ilist h3 .mono { text-transform: none; letter-spacing: 0; }
@@ -528,12 +535,14 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .ilist li .n { overflow-wrap: anywhere; }
 .ilist li small { color: var(--muted); font-size: 11.5px; }
 .ilist .linkbtn { justify-self: start; margin: 4px 0 0; padding: 0; font-size: 13px; }
-.ifp { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
-.ifp > span { display: grid; gap: 2px; }
+.ifp { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 4px 4px 12px; background: var(--sheet-2); border-radius: 9px; }
+.ifp .btn { flex: none; min-height: 40px; }
+.ifp b { min-width: 0; }
 .ialerts { display: grid; gap: 6px; }
 .seg.wrap { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); width: 100%; box-sizing: border-box; min-width: 0; }
-.seg.wrap button { min-width: 0; padding-left: 4px; padding-right: 4px; font-size: 13px; overflow-wrap: break-word; }
-.dinsp .field .seg button { min-height: 40px; }
+.seg.wrap button { min-width: 0; padding-left: 4px; padding-right: 4px; overflow-wrap: break-word; }
+.seg button { min-height: 40px; }
+.dinsp .steppers { grid-template-columns: minmax(0, 1fr); }
 /* First launch */
 .start { width: 100%; max-width: 1080px; margin: 0 auto; display: grid; gap: 16px; padding: 12px 0 24px; }
 .start h1 { margin: 0; font-family: var(--f-display); font-size: 34px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
@@ -554,7 +563,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .sacts .linkbtn { margin: 0 auto; font-size: 13px; }
 .sbig { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; background: var(--raised); }
 .sbig .mono { color: var(--muted); font-size: 12px; }
-.btn.ink.big, .btn.primary.big { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn.primary.big { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .tpls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 10px; }
 .tpl { display: flex; flex-direction: column; gap: 4px; min-height: 96px; padding: 12px 14px; text-align: left; background: var(--raised); border: 1px solid var(--line); border-radius: 8px; }
 .tpl:hover { border-color: var(--ink); }
@@ -563,9 +572,8 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .tpl .mono { margin-top: auto; color: var(--muted); font-size: 12px; }
 dialog#tplDlg { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px 22px; width: min(980px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; }
 dialog#tplDlg::backdrop { background: rgba(10, 12, 12, .45); }
-dialog#tplDlg h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 22px; }
+dialog#tplDlg h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
 /* 1b · Paint tool: filaments as brushes, part types, catalogue under the view */
-.dinsp .ihead h2 { margin-top: 0; }
 .dinsp .cstart { padding-left: 0; margin-top: 6px; }
 .ptray { display: grid; gap: 6px; }
 .pfil { position: relative; display: flex; align-items: center; gap: 10px; }
@@ -580,9 +588,9 @@ dialog#tplDlg h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-str
 .pdel:hover { background: var(--bad-soft); color: var(--bad); }
 .padd { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-style: dashed; }
 .padd[aria-expanded=true] { border-style: solid; border-color: var(--ink); }
-.pgrp { display: grid; gap: 2px; border-top: 1px solid var(--line); padding-top: 10px; }
+.pgrp { display: grid; gap: 2px; border-top: 1px solid var(--line); padding-top: 14px; }
 .pgrp-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-.pgrp-h h3 { margin: 0; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+.pgrp-h h3 { margin: 0; font-size: 14px; font-weight: 700; color: var(--ink); }
 .pgrp-h .linkbtn { display: inline; margin: 0; padding: 0; font-size: 12.5px; }
 .prole { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 8px; border: 0; border-radius: 8px; background: transparent; text-align: left; }
 button.prole:hover { background: var(--sheet-2); }
@@ -601,7 +609,7 @@ button.prole:hover { background: var(--sheet-2); }
 /* Step 2 · Print: progress and export, filament chips, the plate sheet and the selected plate */
 .ptop { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; padding: 18px 20px; }
 .ptop-prog { flex: 999 1 420px; min-width: 0; display: grid; gap: 8px; }
-.ptop-prog h1 { margin: 0; font-family: var(--f-display); font-size: 30px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
+.ptop-prog h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
 .ptop-prog .mono, .pgroup .mono, .fchip .mono, .psel-head .mono { color: var(--muted); }
 .bar2 { height: 8px; border-radius: 4px; background: var(--ground); overflow: hidden; }
 .bar2 i { display: block; height: 100%; background: var(--accent); }
@@ -652,7 +660,7 @@ button.prole:hover { background: var(--sheet-2); }
 .psel { flex: 1 1 400px; min-width: 0; position: sticky; top: 12px; display: grid; gap: 12px; padding: 16px; }
 .psel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .psel-head > div:first-child { display: grid; gap: 2px; min-width: 0; }
-.psel-head h2 { margin: 0; font-family: var(--f-display); font-size: 24px; font-weight: 800; font-stretch: 112%; line-height: 1.1; }
+.psel-head h2 { margin: 2px 0 0; font-family: var(--f-display); font-size: 22px; font-weight: 800; font-stretch: 112%; line-height: 1.15; }
 .pnav { display: flex; gap: 4px; }
 .iconbtn.sq { width: 44px; height: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; }
 .ptags { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -665,8 +673,6 @@ button.prole:hover { background: var(--sheet-2); }
 .prow .q { flex: none; min-width: 32px; text-align: right; font-weight: 800; }
 .prow .lbl { flex: 1 1 auto; min-width: 0; display: grid; }
 .prow .lbl small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.btn.ink { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
-.btn.ink:hover { filter: brightness(1.15); }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
 .pitem { display: grid; grid-template-columns: 44px 30px minmax(0, 1fr); gap: 8px; align-items: center; font-size: 13.5px; }
 .pitem .thumb { width: 44px; height: 44px; }
@@ -740,8 +746,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 .asm-steps { flex: 999 1 560px; min-width: 0; overflow: hidden; }
 .asm-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding: 18px 20px; }
 .asm-title { display: grid; gap: 4px; min-width: 0; }
-.asm-title h1 { margin: 0; font-family: var(--f-display); font-size: 30px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
-.asm-title .mono { color: var(--muted); }
+.asm-title h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
+.asm-title > span:not(.asm-inf) { color: var(--muted); font-size: 13.5px; }
 .asm-inf { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 4px; font-size: 13px; color: var(--muted); }
 .asm-rep { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .asm-rep > span { display: grid; line-height: 1.2; text-align: right; }
@@ -2477,7 +2483,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   function extrasPanel() {
     const xl = extraLines();
     return `<div class="panel">
-      <h3 class="ph">Loose parts</h3>
+      <div class="xtitle"><h1>Loose parts</h1></div>
       <p class="pp">Spares, replacements or single parts outside any stack. Browse every part by family below, or search by name, like \u201cS3 grid roof\u201d or \u201clatch\u201d.</p>
       <div class="xsearch"><input id="xq" type="search" placeholder="Search all ${FILES.length} parts\u2026" value="${esc(xq)}" autocomplete="off" aria-label="Search parts"></div>
       <div class="xresults" id="xresults" tabindex="-1">${xResults()}</div>
@@ -2585,8 +2591,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const inUse = P.filter(p => use.slot.has(p.id)).length;
     const roleRow = id => { const r = ROLE_BY_ID.get(id), cur = colorFor(id, null), n = use.owned.get(id) || 0;
       return `<button type="button" class="prole" data-prole="${id}" title="Paint ${esc(r.label.toLowerCase())} with the brush"><span class="dot2 big" style="background:${colorHex(cur)}"></span><span><b>${esc(r.label)}</b><small>${esc(colorName(cur))}${n ? ` · ${plural(n, 'module')} with ${n === 1 ? 'its' : 'their'} own` : ''}${id === 'label' && labelsApart ? ' · own plate' : ''}</small></span></button>`; };
-    box.innerHTML = `<div class="ihead"><h2>Colors</h2>
-        <div class="cstart" role="group" aria-label="Start from"><span>Start from</span>${COLOR_PRESETS.map(([id, t, why]) => `<button type="button" class="chip" data-cpreset="${id}" title="${esc(why)}">${t}</button>`).join('')}</div></div>
+    box.innerHTML = `<div class="ihead"><span class="v3-sec">Colors</span><h2>${esc((curTower() || { name: 'Loose parts' }).name)}</h2>
+        <div class="cstart" role="group" aria-label="Start from"><span>Start from</span>${COLOR_PRESETS.map(([id, t, why]) => `<button type="button" class="btn" data-cpreset="${id}" title="${esc(why)}">${t}</button>`).join('')}</div></div>
       <div class="ibody">
         <div class="field"><div class="lbl">Your filaments · pick the brush <span class="hint">${inUse} in use</span></div>
           <div class="ptray">${P.map(p => `<div class="pfil"><button type="button" class="pbrush" data-brush="${p.id}" aria-pressed="${p.id === brush}"><span class="dot2 big" style="background:${p.hex}"></span><span><b>${esc(p.name)}</b><small>${esc(usedTxt(p))}</small></span></button>${P.length > 1 ? `<button type="button" class="pdel" data-pal-del="${p.id}" aria-label="Remove ${esc(p.name)}" title="Remove this filament"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</div>`).join('')}
@@ -2752,8 +2758,11 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   const useg = (key, items, cur) => items.map(it => `<button type="button" data-useg="${key}=${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   // An on/off setting of the selected module as two segmented buttons (data-ubool="key=1" / "key=0")
   const ubool = (key, off, on, cur) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-ubool="${key}=${it.v}" aria-pressed="${!!cur === !!it.v}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
+  // An on/off setting of the stack (or its roof's carry handle) as two segmented buttons (data-sbool="key=1" / "key=0")
+  const sbool = (key, off, on, cur) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-sbool="${key}=${it.v}" aria-pressed="${!!cur === !!it.v}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
+  // A print setting (plate options) as two segmented buttons (data-pbool="key=1" / "key=0")
+  const pbool = (key, off, on, cur) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-pbool="${key}=${it.v}" aria-pressed="${!!cur === !!it.v}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   const optRow = (attr, label, sub, val) => `<label class="opt"><input type="checkbox" ${attr} ${val ? 'checked' : ''}><span>${label}${sub ? `<small>${sub}</small>` : ''}</span></label>`;
-  const selRow = (attr, label, options, val) => `<div class="field"><div class="lbl">${label}</div><select class="full" ${attr}>${options.map(o => `<option value="${o[0]}" ${String(o[0]) === String(val) ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></div>`;
   const stepRow = (key, label, val) => `<div class="stepper"><span>${label}</span><div><button type="button" data-ustep="${key}" data-d="-1" aria-label="Fewer: ${label}">−</button><output>${val}</output><button type="button" data-ustep="${key}" data-d="1" aria-label="More: ${label}">+</button></div></div>`;
   const ICON = {
     up: '<path d="M12 19V5M6 11l6-6 6 6"/>', down: '<path d="M12 5v14M6 13l6 6 6-6"/>', dup: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
@@ -2857,7 +2866,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
           : `<button type="button" class="btn primary big" id="startFolder">${rememberedFolder ? `Open ${esc(rememberedFolder)}` : 'Choose your Vault folder…'}</button>${folderHeroSkipped ? '' : '<button type="button" class="linkbtn" id="startLater">Later: plan without the files</button>'}`}</div></section>` : ''}
       <section class="panel srow col"><div class="srow-h"><span class="snum" aria-hidden="true">${canPickFolder ? 3 : 2}</span>
         <div class="stext"><h2>Your first stack</h2><p>Start empty, or from a ready-made stack and change anything in it.</p></div>
-        <button type="button" class="btn ink big" id="startEmpty">${icon('plus')} Empty stack</button></div>
+        <button type="button" class="btn primary big" id="startEmpty">${icon('plus')} Empty stack</button></div>
         <div class="tpls">${items.map(({ p, i }) => tplCard(p, i)).join('')}</div></section></div>`;
     $('startPrinter').onclick = e => { e.stopPropagation(); printerPop(true); };
     if ($('startOpen')) $('startOpen').onclick = openDesign;
@@ -2882,16 +2891,16 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const info = towers.map(x => ({ t: x, a: analyzeTower(x) }));
     const rail = info.map(({ t: x, a }) => { const fp = fpOf(x), bad = stackAlerts(x, a).some(m => m.k !== 'info');
       return `<div class="dstackw"><button type="button" class="dstack" data-stack="${x.id}" aria-pressed="${!!t && x.id === t.id}"><span class="dbadge" aria-hidden="true">${fp.w}</span><span class="dst"><b>${esc(x.name)}</b><small>${fpCode(fp)} · ${plural(x.levels.length, 'level')}</small></span>${bad ? '<i class="dot" aria-label="needs attention"></i>' : ''}</button>
-        <button type="button" class="dsdel" data-sdel="${x.id}" aria-label="Delete ${esc(x.name)}: press and hold" title="Press and hold to delete"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('');
+        <button type="button" class="dsdel" data-sdel="${x.id}" aria-label="Remove ${esc(x.name)}: press and hold" title="Press and hold to remove"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('');
     const nx = extras.reduce((a, e) => a + e.qty, 0);
     const loose = dsel.t === 'loose';
     $('view-build').innerHTML = `<div class="design">
       <aside class="drail" aria-label="Stacks"><div class="v3-sec">Stacks</div>${rail}
         <button type="button" class="btn dnew" id="dNew">${icon('plus')} New stack</button>
         <button type="button" class="btn" id="dTpl">Start from a template…</button>
+        <button type="button" class="dloose" data-loose aria-pressed="${loose}"><span class="v3-sec">Loose parts</span><span>${nx ? `${plural(nx, 'part')} outside any stack` : 'Spares or single parts outside any stack. None yet.'}</span></button>
         <div class="dfile" role="group" aria-label="Design file"><span class="v3-sec">Design file${designName ? ` <span class="mono dfname" title="${esc(designName)}">${esc(designName.replace(/\.vault\.json$/, ''))}</span>` : ''}</span>
           <button type="button" class="btn dsave" id="dSave" title="${vaultFolder && typeof vaultFolder.handle === 'object' ? `Save into ${esc(vaultFolder.name)}, next to the part files` : 'Save these stacks, loose parts and colors to a file'}">Save</button><button type="button" class="btn" id="dSaveAs" title="Save a copy somewhere else, or under another name">Save as…</button><button type="button" class="btn" id="dOpen" title="Open a design saved before">Open…</button></div>
-        <button type="button" class="dloose" data-loose aria-pressed="${loose}"><span class="v3-sec">Loose parts</span><span>${nx ? `${plural(nx, 'part')} outside any stack` : 'Spares or single parts outside any stack. None yet.'}</span></button>
       </aside>
       ${loose ? `<section class="dcenter loose">${extrasPanel(true)}</section>` : designCenter(t, info.find(x => x.t === t).a)}
       ${loose ? '' : `<aside class="panel dinsp" id="dInsp" aria-label="Selection"></aside>`}
@@ -2915,12 +2924,12 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   function closeTpl() { const d = $('tplDlg'); if (d && d.open) d.close(); }
   // A stack card's cross: held down for a second it deletes the stack (the ring fills meanwhile); let go sooner, nothing
   const HOLD_MS = 900;
-  function removeStack(t) { towers = towers.filter(x => x.id !== t.id); printSkip = printSkip ? printSkip.filter(x => x !== t.id) : printSkip; savePrintSkip(); if (dsel && dsel.t === t.id) dsel = null; saveSel(); save(); renderAll(); toast(`${t.name} deleted`); }
+  function removeStack(t) { towers = towers.filter(x => x.id !== t.id); printSkip = printSkip ? printSkip.filter(x => x !== t.id) : printSkip; savePrintSkip(); if (dsel && dsel.t === t.id) dsel = null; saveSel(); save(); renderAll(); toast(`${t.name} removed`); }
   function holdToDelete(b) {
     let timer = null;
     const t = () => towers.find(x => x.id === +b.dataset.sdel);
     const start = e => { if (timer || (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ')) return; if (e.type === 'keydown') e.preventDefault(); b.classList.add('holding'); timer = setTimeout(() => { timer = null; b.classList.remove('holding'); if (t()) removeStack(t()); }, HOLD_MS); };
-    const stop = e => { if (!timer) return; clearTimeout(timer); timer = null; b.classList.remove('holding'); if (e && e.type !== 'pointerleave') toast('Hold the cross down to delete the stack'); };
+    const stop = e => { if (!timer) return; clearTimeout(timer); timer = null; b.classList.remove('holding'); if (e && e.type !== 'pointerleave') toast('Hold the cross down to remove the stack'); };
     b.addEventListener('pointerdown', start); b.addEventListener('keydown', start);
     b.addEventListener('pointerup', stop); b.addEventListener('pointerleave', stop); b.addEventListener('pointercancel', stop); b.addEventListener('keyup', stop);
     b.onclick = e => e.preventDefault();
@@ -2933,7 +2942,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       <div class="dhead"><div class="dtitle"><h1>${esc(t.name)}</h1><span class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></span></div>
         <div class="dacts"><button type="button" class="btn" data-dstack aria-pressed="${dsel.l == null}">Stack settings</button>
           <button type="button" class="btn" data-fp aria-expanded="${fpStrip}">Footprint <span class="mono">${fpCode(fp)}</span></button>
-          <button type="button" class="btn ink" data-addtop>${icon('plus')} Add a level on top</button></div></div>
+          <button type="button" class="btn primary" data-addtop>${icon('plus')} Add a level on top</button></div></div>
       ${fpStrip ? `<div class="fpstrip"><div class="field"><div class="lbl">Width</div><div class="seg">${segBtns(wOpts, fp.w, 'data-fpw')}</div></div>
         <div class="field"><div class="lbl">Depth <span class="hint">grid units of 42 mm</span></div><div class="seg">${segBtns(dOpts, fp.d, 'data-fpd')}</div></div>
         <p class="pnote">Applies to every level of ${esc(t.name)}. Sizes too big for the ${esc(printerName())} aren’t offered.</p></div>` : ''}
@@ -3006,17 +3015,17 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       }
       o += `<div class="field"><div class="lbl">Inside${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${useg('interior', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], dv.interior)}</div></div>`;
       if (dv.interior === 'gridfinity' && ['S', 'M', 'L2', 'XL2'].includes(dv.w))
-        o += selRow('data-usel="baseplateHandles"', 'Baseplate cut-outs <span class="hint">for lifting it out</span>', [['0', 'None'], ...(dv.w === 'M' ? [] : [['1', '1 handle']]), ['2', '2 handles']], dv.baseplateHandles);
+        o += `<div class="field"><div class="lbl">Baseplate cut-outs <span class="hint">for lifting it out</span></div><div class="seg">${useg('baseplateHandles', [{ v: '0', label: 'None' }, ...(dv.w === 'M' ? [] : [{ v: '1', label: '1 handle' }]), { v: '2', label: '2 handles' }], dv.baseplateHandles)}</div></div>`;
       if (dv.interior === 'grid') {
         o += gridPlan(dv) || `<div class="field"><div class="lbl">Grid dividers <span class="hint">full-span pieces</span></div><div class="steppers">${stepRow('gridAcross', 'Side to side', dv.gridAcross || 0)}${stepRow('gridAlong', 'Front to back', dv.gridAlong || 0)}</div></div>`;
-        o += selRow('data-usel="gridHeight"', 'Divider height', [['20', '20 mm (low)'], ['full', dv.h === 1 ? 'Full height, 34.5 mm' : 'Tall, 82.5 mm']], dv.gridHeight);
+        o += `<div class="field"><div class="lbl">Divider height</div><div class="seg">${useg('gridHeight', [{ v: '20', label: 'Low', sub: '20 mm' }, { v: 'full', label: dv.h === 1 ? 'Full height' : 'Tall', sub: dv.h === 1 ? '34.5 mm' : '82.5 mm' }], dv.gridHeight)}</div></div>`;
         o += optRow('data-ucheck="gridSeal"', 'Close against the walls', 'A divider that ends at a wall takes one hole less and a straight edge piece, which closes the gap (instructions, option 2). Off: the longer divider alone, a few mm short of the wall.', dv.gridSeal !== false);
       }
       o += `<div class="field"><div class="lbl">Lock${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${useg('lock', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], dv.lock)}</div></div>`;
       o += `<div class="field"><div class="lbl">Geared rails${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${ubool('gearedRails', { label: 'Without', sub: 'optional in the manual' }, { label: 'With', sub: dids.length > 1 ? 'USSA: several drawers' : 'for 2F, 4F, more locking' }, dv.gearedRails)}</div></div>`;
       if (dv !== u) o += `<div class="dvfoot"><span class="mono">${esc(insideSum(u, dids))}</span><span class="dvacts"><button type="button" class="btn" data-dcopy>Same settings in every drawer</button></span></div>`;
     } else {
-      if (u.w === 'L' || u.w === 'XL') o += selRow('data-usel="caseInterior"', 'Case body style', [['flat', 'Flat (open box)'], ['dividers', 'Dividers (slotted walls)'], ['sealed', 'Sealed (slots for seal dividers)']], u.caseInterior);
+      if (u.w === 'L' || u.w === 'XL') o += `<div class="field"><div class="lbl">Case body style</div><div class="seg">${useg('caseInterior', [{ v: 'flat', label: 'Flat', sub: 'open box' }, { v: 'dividers', label: 'Dividers', sub: 'slotted walls' }, { v: 'sealed', label: 'Sealed', sub: 'seal dividers' }], u.caseInterior || 'flat')}</div></div>`;
       if (caseStyle(u) === 'sealed') o += `<div class="field"><div class="lbl">Gridfinity baseplate</div><p class="pnote" style="margin:0">A sealed body's fixed walls make its cells narrower than the baseplate, so it takes none. Pick <b>Flat</b> or <b>Dividers</b> above for one.</p></div>`;
       else o += optRow('data-ucheck="caseBaseplate"', 'Gridfinity baseplate inside', 'Instead of dividers: it covers the floor grooves they stand in.', u.caseBaseplate);
       o += casePlate(u) ? `<div class="field"><div class="lbl">Dividers</div><p class="pnote" style="margin:0">The baseplate covers the floor from wall to wall, grooves included, so this case takes no divider. Untick it to place dividers${(Object.values(divSel(u) || {}).flat(2).length) ? ': the ones you placed are kept' : ''}.</p></div>` : dividerPlan(u);
@@ -3033,6 +3042,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       ${lv.length > 1 ? `<div class="seg ipair" role="group" aria-label="Module to set up">${lv.map((x, j) => `<button type="button" data-umod="${j}" aria-pressed="${j === ui}">${j ? 'Right' : 'Left'}<small>${esc(unitCode(x))}</small></button>`).join('')}</div>` : ''}
       ${nf.length ? `<div class="alert warn" role="alert"><strong>${plural(nf.length, 'part')} of this level no longer ${nf.length === 1 ? 'fits' : 'fit'} the ${esc(printerName())}</strong><span class="mono">${[...new Set(nf.map(l => esc(l.label) + ' · ' + dimStr(l.file.dims)))].join('<br>')}</span><span>${nf.length === 1 ? 'It is' : 'They are'} left out of the plates. Print ${nf.length === 1 ? 'it' : 'them'} on a bigger printer, or change this level.</span></div>` : ''}
       <div class="ibody">
+        <div class="isec first"><b>Module</b><span class="hint">${across && across.length > 1 ? 'across the width, ' : ''}type, height</span></div>
         ${across && across.length > 1 ? `<div class="field"><div class="lbl">Across the width</div><div class="seg across" role="group" aria-label="Across the width">${across.map(([v, label, sub]) => `<button type="button" data-across="${v}" aria-pressed="${acrossOf(lv) === v}">${acrossIcon(v)}<span>${label}</span><small>${sub}</small></button>`).join('')}</div></div>` : ''}
         <div class="field"><div class="lbl">Type</div><div class="seg">${useg('type', typeOpts, u.type)}</div></div>
         <div class="field"><div class="lbl">Module height</div><div class="seg">${useg('h', hOpts, u.h)}</div></div>
@@ -3080,7 +3090,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       fixUnit(u); fixTower(t); save(); renderAll();
       toast(`Every drawer of this module now has the ${drawerName(u, dv.dr, false)} drawer\u2019s inside, lock and rails${new Set(dids.map(x => x.w)).size > 1 ? ' (the other box size keeps its own divider plan)' : ''}.`);
     }; }
-    box.querySelectorAll('[data-usel]').forEach(el => el.onchange = () => set({ [el.dataset.usel]: el.value }));
     box.querySelectorAll('[data-ucheck]').forEach(el => el.onchange = () => set({ [el.dataset.ucheck]: el.checked }));
     box.querySelectorAll('[data-ubool]').forEach(b => b.onclick = () => { const [key, val] = b.dataset.ubool.split('='); set({ [key]: val === '1' }); });
     box.querySelectorAll('[data-ustep]').forEach(b => b.onclick = () => {
@@ -3500,19 +3509,21 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     box.innerHTML = `<div class="ihead"><span class="v3-sec">Stack settings</span>
         <input class="tname" value="${esc(t.name)}" data-rename aria-label="Stack name"><div class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></div></div>
       <div class="ibody">
-        <div class="ifp"><span><span class="v3-sec">Footprint, same for every level</span><b>${fpCode(fp)} · ${Math.round(R.WIDTH_MM[fp.w])} mm wide, x${fp.d} deep</b></span><button type="button" class="btn" data-fp>Change…</button></div>
+        <div class="isec first"><b>Size and roof</b><span class="hint">the same for every level</span></div>
+        <div class="field"><div class="lbl">Footprint</div><div class="ifp"><b>${fpCode(fp)} \u00b7 ${Math.round(R.WIDTH_MM[fp.w])} mm, x${fp.d}</b><button type="button" class="btn" data-fp>Change\u2026</button></div></div>
         <div class="field"><div class="lbl">Roof ${topIsDrawer ? '' : '<span class="hint">the top level is a case: the roof latches onto its lid</span>'}</div><div class="seg wrap">${segBtns(roofs, roof, 'data-roof')}</div></div>
-        ${roof === 'grid' ? optRow('data-tophandle', 'Carry handle on the roof', '2 × M6 × 50 mm countersunk bolts', ru.topHandle) : ''}
-        <div class="field"><div class="lbl">Base and handles</div>
-          ${optRow('data-st="base"', 'Base', `${fpCode(fp)} base under level 1`, s.base)}
-          ${s.base ? optRow('data-st="wheels"', 'Wheels, with TPU tires', 'bearings and an M16 axle', s.wheels) : ''}
-          ${s.base && s.wheels ? optRow('data-st="feet"', 'Foot bar at the front', 'opposite the wheels', s.feet) : ''}
-          ${s.base && !s.wheels ? optRow('data-st="casters"', 'Casters', '4 × M8, bought, under the base', s.casters) : ''}
-          ${optRow('data-st="pullHandle"', 'Pull-out trolley handle', 'Adds the backbone column on the back', s.pullHandle)}
-          ${s.pullHandle && fp.w !== 'S' ? `<div class="seg" role="group" aria-label="Handle lock">${segBtns([{ v: 'family', label: 'One-piece lock', sub: `${Math.round(R.WIDTH_MM[fp.w])} mm wide` }, { v: 'universal', label: 'Universal lock', sub: 'two, 89 mm: any printer' }], s.handleLock === 'universal' ? 'universal' : 'family', 'data-hlock')}</div>` : ''}
-          ${optRow('data-st="stationaryHandle"', 'Stationary handle', 'Adds the backbone column on the back', s.stationaryHandle)}</div>
-        <div class="field"><div class="lbl">Between the modules</div>
-          ${optRow('data-st="connectors"', 'Module connectors', 'Screwed over each joint between two drawer modules at the back corners, where no backbone, handle lock or wall plate is', s.connectors)}</div>
+        ${roof === 'grid' ? `<div class="field"><div class="lbl">Carry handle <span class="hint">on the grid roof</span></div><div class="seg">${sbool('topHandle', { label: 'None' }, { label: 'Handle', sub: '2 \u00d7 M6 \u00d7 50 mm countersunk' }, ru.topHandle)}</div></div>` : ''}
+        <div class="isec"><b>Under the stack</b><span class="hint">base, wheels, foot bar</span></div>
+        <div class="field"><div class="lbl">Base <span class="hint">under level 1</span></div><div class="seg">${sbool('base', { label: 'None', sub: 'stands on level 1' }, { label: 'Base', sub: `${fpCode(fp)} base` }, s.base)}</div></div>
+        ${s.base ? `<div class="field"><div class="lbl">Wheels</div><div class="seg">${sbool('wheels', { label: 'None' }, { label: 'Wheels', sub: 'TPU tires, M16 axle' }, s.wheels)}</div></div>` : ''}
+        ${s.base && s.wheels ? `<div class="field"><div class="lbl">Foot bar <span class="hint">at the front, opposite the wheels</span></div><div class="seg">${sbool('feet', { label: 'None' }, { label: 'Foot bar' }, s.feet)}</div></div>` : ''}
+        ${s.base && !s.wheels ? `<div class="field"><div class="lbl">Casters <span class="hint">bought, under the base</span></div><div class="seg">${sbool('casters', { label: 'None' }, { label: 'Casters', sub: '4 \u00d7 M8' }, s.casters)}</div></div>` : ''}
+        <div class="isec"><b>Back of the stack</b><span class="hint">handles, module connectors</span></div>
+        <div class="field"><div class="lbl">Pull-out handle <span class="hint">adds the backbone column</span></div><div class="seg">${sbool('pullHandle', { label: 'None' }, { label: 'Trolley handle' }, s.pullHandle)}</div></div>
+        ${s.pullHandle && fp.w !== 'S' ? `<div class="field"><div class="lbl">Handle lock</div><div class="seg" role="group" aria-label="Handle lock">${segBtns([{ v: 'family', label: 'One-piece lock', sub: `${Math.round(R.WIDTH_MM[fp.w])} mm wide` }, { v: 'universal', label: 'Universal lock', sub: 'two, 89 mm: any printer' }], s.handleLock === 'universal' ? 'universal' : 'family', 'data-hlock')}</div></div>` : ''}
+        <div class="field"><div class="lbl">Stationary handle <span class="hint">adds the backbone column</span></div><div class="seg">${sbool('stationaryHandle', { label: 'None' }, { label: 'Handle' }, s.stationaryHandle)}</div></div>
+        <div class="field"><div class="lbl">Module connectors</div><div class="seg">${sbool('connectors', { label: 'None' }, { label: 'Connectors', sub: 'over the back joints' }, s.connectors)}</div>
+          <p class="pnote" style="margin:0">Screwed over each joint between two drawer modules at the back corners, where no backbone, handle lock or wall plate is.</p></div>
         <div class="ialerts">${alerts.length ? alerts.map(x => `<div class="issue ${x.k}">${esc(x.m)}</div>`).join('') : `<div class="issue ok">Everything in this stack fits together and fits the ${esc(printerName())}.</div>`}</div>
         <div class="actions"><button type="button" class="btn" data-tdup>Duplicate stack</button><button type="button" class="btn" data-tdel>Remove stack</button></div>
       </div>`;
@@ -3525,8 +3536,11 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       u.roof = r; if (r === 'grid' && (roof === 'heavy' || roof === 'heavycut')) u.topHandle = true;
       save(); renderAll();
     });
-    const th = box.querySelector('[data-tophandle]'); if (th) th.onchange = () => { ru.topHandle = th.checked; save(); renderAll(); };
-    box.querySelectorAll('[data-st]').forEach(el => el.onchange = () => { t.stack = { ...s, [el.dataset.st]: el.checked }; fixTower(t); save(); renderAll(); });
+    box.querySelectorAll('[data-sbool]').forEach(b => b.onclick = () => {
+      const [key, val] = b.dataset.sbool.split('='), on = val === '1';
+      if (key === 'topHandle') ru.topHandle = on; else { t.stack = { ...s, [key]: on }; fixTower(t); }
+      save(); renderAll();
+    });
     box.querySelectorAll('[data-hlock]').forEach(b => b.onclick = () => { t.stack = { ...s, handleLock: b.dataset.hlock }; save(); renderAll(); });
     box.querySelector('[data-tdup]').onclick = () => { const x = { ...JSON.parse(JSON.stringify(t)), id: newId(), name: t.name + ' copy' }; towers.push(x); dsel = { t: x.id, l: null }; saveSel(); save(); renderAll(); };
     box.querySelector('[data-tdel]').onclick = e => {
@@ -3919,7 +3933,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const selBar = !picked.length
       ? `<div class="pselbar" role="group" aria-label="Plate selection"><span class="pnote">Tick plates to download only those, then mark them printed in one go. Nothing ticked: the downloads hold every plate left.</span>${shown.length ? `<button type="button" class="btn" id="pSelAll">Tick the ${plural(shown.length, 'plate')} shown</button>` : ''}</div>`
       : `<div class="pselbar on" role="group" aria-label="Plate selection"><span><b>${plural(picked.length, 'plate')} ticked</b> <span class="mono">· ${aboutG(gramsOfPlates(picked))} · ${esc(picked.map(pl => two(pl.n)).join(', '))}</span><br><span class="pnote">The downloads hold only these.</span></span>
-        ${pickedTodo.length ? `<button type="button" class="btn ink" id="pSelDone">Mark ${pickedTodo.length === 1 ? 'it' : pickedTodo.length === picked.length ? 'them' : pickedTodo.length} as printed</button>` : ''}
+        ${pickedTodo.length ? `<button type="button" class="btn primary" id="pSelDone">Mark ${pickedTodo.length === 1 ? 'it' : pickedTodo.length === picked.length ? 'them' : pickedTodo.length} as printed</button>` : ''}
         ${pickedDone.length ? `<button type="button" class="btn" id="pSelUndo">Put ${pickedDone.length === 1 && picked.length === 1 ? 'it' : pickedDone.length === picked.length ? 'them' : pickedDone.length + ' printed'} back on the list</button>` : ''}
         ${shown.some(pl => !plateSel.ns.has(pl.n)) ? `<button type="button" class="btn" id="pSelAll">Tick all shown</button>` : ''}
         <button type="button" class="btn" id="pSelNone">Untick all</button></div>`;
@@ -3927,16 +3941,16 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const idx = sel ? allPlates.indexOf(sel) : -1;
     const selFlag = sel ? plateNote(sel, false) : '';
     const detail = !sel ? '' : `<aside class="panel psel" aria-label="Selected plate">
-      <div class="psel-head"><div><h2>Plate ${two(sel.n)}</h2><span class="mono">${plural(sel.items.length, 'part')} · ${aboutG(sel.grams)} · ${Math.round(sel.tallest)} mm tall</span></div>
+      <div class="psel-head"><div><span class="v3-sec">Selected plate</span><h2>Plate ${two(sel.n)}</h2><span class="mono">${plural(sel.items.length, 'part')} · ${aboutG(sel.grams)} · ${Math.round(sel.tallest)} mm tall</span></div>
         <div class="pnav"><button type="button" class="iconbtn sq" data-step="-1" aria-label="Previous plate" ${idx > 0 ? '' : 'disabled'}><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button><button type="button" class="iconbtn sq" data-step="1" aria-label="Next plate" ${idx < allPlates.length - 1 ? '' : 'disabled'}><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button></div></div>
       <div class="ptags"><span class="ftag"><span class="dot2" style="background:${colorHex(sel.color)}"></span>${esc(colorName(sel.color))}</span>${selFlag && selFlag !== 'Printed' ? `<span class="ftag flag">${esc(selFlag)}</span>` : ''}</div>
       ${plateSvg(sel)}
       ${sel.care ? `<div class="alert ${sel.items[0].diag || sel.items[0].asis ? 'ok' : 'warn'}" style="font-size:13px">${sel.items[0].asis ? 'Kept at the angle USSA exported it, where it just fits this bed. Check it in the slicer before printing.' : sel.items[0].diag ? 'Too long to lie straight, so it’s placed diagonally, the way USSA exported it.' : 'Lay this part on a different face than exported to fit; check supports.'}</div>` : ''}
       <div class="plist">${sel.lines.map((x, i) => `<div class="prow"><span class="pk" style="background:${colorHex(sel.color)};color:${LIGHT_FILL(sel.color) ? '#222' : '#fff'}">${i + 1}</span><span class="q num">${x.count}×</span><span class="lbl"><b>${esc(x.l.label)}</b><small class="mono">${esc(fileName(x.l.file.path))}</small></span>${x.l.walls ? `<span class="tag wall">${x.l.walls} walls${x.l.infill ? ' · ' + x.l.infill + '%' : ''}</span>` : ''}${x.l.supports ? '<span class="tag sup">supports</span>' : ''}</div>`).join('')}</div>
-      <button type="button" class="btn ${sel.done ? '' : 'ink'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button></aside>`;
+      <button type="button" class="btn ${sel.done ? '' : 'primary'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button></aside>`;
     const hasLabels = b.lines.some(isLabel);
     $('view-print').innerHTML = `
-      ${towers.length + (extras.length ? 1 : 0) > 1 ? `<div class="pscope" role="group" aria-label="What to print"><span class="v3-sec">Print</span>
+      ${towers.length + (extras.length ? 1 : 0) > 1 ? `<div class="pscope" role="group" aria-label="What to print"><span class="v3-sec">What to print</span>
         ${towers.map(t => `<button type="button" class="pchip" data-pskip="${t.id}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small></button>`).join('')}
         ${extras.length ? `<button type="button" class="pchip" data-pskip="loose" aria-pressed="${b.extras > 0}"><b>Loose parts</b><small class="mono">${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button>` : ''}
         <span class="pnote">${b.whole ? 'Everything is in these plates.' : 'Only what is ticked is in these plates and in the file.'}</span></div>` : ''}
@@ -3946,9 +3960,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <div class="ptop-x">${exportBtn}
           <div class="xrow">${canMake && target.length ? '<button type="button" class="btn" id="gFolders">STL folders (.zip)</button>' : ''}<span class="popwrap"><button type="button" class="btn" id="plateOpts" aria-expanded="${plateOptsOpen}" aria-controls="plateOptsBox">Plate options…</button>
             <div class="panel popbox" id="plateOptsBox" ${plateOptsOpen ? '' : 'hidden'}><h2>Plate options</h2>
-              <label class="opt"><input type="checkbox" id="mixSupports" ${mixSupports ? 'checked' : ''}><span>Fewer plates<small>Support parts share plates; supports stay on just for them</small></span></label>
-              <label class="opt"><input type="checkbox" id="printAids" ${printAids ? 'checked' : ''}><span>Manual supports<small>USSA's prop for each drawer roof, printed standing against it on the same plate</small></span></label>
-              ${hasLabels ? `<label class="opt"><input type="checkbox" id="labelsApart" ${labelsApart ? 'checked' : ''}><span>Labels on their own plate<small>Add text and colors in the slicer without touching other plates</small></span></label>` : ''}
+              <div class="field"><div class="lbl">Parts with supports</div><div class="seg">${pbool('mixSupports', { label: 'Plates of their own' }, { label: 'Fewer plates', sub: 'shared, supports on just for them' }, mixSupports)}</div></div>
+              <div class="field"><div class="lbl">Manual supports <span class="hint">USSA’s prop for each drawer roof</span></div><div class="seg">${pbool('printAids', { label: 'None' }, { label: 'One per roof', sub: 'standing against it' }, printAids)}</div></div>
+              ${hasLabels ? `<div class="field"><div class="lbl">Labels <span class="hint">text and colors in the slicer</span></div><div class="seg">${pbool('labelsApart', { label: 'With the rest' }, { label: 'Own plate' }, labelsApart)}</div></div>` : ''}
               <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Each shell keeps 15 mm clear beyond its top and bottom walls for them (dashed). Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
               <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}<button type="button" class="btn" id="clearPlates">${b.onlyExtras ? 'Clear loose parts' : 'Clear all plates'}</button></div>
             </div></span></div>
@@ -4005,9 +4019,14 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       renderPrint(); renderTabs();
     };
     $('plateOpts').onclick = e => { e.stopPropagation(); plateOptsOpen = !plateOptsOpen; $('plateOptsBox').hidden = !plateOptsOpen; $('plateOpts').setAttribute('aria-expanded', String(plateOptsOpen)); };
-    if ($('labelsApart')) $('labelsApart').onchange = () => { labelsApart = $('labelsApart').checked; store.set('labelsApart', labelsApart); renderPrint(); };
-    $('mixSupports').onchange = () => { mixSupports = $('mixSupports').checked; store.set('mixSupports', mixSupports); renderPrint(); };
-    $('printAids').onchange = () => { printAids = $('printAids').checked; store.set('manualSupports', printAids); renderPrint(); };
+    V.querySelectorAll('[data-pbool]').forEach(b => b.onclick = e => {
+      e.stopPropagation(); // the menu stays open
+      const [key, val] = b.dataset.pbool.split('='), on = val === '1';
+      if (key === 'labelsApart') { labelsApart = on; store.set('labelsApart', on); }
+      if (key === 'mixSupports') { mixSupports = on; store.set('mixSupports', on); }
+      if (key === 'printAids') { printAids = on; store.set('manualSupports', on); }
+      renderPrint();
+    });
     if ($('resetPrinted')) $('resetPrinted').onclick = () => {
       const btn = $('resetPrinted');
       if (btn.dataset.confirm) { printed = {}; store.set('printed', printed); renderPrint(); renderTabs(); toast('Progress reset'); }
@@ -5904,7 +5923,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <span class="hwq num">${r.qty}\u00d7</span>
         <span class="hwhead">${headIcon(r.item)}</span>
         <span class="hwname"><b>${esc(r.name)}</b><small>${esc(r.note || '')}</small></span>
-        <span class="hwuse"><span>${esc(r.why)}</span><small class="mono">${esc(r.where)}</small></span>
+        <span class="hwuse"><span>${esc(r.why)}</span><small>${esc(r.where)}</small></span>
         <span class="hwbuy">${r.link ? `<a class="btn" href="${esc(r.link)}" data-buy="${esc(r.item)}" target="_blank" rel="${r.aff ? 'sponsored noopener' : 'noopener'}" title="${esc(r.page ? `${r.store}: the product page` : `${r.store}: search for ${shopQuery(r.item)}`)}">${esc(r.store)}</a>` : ''}</span></div>`;
     }).join('');
     V.innerHTML = `<div class="hwpage">
@@ -6040,9 +6059,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <span class="asec-s">${esc(scopeOf(x))}</span><span class="asec-bar" aria-hidden="true"><i style="width:${pct}%"></i></span></button>`;
     }).join('');
     $('view-assemble').innerHTML = `<div class="asm">
-      <nav class="asm-rail" aria-label="Assembly sections"><div class="v3-sec">Assembly</div>${rail}</nav>
+      <nav class="asm-rail" aria-label="Assembly sections"><div class="v3-sec">Sections</div>${rail}</nav>
       <section class="panel asm-steps" aria-label="Steps">
-        <div class="asm-head"><div class="asm-title"><h1>${esc(g.title)}</h1><span class="mono">${esc([g.intro, scopeOf(g)].filter(Boolean).join(' · '))}</span>
+        <div class="asm-head"><div class="asm-title"><h1>${esc(g.title)}</h1><span>${esc([g.intro, scopeOf(g)].filter(Boolean).join(' · '))}</span>
           ${g.inferred ? `<span class="asm-inf"><span class="badge inf">Inferred order</span><span>${esc(g.inferred)}</span></span>` : ''}</div>
           ${rep ? `<div class="asm-rep"><span><b>${built >= rep ? `All ${rep} built` : `${unit} ${built + 1} of ${rep}`}</b><small>Same steps for every ${unit.toLowerCase()}</small></span>
             <button type="button" class="btn primary big" id="asmNext" ${built >= rep ? 'disabled' : ''}>${unit} done, next one</button>${built ? '<button type="button" class="linkbtn" id="asmReset">Start the count again</button>' : ''}</div>` : ''}</div>
@@ -6088,12 +6107,15 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const units = towers.reduce((a, t) => a + t.levels.reduce((x, l) => x + l.length, 0), 0);
     const nx = extras.reduce((a, e) => a + e.qty, 0);
     $('countBuild').textContent = units + nx ? `(${units + nx})` : '';
+    $('countBuild').title = units + nx ? [units && plural(units, 'module'), nx && plural(nx, 'loose part')].filter(Boolean).join(' and ') : '';
     const b = computeBuild(true);
     const total = b.lines.reduce((a, l) => a + (l.fit.s === 'no' || l.fit.s === 'reorient' ? 0 : l.total), 0);
     const done = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0), 0);
     $('countPrint').textContent = total ? `${Math.round(done / total * 100)}%` : '';
+    $('countPrint').title = total ? `${done} of ${plural(total, 'part')} printed` : '';
     const hwLeft = b.empty ? 0 : b.hardware.filter(h => !hwBought[h.item]).length;
     $('countHw').textContent = hwLeft ? `(${hwLeft})` : '';
+    $('countHw').title = hwLeft ? `${plural(hwLeft, 'line')} still to buy` : '';
     store.set('view', view);
     renderHeader();
   }

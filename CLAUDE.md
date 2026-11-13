@@ -230,6 +230,10 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   is too small; `insetOf` gives the part's place inside its box (brim + room) to the export and the plate drawing.
   Diagonal and as-exported shells (L 1F, L 2F) sit alone on their plate and get no room.
 
+- One look everywhere (thread "Unifier l'interface de tout le planner", Dols 2026-11-13): orange fill = action, dark
+  fill = selected, settings as segmented buttons (the stack's too, and the plate options), ticks only for list items,
+  the same title and section sizes on every step. Rules: `docs/ux-redesign.md`, "One look for each kind of thing".
+
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
   main checkout's root, which is not committed.

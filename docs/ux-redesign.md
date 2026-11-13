@@ -145,6 +145,24 @@ Keep the page's tokens and its dark theme. Two additions:
 
 Parts and filament swatches keep their real colour in both themes.
 
+## One look for each kind of thing (Dols, 2026-11-13)
+
+The pass of thread "Unifier l'interface de tout le planner" set these rules for every step, popup and panel:
+- **Buttons**: a filled orange button (`.btn.primary`, `--accent-btn`) does the screen's main action (Add a level on
+  top, Empty stack, Download, Mark as printed, Copy the list, Drawer done). Dark fill (`--ink`) only ever means
+  *selected*: tabs, segmented buttons, toggles of the 3D toolbar. There is no dark action button (`.btn.ink` is gone).
+- **Controls**: a setting is a row of segmented buttons (`.seg`: `useg`/`ubool` for a module, `sbool` for the stack,
+  `pbool` for plate options), with sublabels in `<small>`. A dropdown only where the choices don't fit (printers,
+  stores). A tick box marks an item of a list (plates, hardware bought, assembly steps, stacks to print). Two
+  checkboxes are left for Dols to decide: "Close against the walls", "Gridfinity baseplate inside".
+- **Headings**: each step's main title is 28 px display (`.dtitle`, `.ptop-prog`, `.hwtitle`, `.asm-title`, `.xtitle`);
+  a side panel has an eyebrow saying what it is (`.v3-sec`: Stack settings, Level 2 of 4, Colors, Selected plate)
+  over a 22 px title naming which one. Inside a panel: sections (`.isec`, bold, with a hint and a rule above), then field
+  labels (`.field > .lbl`, small capitals). The stack's sections: Size and roof, Under the stack, Back of the stack;
+  the level's: Module, Front and inside, Back of the stack.
+- **Type**: the mono font for figures (sizes, counts, grams), never for names or sentences.
+- **Words**: "Remove" (not "Delete") for stacks, levels and filaments.
+
 ## Steps, each testable on its own
 
 1. **Hardware**: new tab, list moved out of step 2, bought ticks, copy and CSV. Branding changes in the header.

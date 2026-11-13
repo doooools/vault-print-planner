@@ -1,11 +1,11 @@
 // Battery 1 recipes, the same clicks as the first run (printer per id in PRINTER)
 window.B1 = (() => {
   const c = T.c, chk = T.check;
-  const noRails = () => chk('[data-ucheck=gearedRails]', false);
+  const noRails = () => c('[data-ubool="gearedRails=0"]');
   const lv = async () => T.topLevel();
   const h = async n => { await lv(); await c(`[data-useg="h=${n}"]`); };
-  const topHandle = async on => { await T.stackPanel(); if (document.querySelector('[data-tophandle]')) await chk('[data-tophandle]', on); };
-  const st = async (k, on) => { await T.stackPanel(); await chk(`[data-st="${k}"]`, on); };
+  const topHandle = async on => { await T.stackPanel(); if (document.querySelector('[data-sbool^="topHandle="]')) await c(`[data-sbool="topHandle=${on ? 1 : 0}"]`); };
+  const st = async (k, on) => { await T.stackPanel(); await c(`[data-sbool="${k}=${on ? 1 : 0}"]`); };
   const roof = async r => { await T.stackPanel(); await c(`[data-roof="${r}"]`); };
   const addTop = async () => { await T.tab(1); await c('[data-addtop]'); await lv(); };
   const C01 = async () => { await T.footprint('S', 4); await lv(); await noRails(); await topHandle(false); };
