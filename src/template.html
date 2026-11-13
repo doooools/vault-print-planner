@@ -635,6 +635,12 @@ button.prole:hover { background: var(--sheet-2); }
 .pcard.done .pn, .pcard.done svg { opacity: .6; }
 .ptick { position: absolute; top: 0; right: 0; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer; }
 .ptick input { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); }
+.pcard.picked > button { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.pselbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet); }
+.pselbar.on { border-color: var(--accent); background: var(--accent-soft); }
+.pselbar > span { flex: 1 1 220px; min-width: 0; }
+.pselbar .pnote { margin: 0; }
+.pselbar .btn { min-height: 40px; }
 .psel { flex: 1 1 400px; min-width: 0; position: sticky; top: 12px; display: grid; gap: 12px; padding: 16px; }
 .psel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .psel-head > div:first-child { display: grid; gap: 2px; min-width: 0; }
@@ -3169,6 +3175,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // grouped by filament, then the Printed group), and the selected plate beside it.
   let plateFilter = 'all';   // 'all', a filament key, 'printed' or 'missing'
   let selPlate = null;       // the plate shown large; the first unprinted one by default
+  // Plates ticked on the sheet: the downloads hold only these (every plate left when none is ticked), and "Mark as
+  // printed" in the bar marks them all. Kept for the page's life, per print scope; a tick never marks a plate printed.
+  let plateSel = { scope: null, ns: new Set() };
   let plateOptsOpen = false;
   const two = n => String(n).padStart(2, '0');
   const plateNote = (pl, next) => pl.done ? 'Printed' : next ? 'Up next' : pl.color === 'tpu' ? 'TPU settings' : pl.supports ? 'Supports on' : pl.someSup ? 'Supports on ' + (pl.someSup === pl.items.length ? 'all' : pl.someSup) : '';
@@ -3180,12 +3189,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const { plates: allPlates, skipped, unbraced = [], state: pst } = stablePlates(b.lines, scope);
     const plates = allPlates.filter(pl => !pl.done), printedPl = allPlates.filter(pl => pl.done);
     plateTotal = allPlates.length;
+    if (plateSel.scope !== scope) plateSel = { scope, ns: new Set() };
+    plateSel.ns.forEach(n => { if (!allPlates.some(pl => pl.n === n)) plateSel.ns.delete(n); });
+    const picked = allPlates.filter(pl => plateSel.ns.has(pl.n));
+    const target = picked.length ? picked : plates;   // what the downloads hold
     const total = b.lines.reduce((a, l) => a + (l.fit.s === 'no' || l.fit.s === 'reorient' ? 0 : l.total), 0);
     const done = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0), 0);
     const gDone = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0) * gramsOf(l.file), 0);
     const pct = total ? Math.round(done / total * 100) : 0;
     const next = plates[0];
-    const missing = vaultFolder ? neededPaths(plates).filter(p => !findFile(vaultFolder.files, p)) : [];
+    const missing = vaultFolder ? neededPaths(target).filter(p => !findFile(vaultFolder.files, p)) : [];
     if (plateFilter === 'missing' && !missing.length) plateFilter = 'all';
     const colors = [...new Set(allPlates.map(pl => pl.color))].sort((x, y) => colorOrder(x) - colorOrder(y));
     if (!['all', 'printed', 'missing'].includes(plateFilter) && !colors.includes(plateFilter)) plateFilter = 'all';
@@ -3194,16 +3207,17 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const gramsOfPlates = ps => ps.reduce((a, pl) => a + pl.grams, 0);
     const plMeta = ps => `${plural(ps.length, 'plate')} · ${aboutG(gramsOfPlates(ps))}`;
     // Export: what the button makes on this printer, and what stops it
-    const bambu = !!preset().bambu, picked = !!(vaultFolder || rememberedFolder);
-    const exportSub = bambu ? `One .3mf · ${plural(plates.length, 'plate')} as tabs · set up for the ${esc(printerShort())}` : 'A zip · one .3mf per plate, parts already placed';
+    const bambu = !!preset().bambu, hasFolder = !!(vaultFolder || rememberedFolder);
+    const which = picked.length ? plural(picked.length, 'selected plate') : plates.length === allPlates.length ? plural(plates.length, 'plate') : plural(plates.length, 'plate') + ' left';
+    const exportSub = bambu ? `One .3mf · ${which} as tabs · set up for the ${esc(printerShort())}` : `A zip · ${which}, one .3mf each, parts already placed`;
     const exportBtn = !canMake ? '<p class="pnote" style="margin:0">Open this page on a computer with your Vault download to make the print files.</p>'
-      : !plates.length ? ''
-      : `<button type="button" class="xbtn" id="gMake"${missing.length ? ' disabled' : ''}>${picked ? `<b>${bambu ? 'Download the Bambu Studio project' : 'Download the plate files'}</b><span class="mono">${exportSub}</span>` : `<b>Choose your Vault folder to make the files</b><span class="mono">Then: ${bambu ? `one .3mf · ${plural(plates.length, 'plate')} as tabs` : 'a zip, one .3mf per plate'}</span>`}</button>`;
-    const missingPlates = missing.length ? plates.filter(pl => pl.items.some(it => missing.includes(it.p.l.file.path))) : [];
+      : !target.length ? ''
+      : `<button type="button" class="xbtn" id="gMake"${missing.length ? ' disabled' : ''}>${hasFolder ? `<b>${bambu ? 'Download the Bambu Studio project' : 'Download the plate files'}</b><span class="mono">${exportSub}</span>` : `<b>Choose your Vault folder to make the files</b><span class="mono">Then: ${bambu ? `one .3mf · ${which} as tabs` : `a zip, ${which}, one .3mf each`}</span>`}</button>`;
+    const missingPlates = missing.length ? target.filter(pl => pl.items.some(it => missing.includes(it.p.l.file.path))) : [];
     const alerts = [
       b.towerIssues.length ? `<div class="alert bad"><strong>Some stacks won’t fit together as designed.</strong><span>${b.towerIssues.map(esc).join(' ')} Fix them in Design before printing.</span></div>` : '',
       missing.length ? `<div class="alert bad" role="alert"><strong>${plural(missing.length, 'part')} not found in “${esc(vaultFolder.name)}”</strong><span class="mono">${missing.slice(0, 8).map(p => esc(fileName(p))).join(' · ')}${missing.length > 8 ? ` and ${missing.length - 8} more` : ''}</span>
-        <span>${missing.length * 2 < neededPaths(plates).length ? `If that is the Vault download, your copy may name these differently from the one this planner knows (${esc(SRC_DEFAULT)}).` : 'Pick the Vault download folder itself, not one of its subfolders.'}</span>
+        <span>${missing.length * 2 < neededPaths(target).length ? `If that is the Vault download, your copy may name these differently from the one this planner knows (${esc(SRC_DEFAULT)}).` : 'Pick the Vault download folder itself, not one of its subfolders.'}</span>
         <div class="actions"><button type="button" class="btn primary" id="gPick">Choose another folder…</button><button type="button" class="btn" id="gShowMissing">Show the plates they are on</button></div></div>` : '',
       skipped.length ? `<div class="alert warn" role="alert"><strong>${plural(skipped.length, 'part')} no longer ${skipped.length === 1 ? 'fits' : 'fit'} the ${esc(printerName())} and ${skipped.length === 1 ? 'is' : 'are'} left out of the plates</strong><span class="mono">${skipped.map(l => esc(l.label) + ' · ' + dimStr(l.file.dims) + (l.fit.s === 'reorient' ? ', only tipped on its side' : '')).join('<br>')}</span><span>Print ${skipped.length === 1 ? 'it' : 'them'} on a bigger printer, or change that level in Design.</span>
         <div class="actions"><button type="button" class="btn" data-go="build">Show it in Design</button></div></div>` : '',
@@ -3211,11 +3225,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     ].join('');
     // The sheet
     const card = pl => {
-      const isNext = next && pl.n === next.n, note = plateNote(pl, isNext), on = sel && pl.n === sel.n;
-      return `<div class="pcard${pl.done ? ' done' : ''}${on ? ' on' : ''}">
+      const isNext = next && pl.n === next.n, note = plateNote(pl, isNext), on = sel && pl.n === sel.n, tick = plateSel.ns.has(pl.n);
+      return `<div class="pcard${pl.done ? ' done' : ''}${on ? ' on' : ''}${tick ? ' picked' : ''}">
         <button type="button" data-pick="${pl.n}" aria-pressed="${on}" aria-label="Plate ${pl.n}, show its layout"><span class="pn">Plate ${two(pl.n)}</span>
           ${plateSvg(pl, true)}<span class="mono pm">${plural(pl.items.length, 'part')} · ${aboutG(pl.grams)}</span><span class="pflag ${pl.done ? 'ok' : isNext ? 'next' : 'flag'}">${esc(note)}</span></button>
-        <label class="ptick"><input type="checkbox" data-done="${pl.n}" ${pl.done ? 'checked' : ''} aria-label="Plate ${pl.n} printed"></label></div>`;
+        <label class="ptick" title="Select for the download"><input type="checkbox" data-tick="${pl.n}" ${tick ? 'checked' : ''} aria-label="Select plate ${pl.n} for the download"></label></div>`;
     };
     const head = (name, hex, meta) => `<div class="pgroup"><h2><span class="dot2" style="background:${hex}"></span>${esc(name)}</h2><span class="mono">${meta}</span></div>`;
     let sheet = '';
@@ -3227,10 +3241,20 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         sheet += head(colorName(k), colorHex(k), `${plMeta(ps)} · ${todo.length ? todo.length + ' left' : 'all printed'}`) + todo.map(card).join('');
       });
       if (plateFilter === 'all' || plateFilter === 'printed')
-        sheet += head('Printed', 'var(--ok)', printedPl.length ? `${plMeta(printedPl)} · untick one to print it again` : 'Nothing printed yet') + printedPl.map(card).join('');
+        sheet += head('Printed', 'var(--ok)', printedPl.length ? `${plMeta(printedPl)} · tick one to print it again` : 'Nothing printed yet') + printedPl.map(card).join('');
     }
     const chip = (key, label, hex, meta) => `<button type="button" class="fchip" data-filter="${esc(key)}" aria-pressed="${plateFilter === key}"><span class="dot2 big" style="background:${hex}"></span><span><b>${esc(label)}</b><span class="mono">${meta}</span></span></button>`;
     const chips = chip('all', 'All plates', 'var(--sheet)', plMeta(allPlates)) + colors.map(k => chip(k, colorName(k), colorHex(k), plMeta(allPlates.filter(pl => pl.color === k)))).join('') + chip('printed', 'Printed', 'var(--ok)', plMeta(printedPl));
+    // The ticked plates: what the downloads hold, and one button to mark them all printed
+    const shown = plateFilter === 'missing' ? missingPlates : plateFilter === 'printed' ? printedPl : allPlates.filter(pl => !pl.done && (plateFilter === 'all' || pl.color === plateFilter));
+    const pickedTodo = picked.filter(pl => !pl.done), pickedDone = picked.filter(pl => pl.done);
+    const selBar = !picked.length
+      ? `<div class="pselbar" role="group" aria-label="Plate selection"><span class="pnote">Tick plates to download only those, then mark them printed in one go. Nothing ticked: the downloads hold every plate left.</span>${shown.length ? `<button type="button" class="btn" id="pSelAll">Tick the ${plural(shown.length, 'plate')} shown</button>` : ''}</div>`
+      : `<div class="pselbar on" role="group" aria-label="Plate selection"><span><b>${plural(picked.length, 'plate')} ticked</b> <span class="mono">· ${aboutG(gramsOfPlates(picked))} · ${esc(picked.map(pl => two(pl.n)).join(', '))}</span><br><span class="pnote">The downloads hold only these.</span></span>
+        ${pickedTodo.length ? `<button type="button" class="btn ink" id="pSelDone">Mark ${pickedTodo.length === 1 ? 'it' : pickedTodo.length === picked.length ? 'them' : pickedTodo.length} as printed</button>` : ''}
+        ${pickedDone.length ? `<button type="button" class="btn" id="pSelUndo">Put ${pickedDone.length === 1 && picked.length === 1 ? 'it' : pickedDone.length === picked.length ? 'them' : pickedDone.length + ' printed'} back on the list</button>` : ''}
+        ${shown.some(pl => !plateSel.ns.has(pl.n)) ? `<button type="button" class="btn" id="pSelAll">Tick all shown</button>` : ''}
+        <button type="button" class="btn" id="pSelNone">Untick all</button></div>`;
     // The selected plate
     const idx = sel ? allPlates.indexOf(sel) : -1;
     const selFlag = sel ? plateNote(sel, false) : '';
@@ -3252,7 +3276,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="ptop-prog"><h1>${pct}% printed</h1><div class="bar2" aria-hidden="true"><i style="width:${pct}%"></i></div>
           <div class="mono">${done} of ${total} parts · ${plates.length} of ${plural(allPlates.length, 'plate')} left · ${aboutG(gDone)} of ${gramsStr(s.g)}</div></div>
         <div class="ptop-x">${exportBtn}
-          <div class="xrow">${canMake && plates.length ? '<button type="button" class="btn" id="gFolders">STL folders (.zip)</button>' : ''}<span class="popwrap"><button type="button" class="btn" id="plateOpts" aria-expanded="${plateOptsOpen}" aria-controls="plateOptsBox">Plate options…</button>
+          <div class="xrow">${canMake && target.length ? '<button type="button" class="btn" id="gFolders">STL folders (.zip)</button>' : ''}<span class="popwrap"><button type="button" class="btn" id="plateOpts" aria-expanded="${plateOptsOpen}" aria-controls="plateOptsBox">Plate options…</button>
             <div class="panel popbox" id="plateOptsBox" ${plateOptsOpen ? '' : 'hidden'}><h2>Plate options</h2>
               <label class="opt"><input type="checkbox" id="mixSupports" ${mixSupports ? 'checked' : ''}><span>Fewer plates<small>Support parts share plates; supports stay on just for them</small></span></label>
               <label class="opt"><input type="checkbox" id="printAids" ${printAids ? 'checked' : ''}><span>Manual supports<small>USSA's prop for each drawer roof, printed standing against it on the same plate</small></span></label>
@@ -3265,6 +3289,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       </section>
       ${alerts}
       <div class="fchips" role="group" aria-label="Show plates for a filament">${chips}</div>
+      ${selBar}
       <div class="pbody">
         <section class="psheet" aria-label="Plates">${sheet || '<p class="pnote">No plates here.</p>'}</section>
         ${detail}
@@ -3273,14 +3298,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="parts">${partRows(b.lines)}</div>
         <div class="actions" style="padding:0 18px 16px"><button class="btn" id="copyAll">Copy part list</button></div></details>`;
     const V = $('view-print');
-    const markPlate = (pl, on) => {
+    const markPlate = (pl, on, quiet) => {
       if (on) { pl.lines.forEach(x => { printed[pkey(x.l)] = (printed[pkey(x.l)] || 0) + x.count; }); pst.done.push({ n: pl.n, sig: pl.sig }); }
       else {
         pl.lines.forEach(x => { const k = pkey(x.l); printed[k] = Math.max(0, (printed[k] || 0) - x.count); if (!printed[k]) delete printed[k]; });
         pst.done = pst.done.filter(d => !(d.n === pl.n && d.sig === pl.sig));
       }
       store.set('plateState', plateState); store.set('printed', printed);
-      toast(on ? `Plate ${pl.n} marked printed` : `Plate ${pl.n} back on the list`);
+      if (!quiet) toast(on ? `Plate ${pl.n} marked printed` : `Plate ${pl.n} back on the list`);
     };
     V.querySelectorAll('[data-pskip]').forEach(btn => btn.onclick = () => {
       const id = btn.dataset.pskip === 'loose' ? 'loose' : +btn.dataset.pskip, on = btn.getAttribute('aria-pressed') === 'true';
@@ -3290,7 +3315,20 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     });
     V.querySelectorAll('[data-filter]').forEach(btn => btn.onclick = () => { plateFilter = btn.dataset.filter; renderPrint(); });
     V.querySelectorAll('[data-pick]').forEach(btn => btn.onclick = () => { selPlate = +btn.dataset.pick; renderPrint(); });
-    V.querySelectorAll('[data-done]').forEach(cb => cb.onchange = () => { markPlate(allPlates.find(p => p.n === +cb.dataset.done), cb.checked); renderPrint(); renderTabs(); });
+    V.querySelectorAll('[data-tick]').forEach(cb => cb.onchange = () => { const n = +cb.dataset.tick; cb.checked ? plateSel.ns.add(n) : plateSel.ns.delete(n); renderPrint(); });
+    if ($('pSelAll')) $('pSelAll').onclick = () => { shown.forEach(pl => plateSel.ns.add(pl.n)); renderPrint(); };
+    if ($('pSelNone')) $('pSelNone').onclick = () => { plateSel.ns.clear(); renderPrint(); };
+    if ($('pSelDone')) $('pSelDone').onclick = () => {
+      pickedTodo.forEach(pl => markPlate(pl, true, true)); plateSel.ns.clear();
+      if (pickedTodo.some(pl => pl.n === selPlate)) selPlate = null;
+      toast(pickedTodo.length === 1 ? `Plate ${pickedTodo[0].n} marked printed` : `${plural(pickedTodo.length, 'plate')} marked printed`);
+      renderPrint(); renderTabs();
+    };
+    if ($('pSelUndo')) $('pSelUndo').onclick = () => {
+      pickedDone.forEach(pl => markPlate(pl, false, true));
+      toast(pickedDone.length === 1 ? `Plate ${pickedDone[0].n} back on the list` : `${plural(pickedDone.length, 'plate')} back on the list`);
+      renderPrint(); renderTabs();
+    };
     V.querySelectorAll('[data-step]').forEach(btn => btn.onclick = () => { const p = allPlates[idx + +btn.dataset.step]; if (p) { selPlate = p.n; renderPrint(); } });
     V.querySelectorAll('[data-go]').forEach(btn => btn.onclick = () => { view = btn.dataset.go; renderAll(); });
     if ($('pToggle')) $('pToggle').onclick = () => {
@@ -3318,8 +3356,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       renderAll(); toast(b.onlyExtras ? 'Loose parts cleared' : 'All plates cleared');
     };
     $('copyAll').onclick = () => copy(listText(b.lines, 'Vault build'), 'Part list copied');
-    if ($('gMake')) $('gMake').onclick = () => picked ? makeDownload(plates, false, 'project') : openFolder(false);
-    if ($('gFolders')) $('gFolders').onclick = () => makeDownload(plates, false, 'folders');
+    if ($('gMake')) $('gMake').onclick = () => hasFolder ? makeDownload(target, false, 'project') : openFolder(false);
+    if ($('gFolders')) $('gFolders').onclick = () => makeDownload(target, false, 'folders');
     if ($('gPick')) $('gPick').onclick = () => openFolder(true);
     if ($('gShowMissing')) $('gShowMissing').onclick = () => { plateFilter = 'missing'; if (missingPlates[0]) selPlate = missingPlates[0].n; renderPrint(); };
     // Chrome and Edge remember the folder: offer it by name (reading it again asks for permission on download)
