@@ -502,7 +502,10 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
    blue rail card + blue panel = the whole stack is being edited; a neutral panel = one level */
 .dstack[aria-pressed=true] { border-color: var(--stack); background: var(--stack-soft); }
 .dstack[aria-pressed=true] .dbadge { background: var(--stack); color: var(--stack-ink); }
-.dstack .dot { position: absolute; top: 8px; right: 40px; background: var(--warn); }
+/* the stack needs attention: a dot on its letter badge */
+.dstack .dot { position: absolute; top: -4px; right: -4px; width: 11px; height: 11px; background: var(--warn); box-shadow: 0 0 0 2px var(--sheet); }
+.dstack[aria-pressed=true] .dot { box-shadow: 0 0 0 2px var(--stack-soft); }
+.vh { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .dstackw { position: relative; display: grid; }
 .dstackw .dstack { padding-right: 44px; }
 .dsdel { position: absolute; right: 6px; top: 50%; width: 32px; height: 32px; margin-top: -16px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; color: var(--muted); touch-action: none; }
@@ -521,7 +524,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 @keyframes holdfill { to { transform: scaleX(1); } }
 @media (prefers-reduced-motion: reduce) { .hold.holding:not(.dsdel)::before { animation-duration: 0s; animation-delay: var(--hold-ms, .5s); } }
 .dsdel.holding::after { background: conic-gradient(var(--bad) var(--hold), transparent var(--hold)); }
-.dbadge { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; background: var(--ink); color: var(--sheet); font-weight: 800; font-stretch: 112%; font-size: 16px; }
+.dbadge { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; background: var(--ink); color: var(--sheet); font-weight: 800; font-stretch: 112%; font-size: 16px; }
 .dst { display: grid; min-width: 0; line-height: 1.25; }
 .dst b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dst small { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
@@ -537,17 +540,17 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .dcenter.loose { overflow: visible; }
 .dhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
 .dtitle { display: grid; min-width: 0; }
-.dtitle h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
+.dname { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.dname .dren { flex: none; width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-color: transparent; background: transparent; color: var(--muted); }
+.dname .dren:hover, .dname .dren:focus-visible { color: var(--ink); border-color: var(--line); background: var(--sheet-2); }
+.dnamef { min-width: 0; width: min(100%, 520px); margin: -3px 0 -3px -7px; padding: 2px 6px; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; border: 1px solid var(--ink); border-radius: 6px; background: var(--sheet); color: var(--ink); }
+.dtitle h1 { overflow-wrap: anywhere; } .dtitle h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
 .dtitle .mono { color: var(--muted); }
 .dacts { display: flex; flex-wrap: wrap; gap: 8px; }
 .dacts .btn { min-height: 40px; display: inline-flex; align-items: center; gap: 6px; }
 .dacts .btn[aria-pressed=true], .dacts .btn[aria-expanded=true] { border-color: var(--ink); background: var(--raised); box-shadow: inset 0 0 0 1px var(--ink); }
 .dacts .btn[data-dstack][aria-pressed=true] { border-color: var(--stack); background: var(--stack-soft); box-shadow: inset 0 0 0 1px var(--stack); }
 .dacts .btn .mono { color: var(--muted); font-size: 12px; }
-.fpstrip { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 32px; padding: 12px 16px; background: var(--sheet-2); border-bottom: 1px solid var(--line); }
-.fpstrip .field { flex: 1 1 260px; }
-.fpstrip .seg { background: var(--sheet); box-shadow: inset 0 0 0 1px var(--line); }
-.fpstrip .pnote { flex-basis: 100%; margin: 0; }
 .design .v3-slot { border-bottom: 1px solid var(--line); }
 .design .v3-view { grid-template-columns: minmax(0, 1fr); }
 .design .v3-slot .v3-stage { height: clamp(420px, calc(100vh - 300px), 860px); }
@@ -598,15 +601,14 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .ihead { display: grid; gap: 2px; padding: 14px 16px 12px; border-bottom: 1px solid var(--line); }
 .ihead h2 { margin: 6px 0 2px; font-family: var(--f-display); font-size: 22px; font-weight: 800; font-stretch: 112%; line-height: 1.15; }
 .ihead .mono { color: var(--muted); font-size: 12px; }
-.ihead .tname { margin: 6px 0 2px -7px; padding: 2px 6px; font: 800 22px var(--f-display); font-stretch: 112%; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink); width: calc(100% + 7px); }
-.ihead .tname:hover, .ihead .tname:focus { border-color: var(--line); background: var(--sheet-2); }
 /* The inspector showing the stack's settings takes the stack colour (see .dstack) */
 .dinsp.istack { background: var(--stack-soft); border: 2px solid var(--stack); }
 .dinsp.istack .ihead { border-bottom-color: color-mix(in srgb, var(--stack) 35%, transparent); }
-.dinsp.istack .ihead > .v3-sec { color: var(--stack-text); }
-.dinsp.istack .seg, .dinsp.istack .ifp { background: var(--sheet); }
-.dinsp.istack .ihead .tname:hover, .dinsp.istack .ihead .tname:focus { background: var(--sheet); }
-.dinsp.istack .isec { border-top-color: color-mix(in srgb, var(--stack) 35%, transparent); }
+.dinsp.istack .ihead .v3-sec { color: var(--stack-text); }
+.dinsp.istack .seg { background: var(--sheet); }
+.dinsp.istack .ifold { border-top-color: color-mix(in srgb, var(--stack) 35%, transparent); }
+.dinsp.istack .field.off .seg { background: color-mix(in srgb, var(--sheet) 55%, transparent); }
+.dinsp.istack .lbl .need { color: var(--stack-text); }
 .ipos { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .iacts { display: flex; gap: 4px; }
 .iacts .iconbtn.sq { width: 40px; height: 40px; }
@@ -615,23 +617,40 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .seg.lays button { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; min-width: 0; }
 .seg.lays button small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 0; }
 .seg.lays button svg { color: var(--muted); } .seg.lays button[aria-pressed=true] svg { color: inherit; }
-.seg.drs button { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; }
-.seg.drs button svg { color: var(--muted); } .seg.drs button[aria-pressed=true] svg { color: inherit; }
-.seg.drs button small { line-height: 1.2; }
 .seg.across button { display: grid; justify-items: center; gap: 2px; padding: 8px 4px; }
 .seg.across button svg { color: var(--muted); }
 .seg.across button[aria-pressed=true] svg { color: inherit; }
 .seg.across button small { line-height: 1.2; }
 .dinsp > .alert { margin: 12px 16px 0; }
 .ibody { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 14px 16px 18px; }
-.imore .ibody { padding: 12px 0 4px; }
 .ipaint { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px; background: var(--sheet-2); border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
-.imore { border-top: 1px solid var(--line); padding-top: 10px; }
-.imore > summary { cursor: pointer; font-weight: 700; font-size: 14px; min-height: 32px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.imore > summary .mono { color: var(--muted); font-size: 12px; font-weight: 400; }
-.isec { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px; margin-bottom: -4px; font-size: 14px; }
-.isec .hint { font-size: 12px; font-weight: 400; color: var(--muted); }
-.isec.first { border-top: 0; padding-top: 0; }
+/* Foldable sections of the selection panel (fold): name on the left, what is set on the right */
+.ibody.folds { gap: 0; padding-top: 6px; }
+.ibody.folds > .ialerts { margin: 8px 0 10px; }
+.ibody.folds > .actions { margin-top: 14px; }
+.ifold { border-top: 1px solid var(--line); }
+.ifold:first-child, .ialerts + .ifold { border-top: 0; }
+.ifold > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 700; font-size: 14px; }
+.ifold > summary::-webkit-details-marker { display: none; }
+.ifold > summary::before { content: ""; flex: none; width: 7px; height: 7px; margin: 0 3px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(-45deg); transition: transform .15s; }
+.ifold[open] > summary::before { transform: rotate(45deg); }
+.ifold > summary .fname { flex: none; }
+.ifold > summary .fsum { margin-left: auto; min-width: 0; font-weight: 400; font-size: 12.5px; color: var(--muted); text-align: right; }
+.ifold > summary:hover .fsum { color: var(--ink); }
+.ifold > .fbody { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 4px 0 18px; }
+/* An option that needs another first: greyed in place, the reason on the right of its name */
+.field.off .seg button:disabled { opacity: 1; color: color-mix(in srgb, var(--muted) 70%, transparent); }
+.field.off .seg button:disabled small { color: inherit; }
+.field > .lbl .need { color: var(--ink); font-weight: 600; }
+/* Several drawers in one module: a tab per drawer over the frame of what is the drawer's own */
+.dtabs { display: grid; gap: 4px; margin-bottom: -17px; position: relative; z-index: 1; }
+.dtabs button { display: grid; justify-items: center; gap: 2px; min-width: 0; padding: 8px 4px 7px; border: 1px solid var(--line); border-radius: 9px 9px 0 0; background: var(--sheet-2); color: var(--ink); font-weight: 600; line-height: 1.15; }
+.dtabs button small { font-weight: 400; font-size: 11px; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dtabs button[aria-selected=true] { background: var(--sheet); border-bottom-color: var(--sheet); }
+.dtabs button:hover:not([aria-selected=true]) { background: var(--raised); }
+.dframe { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 14px 12px 12px; border: 1px solid var(--line); border-radius: 0 0 10px 10px; background: var(--sheet); }
+.dframe > .btn { min-height: 40px; }
+.dfnote { margin: -8px 0 0; }
 .ilist { display: grid; gap: 6px; margin-top: 8px; }
 .ilist h3 { display: flex; justify-content: space-between; gap: 8px; margin: 6px 0 0; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .ilist h3 .mono { text-transform: none; letter-spacing: 0; }
@@ -641,9 +660,6 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .ilist li .n { overflow-wrap: anywhere; }
 .ilist li small { color: var(--muted); font-size: 11.5px; }
 .ilist .linkbtn { justify-self: start; margin: 4px 0 0; padding: 0; font-size: 13px; }
-.ifp { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 4px 4px 12px; background: var(--sheet-2); border-radius: 9px; }
-.ifp .btn { flex: none; min-height: 40px; }
-.ifp b { min-width: 0; }
 .ialerts { display: grid; gap: 6px; }
 .ialerts .linkbtn { display: inline; margin: 0 0 0 4px; padding: 0; font-size: 13px; color: inherit; }
 .seg.wrap { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); width: 100%; box-sizing: border-box; min-width: 0; }
@@ -2431,7 +2447,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     dsel = !d || !(Number.isInteger(d.t) || d.t === 'loose') ? null : d.t === 'loose' ? { t: 'loose' }
       : { t: d.t, l: Number.isInteger(d.l) && d.l >= 0 ? d.l : null, u: Number.isInteger(d.u) && d.u >= 0 ? d.u : 0, ...(typeof d.d === 'string' && SAFE_ID.test(d.d) ? { d: d.d } : {}) };
     if (d) store.set('dsel', dsel); }
-  let fpStrip = false;                  // the footprint strip under the toolbar
   const saveSel = () => { store.set('dsel', dsel); undoNote(); };
   const curTower = () => dsel && towers.find(t => t.id === dsel.t);
   // Does a unit have a part too big for the printer? (wall mount, pegboard and backbone parts are judged on their own)
@@ -2629,8 +2644,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const useg = (key, items, cur) => items.map(it => `<button type="button" data-useg="${key}=${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   // An on/off setting of the selected module as two segmented buttons (data-ubool="key=1" / "key=0")
   const ubool = (key, off, on, cur) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-ubool="${key}=${it.v}" aria-pressed="${!!cur === !!it.v}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
-  // An on/off setting of the stack (or its roof's carry handle) as two segmented buttons (data-sbool="key=1" / "key=0")
-  const sbool = (key, off, on, cur) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-sbool="${key}=${it.v}" aria-pressed="${!!cur === !!it.v}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
+  // An on/off setting of the stack (or its roof's carry handle) as two segmented buttons (data-sbool="key=1" / "key=0");
+  // `dis`: greyed, it needs another setting first (neither button pressed: the option isn't there yet)
+  const sbool = (key, off, on, cur, dis) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-sbool="${key}=${it.v}" aria-pressed="${!dis && !!cur === !!it.v}"${dis ? ' disabled' : ''}>${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   // A print setting (plate options) as two segmented buttons (data-pbool="key=1" / "key=0")
   const pbool = (key, off, on, cur) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-pbool="${key}=${it.v}" aria-pressed="${!!cur === !!it.v}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   const stepRow = (key, label, val) => `<div class="stepper"><span>${label}</span><div><button type="button" data-ustep="${key}" data-d="-1" aria-label="Fewer: ${label}">−</button><output>${val}</output><button type="button" data-ustep="${key}" data-d="1" aria-label="More: ${label}">+</button></div></div>`;
@@ -2639,7 +2655,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     del: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>', plus: '<path d="M12 5v14M5 12h14"/>',
     more: '<circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="19" cy="12" r="1.2" fill="currentColor"/>',
     fit: '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>', drawer: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 12h6"/>',
-    chev: '<path d="M9 6l6 6-6 6"/>', help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>',
+    chev: '<path d="M9 6l6 6-6 6"/>', pen: '<path d="M4 20l1-4L16 5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/>', help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>',
   };
   const icon = k => `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
   // Width × depth × height of the whole stack as it stands, with its base, wheels, roof, handles… (stackSize)
@@ -2765,7 +2781,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (t && dsel.l != null && !t.levels[dsel.l][dsel.u || 0]) dsel.u = 0;
     const info = towers.map(x => ({ t: x, a: analyzeTower(x) }));
     const rail = info.map(({ t: x, a }) => { const fp = fpOf(x), bad = stackAlerts(x, a).some(m => m.k !== 'info');
-      return `<div class="dstackw"><button type="button" class="dstack" data-stack="${esc(x.id)}" aria-pressed="${!!t && x.id === t.id}"><span class="dbadge" aria-hidden="true">${esc(fp.w)}</span><span class="dst"><b>${esc(x.name)}</b><small>${fpCode(fp)} · ${plural(x.levels.length, 'level')}</small></span>${bad ? '<i class="dot" aria-label="needs attention"></i>' : ''}</button>
+      return `<div class="dstackw"><button type="button" class="dstack" data-stack="${esc(x.id)}" aria-pressed="${!!t && x.id === t.id}"><span class="dbadge" aria-hidden="true">${esc(fp.w)}${bad ? '<i class="dot"></i>' : ''}</span><span class="dst"><b>${esc(x.name)}</b><small>${fpCode(fp)} · ${plural(x.levels.length, 'level')}</small></span>${bad ? '<span class="vh">Needs attention</span>' : ''}</button>
         <button type="button" class="dsdel" data-sdel="${esc(x.id)}" aria-label="Remove ${esc(x.name)}: press and hold" title="Press and hold to remove"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('');
     const nx = extras.reduce((a, e) => a + e.qty, 0);
     const loose = dsel.t === 'loose';
@@ -2783,7 +2799,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     <dialog id="tplDlg" aria-labelledby="tplTitle"><button type="button" class="vclose" data-tpl-close aria-label="Close">&times;</button><h2 id="tplTitle">Start from a template</h2><p class="pnote">A ready-made stack, added as a new stack. Change anything in it afterwards.</p>
       <div class="tpls">${PRESETS.map((p, i) => ({ p, i })).filter(({ p }) => presetFits(p)).map(({ p, i }) => tplCard(p, i)).join('')}</div></dialog>`;
     const V = $('view-build');
-    V.querySelectorAll('[data-stack]').forEach(b => b.onclick = () => { const x = towers.find(y => y.id === +b.dataset.stack); dsel = { t: x.id, l: null, u: 0 }; saveSel(); fpStrip = false; inspPaint = false; renderAll(); });
+    V.querySelectorAll('[data-stack]').forEach(b => b.onclick = () => { const x = towers.find(y => y.id === +b.dataset.stack); dsel = { t: x.id, l: null, u: 0 }; saveSel(); inspPaint = false; renderAll(); });
     V.querySelectorAll('[data-sdel]').forEach(holdToDelete);
     V.querySelector('[data-loose]').onclick = () => { dsel = { t: 'loose' }; saveSel(); renderAll(); };
     $('dNew').onclick = () => { newStack(); renderAll(); };
@@ -2829,20 +2845,39 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const holdToDelete = b => holdButton(b, () => { const t = towers.find(x => x.id === +b.dataset.sdel); if (t) removeStack(t); }, 'Hold the cross down to remove the stack');
   function designCenter(t, a) {
     const fp = fpOf(t);
-    const wOpts = FP_W.filter(w => sizeFits(w, R.DEPTHS[0]) || w === fp.w).map(w => ({ v: w, label: w, sub: Math.round(R.WIDTH_MM[w]) + ' mm' }));
-    const dOpts = R.DEPTHS.filter(d => sizeFits(fp.w, d) || d === fp.d).map(d => ({ v: d, label: 'x' + d, sub: Math.round(unitExt({ type: 'drawer', w: fp.w, d, h: 1 })[1]) + ' mm' }));
+    // the stack's name is renamed here, in place (dRename): the pencil turns the title into its field
     return `<section class="panel dcenter" aria-label="Stack">
-      <div class="dhead"><div class="dtitle"><h1>${esc(t.name)}</h1><span class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></span></div>
+      <div class="dhead"><div class="dtitle"><div class="dname"><h1>${esc(t.name)}</h1><button type="button" class="iconbtn dren" data-rename aria-label="Rename ${esc(t.name)}" title="Rename the stack">${icon('pen')}</button></div><span class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></span></div>
         <div class="dacts"><button type="button" class="btn" data-dstack aria-pressed="${dsel.l == null}">Stack settings</button>
-          <button type="button" class="btn" data-fp aria-expanded="${fpStrip}">Footprint <span class="mono">${fpCode(fp)}</span></button>
           <button type="button" class="btn primary" data-addtop title="Adds a level like the top one">${icon('plus')} Add a level on top</button></div></div>
-      ${fpStrip ? `<div class="fpstrip"><div class="field"><div class="lbl">Width</div><div class="seg">${segBtns(wOpts, fp.w, 'data-fpw')}</div></div>
-        <div class="field"><div class="lbl">Depth <span class="hint">grid units of 42 mm</span></div><div class="seg">${segBtns(dOpts, fp.d, 'data-fpd')}</div></div>
-        <p class="pnote">Applies to every level of ${esc(t.name)}. Sizes too big for the ${esc(printerName())} aren’t offered.</p></div>` : ''}
       ${t.levels.length ? '<div class="v3-slot"></div>' : `<div class="dempty"><p>This stack has no level yet.</p><button type="button" class="btn primary big" data-addtop>${icon('plus')} Add a level</button></div>`}
       ${fpAdding && painting() ? '<div class="dcat" id="dCat"></div>' : ''}
     </section>`;
   }
+  // Renaming the stack: its title becomes a field; Enter or leaving it keeps the name, Esc puts the old one back
+  function dRename(t, b) {
+    const h = b.parentNode.querySelector('h1'); if (!h) return;
+    const f = document.createElement('input');
+    f.className = 'dnamef'; f.value = t.name; f.maxLength = 80; f.setAttribute('aria-label', 'Stack name');
+    h.replaceWith(f); b.hidden = true; f.focus(); f.select();
+    let done = false;
+    const end = (keep, refocus) => {
+      if (done) return; done = true;
+      const n = f.value.trim();
+      if (keep && n && n !== t.name) { t.name = n; save(); }
+      // left by a click elsewhere: drawn again once that click is through, so the button pressed still gets it
+      if (!refocus && ptrDown) { addEventListener('pointerup', () => setTimeout(renderAll), { once: true, capture: true }); return; }
+      renderAll();
+      const nb = refocus && document.querySelector('#view-build [data-rename]'); if (nb) nb.focus({ preventScroll: true });
+    };
+    f.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); end(true, true); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); end(false, true); } };
+    f.onblur = () => end(true, false);
+  }
+  // Is a mouse button or a finger down? (dRename)
+  let ptrDown = false;
+  addEventListener('pointerdown', () => { ptrDown = true; }, true);
+  addEventListener('pointerup', () => { ptrDown = false; }, true);
+  addEventListener('pointercancel', () => { ptrDown = false; }, true);
   // "Stack settings" after the selection changed without a redraw of step 1
   function markLevels() {
     const V = $('view-build'); if (!V) return;
@@ -2850,10 +2885,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   function bindCenter(t) {
     const V = $('view-build');
-    V.querySelectorAll('[data-dstack]').forEach(b => b.onclick = () => { if (painting() && inspPaint) { inspPaint = false; dsel.l = null; } else dsel.l = dsel.l == null && t.levels.length ? t.levels.length - 1 : null; saveSel(); renderInspector(); v3mark(); markLevels(); });
-    V.querySelectorAll('[data-fp]').forEach(b => b.onclick = () => { fpStrip = !fpStrip; renderAll(); });
-    V.querySelectorAll('[data-fpw]').forEach(b => b.onclick = () => { const fp = fpOf(t); let d = fp.d; if (!sizeFits(b.dataset.fpw, d)) d = R.DEPTHS.find(x => sizeFits(b.dataset.fpw, x)) || d; setFootprint(t, b.dataset.fpw, d); renderAll(); });
-    V.querySelectorAll('[data-fpd]').forEach(b => b.onclick = () => { setFootprint(t, fpOf(t).w, +b.dataset.fpd); renderAll(); });
+    // "Stack settings" opens them; a second click leaves them open (the levels are picked in the view or the panel)
+    V.querySelectorAll('[data-dstack]').forEach(b => b.onclick = () => { if (painting() && inspPaint) inspPaint = false; dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); });
+    V.querySelectorAll('[data-rename]').forEach(b => b.onclick = () => dRename(t, b));
     V.querySelectorAll('[data-addtop]').forEach(b => b.onclick = () => levelOp(t, 'top'));
     bindCatalog();
   }
@@ -2863,6 +2897,23 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   let inspKeep = null;
   const inspSel = () => dsel ? `${dsel.t}|${dsel.l}|${dsel.u}|${painting() && inspPaint}` : ''; // no selection: a stack was just removed
   const inspDetails = b => [...b.querySelectorAll('details')].map(d => { const sm = d.querySelector('summary'); return [sm && sm.firstChild ? sm.firstChild.textContent.trim() : '', d]; });
+  // The panel's foldable sections: the name, what is set in a few words, and the settings. Open or folded as the user
+  // left them, per section, for the page's life (else as `open` says); inspSave / inspRestore keep them over a redraw.
+  const foldOpen = new Map();
+  const fold = (id, name, sum, open, body) => `<details class="ifold" data-fold="${id}"${(foldOpen.has(id) ? foldOpen.get(id) : open) ? ' open' : ''}><summary><span class="fname">${name}</span><span class="fsum">${sum}</span></summary><div class="fbody">${body}</div></details>`;
+  const bindFolds = box => box.querySelectorAll('[data-fold]').forEach(d => d.addEventListener('toggle', () => foldOpen.set(d.dataset.fold, d.open)));
+  // What a level's sections hold, in a line: its drawers or its inside, and its back
+  function insideLine(u, ids) {
+    if (u.type === 'case') {
+      const f = caseFloor(u), n = Object.values(u.dividers || {}).reduce((a, x) => a + (+x || 0), 0);
+      return [f === 'plate' ? 'Gridfinity' : f === 'dividers' ? plural(n, 'divider') : 'Empty', u.w === 'L' || u.w === 'XL' ? { flat: 'flat', dividers: 'slotted', sealed: 'sealed' }[caseStyle(u)] + ' body' : ''].filter(Boolean).join(' \u00b7 ');
+    }
+    const lay = R.drawersOf(u).map(h => h + 'F').join(' + ');
+    if (ids.length > 1) return ids.some(d => d.side) ? (R.drawersOf(u).length > 1 ? `${lay} on each side` : 'two drawers side by side') : lay;
+    const w = insideWord(u);
+    return [w.charAt(0).toUpperCase() + w.slice(1), u.lock === 'hidden' ? 'hidden key' : 'key lock', u.gearedRails ? 'geared rails' : ''].filter(Boolean).join(' \u00b7 ');
+  }
+  const backLine = u => [u.wallMount ? 'wall mount' : '', { ikea: 'IKEA pegboard', ussa: 'USSA pegboard' }[u.pegboard] || '', { family: 'backbone', universal: 'universal backbone' }[u.backbone] || ''].filter(Boolean).join(' \u00b7 ') || 'nothing on the back';
   function inspSave() {
     const b = $('dInsp'); if (!b || !b.childElementCount) return; // a panel just made, still empty: keep what was saved
     inspKeep = { sel: inspSel(), top: b.scrollTop, open: new Map(inspDetails(b).map(([k, d]) => [k, d.open])) };
@@ -2908,22 +2959,22 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (layOpts.length > 1) o += `<div class="field"><div class="lbl">Drawers in this module <span class="hint">${lay.map(x => x + 'F').join(' + ')}${lay.length > 1 ? ', top to bottom' : ''}</span></div>
         <div class="seg lays" role="group" aria-label="Drawers in this module, top to bottom">${layOpts.map(l => `<button type="button" data-lay="${l.join(',')}" aria-pressed="${l.join() === lay.join()}" aria-label="${l.length === 1 ? `One ${l[0]}F drawer` : l.map(x => x + 'F').join(', ') + ', top to bottom'}">${layIcon(l, u.h)}<small>${l.length === 1 ? l[0] + 'F' : new Set(l).size === 1 ? l.length + '\u00d7' + l[0] + 'F' : l.join('+') + 'F'}</small></button>`).join('')}</div>
         ${new Set(lay).size > 1 ? '<span class="badge inf" title="USSA\u2019s manuals don\u2019t show a 2F with two 1F in one 4F module">Inferred</span>' : ''}</div>`;
-      // Several drawers: each has its own inside, the one picked here (or clicked in the view) is shown
-      if (dv !== u) {
-        o += `<div class="field"><div class="lbl">Drawer to set up <span class="hint">or click it in the view</span></div>
-          <div class="seg drs" role="group" aria-label="Drawer to set up" style="${drGrid(dids)}">${dids.map(dr => `<button type="button" data-dpick="${dr.id}" aria-pressed="${dr.id === dv.dr.id}">${drIcon(u, dids, dr.id)}<span>${esc(drawerName(u, dr))}</span><small>${dr.side ? dr.w + ' \u00b7 ' : ''}${dr.h}F \u00b7 ${insideWord(u.inside[dr.id])}</small></button>`).join('')}</div></div>`;
-      }
-      o += `<div class="field"><div class="lbl">Inside${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${useg('interior', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], dv.interior)}</div></div>`;
+      // Several drawers: each has its own inside, in a frame under one tab per drawer (or a click on it in the view)
+      let f = '';
+      f += `<div class="field"><div class="lbl">Inside</div><div class="seg">${useg('interior', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], dv.interior)}</div></div>`;
       if (dv.interior === 'gridfinity' && ['S', 'M', 'L2', 'XL2'].includes(dv.w))
-        o += `<div class="field"><div class="lbl">Baseplate cut-outs <span class="hint">for lifting it out</span></div><div class="seg">${useg('baseplateHandles', [{ v: '0', label: 'None' }, ...(dv.w === 'M' ? [] : [{ v: '1', label: '1 handle' }]), { v: '2', label: '2 handles' }], dv.baseplateHandles)}</div></div>`;
+        f += `<div class="field"><div class="lbl">Baseplate cut-outs <span class="hint">for lifting it out</span></div><div class="seg">${useg('baseplateHandles', [{ v: '0', label: 'None' }, ...(dv.w === 'M' ? [] : [{ v: '1', label: '1 handle' }]), { v: '2', label: '2 handles' }], dv.baseplateHandles)}</div></div>`;
       if (dv.interior === 'grid') {
-        o += gridPlan(dv) || `<div class="field"><div class="lbl">Grid dividers <span class="hint">full-span pieces</span></div><div class="steppers">${stepRow('gridAcross', 'Side to side', dv.gridAcross || 0)}${stepRow('gridAlong', 'Front to back', dv.gridAlong || 0)}</div></div>`;
-        o += `<div class="field"><div class="lbl">Divider height</div><div class="seg">${useg('gridHeight', [{ v: '20', label: 'Low', sub: '20 mm' }, { v: 'full', label: dv.h === 1 ? 'Full height' : 'Tall', sub: dv.h === 1 ? '34.5 mm' : '82.5 mm' }], dv.gridHeight)}</div></div>`;
-        o += `<div class="field"><div class="lbl">At a wall <span class="hint">where a divider ends against one</span></div><div class="seg">${ubool('gridSeal', { label: 'Divider alone', sub: 'a few mm short' }, { label: 'Closed', sub: 'recommended \u00b7 straight edge piece' }, dv.gridSeal !== false)}</div></div>`;
+        f += gridPlan(dv) || `<div class="field"><div class="lbl">Grid dividers <span class="hint">full-span pieces</span></div><div class="steppers">${stepRow('gridAcross', 'Side to side', dv.gridAcross || 0)}${stepRow('gridAlong', 'Front to back', dv.gridAlong || 0)}</div></div>`;
+        f += `<div class="field"><div class="lbl">Divider height</div><div class="seg">${useg('gridHeight', [{ v: '20', label: 'Low', sub: '20 mm' }, { v: 'full', label: dv.h === 1 ? 'Full height' : 'Tall', sub: dv.h === 1 ? '34.5 mm' : '82.5 mm' }], dv.gridHeight)}</div></div>`;
+        f += `<div class="field"><div class="lbl">At a wall <span class="hint">where a divider ends against one</span></div><div class="seg">${ubool('gridSeal', { label: 'Divider alone', sub: 'a few mm short' }, { label: 'Closed', sub: 'recommended \u00b7 straight edge piece' }, dv.gridSeal !== false)}</div></div>`;
       }
-      o += `<div class="field"><div class="lbl">Lock${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${useg('lock', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], dv.lock)}</div></div>`;
-      o += `<div class="field"><div class="lbl">Geared rails${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${ubool('gearedRails', { label: 'Without', sub: 'optional in the manual' }, { label: 'With', sub: dids.length > 1 ? 'USSA: several drawers' : 'for 2F, 4F, more locking' }, dv.gearedRails)}</div></div>`;
-      if (dv !== u) o += `<div class="dvfoot"><span class="mono">${esc(insideSum(u, dids))}</span><span class="dvacts"><button type="button" class="btn" data-dcopy>Same settings in every drawer</button></span></div>`;
+      f += `<div class="field"><div class="lbl">Lock</div><div class="seg">${useg('lock', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], dv.lock)}</div></div>`;
+      f += `<div class="field"><div class="lbl">Geared rails</div><div class="seg">${ubool('gearedRails', { label: 'Without', sub: 'optional in the manual' }, { label: 'With', sub: dids.length > 1 ? 'USSA: several drawers' : 'for 2F, 4F, more locking' }, dv.gearedRails)}</div></div>`;
+      if (dv === u) o += f;
+      else o += `<div class="dtabs" role="tablist" aria-label="Drawer to set up" style="${drGrid(dids)}">${dids.map(dr => `<button type="button" role="tab" id="dtab-${dr.id}" aria-controls="dframe" data-dpick="${dr.id}" aria-selected="${dr.id === dv.dr.id}" tabindex="${dr.id === dv.dr.id ? 0 : -1}"><span>${esc(drawerName(u, dr))}</span><small>${dr.side ? dr.w + ' \u00b7 ' : ''}${dr.h}F \u00b7 ${insideWord(u.inside[dr.id])}</small></button>`).join('')}</div>
+        <div class="dframe" id="dframe" role="tabpanel" aria-labelledby="dtab-${dv.dr.id}">${f}<button type="button" class="btn" data-dcopy>Same settings in every drawer</button></div>
+        <p class="pnote dfnote">In the frame: this drawer only. Outside it: the whole module.</p>`;
     } else {
       if (u.w === 'L' || u.w === 'XL') o += `<div class="field"><div class="lbl">Case body style</div><div class="seg">${useg('caseInterior', [{ v: 'flat', label: 'Flat', sub: 'open box' }, { v: 'dividers', label: 'Dividers', sub: 'slotted walls' }, { v: 'sealed', label: 'Sealed', sub: 'seal dividers' }], u.caseInterior || 'flat')}</div></div>`;
       // What is on the case's floor: nothing, dividers in its slots, or a Gridfinity baseplate over the grooves
@@ -2934,7 +2985,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         ${floor !== 'dividers' && kept ? `<p class="pnote" style="margin:0">The ${plural(kept, 'divider')} you placed ${kept === 1 ? 'is' : 'are'} kept for when you pick <b>Dividers</b> again.</p>` : ''}</div>`;
       if (floor === 'dividers') o += dividerPlan(u);
     }
-    // Back of the stack: what goes on the module's back, laid out like the front's settings
+    // Back of this module: what goes on its back, laid out like the front's settings
     let back = `<div class="field"><div class="lbl">Wall mount <span class="hint">plate on this module\u2019s back</span></div><div class="seg">${ubool('wallMount', { label: 'None', sub: 'stands free' }, { label: 'Plate and cleats', sub: 'two wall cleats' }, u.wallMount)}</div></div>`;
     if (u.h <= 2) {
       back += `<div class="field"><div class="lbl">Pegboard attachment <span class="hint">hangs on a backbone</span></div><div class="seg">${useg('pegboard', [{ v: 'none', label: 'None', sub: 'no board' }, { v: 'ikea', label: 'IKEA', sub: 'Sk\u00e5dis' }, { v: 'ussa', label: 'USSA', sub: 'pegboard' }], u.pegboard || 'none')}</div></div>`;
@@ -2945,20 +2996,17 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <h2>${esc(title)}</h2><div class="mono">${Math.round(levelWidth(lv))} × ${Math.round(ext[1])} × ${Math.round(levelHeight(lv))} mm · ${s.prints} parts · ${aboutG(s.g)}</div></div>
       ${lv.length > 1 ? `<div class="seg ipair" role="group" aria-label="Module to set up">${lv.map((x, j) => `<button type="button" data-umod="${j}" aria-pressed="${j === ui}">${j ? 'Right' : 'Left'}<small>${esc(unitCode(x))}</small></button>`).join('')}</div>` : ''}
       ${nf.length ? `<div class="alert warn" role="alert"><strong>${plural(nf.length, 'part')} of this level no longer ${nf.length === 1 ? 'fits' : 'fit'} the ${esc(printerName())}</strong><span class="mono">${[...new Set(nf.map(l => esc(l.label) + ' · ' + dimStr(l.file.dims)))].join('<br>')}</span><span>${nf.length === 1 ? 'It is' : 'They are'} left out of the plates. Print ${nf.length === 1 ? 'it' : 'them'} on a bigger printer, or change this level.</span></div>` : ''}
-      <div class="ibody">
-        <div class="isec first"><b>Module</b><span class="hint">${across && across.length > 1 ? 'across the width, ' : ''}type, height</span></div>
-        ${across && across.length > 1 ? `<div class="field"><div class="lbl">Across the width</div><div class="seg across" role="group" aria-label="Across the width">${across.map(([v, label, sub]) => `<button type="button" data-across="${v}" aria-pressed="${acrossOf(lv) === v}">${acrossIcon(v)}<span>${label}</span><small>${sub}</small></button>`).join('')}</div></div>` : ''}
-        <div class="field"><div class="lbl">Type</div><div class="seg">${useg('type', typeOpts, u.type)}</div></div>
-        <div class="field"><div class="lbl">Module height</div><div class="seg">${useg('h', hOpts, u.h)}</div></div>
-        <div class="isec"><b>Front and inside</b><span class="hint">${u.type === 'drawer' ? 'drawers, what goes in them, lock' : 'case body and dividers'}</span></div>
-        ${o}
-        <div class="isec"><b>Back of the stack</b><span class="hint">wall mount, pegboard, backbone</span></div>
-        ${back}
-        <details class="imore iparts"><summary>Parts and bolts of this level <span class="mono">${s.prints} parts · ${aboutG(s.g)}</span></summary>
-          ${levelParts(res.lines, res.hardware)}</details>
-        ${lv.length > 1 ? '<p class="pnote" style="margin:0">With two modules side by side, each is set up on its own (pick it above or click it in the view). Their height stays the same.</p>' : ''}
-        ${dv !== u ? '<p class="pnote" style="margin:0">Each drawer has its own inside, lock and geared rails. The options above are the module\u2019s, for all its drawers.</p>' : ''}
+      <div class="ibody folds">
+        ${fold('l-module', 'Module', [across && across.length > 1 ? (ACROSS[fw].find(x => x[0] === acrossOf(lv)) || [])[1] : '', u.type === 'drawer' ? 'Drawer' : 'Case', u.h + 'F'].filter(Boolean).join(' \u00b7 '), true,
+          `${across && across.length > 1 ? `<div class="field"><div class="lbl">Across the width</div><div class="seg across" role="group" aria-label="Across the width">${across.map(([v, label, sub]) => `<button type="button" data-across="${v}" aria-pressed="${acrossOf(lv) === v}">${acrossIcon(v)}<span>${label}</span><small>${sub}</small></button>`).join('')}</div></div>` : ''}
+          <div class="field"><div class="lbl">Type</div><div class="seg">${useg('type', typeOpts, u.type)}</div></div>
+          <div class="field"><div class="lbl">Module height</div><div class="seg">${useg('h', hOpts, u.h)}</div></div>`)}
+        ${fold('l-inside', dids.length > 1 || (u.type === 'drawer' && layoutsReady(u) && (R.LAYOUTS[u.h] || []).length > 1) ? 'Drawers' : 'Inside', insideLine(u, dids), true, o)}
+        ${fold('l-back', 'Back of this module', backLine(u), false, back)}
+        ${fold('l-parts', 'Parts and bolts', `${plural(s.prints, 'part')} \u00b7 ${aboutG(s.g)}`, false, levelParts(res.lines, res.hardware))}
+        ${lv.length > 1 ? '<p class="pnote" style="margin:12px 0 0">With two modules side by side, each is set up on its own (pick it above or click it in the view). Their height stays the same.</p>' : ''}
       </div>`;
+    bindFolds(box);
     const set = patch => {
       // a drawer's inside goes to that drawer when the module holds several
       if (dv !== u && Object.keys(patch).every(k => R.INSIDE.includes(k))) {
@@ -2972,7 +3020,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         undoAs(`XL modules only come in 1F: level ${i + 1} is now an S and an M side by side, ${patch.h}F`);
       } else {
         const type = u.type;
-        Object.assign(u, patch); fixUnit(u);
+        Object.assign(u, patch);
+        // a new case starts with nothing on its floor (Dols, 2026-11-14), not "Dividers" with none placed
+        if (u.type === 'case' && type !== 'case' && u.caseEmpty === undefined && !u.caseBaseplate && !u.divSlots) u.caseEmpty = true;
+        fixUnit(u);
         if ('h' in patch) lv.forEach(x => { if (x !== u) { x.h = u.h; fixUnit(x); } });
         if ('type' in patch && u.type !== type) undoAs(`Level ${i + 1} is now a ${u.type}`);
         else if ('h' in patch && bare() !== was) undoAs(`Level ${i + 1} is now ${u.h}F, some of its settings were reset`);
@@ -3001,7 +3052,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // Back to one drawer, the module keeps the inside of the drawer shown
     box.querySelectorAll('[data-lay]').forEach(b => b.onclick = () => { const l = b.dataset.lay.split(',').map(Number);
       set(l.length > 1 ? { drawers: l, gearedRails: true } : { drawers: undefined, ...(dv !== u && u.w !== 'L2' ? { ...insideCopy(dv.gk), inside: undefined } : {}) }); });
-    box.querySelectorAll('[data-dpick]').forEach(b => b.onclick = () => { dsel.d = b.dataset.dpick; gpend = null; saveSel(); renderInspector(); v3mark(); });
+    const pick = id => { dsel.d = id; gpend = null; saveSel(); renderInspector(); v3mark(); };
+    box.querySelectorAll('[data-dpick]').forEach(b => b.onclick = () => pick(b.dataset.dpick));
+    // the drawer tabs from the keyboard: arrow keys, Home, End move to the next drawer and show it
+    { const tl = box.querySelector('.dtabs'); if (tl) tl.onkeydown = e => {
+      const ids = dids.map(d => d.id), k = ids.indexOf(dv.dr.id), n = ids.length;
+      const to = { ArrowRight: k + 1, ArrowDown: k + 1, ArrowLeft: k - 1, ArrowUp: k - 1, Home: 0, End: n - 1 }[e.key];
+      if (to === undefined) return;
+      e.preventDefault(); pick(ids[(to + n) % n]);
+      const nb = $('dInsp').querySelector('.dtabs [aria-selected=true]'); if (nb) nb.focus();
+    }; }
     { const cp = box.querySelector('[data-dcopy]'); if (cp) cp.onclick = () => {
       dids.forEach(dr => { if (dr.id !== dv.dr.id) { const c = insideCopy(dv.gk, dr.w + u.d), o = u.inside[dr.id]; Object.assign(o, c, { gridPlans: { ...(o.gridPlans || {}), ...(c.gridPlans || {}) } }); } });
       fixUnit(u); fixTower(t); save(); renderAll();
@@ -3393,25 +3453,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     svg.style.cursor = h.kind === 'back' ? 'pointer' : 'crosshair';
   }
   const layIcon = (l, h) => `<svg width="26" height="34" viewBox="0 0 26 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">${(() => { let y = 2; return l.map(dh => { const hh = 30 * dh / h, r = `<rect x="2" y="${y + 0.75}" width="22" height="${hh - 1.5}" rx="1.5"/><path d="M10 ${y + hh / 2}h6"/>`; y += hh; return r; }).join(''); })()}</svg>`;
-  // The module's front with the drawer `id` filled in: its drawers top to bottom, two columns on an L² or XL²
-  function drIcon(u, ids, id) {
-    const cols = [...new Set(ids.map(d => d.side || ''))], W = 26, H = 34, cw = (W - 4) / cols.length;
-    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true" stroke="currentColor" stroke-width="1.5">${cols.map((c, k) => {
-      let y = 2; return ids.filter(d => (d.side || '') === c).map(d => { const hh = (H - 4) * d.h / u.h, r = `<rect x="${(2 + k * cw + 0.75).toFixed(1)}" y="${(y + 0.75).toFixed(1)}" width="${(cw - 1.5).toFixed(1)}" height="${(hh - 1.5).toFixed(1)}" rx="1.5" fill="${d.id === id ? 'currentColor' : 'none'}" fill-opacity="${d.id === id ? 0.35 : 0}"/>`; y += hh; return r; }).join('');
-    }).join('')}</svg>`;
-  }
   // The drawer buttons laid out as the drawers are: a row, or on an L² or XL² a column per side
   const drGrid = ids => { const sides = new Set(ids.map(d => d.side || '')).size, rows = ids.length / sides;
     return sides > 1 ? `grid-auto-flow: column; grid-template-columns: repeat(${sides}, minmax(0, 1fr)); grid-template-rows: repeat(${rows}, auto)` : `grid-auto-flow: row; grid-template-columns: repeat(${ids.length}, minmax(0, 1fr))`; };
-  // A drawer's inside in a word, and the module's drawers in a line
+  // A drawer's inside in a word
   const insideWord = o => !o ? '' : o.interior === 'gridfinity' ? 'Gridfinity' : o.interior === 'grid' ? plural(Object.values(o.gridPieces || {}).reduce((a, p) => a + Object.values(p.n || {}).reduce((x, y) => x + y, 0), 0), 'divider') : 'empty';
-  function insideSum(u, ids) {
-    const by = new Map(); ids.forEach(dr => { const w = (u.inside[dr.id] || {}).interior || 'empty'; by.set(w, (by.get(w) || 0) + 1); });
-    const name = { gridfinity: 'Gridfinity', grid: 'with dividers', empty: 'empty' };
-    const of = k => ids.map(dr => (u.inside[dr.id] || {})[k] !== undefined ? u.inside[dr.id][k] : u[k]), hk = of('lock').filter(v => v === 'hidden').length, nr = of('gearedRails').filter(v => !v).length;
-    return [by.size === 1 ? `All ${ids.length} drawers ${name[[...by.keys()][0]] || ''}` : [...by].map(([w, n]) => `${n} ${name[w] || w}`).join(' \u00b7 '),
-      hk ? (hk === ids.length ? 'hidden keys' : `${hk} hidden ${hk > 1 ? 'keys' : 'key'}`) : '', nr ? (nr === ids.length ? 'no geared rails' : `${nr} without geared rails`) : ''].filter(Boolean).join(' \u00b7 ');
-  }
   // Segmented settings of a module: buttons read "key=value" from data-useg
   function bindUnitSeg(box, u, set) {
     box.querySelectorAll('[data-useg]').forEach(b => b.onclick = () => {
@@ -3426,31 +3472,48 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const roofFits = id => id === 'none' || !tooBig({ type: 'drawer', w: rw, d: fp.d, h: 1, roof: id });
     const roofs = [{ v: 'none', label: 'None' }, ...R.ROOFS.filter(r => r.widths.includes(rw) && (r.id === roof || roofFits(r.id))).map(r => ({ v: r.id, label: { grid: 'Grid', table: 'Table', bowl: 'Bowl', undertable: 'Under-table', heavy: 'Heavyweight', heavycut: 'Heavyweight, cut' }[r.id] || r.label }))];
     const alerts = stackAlerts(t, a);
+    // Width and depth: for every level (setFootprint); sizes the printer can't make aren't offered
+    const wOpts = FP_W.filter(w => sizeFits(w, R.DEPTHS[0]) || w === fp.w).map(w => ({ v: w, label: w, sub: Math.round(R.WIDTH_MM[w]) + ' mm' }));
+    const dOpts = R.DEPTHS.filter(d => sizeFits(fp.w, d) || d === fp.d).map(d => ({ v: d, label: 'x' + d, sub: Math.round(unitExt({ type: 'drawer', w: fp.w, d, h: 1 })[1]) + ' mm' }));
+    // An option that needs another stays in place, greyed, its reason on the right of its name
+    const lbl = (name, hint, need) => `<div class="lbl">${name} ${need ? `<span class="hint need">${need}</span>` : hint ? `<span class="hint">${hint}</span>` : ''}</div>`;
+    const off = (key, a2, b2, cur, need, hint) => `<div class="field${need ? ' off' : ''}">${lbl(key[1], hint, need)}<div class="seg">${sbool(key[0], a2, b2, need ? false : cur, !!need)}</div></div>`;
+    const gridOk = roofs.some(r => r.v === 'grid'), rname = (roofs.find(r => r.v === roof) || {}).label || roof;
+    const casters = s.base && !s.wheels && s.casters, foot = s.base && s.wheels && s.feet, pull = s.pullHandle;
     box.classList.add('istack');
-    box.innerHTML = `<div class="ihead"><span class="v3-sec">Stack settings</span>
-        <input class="tname" value="${esc(t.name)}" data-rename aria-label="Stack name"><div class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></div></div>
-      <div class="ibody">
+    // "Stack settings" no longer toggles: the top level is a button away, for the keyboard too
+    box.innerHTML = `<div class="ihead"><div class="ipos"><span class="v3-sec">Stack settings</span>
+        ${L.length ? `<div class="iacts"><button type="button" class="iconbtn sq" data-ltop aria-label="Set up the top level, level ${L.length}" title="Set up the top level">${icon('down')}</button></div>` : ''}</div>
+        <h2>${esc(t.name)}</h2><div class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></div></div>
+      <div class="ibody folds">
         <div class="ialerts">${alerts.length ? alerts.map(x => `<div class="issue ${x.k}">${esc(x.m)}${x.l != null && L[x.l] ? ` <button type="button" class="linkbtn" data-showlv="${x.l}">Show level ${x.l + 1}</button>` : ''}</div>`).join('') : `<div class="issue ok">Everything in this stack fits together and fits the ${esc(printerName())}.</div>`}</div>
-        <div class="isec"><b>Size and roof</b><span class="hint">the same for every level</span></div>
-        <div class="field"><div class="lbl">Footprint</div><div class="ifp"><b>${fpCode(fp)} \u00b7 ${Math.round(R.WIDTH_MM[fp.w])} mm, x${fp.d}</b><button type="button" class="btn" data-fp>Change\u2026</button></div></div>
-        <div class="field"><div class="lbl">Roof ${topIsDrawer ? '' : '<span class="hint">the top level is a case: the roof latches onto its lid</span>'}</div><div class="seg wrap">${segBtns(roofs, roof, 'data-roof')}</div></div>
-        ${roof === 'grid' ? `<div class="field"><div class="lbl">Carry handle <span class="hint">on the grid roof</span></div><div class="seg">${sbool('topHandle', { label: 'None' }, { label: 'Handle', sub: '2 \u00d7 M6 \u00d7 50 mm countersunk' }, ru.topHandle)}</div></div>` : ''}
-        <div class="isec"><b>Under the stack</b><span class="hint">base, wheels, foot bar</span></div>
-        <div class="field"><div class="lbl">Base <span class="hint">under level 1</span></div><div class="seg">${sbool('base', { label: 'None', sub: 'stands on level 1' }, { label: 'Base', sub: `${fpCode(fp)} base` }, s.base)}</div></div>
-        ${s.base ? `<div class="field"><div class="lbl">Wheels</div><div class="seg">${sbool('wheels', { label: 'None' }, { label: 'Wheels', sub: 'TPU tires, M16 axle' }, s.wheels)}</div></div>` : ''}
-        ${s.base && s.wheels ? `<div class="field"><div class="lbl">Foot bar <span class="hint">at the front, opposite the wheels</span></div><div class="seg">${sbool('feet', { label: 'None' }, { label: 'Foot bar' }, s.feet)}</div></div>` : ''}
-        ${s.base && !s.wheels ? `<div class="field"><div class="lbl">Casters <span class="hint">bought, under the base</span></div><div class="seg">${sbool('casters', { label: 'None' }, { label: 'Casters', sub: '4 \u00d7 M8' }, s.casters)}</div></div>` : ''}
-        <div class="isec"><b>Back of the stack</b><span class="hint">handles, module connectors</span></div>
-        <div class="field"><div class="lbl">Pull-out handle <span class="hint">adds the backbone column</span></div><div class="seg">${sbool('pullHandle', { label: 'None' }, { label: 'Trolley handle' }, s.pullHandle)}</div></div>
-        ${s.pullHandle && fp.w !== 'S' ? `<div class="field"><div class="lbl">Handle lock</div><div class="seg" role="group" aria-label="Handle lock">${segBtns([{ v: 'family', label: 'One-piece lock', sub: `${Math.round(R.WIDTH_MM[fp.w])} mm wide` }, { v: 'universal', label: 'Universal lock', sub: 'two, 89 mm: any printer' }], s.handleLock === 'universal' ? 'universal' : 'family', 'data-hlock')}</div></div>` : ''}
-        <div class="field"><div class="lbl">Stationary handle <span class="hint">adds the backbone column</span></div><div class="seg">${sbool('stationaryHandle', { label: 'None' }, { label: 'Handle' }, s.stationaryHandle)}</div></div>
-        <div class="field"><div class="lbl">Module connectors</div><div class="seg">${sbool('connectors', { label: 'None' }, { label: 'Connectors', sub: 'over the back joints' }, s.connectors)}</div>
-          <p class="pnote" style="margin:0">Screwed over each joint between two drawer modules at the back corners, where no backbone, handle lock or wall plate is.</p></div>
+        ${fold('s-size', 'Size and roof', `${fpCode(fp)} \u00b7 ${roof === 'none' ? 'no roof' : esc(rname.toLowerCase()) + ' roof'}${roof === 'grid' && ru.topHandle ? ' \u00b7 carry handle' : ''}`, true,
+          `<div class="field"><div class="lbl">Width</div><div class="seg">${segBtns(wOpts, fp.w, 'data-fpw')}</div></div>
+          <div class="field"><div class="lbl">Depth <span class="hint">grid units of 42 mm</span></div><div class="seg">${segBtns(dOpts, fp.d, 'data-fpd')}</div>
+            <p class="pnote" style="margin:0">For every level. Sizes too big for the ${esc(printerName())} aren\u2019t offered.</p></div>
+          <div class="field"><div class="lbl">Roof ${topIsDrawer ? '' : '<span class="hint">the top level is a case: the roof latches onto its lid</span>'}</div><div class="seg wrap">${segBtns(roofs, roof, 'data-roof')}</div></div>
+          ${gridOk ? off(['topHandle', 'Carry handle'], { label: 'None' }, { label: 'Handle', sub: '2 \u00d7 M6 \u00d7 50 mm countersunk' }, ru && ru.topHandle, roof === 'grid' ? '' : 'needs the grid roof', 'on the grid roof') : ''}`)}
+        ${fold('s-under', 'Under the stack', s.base ? ['base', s.wheels ? 'wheels' : '', foot ? 'foot bar' : '', casters ? 'casters' : ''].filter(Boolean).join(' \u00b7 ') : 'no base', false,
+          `${off(['base', 'Base'], { label: 'None', sub: 'stands on level 1' }, { label: 'Base', sub: `${fpCode(fp)} base` }, s.base, '', 'under level 1')}
+          ${off(['wheels', 'Wheels'], { label: 'None' }, { label: 'Wheels', sub: 'TPU tires, M16 axle' }, s.wheels, s.base ? '' : 'needs a base')}
+          ${off(['casters', 'Casters'], { label: 'None' }, { label: 'Casters', sub: '4 \u00d7 M8' }, s.casters, !s.base ? 'needs a base' : s.wheels ? 'not with wheels' : '', 'bought, under the base')}
+          ${off(['feet', 'Foot bar'], { label: 'None' }, { label: 'Foot bar' }, s.feet, s.base && s.wheels ? '' : 'needs wheels', 'at the front, opposite the wheels')}`)}
+        ${fold('s-back', 'Back of the stack', [pull ? 'trolley handle' : '', s.stationaryHandle ? 'stationary handle' : '', s.connectors ? 'module connectors' : ''].filter(Boolean).join(' \u00b7 ') || 'nothing on the back', false,
+          `${off(['pullHandle', 'Pull-out handle'], { label: 'None' }, { label: 'Trolley handle' }, s.pullHandle, '', 'adds the backbone column')}
+          ${fp.w !== 'S' ? `<div class="field${pull ? '' : ' off'}">${lbl('Handle lock', '', pull ? '' : 'needs the trolley handle')}<div class="seg" role="group" aria-label="Handle lock">${segBtns([{ v: 'family', label: 'One-piece lock', sub: `${Math.round(R.WIDTH_MM[fp.w])} mm wide`, dis: !pull }, { v: 'universal', label: 'Universal lock', sub: 'two, 89 mm: any printer', dis: !pull }], !pull ? '' : s.handleLock === 'universal' ? 'universal' : 'family', 'data-hlock')}</div></div>` : ''}
+          ${off(['stationaryHandle', 'Stationary handle'], { label: 'None' }, { label: 'Handle' }, s.stationaryHandle, '', 'adds the backbone column')}
+          <div class="field">${lbl('Module connectors')}<div class="seg">${sbool('connectors', { label: 'None' }, { label: 'Connectors', sub: 'over the back joints' }, s.connectors)}</div>
+            <p class="pnote" style="margin:0">Screwed over each joint between two drawer modules at the back corners, where no backbone, handle lock or wall plate is.</p></div>`)}
         <div class="actions"><button type="button" class="btn" data-tdup>Duplicate stack</button><button type="button" class="btn" data-tdel>Remove stack</button></div>
       </div>`;
-    box.querySelector('[data-rename]').onchange = e => { t.name = e.target.value.trim() || 'Stack'; save(); renderAll(); };
+    bindFolds(box);
+    { const b = box.querySelector('[data-ltop]'); if (b) b.onclick = () => {
+      dsel = { t: t.id, l: L.length - 1, u: 0 }; saveSel(); renderInspector(); v3mark(); markLevels();
+      const n = $('dInsp').querySelector('[data-lmenu]'); if (n) n.focus({ preventScroll: true });
+    }; }
     box.querySelectorAll('[data-showlv]').forEach(b => b.onclick = () => { dsel = { t: t.id, l: +b.dataset.showlv, u: 0 }; saveSel(); renderAll(); });
-    box.querySelector('[data-fp]').onclick = () => { fpStrip = true; renderAll(); const s2 = document.querySelector('.fpstrip'); if (s2) s2.scrollIntoView({ block: 'nearest' }); };
+    box.querySelectorAll('[data-fpw]').forEach(b => b.onclick = () => { let d = fp.d; if (!sizeFits(b.dataset.fpw, d)) d = R.DEPTHS.find(x => sizeFits(b.dataset.fpw, x)) || d; setFootprint(t, b.dataset.fpw, d); renderAll(); });
+    box.querySelectorAll('[data-fpd]').forEach(b => b.onclick = () => { setFootprint(t, fp.w, +b.dataset.fpd); renderAll(); });
     box.querySelectorAll('[data-roof]').forEach(b => b.onclick = () => {
       if (!L.length) return;
       const r = b.dataset.roof; L.flat().forEach(u => { u.roof = 'none'; });

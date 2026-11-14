@@ -21,6 +21,7 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   points were answered by Dols on 2026-11-14 (written in the brief). Session 2 (fixes without a mockup: A4, A6, B1,
   B6, C2, D7, D8, E1, E4, E5) is done on its branch. Session 6 (Print: D1 to D6) on `claude/print`. Session 7 (Hardware: E2, E3, E6) is done on its branch. Session 3 (the 3D
   view: hover, right-click menus, "⋯", one-line hint, "Bolts" swatches, "?"; A1, A2, A3, A4, A5, A6) is done on its branch.
+  Session 4 (Design's panels: A7, A8, B2, B3, B4, X3, X4) is done on its branch.
 - What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file
   `3d/stl-absents-de-la-3d.md`.
 
@@ -117,9 +118,12 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   own plate (`labelsApart`) don't count.
 - Tabs: 1 · Design (`view` 'build'; a saved 'unit' opens it), 2 · Print, 3 · Hardware, 4 · Assemble (`renderTabs`;
   2 to 4 are disabled while there is nothing to make). Design (`renderBuild`) = the stacks' rail (stacks, "New stack",
-  templates, design file, loose parts), the selected stack's card (`designCenter`: name, Stack settings, Footprint,
-  "Add a level on top", the 3D view) and the inspector (`#dInsp`, `renderInspector`: the selected level, the stack's
-  settings, or Colors while painting). Selection: `dsel` = `{t, l, u}` (stack id, level, unit in the level), or
+  templates, design file, loose parts), the selected stack's card (`designCenter`: name with its pencil, `dRename`;
+  Stack settings, which opens and does not toggle; "Add a level on top"; the 3D view) and the inspector (`#dInsp`,
+  `renderInspector`: the selected level, the stack's settings with width and depth first (`setFootprint`; no Footprint
+  button nor strip since UX audit session 4), or Colors while painting). Both panels are foldable sections (`fold`,
+  `bindFolds`, `.ifold`: name and a summary, `insideLine`, `backLine`; open state in `foldOpen` for the page's life);
+  stack options that need another are greyed with the reason (`sbool(…, dis)`, `.field.off`, `.need`). Selection: `dsel` = `{t, l, u}` (stack id, level, unit in the level), or
   `{t: 'loose'}`. With no stack yet, `renderStart` ("Start your build": printer, Vault folder, templates; skipping the
   folder sets `folderHeroSkipped`).
   The old `mech` role was split into `runners`, `lock`, `hinge` (saved choices are carried over on load).
@@ -214,7 +218,8 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   plan in `cfg.inside[<id>]` (`R.drawerIds`: id = side + index top to bottom, the 3D view's mover ids; `R.INSIDE` the
   fields). `syncInside` (in `syncGrid`) gives each drawer a copy of the module's fields when it has none (saved states
   and templates plan as before), prunes gone drawers and folds back to the module's fields at one drawer. The inspector
-  picks the drawer (`dsel.d`, "Drawer to set up", or a click on it in the view: `v.sel.mv`), shows it through
+  picks the drawer (`dsel.d`: one tab per drawer, `.dtabs` over the `.dframe` holding its own settings, or a click on
+  it in the view: `v.sel.mv`), shows it through
   `drawerView` and outlines it in 3D (`v3mark`); "Same settings in every drawer" copies it. `rules.js` `drawerInsert`
   reads each drawer's own; `gridParts` lays out each box's own plan. Since branch `claude/project-thread-fvvql3` #2
   (Dols, 2026-11-13) the lock (key / hidden key) and the geared rails are per drawer too (in `R.INSIDE`;
