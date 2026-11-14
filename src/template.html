@@ -39,6 +39,10 @@
   --accent-btn: #c2511c;   /* filled buttons with white text: --accent is under 4.5:1 behind white */
   --accent-text: #a8440f;  /* accent-coloured text on --sheet */
   --edge: #8c918c;
+  --stack: #2f6db5;        /* "the whole stack": the stack picked in Design's rail and its settings in the inspector */
+  --stack-soft: #e1eaf5;
+  --stack-ink: #ffffff;
+  --stack-text: #255a99;
   --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --f-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -48,11 +52,13 @@
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --ground: #151718; --sheet: #1e2122; --sheet-2: #262a2b; --ink: #e7e8e5; --muted: #9ca2a2; --line: #353a3b;
   --accent: #f07a3e; --accent-ink: #1a1a1a; --accent-soft: #4a2c1d; --ok: #6cc893; --ok-soft: #1f3a2a;
-  --warn: #e3b25c; --warn-soft: #3d3020; --bad: #f08a76; --bad-soft: #43241f; --bed: #191c1d; --raised: #2b3031; --accent-btn: #f07a3e; --accent-text: #f39a6b; --edge: #6a7072; color-scheme: dark; } }
+  --warn: #e3b25c; --warn-soft: #3d3020; --bad: #f08a76; --bad-soft: #43241f; --bed: #191c1d; --raised: #2b3031; --accent-btn: #f07a3e; --accent-text: #f39a6b; --edge: #6a7072;
+  --stack: #6ea8e8; --stack-soft: #1b2735; --stack-ink: #10161d; --stack-text: #93c0f2; color-scheme: dark; } }
 :root[data-theme="dark"] {
   --ground: #151718; --sheet: #1e2122; --sheet-2: #262a2b; --ink: #e7e8e5; --muted: #9ca2a2; --line: #353a3b;
   --accent: #f07a3e; --accent-ink: #1a1a1a; --accent-soft: #4a2c1d; --ok: #6cc893; --ok-soft: #1f3a2a;
-  --warn: #e3b25c; --warn-soft: #3d3020; --bad: #f08a76; --bad-soft: #43241f; --bed: #191c1d; --raised: #2b3031; --accent-btn: #f07a3e; --accent-text: #f39a6b; --edge: #6a7072; color-scheme: dark; }
+  --warn: #e3b25c; --warn-soft: #3d3020; --bad: #f08a76; --bad-soft: #43241f; --bed: #191c1d; --raised: #2b3031; --accent-btn: #f07a3e; --accent-text: #f39a6b; --edge: #6a7072;
+  --stack: #6ea8e8; --stack-soft: #1b2735; --stack-ink: #10161d; --stack-text: #93c0f2; color-scheme: dark; }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -445,8 +451,11 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .drail { flex: 1 1 clamp(220px, 13vw, 300px); min-width: 0; display: grid; gap: 10px; }
 .drail > .v3-sec { padding: 4px 2px 0; }
 .dstack { position: relative; display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 12px 8px 8px; text-align: left; background: var(--sheet); border: 2px solid var(--line); border-radius: 10px; }
-.dstack[aria-pressed=true] { border-color: var(--ink); background: var(--raised); }
 .dstack:hover { border-color: var(--muted); }
+/* The stack being designed is in the stack colour, like the inspector while it shows that stack's settings (.istack):
+   blue rail card + blue panel = the whole stack is being edited; a neutral panel = one level */
+.dstack[aria-pressed=true] { border-color: var(--stack); background: var(--stack-soft); }
+.dstack[aria-pressed=true] .dbadge { background: var(--stack); color: var(--stack-ink); }
 .dstack .dot { position: absolute; top: 8px; right: 40px; background: var(--warn); }
 .dstackw { position: relative; display: grid; }
 .dstackw .dstack { padding-right: 44px; }
@@ -487,6 +496,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .dacts { display: flex; flex-wrap: wrap; gap: 8px; }
 .dacts .btn { min-height: 40px; display: inline-flex; align-items: center; gap: 6px; }
 .dacts .btn[aria-pressed=true], .dacts .btn[aria-expanded=true] { border-color: var(--ink); background: var(--raised); box-shadow: inset 0 0 0 1px var(--ink); }
+.dacts .btn[data-dstack][aria-pressed=true] { border-color: var(--stack); background: var(--stack-soft); box-shadow: inset 0 0 0 1px var(--stack); }
 .dacts .btn .mono { color: var(--muted); font-size: 12px; }
 .fpstrip { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 32px; padding: 12px 16px; background: var(--sheet-2); border-bottom: 1px solid var(--line); }
 .fpstrip .field { flex: 1 1 260px; }
@@ -529,6 +539,13 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .ihead .mono { color: var(--muted); font-size: 12px; }
 .ihead .tname { margin: 6px 0 2px -7px; padding: 2px 6px; font: 800 22px var(--f-display); font-stretch: 112%; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink); width: calc(100% + 7px); }
 .ihead .tname:hover, .ihead .tname:focus { border-color: var(--line); background: var(--sheet-2); }
+/* The inspector showing the stack's settings takes the stack colour (see .dstack) */
+.dinsp.istack { background: var(--stack-soft); border: 2px solid var(--stack); }
+.dinsp.istack .ihead { border-bottom-color: color-mix(in srgb, var(--stack) 35%, transparent); }
+.dinsp.istack .ihead > .v3-sec { color: var(--stack-text); }
+.dinsp.istack .seg, .dinsp.istack .ifp { background: var(--sheet); }
+.dinsp.istack .ihead .tname:hover, .dinsp.istack .ihead .tname:focus { background: var(--sheet); }
+.dinsp.istack .isec { border-top-color: color-mix(in srgb, var(--stack) 35%, transparent); }
 .ipos { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .iacts { display: flex; gap: 4px; }
 .iacts .iconbtn.sq { width: 40px; height: 40px; }
@@ -2565,6 +2582,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     inspRestore(box);
   }
   function renderInspector0(box, t) {
+    box.classList.remove('istack'); // only the stack's settings wear the stack colour (stackInspector)
     if (painting() && inspPaint) return paintPanel(box);
     if (dsel.l == null || !t.levels[dsel.l]) return stackInspector(box, t);
     const i = dsel.l, L = t.levels, lv = L[i], ui = Math.min(dsel.u || 0, lv.length - 1), u = lv[ui], top = i === L.length - 1;
@@ -3093,6 +3111,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const roofFits = id => id === 'none' || !tooBig({ type: 'drawer', w: rw, d: fp.d, h: 1, roof: id });
     const roofs = [{ v: 'none', label: 'None' }, ...R.ROOFS.filter(r => r.widths.includes(rw) && (r.id === roof || roofFits(r.id))).map(r => ({ v: r.id, label: { grid: 'Grid', table: 'Table', bowl: 'Bowl', undertable: 'Under-table', heavy: 'Heavyweight', heavycut: 'Heavyweight, cut' }[r.id] || r.label }))];
     const alerts = stackAlerts(t, a);
+    box.classList.add('istack');
     box.innerHTML = `<div class="ihead"><span class="v3-sec">Stack settings</span>
         <input class="tname" value="${esc(t.name)}" data-rename aria-label="Stack name"><div class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></div></div>
       <div class="ibody">

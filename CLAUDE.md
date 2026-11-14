@@ -251,6 +251,10 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   the same title and section sizes on every step, removing by press and hold (`holdButton`), a left rail on Print
   too, progress in every tab. Rules: `docs/ux-redesign.md`, "One look for each kind of thing".
 
+- Stack colour (Dols, 2026-11-14): in Design, the stack picked in the rail and the inspector showing its Stack
+  settings are blue (`--stack*` tokens, `.dinsp.istack` set by `stackInspector`, cleared by `renderInspector0`); a level's
+  settings stay on the plain panel. Rule in `docs/ux-redesign.md`, "One look for each kind of thing".
+
 - Theme switch (Dols, 2026-11-14): the header's Light / Dark segmented buttons (`data-themeset`, `setTheme`) put
   `data-theme` on `<html>` and save it in localStorage `vpp.theme`; a script in `<head>` sets it again before the first
   paint (no flash). With nothing saved the page follows the system and its changes. What JS copies from the CSS tokens
