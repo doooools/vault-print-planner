@@ -19,7 +19,7 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
 - UX audit of 2026-11-14: `docs/ux-audit-2026-11.md` (decisions, eight sessions, open points, findings A1…X4) and its
   mockups in `docs/ux-audit-mockups/`. Where it disagrees with `docs/ux-redesign.md`, the audit wins. Its four open
   points were answered by Dols on 2026-11-14 (written in the brief). Session 2 (fixes without a mockup: A4, A6, B1,
-  B6, C2, D7, D8, E1, E4, E5) is done on its branch. Session 6 (Print: D1 to D6) on `claude/print`. Session 3 (the 3D
+  B6, C2, D7, D8, E1, E4, E5) is done on its branch. Session 6 (Print: D1 to D6) on `claude/print`. Session 7 (Hardware: E2, E3, E6) is done on its branch. Session 3 (the 3D
   view: hover, right-click menus, "⋯", one-line hint, "Bolts" swatches, "?"; A1, A2, A3, A4, A5, A6) is done on its branch.
   Session 4 (Design's panels: A7, A8, B2, B3, B4, X3, X4) is done on its branch.
 - What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file
@@ -165,7 +165,7 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   in its group; always shown (Dols, 2026-11-13: the old "Bolts" show/hide toggle is gone); the toolbar's "Bolts" swatches
   (`data-v3fin="black"` / `"zinc"`, `aria-pressed` on the one in use; UX audit session 3) set the build's bolt finish, raw steel (black) or zinc-plated / stainless (grey), saved in `colorPrefs.hardware`
   (`hwFinish`/`setHwFinish`; Hardware's "Bolt finish" and the "Selected" card set the same one). It also names the
-  bolts and rods in Hardware (`hwItem`) and goes into the store searches (`shopQuery`); Amazon.com product pages stay
+  bolts and rods in Hardware's copy and CSV (`hwItem`; the list says it once, above the lines) and goes into the store searches (`shopQuery`); Amazon.com product pages stay
   as they are. Not a filament role: plates and the tray ignore it. The grid roof's top handle now stands
   (it was flat). Counts that differ from the planner: `tools/placements/COVERAGE.md`, "Hardware".
 - Backbone column and handles in 3D: `tools/placements/measure_column.py` (numpy, on the files) writes `column|<w>`
@@ -279,7 +279,10 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
 - Hardware in two side columns like Print (Dols, 2026-11-14): left rail "Hardware for" (stacks as buttons, `hwSkip`,
   `computeBuild(false, leaveOut)`) and the groups to jump to; right column "List options" (titled with the line count;
   store, bolt finish, head shapes); Copy and CSV under the title. The tab's count follows `hwSkip` too, and a click
-  anywhere on a row but its store link ticks it (UX audit E1, E4, E5).
+  anywhere on a row but its store link ticks it (UX audit E1, E4, E5). UX audit session 7: short names on the lines,
+  the finish and the store said once in pills under the title (`.hwsay`; Copy and CSV keep `hwItem`'s full name), the
+  link says "Product page" or "Search" (the store goes in `data-store` for `countBuy`'s GoatCounter event), group
+  headers "1 of 3 bought", the rail's "Jump to" as plain links (`.hwjumps`) (E2, E3, E6).
 
 - One look everywhere (thread "Unifier l'interface de tout le planner", Dols 2026-11-13): orange fill = action, dark
   fill = selected, settings as segmented buttons (the stack's too, and the plate options), ticks only for list items,

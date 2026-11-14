@@ -142,10 +142,15 @@ Today's "Extra parts" (`extrasPanel`), as an entry of the rail: search among the
 A step of its own, fed by the same data as `hwTable` for the whole build.
 - Lines grouped by what is bought: M4 bolts, M6 bolts and inserts, axle rods and bearings.
 - Per line: a "bought" checkbox, quantity, head shape drawing, name, spare note, what it is for, which stack, store link. A click anywhere on the line ticks it, the store link excepted (UX audit E1).
+- What holds for every line is said once, in two pills under the title: the bolt finish ("Every bolt and rod:
+  zinc-plated or stainless") and the store ("Links open Amazon.fr"). Names on the lines are short, without the
+  finish; Copy and CSV keep the full name (UX audit E2). The store link says what it opens, "Product page" or
+  "Search"; the store and the search are in its `title` (E3). Group headers say "1 of 3 bought".
 - Laid out like Print (Dols, 2026-11-14, "double bandeau"): a left rail "Hardware for" with each stack as a button
   (dark = in the list, a click leaves it out or puts it back; its line count under it; saved as `hwSkip`). Nothing
-  picked is allowed, as in Print: "Nothing picked" in the middle, no Copy or CSV (Dols, 2026-11-14). Then "In this
-  list", always shown, even with one group: the groups with how many lines are bought, a click scrolls to the group. Centre:
+  picked is allowed, as in Print: "Nothing picked" in the middle, no Copy or CSV (Dols, 2026-11-14). Then "Jump to",
+  always shown, even with one group: the groups as plain links with "1 of 3" bought on the right, a click scrolls to
+  the group (UX audit E6). Centre:
   the title, progress, "Copy the list" (orange) and "Export as CSV", then the list. Right column, a "List options"
   panel titled with the list's line count ("12 lines", UX audit E4): "Where you buy", "Bolt finish", the head shape
   legend. Copy and CSV hold what the list shows, and so does the tab's count (it follows Hardware's rail, `hwSkip`,
