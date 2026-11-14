@@ -131,7 +131,7 @@ floor). The smallest over both sides and every level is the stop. It writes:
 
 - `motion.runners = {"slide": s1, "guide": s2}` (mm) on every drawer: the box goes out s1 + s2;
 - `{"guide": k}` on each runner guide part, k its level (0 the module's bottom one), and on an L² or XL²
-  `{"side": "left" | "right"}`, the drawer it guides (the nearest key). In a module holding several drawers the page
+  `{"side": "left" | "right"}`, the drawer it guides (which side of the line between the two drawers it is on). In a module holding several drawers the page
   gives each guide to the drawer on its level and side (`railOf`).
 
 | depth | slide in the guide | guide to the stopper | the box goes out | module depth |

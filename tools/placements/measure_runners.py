@@ -9,7 +9,7 @@ With no keys: one drawer of each runner file (S and XL, depths 3 to 7); `all`: e
 it measured into the placements (rerun after every export, like hardware.py):
   units[key].motion.runners = {"slide": s1, "guide": s2}   mm, the smallest over both sides and every level
   each runner guide part gets {"guide": k}, k its level (0 = the module's bottom one, 48 mm a level), and on an L²
-  or XL² {"side": "left" | "right"}, the drawer it guides
+  or XL² {"side": "left" | "right"}, the drawer it guides (left of the line between the two drawers, or right)
 and the drawer's opening step takes s 1.0 (it was 0.55: the box now goes s1 + s2, about its whole depth), in the
 unit's steps and in its layouts' drawers'. --from <results.json> writes a run saved with --json without measuring again.
 """
@@ -92,8 +92,10 @@ def write(pl, download, res):
         for st in (st for o in opens for st in o):
             if st["joints"] == ["drawer"]:
                 st["s"] = 1.0
-        # an L² or XL² holds two drawers side by side: each guide is its side's (nearest key, left one first)
+        # an L² or XL² holds two drawers side by side: each guide is its side's. The left drawer's key is in its middle,
+        # so it ends at twice its key's x plus half the width (the page's sideDrawers): 0 on an L², S then M on an XL²
         keys = sorted(j["turn"]["origin"][0] for jid, j in mo.get("joints", {}).items() if jid.startswith("key_") and "turn" in j)
+        split = 2 * keys[0] + (unit["bbox"][1][0] - unit["bbox"][0][0]) / 2 if len(keys) == 2 else None
         for p in unit["parts"]:
             if re.search(r"Runner Guide", p[0]):
                 m = np.array(p[3], float).reshape(3, 4)
@@ -104,7 +106,7 @@ def write(pl, download, res):
                 p[4]["guide"] = level_of(P)
                 if len(keys) == 2:
                     x = P[:, :, 0].mean()
-                    p[4]["side"] = "left" if abs(x - keys[0]) < abs(x - keys[1]) else "right"
+                    p[4]["side"] = "left" if x < split else "right"
 
 
 def measure(pl, download, key, quiet=False):
