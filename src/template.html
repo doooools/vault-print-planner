@@ -1,4 +1,33 @@
 <!doctype html>
+<!-- Vault Print Planner, Dols fork: https://github.com/doooools/vault-print-planner
+     A fork of Romy Macasieb's Vault Print Planner (https://vault.romy.io, https://github.com/rmacasieb/vault-print-planner),
+     credited on the page in What's new. Its license, which this page keeps:
+
+     MIT License
+
+     Copyright (c) 2026 Romy Macasieb
+
+     Permission is hereby granted, free of charge, to any person obtaining a copy
+     of this software and associated documentation files (the "Software"), to deal
+     in the Software without restriction, including without limitation the rights
+     to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+     copies of the Software, and to permit persons to whom the Software is
+     furnished to do so, subject to the following conditions:
+
+     The above copyright notice and this permission notice shall be included in all
+     copies or substantial portions of the Software.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+     SOFTWARE.
+
+     Vault, its designs and its STL files are the property of USSA and are not
+     covered by this license. This repository does not include them.
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -71,9 +100,14 @@ button { cursor: pointer; }
 .num { font-variant-numeric: tabular-nums; }
 
 /* Header: logo, the four steps, the File menu, the theme, the printer and the Vault folder, on one row at 1440 px.
-   The credit line is the footer's first row (UX audit A10) */
+   What's new and Report a bug or an idea sit under the name; the fork and Romy's planner are told in What's new */
 header.appbar { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; padding: 10px max(20px, env(safe-area-inset-right, 0px)) 10px max(20px, env(safe-area-inset-left, 0px)); background: var(--sheet); border-bottom: 1px solid var(--line); }
 .logo { display: flex; align-items: center; gap: 10px; }
+/* Under the name, What's new and Report a bug or an idea: small links, no width of their own on the row */
+.logo .brand { display: grid; gap: 1px; }
+.logo .hlinks { margin: 0; font-size: 12px; line-height: 1.35; color: var(--muted); white-space: nowrap; }
+.logo .hlinks .newsbtn { color: var(--muted); padding: 2px 0; }
+.logo .hlinks .newsbtn:hover, .logo .hlinks .newsbtn:focus-visible { color: var(--ink); }
 .logo h1 { margin: 0; font-family: var(--f-display); font-weight: 800; font-stretch: 125%; font-size: 17px; letter-spacing: -0.01em; white-space: nowrap; }
 header.appbar .tabs { flex: 1 1 auto; }
 /* The File menu's button; its menu is a .vmenu with a note on how the file stands (.mnote) */
@@ -97,6 +131,12 @@ dialog#news h2, dialog#relink h2, dialog#report h2 { margin: 0 32px 4px 0; font-
 #news .changes ul { margin: 0; padding-left: 18px; }
 #news .changes li { margin: 5px 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
 #news .changes b { color: var(--ink); font-weight: 600; }
+#news .changes p { margin: 6px 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
+#news .changes a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+/* About this fork: the credit to Romy's planner, first and framed */
+#news .changes .about { margin-top: 14px; padding: 2px 16px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet-2); }
+#news .changes .about h3 { color: var(--ink); }
+#news .changes .about p, #news .changes .about li { color: var(--ink); }
 .hbtns { display: flex; flex-wrap: wrap; gap: 8px; }
 .hbtn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); font-weight: 600; white-space: nowrap; }
 .hbtn:hover, .hbtn[aria-expanded=true] { border-color: var(--ink); }
@@ -484,9 +524,6 @@ footer.site { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr
 footer.site h2 { margin: 0 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--ink); }
 footer.site p { margin: 0; max-width: 75ch; text-wrap: pretty; }
 footer.site h2.h2next { margin-top: 14px; }
-/* The credit line, first and across the footer: the fork, Romy's planner, What's new, Report a bug or an idea */
-footer.site .credit { grid-column: 1 / -1; max-width: none; font-size: 13.5px; color: var(--ink); }
-footer.site .credit .newsbtn { color: inherit; }
 footer.site .linkbtn { display: inline; margin: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 footer.site a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 @media (max-width: 760px) { footer.site { grid-template-columns: minmax(0, 1fr); } }
@@ -949,7 +986,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 
 <header class="appbar">
   <div class="logo"><svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#222526"/><rect x="11" y="10" width="42" height="13" rx="3" fill="#d4d6d3"/><rect x="11" y="25.5" width="42" height="13" rx="3" fill="#d4d6d3"/><rect x="11" y="41" width="42" height="13" rx="3" fill="#d4d6d3"/><circle cx="32" cy="32" r="3.6" fill="#e8742f"/></svg>
-    <h1>Vault Print Planner</h1></div>
+    <div class="brand"><h1>Vault Print Planner</h1><p class="hlinks"><button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog" title="What changed lately, and what this fork adds to Romy’s planner">What’s new</button><span aria-hidden="true"> · </span><button type="button" class="newsbtn" id="reportBtn" aria-haspopup="dialog" title="Report a bug or suggest an idea, on GitHub">Report a bug or an idea</button></p></div></div>
   <nav class="tabs" role="tablist" aria-label="Steps">
     <button role="tab" id="tab-build" data-tab="build">1 · Design</button>
     <button role="tab" id="tab-print" data-tab="print">2 · Print <span class="count" id="countPrint"></span></button>
@@ -990,7 +1027,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   </div>
 
   <footer class="site">
-    <p class="credit">A <a href="https://github.com/doooools" target="_blank" rel="noopener">Dols</a> fork of <a href="https://vault.romy.io" target="_blank" rel="noopener">Romy’s Vault Print Planner</a> · <button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog">What’s new</button> · <button type="button" class="newsbtn" id="reportBtn" aria-haspopup="dialog">Report a bug or an idea</button></p>
     <section>
       <h2>Not affiliated with USSA</h2>
       <p>An unofficial, fan-made planner. <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault</a>, its designs and its files belong to USSA; you need your own copy of the files to print anything.</p>
@@ -1930,10 +1966,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   });
   $('viewerClose').onclick = () => $('viewer').close ? $('viewer').close() : $('viewer').removeAttribute('open');
   $('viewer').addEventListener('click', e => { if (e.target === $('viewer')) $('viewerClose').click(); });
-  // What's new: header button opens the changelog; close with ×, Esc or a click outside
+  // What's new: the link under the page's name opens the changelog (CHANGELOG.md, with the fork's credit to Romy first); close with ×, Esc or a click outside
   $('newsBtn').onclick = () => $('news').showModal();
   $('newsClose').onclick = () => $('news').close();
-  // Report a bug or an idea: GitHub issue forms (.github/ISSUE_TEMPLATE). The bug form's "context" field is filled in here.
+  // Report a bug or an idea (under the page's name): GitHub issue forms (.github/ISSUE_TEMPLATE). The bug form's "context" field is filled in here.
   $('reportBtn').onclick = () => {
     const ctx = [`Page: ${location.href.split(/[?#]/)[0]}`, `Browser: ${navigator.userAgent}`,
       `Screen: ${innerWidth} × ${innerHeight} (×${devicePixelRatio})`, `Printer: ${printerName()} (${printer.v.join(' × ')} mm)`, `Tab: ${view}`].join('\n');

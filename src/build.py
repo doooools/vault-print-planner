@@ -123,23 +123,34 @@ if public:
     html = re.sub(r"const SRC_DEFAULT = '[^']*/", "const SRC_DEFAULT = '", html)
     # The VaultPrint helper and Terminal script only work on the author's Mac (the public template has them removed already)
     html = re.sub(r"  /\*MAC\*/.*?/\*END MAC\*/", "  const macPanel = () => '', bindMac = () => {};", html, flags=re.S)
-# What's new (header button opens it): src/public/CHANGELOG.md, every date
+# What's new (the link under the page's name opens it): src/public/CHANGELOG.md, every date.
+# "## " starts a section, "- " is a line of its list, any other line a paragraph (a section's or, before the first
+# section, the introduction). The section "About this fork" is the fork's credit to Romy's planner: it gets a frame.
 def changelog_html():
     import html as h
-    days, cur = [], None
+    intro, days, cur = [], [], None
     # the public repo keeps the changelog at its root, the author's tree in src/public/
     log = here / "public" / "CHANGELOG.md"
     log = log if log.exists() else here.parent / "CHANGELOG.md"
+    def inline(text):
+        t = h.escape(text.strip(), quote=False)
+        t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
+        return re.sub(r"\[(.+?)\]\((https?://[^)]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', t)
     for line in log.read_text(encoding="utf-8").splitlines():
         if line.startswith("## "):
             cur = [line[3:].strip(), []]; days.append(cur)
-        elif line.startswith("- ") and cur:
-            t = h.escape(line[2:].strip(), quote=False)
-            t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
-            t = re.sub(r"\[(.+?)\]\((https?://[^)]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', t)
-            cur[1].append(f"<li>{t}</li>")
-    day = lambda d: f'<h3>{d[0]}</h3><ul>{"".join(d[1])}</ul>'
-    return "".join(day(d) for d in days)
+        elif line.startswith("# ") or not line.strip():
+            continue
+        elif line.startswith("- "):
+            if cur is None: continue
+            if not cur[1] or not cur[1][-1].startswith("<ul>"): cur[1].append("<ul></ul>")
+            cur[1][-1] = cur[1][-1][:-5] + f"<li>{inline(line[2:])}</li></ul>"
+        else:
+            (cur[1] if cur else intro).append(f"<p>{inline(line)}</p>")
+    def day(d):
+        about = ' class="about"' if d[0].lower().startswith("about") else ""
+        return f'<section{about}><h3>{h.escape(d[0], quote=False)}</h3>{"".join(d[1])}</section>'
+    return "".join(intro) + "".join(day(d) for d in days)
 html = html.replace("<!--CHANGELOG-->", changelog_html())
 html = html.replace("/*CATALOG*/", catalog).replace("/*RULES*/", (here / "rules.js").read_text(encoding="utf-8"))
 pathlib.Path(out).write_text(html, encoding="utf-8", newline="\n")

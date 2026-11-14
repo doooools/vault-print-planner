@@ -126,8 +126,12 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   2 to 4 are disabled while there is nothing to make; counters: none on Design, Print and Assemble in %, Hardware
   "N to buy"). The header's "File" menu (`fileBtn`, `menuOpen` with a `note`) saves and opens design files on every
   step (`saveDesign`, `openDesign`); `designMark` (localStorage `vpp.designMark`: name, hash of `undoSnap()`, changes
-  since, counted in `undoCommit` / `undoBack` / `undoForth`) says how the file stands. The credit line is the footer's
-  first row. Design (`renderBuild`) = the stacks' rail (stacks, "New stack", templates, loose parts as an entry like
+  since, counted in `undoCommit` / `undoBack` / `undoForth`) says how the file stands. "What's new" (`newsBtn`) and
+  "Report a bug or an idea" (`reportBtn`) are small links under the page's name (`.logo .hlinks`, Dols 2026-11-14); the
+  fork's credit to Romy is What's new's first section, "About this fork", written in `CHANGELOG.md` (`build.py`
+  `changelog_html`: `## ` a section, `- ` a list line, other lines paragraphs; a section named "About…" is framed).
+  The footer has no credit line; `template.html` opens with the upstream MIT notice in a comment.
+  Design (`renderBuild`) = the stacks' rail (stacks, "New stack", templates, loose parts as an entry like
   the stacks, `.dloose`), the selected stack's card (`designCenter`: name with its pencil, `dRename`;
   Stack settings, which opens and does not toggle; "Add a level on top"; the 3D view) and the inspector (`#dInsp`,
   `renderInspector`: the selected level, the stack's settings with width and depth first (`setFootprint`; no Footprint
