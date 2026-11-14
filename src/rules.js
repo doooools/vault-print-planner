@@ -53,7 +53,10 @@
     { id: 'runners', label: 'Runner slides', def: 'inner' },
     { id: 'lock', label: 'Key locks and case locks', def: 'inner' },
     { id: 'hinge', label: 'Hinges', def: 'inner' },
-    { id: 'accent', label: 'Latches, springs, rails and stoppers', def: 'accent' },
+    { id: 'latches', label: 'Latches between levels', def: 'accent' },
+    { id: 'stoppers', label: 'Runner stoppers', def: 'accent' },
+    { id: 'rods', label: 'Hinge rods', def: 'accent' },
+    { id: 'accent', label: 'Springs and geared rails', def: 'accent' },
     { id: 'interior', label: 'Gridfinity baseplates and grid dividers', def: 'body' },
     { id: 'dividers', label: 'Dividers', def: 'inner' },
     { id: 'label', label: 'Labels', def: 'body' },
@@ -63,7 +66,11 @@
   ];
   function roleOf(label, group) {
     if (/tire|tyre/i.test(label)) return 'tpu';
-    if (/^springs|^latch|geared rail|runner stopper|hinge rods/i.test(label)) return 'accent';
+    // Latches, stoppers and rods were 'accent' with the springs and rails; each has its own colour now
+    if (/^latch/i.test(label)) return 'latches';
+    if (/runner stopper/i.test(label)) return 'stoppers';
+    if (/hinge rods/i.test(label)) return 'rods';
+    if (/^springs|geared rail/i.test(label)) return 'accent';
     if (/manual support|jig/i.test(label)) return 'aids';
     if (/label/i.test(label)) return 'label';
     if (/front \(facade\)|^drawer front|^case front|facade cap|key cap/i.test(label)) return 'facade';
