@@ -16,6 +16,8 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   Paint tool, the plate sheet, several drawers per module. Read the brief before UI work: its layout, tokens and
   wording still hold. Its "Open points" and "Later" are what is left of it (store links, an XL 1F level asked for 2F,
   animated GIFs in Assemble). `docs/colors-3d-redesign.md` is history.
+- UX audit of 2026-11-14: `docs/ux-audit-2026-11.md` (decisions, eight sessions, open points, findings A1…X4) and its
+  mockups in `docs/ux-audit-mockups/`. Where it disagrees with `docs/ux-redesign.md`, the audit wins.
 - What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file
   `3d/stl-absents-de-la-3d.md`.
 
