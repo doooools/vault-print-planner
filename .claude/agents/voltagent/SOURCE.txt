@@ -1,13 +1,13 @@
-VoltAgent subagents, on trial (Dols, 2026-11-14)
+VoltAgent subagents, kept (Dols, 2026-11-14)
 
 Copied unchanged from https://github.com/VoltAgent/awesome-claude-code-subagents
 at commit ed74d11 (2026-11-02), MIT license (LICENSE.txt).
 
   surgeon-reviewer.md       categories/04-quality-security/
   security-auditor.md       categories/04-quality-security/
-  accessibility-tester.md   categories/04-quality-security/
-  performance-engineer.md   categories/04-quality-security/
   ux-microcopy-reviewer.md  categories/08-business-product/
+
+accessibility-tester and performance-engineer were tried once and left out (PR #45).
 
 Claude Code picks up every .md in .claude/agents/ (subfolders included) when a session starts.
 To remove them all: delete this folder (git rm -r .claude/agents/voltagent) or revert the pull request that added it.
