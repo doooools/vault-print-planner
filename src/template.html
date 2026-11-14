@@ -105,7 +105,10 @@ dialog#news h2, dialog#relink h2, dialog#report h2 { margin: 0 32px 4px 0; font-
 .hbtn.kofi { border-color: transparent; background: none; color: var(--muted); text-decoration: none; }
 .hbtn.kofi:hover, .hbtn.kofi:focus-visible { border-color: var(--line); color: var(--ink); }
 /* Where the header's buttons only just fit beside the tabs, the cup alone (its name stays in aria-label and title) */
-@media (min-width: 1240px) and (max-width: 1399px) { .hbtn.kofi { padding: 0 4px; } .hbtn.kofi span { display: none; } }
+@media (min-width: 1240px) and (max-width: 1599px) { .hbtn.kofi { padding: 0 4px; } .hbtn.kofi span { display: none; } }
+/* One row from 1240 px (UX audit A10): the header's gaps and paddings tighten so the File menu and the cup fit at 1440 */
+@media (min-width: 1240px) { header.appbar { column-gap: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  header.appbar .tabs button { padding: 0 12px; } .hbtns { gap: 6px; } .hbtn:not(.kofi) { padding: 0 10px; } }
 /* Light / dark: two segmented buttons in the header, dark fill = the theme shown. 44 px tall like the header buttons */
 .seg.theme { grid-auto-columns: 36px; align-self: center; }
 .seg.theme button { display: grid; place-items: center; height: 36px; padding: 0; }

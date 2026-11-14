@@ -21,7 +21,8 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   points were answered by Dols on 2026-11-14 (written in the brief). Session 2 (fixes without a mockup: A4, A6, B1,
   B6, C2, D7, D8, E1, E4, E5) is done on its branch. Session 6 (Print: D1 to D6) on `claude/print`. Session 7 (Hardware: E2, E3, E6) is done on its branch. Session 3 (the 3D
   view: hover, right-click menus, "⋯", one-line hint, "Bolts" swatches, "?"; A1, A2, A3, A4, A5, A6) is done on its branch.
-  Session 4 (Design's panels: A7, A8, B2, B3, B4, X3, X4) is done on its branch.
+  Session 4 (Design's panels: A7, A8, B2, B3, B4, X3, X4) is done on its branch. Session 8 (header, File menu,
+  tabs: A9, A10) is done on its branch.
 - What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file
   `3d/stl-absents-de-la-3d.md`.
 
@@ -117,8 +118,12 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   Slots come from `trayUse()`: one per colour in use, in tray order (1, then 3…), like `buildProject`; labels on their
   own plate (`labelsApart`) don't count.
 - Tabs: 1 · Design (`view` 'build'; a saved 'unit' opens it), 2 · Print, 3 · Hardware, 4 · Assemble (`renderTabs`;
-  2 to 4 are disabled while there is nothing to make). Design (`renderBuild`) = the stacks' rail (stacks, "New stack",
-  templates, design file, loose parts), the selected stack's card (`designCenter`: name with its pencil, `dRename`;
+  2 to 4 are disabled while there is nothing to make; counters: none on Design, Print and Assemble in %, Hardware
+  "N to buy"). The header's "File" menu (`fileBtn`, `menuOpen` with a `note`) saves and opens design files on every
+  step (`saveDesign`, `openDesign`); `designMark` (localStorage `vpp.designMark`: name, hash of `undoSnap()`, changes
+  since, counted in `undoCommit` / `undoBack` / `undoForth`) says how the file stands. The credit line is the footer's
+  first row. Design (`renderBuild`) = the stacks' rail (stacks, "New stack", templates, loose parts as an entry like
+  the stacks, `.dloose`), the selected stack's card (`designCenter`: name with its pencil, `dRename`;
   Stack settings, which opens and does not toggle; "Add a level on top"; the 3D view) and the inspector (`#dInsp`,
   `renderInspector`: the selected level, the stack's settings with width and depth first (`setFootprint`; no Footprint
   button nor strip since UX audit session 4), or Colors while painting). Both panels are foldable sections (`fold`,
