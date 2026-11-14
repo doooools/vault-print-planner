@@ -385,7 +385,8 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .hwtop .bar i { display: block; height: 100%; background: var(--accent); }
 .hwg { display: flex; align-items: baseline; gap: 12px; padding: 12px 20px 8px; background: var(--sheet-2); border-top: 1px solid var(--line); }
 .hwg h2 { margin: 0; font-size: 12px; letter-spacing: .09em; text-transform: uppercase; font-weight: 700; }
-.hwrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; min-height: 64px; padding: 8px 16px 8px 6px; border-top: 1px solid var(--line); }
+.hwrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; min-height: 64px; padding: 8px 16px 8px 6px; border-top: 1px solid var(--line); cursor: pointer; }
+.hwrow:hover { background: var(--sheet-2); }
 .hwtick { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer; }
 .hwtick input { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); }
 .hwq { flex: 0 0 52px; text-align: right; font-size: 20px; font-weight: 800; font-stretch: 112%; }
@@ -590,6 +591,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .ifp .btn { flex: none; min-height: 40px; }
 .ifp b { min-width: 0; }
 .ialerts { display: grid; gap: 6px; }
+.ialerts .linkbtn { display: inline; margin: 0 0 0 4px; padding: 0; font-size: 13px; color: inherit; }
 .seg.wrap { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); width: 100%; box-sizing: border-box; min-width: 0; }
 .seg.wrap button { min-width: 0; padding-left: 4px; padding-right: 4px; overflow-wrap: break-word; }
 .seg button { min-height: 40px; }
@@ -1356,9 +1358,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       });
       if (pair) {
         const d0 = lv[0].d;
-        if (lv.some(u => u.d !== d0)) issues.push({ k: 'bad', m: `Level ${i + 1}: the two units are different depths. Side-by-side units need the same depth.` });
-        if (lv.some(u => unitExt(u)[2] !== unitExt(lv[0])[2])) issues.push({ k: 'bad', m: `Level ${i + 1}: the two units are different heights, so the next level won't sit flat.` });
-        if (!R.familyForWidth(levelWidth(lv))) issues.push({ k: 'bad', m: `Level ${i + 1}: ${lv.map(u => u.w).join(' + ')} side by side isn't a Vault width. Pairs that work: S + S (as wide as L) and S + M (as wide as XL).` });
+        if (lv.some(u => u.d !== d0)) issues.push({ k: 'bad', l: i, m: `Level ${i + 1}: the two units are different depths. Side-by-side units need the same depth.` });
+        if (lv.some(u => unitExt(u)[2] !== unitExt(lv[0])[2])) issues.push({ k: 'bad', l: i, m: `Level ${i + 1}: the two units are different heights, so the next level won't sit flat.` });
+        if (!R.familyForWidth(levelWidth(lv))) issues.push({ k: 'bad', l: i, m: `Level ${i + 1}: ${lv.map(u => u.w).join(' + ')} side by side isn't a Vault width. Pairs that work: S + S (as wide as L) and S + M (as wide as XL).` });
         if (top && lv.every(u => u.type === 'drawer')) {
           const fam = R.familyForWidth(levelWidth(lv)), ru = roofOf(lv), kind = ru.roof;
           if (fam && kind !== 'none') parts.push(paintLines(finish(R.buildRoof(fam, d0, kind, ru.topHandle, resolve, printAids)), ru));
@@ -1367,7 +1369,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (i > 0) {
         const below = L[i - 1];
         if (Math.abs(levelWidth(lv) - levelWidth(below)) > 2 || lv[0].d !== below[0].d)
-          issues.push({ k: 'bad', m: `Level ${i + 1} (${Math.round(levelWidth(lv))} mm wide, x${lv[0].d} deep) doesn't match level ${i} (${Math.round(levelWidth(below))} mm wide, x${below[0].d} deep). Stacked units need the same width and depth.` });
+          issues.push({ k: 'bad', l: i, m: `Level ${i + 1} (${Math.round(levelWidth(lv))} mm wide, x${lv[0].d} deep) doesn't match level ${i} (${Math.round(levelWidth(below))} mm wide, x${below[0].d} deep). Stacked units need the same width and depth.` });
       }
     });
     // One removable key turns every hidden lock of the stack
@@ -1841,6 +1843,17 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <ul>${g.items.map(l => `<li><span class="q mono">${l.total}\u00d7</span><span class="n" title="${esc(l.file.path)}">${esc(l.label)}${l.inferred ? ' <small>inferred</small>' : ''}</span>${bad(l) ? '<span class="badge no">Too big</span>' : ''}</li>`).join('')}</ul>`).join('')}
       ${hw.length ? `<h3><span>Bolts and hardware</span><span class="mono">not printed</span></h3><ul>${hw.map(h => `<li><span class="q mono">${h.total}\u00d7</span><span class="n">${esc(h.item)}</span></li>`).join('')}</ul>` : ''}
       <button type="button" class="linkbtn" data-go="print">Files, sizes and plates in Print</button></div>`;
+  }
+  // Print progress of some lines: parts and grams, printed and in all, leaving out the parts that no longer fit the
+  // printer (they are on no plate). Print's top line and its tab counter.
+  function printProgress(lines) {
+    let total = 0, done = 0, g = 0, gDone = 0;
+    lines.forEach(l => {
+      if (l.fit.s === 'no' || l.fit.s === 'reorient') return;
+      const n = Math.min(l.total, printed[pkey(l)] || 0), w = gramsOf(l.file);
+      total += l.total; done += n; g += l.total * w; gDone += n * w;
+    });
+    return { total, done, g, gDone };
   }
   function summary(lines) {
     const prints = lines.reduce((a, l) => a + l.total, 0);
@@ -2418,7 +2431,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (!sizeFits(fp.w, fp.d)) fp = { w: 'S', d: 3 };
     const t = { id: newId(), name: 'Stack ' + (towers.length + 1), fp: { ...fp }, levels: [], stack: { ...STACK_DEFAULT }, roles: { ...((stackNow() || {}).roles || colorPrefs.roles) } };
     const u = newUnit(t); u.roof = 'grid'; t.levels.push([u]);
-    towers.push(t); dsel = { t: t.id, l: 0, u: 0 }; saveSel(); save();
+    towers.push(t); dsel = { t: t.id, l: null }; saveSel(); save(); // opens on Stack settings, like a template
     return t;
   }
   function addPreset(p) {
@@ -2750,7 +2763,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       back += `<div class="field"><div class="lbl">Backbone <span class="hint">the column reaches this level</span></div><div class="seg">${useg('backbone', [{ v: 'none', label: 'None' }, { v: 'family', label: 'This width' }, { v: 'universal', label: 'Universal' }], u.backbone || 'none')}</div></div>`;
     } else back += '<p class="pnote" style="margin:0">Pegboards and backbones are made for 1F and 2F modules only.</p>';
     box.innerHTML = `<div class="ihead"><div class="ipos"><span class="v3-sec">Level ${i + 1} of ${L.length}</span>
-        <div class="iacts"><button type="button" class="iconbtn sq" data-lop="up" aria-label="Move this level up" ${top ? 'disabled' : ''}>${icon('up')}</button><button type="button" class="iconbtn sq" data-lop="down" aria-label="Move this level down" ${i ? '' : 'disabled'}>${icon('down')}</button><button type="button" class="iconbtn sq" data-lop="dup" aria-label="Duplicate this level">${icon('dup')}</button><button type="button" class="iconbtn sq" data-lop="del" aria-label="Remove this level">${icon('del')}</button></div></div>
+        <div class="iacts"><button type="button" class="iconbtn sq" data-lop="up" aria-label="Move this level up" title="Move this level up" ${top ? 'disabled' : ''}>${icon('up')}</button><button type="button" class="iconbtn sq" data-lop="down" aria-label="Move this level down" title="Move this level down" ${i ? '' : 'disabled'}>${icon('down')}</button><button type="button" class="iconbtn sq" data-lop="dup" aria-label="Duplicate this level" title="Duplicate this level: a copy goes above it">${icon('dup')}</button><button type="button" class="iconbtn sq" data-lop="del" aria-label="Remove this level" title="Remove this level">${icon('del')}</button></div></div>
         <h2>${esc(title)}</h2><div class="mono">${Math.round(levelWidth(lv))} × ${Math.round(ext[1])} × ${Math.round(levelHeight(lv))} mm · ${s.prints} parts · ${aboutG(s.g)}</div></div>
       ${lv.length > 1 ? `<div class="seg ipair" role="group" aria-label="Module to set up">${lv.map((x, j) => `<button type="button" data-umod="${j}" aria-pressed="${j === ui}">${j ? 'Right' : 'Left'}<small>${esc(unitCode(x))}</small></button>`).join('')}</div>` : ''}
       ${nf.length ? `<div class="alert warn" role="alert"><strong>${plural(nf.length, 'part')} of this level no longer ${nf.length === 1 ? 'fits' : 'fit'} the ${esc(printerName())}</strong><span class="mono">${[...new Set(nf.map(l => esc(l.label) + ' · ' + dimStr(l.file.dims)))].join('<br>')}</span><span>${nf.length === 1 ? 'It is' : 'They are'} left out of the plates. Print ${nf.length === 1 ? 'it' : 'them'} on a bigger printer, or change this level.</span></div>` : ''}
@@ -3233,7 +3246,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     box.innerHTML = `<div class="ihead"><span class="v3-sec">Stack settings</span>
         <input class="tname" value="${esc(t.name)}" data-rename aria-label="Stack name"><div class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></div></div>
       <div class="ibody">
-        <div class="isec first"><b>Size and roof</b><span class="hint">the same for every level</span></div>
+        <div class="ialerts">${alerts.length ? alerts.map(x => `<div class="issue ${x.k}">${esc(x.m)}${x.l != null && L[x.l] ? ` <button type="button" class="linkbtn" data-showlv="${x.l}">Show level ${x.l + 1}</button>` : ''}</div>`).join('') : `<div class="issue ok">Everything in this stack fits together and fits the ${esc(printerName())}.</div>`}</div>
+        <div class="isec"><b>Size and roof</b><span class="hint">the same for every level</span></div>
         <div class="field"><div class="lbl">Footprint</div><div class="ifp"><b>${fpCode(fp)} \u00b7 ${Math.round(R.WIDTH_MM[fp.w])} mm, x${fp.d}</b><button type="button" class="btn" data-fp>Change\u2026</button></div></div>
         <div class="field"><div class="lbl">Roof ${topIsDrawer ? '' : '<span class="hint">the top level is a case: the roof latches onto its lid</span>'}</div><div class="seg wrap">${segBtns(roofs, roof, 'data-roof')}</div></div>
         ${roof === 'grid' ? `<div class="field"><div class="lbl">Carry handle <span class="hint">on the grid roof</span></div><div class="seg">${sbool('topHandle', { label: 'None' }, { label: 'Handle', sub: '2 \u00d7 M6 \u00d7 50 mm countersunk' }, ru.topHandle)}</div></div>` : ''}
@@ -3248,10 +3262,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="field"><div class="lbl">Stationary handle <span class="hint">adds the backbone column</span></div><div class="seg">${sbool('stationaryHandle', { label: 'None' }, { label: 'Handle' }, s.stationaryHandle)}</div></div>
         <div class="field"><div class="lbl">Module connectors</div><div class="seg">${sbool('connectors', { label: 'None' }, { label: 'Connectors', sub: 'over the back joints' }, s.connectors)}</div>
           <p class="pnote" style="margin:0">Screwed over each joint between two drawer modules at the back corners, where no backbone, handle lock or wall plate is.</p></div>
-        <div class="ialerts">${alerts.length ? alerts.map(x => `<div class="issue ${x.k}">${esc(x.m)}</div>`).join('') : `<div class="issue ok">Everything in this stack fits together and fits the ${esc(printerName())}.</div>`}</div>
         <div class="actions"><button type="button" class="btn" data-tdup>Duplicate stack</button><button type="button" class="btn" data-tdel>Remove stack</button></div>
       </div>`;
     box.querySelector('[data-rename]').onchange = e => { t.name = e.target.value.trim() || 'Stack'; save(); renderAll(); };
+    box.querySelectorAll('[data-showlv]').forEach(b => b.onclick = () => { dsel = { t: t.id, l: +b.dataset.showlv, u: 0 }; saveSel(); renderAll(); });
     box.querySelector('[data-fp]').onclick = () => { fpStrip = true; renderAll(); const s2 = document.querySelector('.fpstrip'); if (s2) s2.scrollIntoView({ block: 'nearest' }); };
     box.querySelectorAll('[data-roof]').forEach(b => b.onclick = () => {
       if (!L.length) return;
@@ -3496,7 +3510,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       pl.grams = pl.items.reduce((a, it) => a + gramsOf(it.p.l.file), 0);
       pl.tallest = Math.max(...pl.items.map(it => it.p.l.file.dims[2]));
     });
-    return { plates, skipped: [...new Set(skipped)], unbraced };
+    return { plates, skipped: [...new Set(skipped)], skippedN: skipped.length, unbraced };
   }
   function plateSvg(pl, mini) {
     const V = printer.v;
@@ -3586,16 +3600,15 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (b.empty) return emptyStep('view-print', 'to print');
     const s = summary(b.lines);
     const scope = b.scope;
-    const { plates: allPlates, skipped, unbraced = [], state: pst } = stablePlates(b.lines, scope);
+    const { plates: allPlates, skipped, skippedN = skipped.length, unbraced = [], state: pst } = stablePlates(b.lines, scope);
     const plates = allPlates.filter(pl => !pl.done), printedPl = allPlates.filter(pl => pl.done);
     plateTotal = allPlates.length;
     if (plateSel.scope !== scope) plateSel = { scope, ns: new Set() };
     plateSel.ns.forEach(n => { if (!allPlates.some(pl => pl.n === n)) plateSel.ns.delete(n); });
     const picked = allPlates.filter(pl => plateSel.ns.has(pl.n));
     const target = picked.length ? picked : plates;   // what the downloads hold
-    const total = b.lines.reduce((a, l) => a + (l.fit.s === 'no' || l.fit.s === 'reorient' ? 0 : l.total), 0);
-    const done = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0), 0);
-    const gDone = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0) * gramsOf(l.file), 0);
+    // Progress counts what goes on the plates: parts that no longer fit the printer are left out of every figure
+    const { total, done, g: gTotal, gDone } = printProgress(b.lines);
     const pct = total ? Math.round(done / total * 100) : 0;
     const next = plates[0];
     const missing = vaultFolder ? neededPaths(target).filter(p => !findFile(vaultFolder.files, p)) : [];
@@ -3619,7 +3632,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       missing.length ? `<div class="alert bad" role="alert"><strong>${plural(missing.length, 'part')} not found in “${esc(vaultFolder.name)}”</strong><span class="mono">${missing.slice(0, 8).map(p => esc(fileName(p))).join(' · ')}${missing.length > 8 ? ` and ${missing.length - 8} more` : ''}</span>
         <span>${missing.length * 2 < neededPaths(target).length ? `If that is the Vault download, your copy may name these differently from the one this planner knows (${esc(SRC_DEFAULT)}).` : 'Pick the Vault download folder itself, not one of its subfolders.'}</span>
         <div class="actions"><button type="button" class="btn primary" id="gPick">Choose another folder…</button><button type="button" class="btn" id="gShowMissing">Show the plates they are on</button></div></div>` : '',
-      skipped.length ? `<div class="alert warn" role="alert"><strong>${plural(skipped.length, 'part')} no longer ${skipped.length === 1 ? 'fits' : 'fit'} the ${esc(printerName())} and ${skipped.length === 1 ? 'is' : 'are'} left out of the plates</strong><span class="mono">${skipped.map(l => esc(l.label) + ' · ' + dimStr(l.file.dims) + (l.fit.s === 'reorient' ? ', only tipped on its side' : '')).join('<br>')}</span><span>Print ${skipped.length === 1 ? 'it' : 'them'} on a bigger printer, or change that level in Design.</span>
+      skipped.length ? `<div class="alert warn" role="alert"><strong>${plural(skippedN, 'part')} no longer ${skippedN === 1 ? 'fits' : 'fit'} the ${esc(printerName())} and ${skippedN === 1 ? 'is' : 'are'} left out of the plates</strong><span class="mono">${skipped.map(l => { const n = Math.max(0, l.total - (pst.base[pkey(l)] || 0)); return (n > 1 ? n + '× ' : '') + esc(l.label) + ' · ' + dimStr(l.file.dims) + (l.fit.s === 'reorient' ? ', only tipped on its side' : ''); }).join('<br>')}</span><span>Print ${skippedN === 1 ? 'it' : 'them'} on a bigger printer, or change that level in Design.</span>
         <div class="actions"><button type="button" class="btn" data-go="build">Show it in Design</button></div></div>` : '',
       unbraced.length ? `<div class="alert warn"><strong>${plural(unbraced.length, 'manual support')} left out.</strong><span>A manual support only helps standing against the end of a roof of the same depth while both print, and this build has no roof free for ${unbraced.length === 1 ? 'it' : 'these'}: ${Object.entries(unbraced.reduce((m, l) => { const k = fileName(l.file.path).replace(/\.stl$/i, ''); m[k] = (m[k] || 0) + 1; return m; }, {})).map(([k, n]) => n + '× ' + k).join(', ')}.</span></div>` : '',
     ].join('');
@@ -3667,11 +3680,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <div class="plist">${sel.lines.map((x, i) => `<div class="prow"><span class="pk" style="background:${colorHex(sel.color)};color:${LIGHT_FILL(sel.color) ? '#222' : '#fff'}">${i + 1}</span><span class="q num">${x.count}×</span><span class="lbl"><b>${esc(x.l.label)}</b><small class="mono">${esc(fileName(x.l.file.path))}</small></span>${x.l.walls ? `<span class="tag wall">${x.l.walls} walls${x.l.infill ? ' · ' + x.l.infill + '%' : ''}</span>` : ''}${x.l.supports ? '<span class="tag sup">supports</span>' : ''}</div>`).join('')}</div>
       <button type="button" class="btn ${sel.done ? '' : 'primary'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button></aside>`;
     const hasLabels = b.lines.some(isLabel);
-    // Nothing picked in the rail: no plates, an empty state in the middle. "Clear" takes only what is picked, and isn't
-    // offered when everything is (Dols, 2026-11-14): every stack is then removed in Design, one by one.
-    const none = !b.list.length && !b.extras, noClear = none || b.whole;
-    const clearWhat = b.onlyExtras ? 'Clear loose parts'
-      : `Remove ${b.list.length === 1 ? b.list[0].name : plural(b.list.length, 'stack')}${b.extras ? ' and the loose parts' : ''}`;
+    // Nothing picked in the rail: no plates, an empty state in the middle. Print removes nothing: stacks and loose parts
+    // are removed in Design (Dols, 2026-11-14, UX audit D7).
+    const none = !b.list.length && !b.extras;
     const opts = `<section class="panel popts" aria-label="Plate options">
       <div class="ihead"><span class="v3-sec">Plate options</span><h2>${plural(allPlates.length, 'plate')}</h2><div class="mono">${esc(printerShort())} · ${printer.v[0]} × ${printer.v[1]} mm bed</div></div>
       <div class="ibody">
@@ -3680,7 +3691,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="field"><div class="lbl">Manual supports <span class="hint">USSA’s prop for each drawer roof</span></div><div class="seg">${pbool('printAids', { label: 'None' }, { label: 'One per roof', sub: 'standing against it' }, printAids)}</div></div>
         ${hasLabels ? `<div class="field"><div class="lbl">Labels <span class="hint">text and colors in the slicer</span></div><div class="seg">${pbool('labelsApart', { label: 'With the rest' }, { label: 'Own plate' }, labelsApart)}</div></div>` : ''}
         <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Each shell keeps 15 mm clear beyond its top and bottom walls for them (dashed). Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
-        <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}${noClear ? '' : `<button type="button" class="btn" id="clearPlates">${esc(clearWhat)}</button>`}</div>
+        ${done ? '<div class="actions"><button type="button" class="btn" id="resetPrinted">Reset all progress</button></div>' : ''}
       </div></section>`;
     $('view-print').innerHTML = `<div class="prt">
       <aside class="drail prail" role="group" aria-label="What to print"><div class="v3-sec">What to print</div>
@@ -3691,7 +3702,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       ${none ? `<section class="panel pnone" aria-label="Plates"><p><strong>Nothing picked to print.</strong> Click a stack on the left to print it.</p></section>` : `
       <section class="panel ptop" aria-label="Progress and export">
         <div class="ptop-prog"><h1>${pct}% printed</h1><div class="bar2" aria-hidden="true"><i style="width:${pct}%"></i></div>
-          <div class="mono">${done} of ${total} parts · ${plates.length} of ${plural(allPlates.length, 'plate')} left · ${aboutG(gDone)} of ${gramsStr(s.g)}</div></div>
+          <div class="mono">${done} of ${total} parts · ${plates.length} of ${plural(allPlates.length, 'plate')} left · ${aboutG(gDone)} of ${gramsStr(gTotal)}</div></div>
         <div class="ptop-x">${exportBtn}
           <div class="xrow">${canMake && target.length ? '<button type="button" class="btn" id="gFolders">STL folders (.zip)</button>' : ''}</div>
           <div class="gprog" id="gProg" hidden><div class="bar"><i></i></div><span></span></div></div>
@@ -3752,17 +3763,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       renderPrint();
     });
     holdButton($('resetPrinted'), () => { undoAs('Progress reset', true); printed = {}; store.set('printed', printed); renderPrint(); renderTabs(); }, 'Hold the button down to reset all progress');
-    holdButton($('clearPlates'), () => {
-      // Only what is picked (never everything: no button then): those stacks leave Design (as "Remove stack" does,
-      // progress kept), the loose parts and their progress if they are picked.
-      const gone = new Set(b.list.map(t => t.id));
-      undoAs(b.onlyExtras ? 'Loose parts cleared' : clearWhat.replace(/^Remove /, '') + ' removed', true);
-      if (gone.size) { towers = towers.filter(t => !gone.has(t.id)); save(); if (dsel && gone.has(dsel.t)) { dsel = null; saveSel(); } }
-      if (b.extras) { extras = []; for (const k of Object.keys(printed)) if (k.startsWith('extra:')) delete printed[k]; }
-      saveExtras(); store.set('printed', printed);
-      printSkip = []; savePrintSkip();
-      renderAll();
-    }, 'Hold the button down to clear');
     if ($('copyAll')) $('copyAll').onclick = () => copy(listText(b.lines, 'Vault build'), 'Part list copied');
     if ($('gMake')) $('gMake').onclick = () => hasFolder ? makeDownload(target, false, 'project') : openFolder(false);
     if ($('gFolders')) $('gFolders').onclick = () => makeDownload(target, false, 'folders');
@@ -4859,7 +4859,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       else u.g.position.y = u.y + spreadOf(u) + liftOf(u);
       u.g.visible = !(u.roof && v.hideRoof) && !(u.column && v.explode); // the column runs up the whole stack: not when spread
     };
-    // Spread units apart (each level lifted a little more) and hide the roofs
+    // Spread levels apart (each level lifted a little more) and hide the roofs
     v.arrange = () => {
       v.units.forEach(placeUnit);
       if (v.sel && v.sel.u && !v.sel.u.g.visible) v.sel = null;
@@ -5001,7 +5001,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const roof = v.units.some(u => u.roof);
     $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool">${seg([['turn', 'Select'], ['paint', 'Paint']], v.tool, 'data-v3tool')}</div>
       <div class="v3-right">
-        ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}">Spread units</button>` : ''}
+        ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}">Spread levels</button>` : ''}
         ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}">Hide roof</button>` : ''}
         ${v.units.some(u => u.place && u.place.bolts.length) ? `<button type="button" class="v3-tog" data-v3fin title="Bolt finish, for the whole build (also in Hardware): click for ${hwFinish() === 'black' ? 'zinc-plated or stainless' : 'raw steel'}"><span class="dot2" style="background:${hwColor()};vertical-align:-2px;margin-right:6px"></span>${hwFin()[2]}</button>` : ''}</div>`;
     const B = $('v3dBrush');
@@ -5010,7 +5010,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const bp = paletteOf(v.brush);
       B.innerHTML = `<span class="v3-bnow"><span class="dot2 big" style="background:${bp.hex}"></span><span><small>Brush</small><b>${esc(bp.name)}</b></span></span>
         <span class="v3-brush-hint">Click a part in the view, or a line on the right. A double-click, or <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click, opens a drawer, to paint its box.</span>
-        <div class="v3-seg" role="group" aria-label="What a click in the view paints">${seg([['project', 'Same part everywhere'], ['unit', 'Only this module']], v.pscope, 'data-v3scope')}</div>`;
+        <div class="v3-seg" role="group" aria-label="What a click in the view paints">${seg([['project', 'Whole stack'], ['unit', 'This module only']], v.pscope, 'data-v3scope')}</div>`;
     } else {
       const tip = !store.get('openTip', false) && v.units.some(u => u.travel || u.movers || u.lid);
       B.hidden = false; B.className = 'v3-hintbar' + (tip ? ' tip' : '');
@@ -5708,7 +5708,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     </aside>`;
     // Right column, like Print's plate options: where you buy, the bolt finish, the head shapes
     const side = `<aside class="hwside" aria-label="List options"><section class="panel popts">
-      <div class="ihead"><span class="v3-sec">List options</span><h2>${esc(storeName)}</h2><div class="mono">${esc(hwFin()[2])} bolts</div></div>
+      <div class="ihead"><span class="v3-sec">List options</span><h2>${plural(rows.length, 'line')}</h2><div class="mono">${esc(storeName)} · ${esc(hwFin()[2])} bolts</div></div>
       <div class="ibody">
         <div class="field"><label class="lbl" for="hwShop">Where you buy</label>
           <select class="full" id="hwShop">${SHOP_STORES.map(([cont, list]) => `<optgroup label="${esc(cont)}">${list.map(([id, name, where]) => `<option value="${id}" ${id === shopStore ? 'selected' : ''}>${esc(name)} · ${esc(where)}</option>`).join('')}</optgroup>`).join('')}</select>
@@ -5731,6 +5731,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         ${rows.length ? list : '<p class="pp" style="padding:16px 20px">This build needs no bolts or other bought parts.</p>'}
       </section>`}
       ${side}</div>`;
+    // A click anywhere on a row ticks it (UX audit E1), but on the store link, which opens the store
+    V.querySelectorAll('.hwrow').forEach(row => row.onclick = e => {
+      if (e.target.closest('a, input, label')) return;
+      const cb = row.querySelector('[data-hw-bought]'); if (!cb) return;
+      cb.checked = !cb.checked; cb.dispatchEvent(new Event('change'));
+    });
     V.querySelectorAll('[data-hw-bought]').forEach(cb => cb.onchange = () => {
       if (cb.checked) hwBought[cb.dataset.hwBought] = 1; else delete hwBought[cb.dataset.hwBought];
       store.set('hwBought', hwBought); renderHardware(); renderTabs();
@@ -5738,7 +5744,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     V.querySelectorAll('[data-hwskip]').forEach(btn => btn.onclick = () => {
       const id = +btn.dataset.hwskip, on = btn.getAttribute('aria-pressed') === 'true';
       hwSkip = [...hwSkip.filter(x => x !== id), ...(on ? [id] : [])]; store.set('hwSkip', hwSkip);
-      renderHardware();
+      renderHardware(); renderTabs();
     });
     V.querySelectorAll('[data-hwjump]').forEach(btn => btn.onclick = () => { const g = $(btn.dataset.hwjump); if (g) g.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); });
     $('hwShop').onchange = e => { shopStore = e.target.value; store.set('shopStore', shopStore); renderHardware(); };
@@ -5908,12 +5914,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const nx = extras.reduce((a, e) => a + e.qty, 0);
     $('countBuild').textContent = units + nx ? `(${units + nx})` : '';
     $('countBuild').title = units + nx ? [units && plural(units, 'module'), nx && plural(nx, 'loose part')].filter(Boolean).join(' and ') : '';
-    const b = computeBuild(true);
-    const total = b.lines.reduce((a, l) => a + (l.fit.s === 'no' || l.fit.s === 'reorient' ? 0 : l.total), 0);
-    const done = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0), 0);
+    const b = computeBuild(true), { total, done } = printProgress(b.lines);
     $('countPrint').textContent = total ? `${Math.round(done / total * 100)}%` : '';
     $('countPrint').title = total ? `${done} of ${plural(total, 'part')} printed` : '';
-    const hwLeft = b.empty ? 0 : b.hardware.filter(h => !hwBought[h.item]).length;
+    // Hardware's counter follows Hardware's own rail (hwSkip), not Print's (UX audit E5)
+    const hb = b.empty ? null : computeBuild(false, hwSkip), hwLeft = hb ? hb.hardware.filter(h => !hwBought[h.item]).length : 0;
     $('countHw').textContent = hwLeft ? `(${hwLeft})` : '';
     $('countHw').title = hwLeft ? `${plural(hwLeft, 'line')} still to buy` : '';
     const ab = b.empty ? null : computeBuild(), ap = ab && !ab.empty ? asmPct(ab) : null;

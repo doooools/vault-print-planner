@@ -98,7 +98,7 @@ Shown when there is no stack. Three rows: printer, Vault folder (same text and "
 - Under the view: a colour summary of five chips (shell and roof, fronts, drawer boxes, mechanics, accents) that opens the Paint tool.
 - Right: the inspector.
   - A level selected: position ("Level 3 of 4"), move up, move down, duplicate, remove; type; module height; "Across the width" on L and XL stacks; "Drawers in this module" for 2F and 4F drawers, as small diagrams; inside; lock; geared rails; "More options" (print aid, wall mount, pegboard); "Parts and bolts of this level" (the part list and hardware that `unitSum` folds today).
-  - The stack selected: name, footprint, roof (None, Grid, Table, Bowl, Under-table, Heavyweight where it exists), base with wheels and foot bar under it, the two handles, then the stack's alerts (`analyzeTower`) or "Everything in this stack fits together".
+  - The stack selected: name, the stack's alerts (`stackAlerts`) or "Everything in this stack fits together" at the top, each alert that names a level with a "Show level N" link (UX audit B1), then footprint, roof (None, Grid, Table, Bowl, Under-table, Heavyweight where it exists), base with wheels and foot bar under it, the two handles. A new empty stack opens on its settings, like a template (B6).
 - With two modules side by side (S + S, S + M) each module is selected and set up on its own; with L² or XL² both drawers share the module's settings.
 
 ### 1b · Paint tool
@@ -106,7 +106,7 @@ Replaces `colorsPanel`, the brush bar of `v3tools` and the "Selected" card's col
 - "Your filaments": one card per palette colour, which is also the brush. It shows how many part types use it. A small cross removes it, with today's behaviour (`data-pal-del`): parts go back to their role's colour, per-module colours using it are dropped, the last filament cannot be removed. TPU is fixed, for the tires.
 - "Add a filament" opens the Bambu catalogue (`bambu-colors.tsv`, line filters, own colour) under the view. A click adds the colour and takes it as the brush.
 - The roles of `R.ROLES`, grouped as today (`ROLE_GROUPS`), one swatch per line. A click paints the line with the brush; "Paint all" paints the group.
-- In the view, a click paints the clicked part's role. A switch says what the click covers: "Same part everywhere" or "Only this module" (writes the unit's `cfg.colors`, as `v3owner` decides today).
+- In the view, a click paints the clicked part's role. A switch says what the click covers: "Whole stack" or "This module only" (UX audit C2; writes the unit's `cfg.colors`, as `v3owner` decides today).
 - "Modules with their own color" lists the exceptions, each with "Back to the project color".
 - Slot numbers are not shown here. `trayUse` and `buildProject` keep assigning them for the export.
 
@@ -114,26 +114,27 @@ Replaces `colorsPanel`, the brush bar of `v3tools` and the "Selected" card's col
 Today's "Extra parts" (`extrasPanel`), as an entry of the rail: search among the 733 parts, quantity steppers, "Print only these" (`printScope`), "Clear".
 
 ### 2 · Print
-- Top: progress (parts, plates left, grams), and one export button. On a Bambu printer "Download the Bambu Studio project" (`buildProject`); otherwise "Download the plate files" (`buildPlateFiles`). "STL folders (.zip)" (`buildFolders`) sits under it.
+- Top: progress (parts, plates left, grams) of the stacks picked in the rail, and one export button. Parts that no longer fit the printer are on no plate and in none of these figures; the warning about them counts pieces (UX audit D8). On a Bambu printer "Download the Bambu Studio project" (`buildProject`); otherwise "Download the plate files" (`buildPlateFiles`). "STL folders (.zip)" (`buildFolders`) sits under it.
 - Filament chips (all, one per filament, Printed) filter the sheet. Each shows its plate count and weight.
 - The plate sheet: one small card per plate with its nesting (`plateSvg` data: bed, no-print corner, parts, front edge), its number, part count, grams, a checkbox that ticks it for the download, and "Up next" on the first unprinted plate. Grouped by filament.
 - Ticked plates (Dols, 2026-11-13): a bar above the sheet counts them; the Bambu project and the STL folders hold only them (every plate left when none is ticked), and its "Mark as printed" / "Put back on the list" acts on them all. A tick never marks a plate printed.
 - Printed plates leave their filament group and move to a "Printed" group at the end, dimmed. "Printed. Undo" (or ticking it and "Put back on the list") puts it back. Plate numbers never change (`stablePlates`).
 - The selected plate, in the right column under the plate options: large nesting with numbered parts, the numbered part list with file name and settings (walls, supports), "Mark as printed" (then selects the next unprinted plate), previous and next.
-- Plate options, at the top of the right column (Dols, 2026-11-14, "double bandeau" like Design: a rail on the left, a column of settings on the right), always shown: "Parts with supports" (`mixSupports`), "Manual supports" (`printAids`), "Labels" (`labelsApart`), the folded "How plates are laid out" text, "Reset all progress" and the clear button (none when everything is picked). It was a "Plate options…" popover before.
+- Plate options, at the top of the right column (Dols, 2026-11-14, "double bandeau" like Design: a rail on the left, a column of settings on the right), always shown: "Parts with supports" (`mixSupports`), "Manual supports" (`printAids`), "Labels" (`labelsApart`), the folded "How plates are laid out" text and "Reset all progress" (no clear button since UX audit D7). It was a "Plate options…" popover before.
 - States in `PrintStates.dc.html`: printer without a Bambu preset, folder not chosen, parts missing from the folder (today's "not found in" errors, shown before the download starts), parts that no longer fit after a change of printer.
 
 ### 3 · Hardware
 A step of its own, fed by the same data as `hwTable` for the whole build.
 - Lines grouped by what is bought: M4 bolts, M6 bolts and inserts, axle rods and bearings.
-- Per line: a "bought" checkbox, quantity, head shape drawing, name, spare note, what it is for, which stack, store link.
+- Per line: a "bought" checkbox, quantity, head shape drawing, name, spare note, what it is for, which stack, store link. A click anywhere on the line ticks it, the store link excepted (UX audit E1).
 - Laid out like Print (Dols, 2026-11-14, "double bandeau"): a left rail "Hardware for" with each stack as a button
   (dark = in the list, a click leaves it out or puts it back; its line count under it; saved as `hwSkip`). Nothing
   picked is allowed, as in Print: "Nothing picked" in the middle, no Copy or CSV (Dols, 2026-11-14). Then "In this
   list", always shown, even with one group: the groups with how many lines are bought, a click scrolls to the group. Centre:
   the title, progress, "Copy the list" (orange) and "Export as CSV", then the list. Right column, a "List options"
-  panel: "Where you buy", "Bolt finish", the head shape legend. Copy and CSV hold what the list shows; the tab's
-  count stays the whole build's.
+  panel titled with the list's line count ("12 lines", UX audit E4): "Where you buy", "Bolt finish", the head shape
+  legend. Copy and CSV hold what the list shows, and so does the tab's count (it follows Hardware's rail, `hwSkip`,
+  not Print's: UX audit E5).
 
 ### 4 · Assemble
 `GUIDE` and `stepsDone` as today, shown one section at a time.
@@ -169,8 +170,8 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   setting (Dols, 2026-11-14: "on enlève tout ce qui se coche"). What to print is a choice, not a list to tick: each
   stack (and the loose parts) is a button in Print's rail, dark when it is in the plates, plain when it is left out,
   a click toggles it. Nothing picked is allowed: no plates, "Nothing picked to print" in the middle (Dols,
-  2026-11-14). The plate options' clear button takes only what is picked: nothing when everything is (it said "Clear all plates" and removed every stack: Dols, 2026-11-14, stacks are then removed in Design),
-  else "Remove <stack>" / "Remove N stacks" (they leave Design), "Clear loose parts"; none when nothing is picked. A case's floor is Empty / Dividers / Gridfinity
+  2026-11-14). Print removes nothing: stacks and loose parts are removed in Design (UX audit D7, 2026-11-14; the
+  plate options' "Remove <stack>" and "Clear loose parts" went). A case's floor is Empty / Dividers / Gridfinity
   (`caseFloor`; Empty sets `caseEmpty`, which keeps the dividers placed but counts none); a drawer's grid dividers
   "At a wall": Divider alone / Closed (recommended).
 - **Headings**: each step's main title is 28 px display (`.dtitle`, `.ptop-prog`, `.hwtitle`, `.asm-title`, `.xtitle`);
