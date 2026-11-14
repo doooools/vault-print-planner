@@ -158,6 +158,11 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
 - **Buttons**: a filled orange button (`.btn.primary`, `--accent-btn`) does the screen's main action (Add a level on
   top, Empty stack, Download, Mark as printed, Copy the list, Drawer done). Dark fill (`--ink`) only ever means
   *selected*: tabs, segmented buttons, toggles of the 3D toolbar. There is no dark action button (`.btn.ink` is gone).
+- **The stack colour**: blue (`--stack`, `--stack-soft`, light and dark) means *the whole stack* in Design (Dols,
+  2026-11-14): the stack picked in the rail (card and badge), the "Stack settings" button while it is on, and the
+  inspector while it shows the stack's settings (`.dinsp.istack`: blue panel and border). A level's settings, or
+  Colors, stay on the plain panel, so the panel's colour says at a glance whether the whole stack or one level is being
+  edited. Blue is for that only: not an action (orange), not a selection elsewhere (dark).
 - **Controls**: a setting is a row of segmented buttons (`.seg`: `useg`/`ubool` for a module, `sbool` for the stack,
   `pbool` for plate options), with sublabels in `<small>`. A dropdown only where the choices don't fit (printers,
   stores). A tick box marks an item of a list (plates, hardware bought, assembly steps), never a
