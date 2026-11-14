@@ -239,7 +239,6 @@ dialog#v3d .vclose { z-index: 2; }
 @container (max-width: 760px) {
   .v3-view { grid-template-columns: minmax(0, 1fr); }
   .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 440px !important; }
-  .v3-brush-hint { display: none; }
 }
 dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-stage { min-width: 0; min-height: 0; position: relative; background: var(--sheet-2); }
@@ -261,7 +260,21 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .v3-tog[aria-pressed=true] { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
 #v3dBrush[hidden] { display: none; }
 .v3-brush { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); box-shadow: 0 6px 20px rgba(0, 0, 0, .18); font-size: 13px; }
-.v3-brush-hint { flex: 1 1 200px; color: var(--muted); font-size: 12.5px; }
+/* The brush bar (Paint): "Brush", one swatch per filament (the one in use with its name), "+", then the scope */
+.v3-brushes { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.v3-brushes .v3-seglbl { margin-right: 4px; font-size: 11px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.v3-bsw { display: inline-flex; align-items: center; gap: 8px; min-width: 40px; height: 40px; justify-content: center; padding: 0 7px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet); color: var(--ink); cursor: pointer; }
+.v3-bsw:hover { border-color: var(--muted); }
+.v3-bsw .dot2.big { width: 22px; height: 22px; }
+.v3-bsw[aria-pressed=true] { border: 2px solid var(--ink); padding: 0 12px 0 8px; }
+.v3-bsw b { font-size: 14px; font-weight: 650; max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.v3-badd { border-style: dashed; color: var(--muted); }
+.v3-badd[aria-expanded=true] { border-style: solid; border-color: var(--ink); color: var(--ink); }
+.v3-bscope { display: flex; align-items: center; gap: 8px; margin-left: auto; color: var(--muted); font-size: 13px; }
+/* The Paint button's swatches: the stack's filaments */
+.v3-pdots { display: inline-flex; align-items: center; gap: 2px; margin-left: 7px; vertical-align: -1px; }
+.v3-pdots .dot2 { width: 10px; height: 10px; border-color: color-mix(in srgb, currentColor 35%, transparent); }
+.v3-pdots small { margin-left: 2px; font-size: 11px; font-weight: 600; }
 .v3-hintbar.tip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; left: 50%; right: auto; bottom: 16px; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); padding: 12px 12px 12px 18px; border: 2px solid var(--accent-btn); background: var(--sheet); color: var(--ink); font-size: 15px; box-shadow: 0 6px 24px rgba(0,0,0,.25); animation: v3tip 1.6s ease-in-out 3; }
 .v3-hintbar.tip kbd { font-size: 13px; }
 .v3-hintbar.tip .btn { min-height: 36px; }
@@ -376,7 +389,7 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 /* Colors: the Paint panel's "Start from" presets */
 .cstart { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-left: 18px; font-size: 13px; color: var(--muted); }
 .cstart .btn { padding: 6px 10px; font-size: 13px; }
-@media (max-width: 760px) { dialog#v3d .v3-view { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } dialog#v3d .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } .v3-brush-hint { display: none; } }
+@media (max-width: 760px) { dialog#v3d .v3-view { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } dialog#v3d .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } }
 .row.done { opacity: .45; }
 .row.done .pname { text-decoration: line-through; }
 .row input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--ok); }
@@ -528,14 +541,18 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 @property --hold { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 @keyframes dshold { from { --hold: 0deg; } to { --hold: 360deg; } }
 /* Press and hold (holdButton): the button fills in red from the left while it is held */
-.hold:not(.dsdel) { position: relative; overflow: hidden; isolation: isolate; }
-.hold:not(.dsdel)::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--bad-soft); transform: scaleX(0); transform-origin: left; }
-.hold.pdel { position: absolute; } /* the filament's cross keeps its place at the row's end (.pdel) */
-.hold.holding:not(.dsdel) { color: var(--bad); border-color: var(--bad); }
-.hold.holding:not(.dsdel)::before { animation: holdfill var(--hold-ms, .5s) linear forwards; }
+.hold:not(.dsdel, .pdel) { position: relative; overflow: hidden; isolation: isolate; }
+.hold:not(.dsdel, .pdel)::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--bad-soft); transform: scaleX(0); transform-origin: left; }
+.hold.holding:not(.dsdel, .pdel) { color: var(--bad); border-color: var(--bad); }
+.hold.holding:not(.dsdel, .pdel)::before { animation: holdfill var(--hold-ms, .5s) linear forwards; }
 @keyframes holdfill { to { transform: scaleX(1); } }
-@media (prefers-reduced-motion: reduce) { .hold.holding:not(.dsdel)::before { animation-duration: 0s; animation-delay: var(--hold-ms, .5s); } }
+@media (prefers-reduced-motion: reduce) { .hold.holding:not(.dsdel, .pdel)::before { animation-duration: 0s; animation-delay: var(--hold-ms, .5s); } }
 .dsdel.holding::after { background: conic-gradient(var(--bad) var(--hold), transparent var(--hold)); }
+/* A filament's cross (.pdel) has the stack cross's ring: its hover square is already --bad-soft, so a fill in that
+   colour didn't show at all while it was held with a mouse */
+.pdel::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(var(--bad) var(--hold), transparent var(--hold)); -webkit-mask: radial-gradient(circle, transparent 11px, #000 12px); mask: radial-gradient(circle, transparent 11px, #000 12px); opacity: 0; }
+.pdel.holding { color: var(--bad); background: var(--bad-soft); }
+.pdel.holding::after { opacity: 1; animation: dshold var(--hold-ms, .5s) linear forwards; }
 .dbadge { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; background: var(--ink); color: var(--sheet); font-weight: 800; font-stretch: 112%; font-size: 16px; }
 .dst { display: grid; min-width: 0; line-height: 1.25; }
 .dst b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -634,7 +651,6 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .seg.across button small { line-height: 1.2; }
 .dinsp > .alert { margin: 12px 16px 0; }
 .ibody { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 14px 16px 18px; }
-.ipaint { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px; background: var(--sheet-2); border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
 /* Foldable sections of the selection panel (fold): name on the left, what is set on the right */
 .ibody.folds { gap: 0; padding-top: 6px; }
 .ibody.folds > .ialerts { margin: 8px 0 10px; }
@@ -718,14 +734,24 @@ dialog#tplDlg h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-str
 .pbrush:hover { border-color: var(--muted); }
 .pbrush[aria-pressed=true] { border-color: var(--ink); background: var(--raised); }
 .pbrush b, .prole b { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pdel { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 6px; background: transparent; color: var(--muted); }
+.pdel { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; color: var(--muted); touch-action: none; }
 .pdel:hover { background: var(--bad-soft); color: var(--bad); }
 .padd { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-style: dashed; }
 .padd[aria-expanded=true] { border-style: solid; border-color: var(--ink); }
-.pgrp { display: grid; gap: 2px; border-top: 1px solid var(--line); padding-top: 14px; }
-.pgrp-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-.pgrp-h h3 { margin: 0; font-size: 14px; font-weight: 700; color: var(--ink); }
-.pgrp-h .linkbtn { display: inline; margin: 0; padding: 0; font-size: 12.5px; }
+/* Colors: the part types in foldable groups (.ifold), each header with its colours and count */
+.ipaintb { gap: 0; }
+.ipaintb > .pnote { margin-top: 14px !important; }
+.ipaintb .ifold > .fbody { gap: 2px; padding-top: 0; }
+.ipaintb .fsum { display: inline-flex; align-items: center; gap: 8px; }
+.pdots { display: inline-flex; gap: 2px; }
+.pdots .dot2 { width: 11px; height: 11px; }
+.pall { justify-self: end; margin: 0 0 4px; padding: 0; font-size: 12.5px; }
+.ihead .cat-back { justify-self: start; display: inline-flex; align-items: center; gap: 4px; margin: 0; padding: 0; color: var(--ink); text-decoration: none; font-size: 13px; }
+.ihead .cat-back span { font-size: 18px; line-height: 1; }
+.ihead .cat-back:hover { text-decoration: underline; }
+.fp.bare .fp-grid { grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); max-height: 330px; }
+.fp.bare .fp-foot { flex-wrap: wrap; }
+.fp.bare .fp-foot .btn { flex: 1 0 100%; min-height: 44px; }
 .prole { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 8px; border: 0; border-radius: 8px; background: transparent; text-align: left; }
 button.prole:hover { background: var(--sheet-2); }
 .prole .dot2.big { width: 24px; height: 24px; }
@@ -733,13 +759,6 @@ button.prole:hover { background: var(--sheet-2); }
 .pown { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 0; font-size: 13px; }
 .pown > span:nth-child(2) { flex: 1 1 160px; min-width: 0; }
 .pown .linkbtn { margin: 0; padding: 0; font-size: 12.5px; }
-.dcat { padding: 14px 16px 16px; border-top: 1px solid var(--line); background: var(--sheet-2); }
-.dcat .fp-grid { max-height: 260px; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); }
-.v3-bnow { display: inline-flex; align-items: center; gap: 8px; }
-.v3-bnow > span:last-child { display: grid; line-height: 1.15; }
-.v3-bnow small { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
-.v3-bnow b { font-size: 14px; }
-.v3-brush kbd { display: inline-block; padding: 0 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 11px var(--f-mono); color: var(--ink); background: var(--sheet); }
 /* Step 2 · Print: progress and export, filament chips, the plate sheet and the selected plate */
 .ptop { display: grid; gap: 14px; padding: 18px 20px; }
 .ptop-prog { min-width: 0; display: grid; gap: 10px; }
@@ -989,7 +1008,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   </footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><h3>Draft, not released yet: the Dols fork</h3><ul><li><b>A fork of Romy's planner,</b> kept at <a href="https://github.com/doooools/vault-print-planner" target="_blank" rel="noopener">github.com/doooools/vault-print-planner</a>. Everything below is new in it.</li><li><b>Your stacks in 3D,</b> made from your own Vault files: every drawer, case, roof, base and wheel where the assembled unit puts it, with its bolts. Turn it, spread the units apart, hide the roof. Parts are simplified in your browser and kept there for next time; nothing is uploaded.</li><li><b>Open drawers and cases in 3D:</b> double-click it, or hold Ctrl or Shift and click. A drawer's key turns and its racks slide before it pulls out; a case's latches flip before the lid opens, with the roof riding on it. A drawer comes out on its telescopic runners, as far as the real ones let it: the box slides alone in its guides for the first half, then takes the guides out with it to the stoppers. Closing, the box goes back in first and pushes the guides home at the end.</li><li><b>Several drawers in one module:</b> a 2F module can hold two 1F drawers, a 4F module two 2F, four 1F, or a 2F and two 1F in any order. Parts, bolts and geared rails are counted per drawer. The mixed ones are marked Inferred: the manuals don't show them.</li><li><b>Colors:</b> the Paint tool gives each kind of part a filament, for a whole stack or a single module, from your own filaments or Bambu Lab's PLA and PETG colours. Each stack keeps its own colours. Plates, filament totals and the Bambu Studio project follow them, one filament slot per colour. The runner guides, which sit in the module, take the module's colour until you paint them on their own.</li><li><b>A new layout:</b> Design, Print, Hardware and Assemble tabs. In Design, your stacks on the left, the 3D view in the middle, the selected level or stack on the right. On a wide screen the page takes the whole width, most of it for the 3D view, and the right-hand panel ends with the view and scrolls on its own. Start from a template or a blank stack, and set a level across the width as L, L² or two modules side by side.</li><li><b>Print what you want:</b> tick the stacks, and the loose parts, to plan. The plates follow every change made in Design.</li><li><b>Hardware has its own tab:</b> one shopping list for the whole build, ticks for what you've bought, copy or CSV, and the bolts' finish (black or zinc) shown in 3D. Store links follow where you buy: pick your store by continent (Amazon in North and South America, Europe, Asia, Oceania and Africa); the page guesses it from your browser the first time. Amazon.com links are the original planner's affiliate links, so US purchases keep supporting Romy's project; the other stores' links carry this fork's affiliate tag where it has one, and the page says so beside them.</li><li><b>Save and open designs:</b> from the File menu at the top of the page. In Chrome and Edge, Save writes your stacks, loose parts and colours into your Vault folder, next to the part files. Save as… and Open… work anywhere; other browsers download the file.</li><li><b>Lost folder, said plainly:</b> when the page can no longer read your Vault folder (the browser asks again after a reload, the folder was moved, or Firefox and Safari don't keep it between visits), a popup says the 3D view needs it, with a button to reconnect it. Chrome and Edge reconnect on their own when you chose "Allow on every visit". "Later: plan without the files" or "Not now" keeps it away for the rest of the visit.</li><li><b>Bases in 3D:</b> the base, wheels, front foot bar and casters are drawn where they go. A base without wheels now stands on its own: no feet. A roof can sit on a top-opening case.</li><li><b>Universal handle lock and module connectors:</b> two parts in the Vault download the planner never offered. On M, L and XL stacks with the pull-out handle, pick the universal lock: two small locks, one per rod, that fit any printer instead of the one-piece lock (up to 419 mm long). "Module connectors", in a stack's settings, screws a small bar over each joint between two drawer modules at the back corners, into the holes every drawer module has there; a 2F one spans a 1F module. Both are drawn in 3D, with their bolts.</li><li><b>Dividers where you want them:</b> a case's plan seen from above fills the slots moulded in its walls with a click. A drawer's grid dividers go in with two clicks on the box's holes: where the divider starts, then where it ends, among the holes the plan marks (a divider covers 5 to 32 holes). It closes against a wall, meets a divider running across, or stops open; the part list and the 3D view count the right file and edge pieces. A click on a divider removes it.</li><li><b>Undo:</b> Ctrl+Z (Cmd+Z on a Mac) takes back the last change to your stacks, colours or loose parts, and Ctrl+Y or Ctrl+Shift+Z puts it back. Removing a level or a stack, painting, a colour preset, a new footprint, a filament removed or a divider plan cleared says what it did, with an Undo button. "Reset all progress" in Print can be undone too. Undo lasts until you reload the page or open a design file.</li><li><b>Light or dark, your pick:</b> two buttons at the top of the page switch the theme. The page starts in your system's setting and keeps the one you pick for your next visits, 3D view included.</li><li><b>File menu and a one-row header</b> (2026-11-14): "File", at the top on every step, saves, saves as and opens design files, and says whether the file has your latest changes ("The file is 3 changes behind"). The tabs count what matters to each: Print and Assemble in %, Hardware what is left to buy. Loose parts is an entry like the stacks. The credit line, What's new and "Report a bug or an idea" are at the bottom of the page.</li><li><b>Support me</b> (2026-11-14): a link at the top right of the page opens this fork's Ko-fi page in a new tab. Nothing is loaded from Ko-fi until you click it.</li><li><b>Report a bug or an idea:</b> the link at the bottom of the page opens a short form on GitHub. The bug form gets your browser and printer filled in.</li><li><b>Right-click in the 3D view</b> (2026-11-14): the level under the pointer lights up and says which it is. Right-click it for its actions: open or close its drawer or case, add a copy of it above or below, move it up or down, remove it (one click, with Undo). Right-click the background for "Fit the stack in the view", "Add a level on top" and the stack's settings. The same level menu opens from "⋯" in the level panel, which also has buttons to go to the level below or above, so everything works from the keyboard. The camera no longer moves by itself when levels are spread or the roof is hidden. The bolt finish is two swatches in the toolbar, and "?" says how to turn, zoom and move the view.</li><li><b>Smaller fixes from a UX review</b> (2026-11-14): a stack's warnings come first in its settings, with a link to the level they name; a new empty stack opens on its settings; "Spread levels" and, while painting, "Whole stack" / "This module only" say what they do; the level buttons have tooltips. In Print, the top line's parts and grams leave out what no longer fits your printer, the warning counts every piece left out, and stacks are no longer removed from the plate options (remove them in Design). In Hardware, a click anywhere on a line ticks it, the panel says how many lines the list has, and the tab's count follows Hardware's own list of stacks.</li><li><b>Print, tidied up</b> (2026-11-14): the selected plate comes first on the right, with "Mark as printed" right under its name; the plate options below it are one line each with their value, opened with a click. The filament filter is one line of pills with their plate counts, the bar of ticked plates shows only once you tick one, and "STL folders (.zip)" sits beside the main download, "for any other slicer". Each stack in Print's and Hardware's lists says whether it is in the plates (or the list) or left out.</li><li><b>Design's panels, shorter</b> (2026-11-14): a level's and a stack's settings fold into sections, each saying what is set ("Drawer · 1F", "Empty · key lock · geared rails"), so a level fits on the screen. Width and depth are set in the stack's settings, first under "Size and roof" (the Footprint button went). Rename a stack with the pencil next to its name. Wheels, casters, the foot bar, the handle lock and the carry handle stay in sight, greyed, saying what they need first. In a module with several drawers, one tab per drawer frames what is that drawer's own. A new case starts with an empty floor, and a stack that needs attention shows a dot on its badge.</li><li><b>A clearer hardware list</b> (2026-11-14): the bolt finish and the store are said once, above the list, so each line gives just the bolt (the copy and the CSV keep the full name). Each line's button says what it opens, "Product page" or "Search". Each group says how many of its lines you've bought, and "Jump to" on the left takes you to a group.</li><li><b>Parts you already have:</b> "Already printed", under the stacks in Print, lists the parts you printed before or kept from another build. Pick them among the parts on your plates, with how many: they count as printed and come off the plates, which are laid out again without them.</li><li><b>Fixed:</b> Bambu Studio projects with several colours no longer fail with "Invalid configuration file". The heavyweight roof's carry handle no longer drops out of the print list when the roof is swapped. Store links are plain product pages.</li><li><b>Supports only where USSA asks for them</b> (from Romy's planner, 2026-11-10): supports go only on the files USSA names "Turn On Supports" and on the XL drawer front. Bambu Studio's overhang warnings no longer turn them on: on drawer boxes they filled the channel the bottom geared rail slides into.</li><li><b>No more 10% spares:</b> the part list, the plates and the hardware list give exactly what the build needs. Print or buy extras yourself if you want them (Loose parts takes any single part).</li><li><b>Part counts checked against the manuals:</b> a case now gets one label (the case label on 1F, the drawer label on 2F and 4F), not both. The removable hidden key and its key cap are printed once per stack, not once per drawer. A wall mount gets one wall cleat per opening in its plate. Backbones follow the manual: a column on the back of the stack, from the base to the module under the top one (where the pull-out handle lock goes), in 2F backbones with a 1F for an odd remainder; a pegboard extends it to its module. On an L² or XL², shared parts are listed once, and Design and Print give the same totals.</li><li><b>Works the same on Linux, macOS and Windows:</b> the files macOS adds to a copied folder are ignored, and Firefox and Safari fall back to a folder upload and downloads.</li></ul><h3>2026-11-10</h3><ul><li><b>Shorter drawers in taller modules:</b> a 2F or 4F drawer module can now hold shorter drawers, like two 1F drawers in a 2F, or two 1F drawers above a 2F in a 4F. Pick them under "Drawers inside" in step 1 (each half on its own for L²). The parts list, front bolts and stack picture follow. Thanks to the viewer who pointed out they fit.</li><li><b>Supports only where USSA asks for them:</b> Out of an abundance of caution, supports are now only added if USSA says "Turn On Supports" (plus the XL drawer front, which has the same lock pocket as the fronts USSA labels) since there are some facets that could use supports but aren't mandatory. The onus is on you to think through what makes sense with the part you're building.</li></ul><h3>2026-11-09</h3><ul><li><b>XL units really fit the H2S now:</b> the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.</li><li><b>Closer filament estimates:</b> checked against the weights USSA publishes per module, the planner was reading about 17% high. It's now within a few percent.</li><li><b>Stack heights with 1F cases:</b> the planner listed a 1F case as 71 mm tall instead of about 66, so stack drawings and overall heights came out a little tall. Only the numbers on the page were off; the parts and print files are unchanged.</li><li><b>Assembly:</b> step 4 now also passes on USSA's advice to put a 2F module right under the roof when you use the base, backbones or handles.</li></ul><h3>2026-11-08</h3><ul><li><b>Filament per color:</b> step 3 shows roughly how much of each color the whole build needs, so you can check your spools before you start.</li><li><b>Labels get their own plate,</b> so you can add your text and print them in several colors without touching the other plates. Turn it off in step 3 to print them with the rest.</li><li><b>Manual supports go where they help:</b> each one prints standing against the end of a roof of the same depth. Ones with no roof to brace are left out (step 3 says which), and STL folder names say where to stand them.</li><li><b>Download names say what's inside:</b> the build, the printer, and which plates if some are already printed, like "Vault - 3 units in 2 stacks - P1S - plates 4-12.3mf".</li><li><b>Printer not listed?</b> Pick "My printer isn't listed" and type its name: the bed size for about 380 printers fills in, taken from OrcaSlicer's printer profiles. Or enter your bed size yourself. The bed size is all the planner needs.</li><li><b>Voron presets:</b> 2.4 and Trident (250, 300, 350) and the 0.2. Like other non-Bambu printers, they get plate files for OrcaSlicer or PrusaSlicer.</li></ul><h3>2026-11-07</h3><ul><li><b>More printers:</b> presets for Prusa (MK4/MK4S, CORE One, MINI+, XL), Creality (K1/K1C, K1 Max, K2 Plus, Ender-3 V3 SE), Elegoo (Centauri Carbon, Neptune 4 Pro and Max), Anycubic (Kobra 3, Kobra S1) and Qidi (Q1 Pro, Plus4), plus Custom size for anything else.</li><li><b>Plate files for non-Bambu printers:</b> step 3 now saves a zip with one standard .3mf per plate. Parts are already laid out, and the parts that need supports or a brim are already marked. Works in OrcaSlicer, PrusaSlicer and the slicers built on them; a settings.txt lists the same settings for any other slicer.</li><li><b>STL folders</b> now name each part's settings in its file name, with a settings.txt per plate.</li><li><b>XL units fit the H2S:</b> facades and backbones that are too long for the bed go on the diagonal, at whatever angle fits.</li><li><b>Missing parts are named:</b> if your Vault folder is missing files, step 3 lists them. File names that an unzip or a newer download changed are still matched.</li><li><b>Print and Assemble stay empty</b> until you add something to your build, with a button to add the unit you picked in step 1.</li><li><b>Fewer slicer conflicts:</b> parts with supports keep clear of neighbouring parts, the rows around them and the bed edge.</li></ul><h3>2026-11-06</h3><ul><li><b>First public version.</b></li><li><b>More Bambu printers:</b> P2S, X2D, A2L, H2D Pro, H2C and H3C; plate spacing fixed on dual-nozzle printers.</li><li><b>Stack pictures:</b> front and side views, overall size with dimension lines, and wheels, feet, casters and handles drawn where USSA's manual puts them.</li><li><b>Step 1 checks whether a unit stacks</b> before adding it and offers a matching size.</li><li><b>Hardware list:</b> bolt head shapes, drawer front bolts counted from the holes in each front, and links to matching products.</li><li><b>Choosing the Vault folder</b> is its own step, with a heads-up about the browser's permission prompt.</li><li><b>Plate numbers stay put</b> when you mark plates as printed.</li><li><b>Tree supports</b> no longer run into the next part.</li><li><b>Part pictures</b> at full size.</li></ul></div></dialog>
+<dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><h3>Draft, not released yet: the Dols fork</h3><ul><li><b>A fork of Romy's planner,</b> kept at <a href="https://github.com/doooools/vault-print-planner" target="_blank" rel="noopener">github.com/doooools/vault-print-planner</a>. Everything below is new in it.</li><li><b>Your stacks in 3D,</b> made from your own Vault files: every drawer, case, roof, base and wheel where the assembled unit puts it, with its bolts. Turn it, spread the units apart, hide the roof. Parts are simplified in your browser and kept there for next time; nothing is uploaded.</li><li><b>Open drawers and cases in 3D:</b> double-click it, or hold Ctrl or Shift and click. A drawer's key turns and its racks slide before it pulls out; a case's latches flip before the lid opens, with the roof riding on it. A drawer comes out on its telescopic runners, as far as the real ones let it: the box slides alone in its guides for the first half, then takes the guides out with it to the stoppers. Closing, the box goes back in first and pushes the guides home at the end.</li><li><b>Several drawers in one module:</b> a 2F module can hold two 1F drawers, a 4F module two 2F, four 1F, or a 2F and two 1F in any order. Parts, bolts and geared rails are counted per drawer. The mixed ones are marked Inferred: the manuals don't show them.</li><li><b>Colors:</b> the Paint tool gives each kind of part a filament, for a whole stack or a single module, from your own filaments or Bambu Lab's PLA and PETG colours. Each stack keeps its own colours. Plates, filament totals and the Bambu Studio project follow them, one filament slot per colour. The runner guides, which sit in the module, take the module's colour until you paint them on their own.</li><li><b>A new layout:</b> Design, Print, Hardware and Assemble tabs. In Design, your stacks on the left, the 3D view in the middle, the selected level or stack on the right. On a wide screen the page takes the whole width, most of it for the 3D view, and the right-hand panel ends with the view and scrolls on its own. Start from a template or a blank stack, and set a level across the width as L, L² or two modules side by side.</li><li><b>Print what you want:</b> tick the stacks, and the loose parts, to plan. The plates follow every change made in Design.</li><li><b>Hardware has its own tab:</b> one shopping list for the whole build, ticks for what you've bought, copy or CSV, and the bolts' finish (black or zinc) shown in 3D. Store links follow where you buy: pick your store by continent (Amazon in North and South America, Europe, Asia, Oceania and Africa); the page guesses it from your browser the first time. Amazon.com links are the original planner's affiliate links, so US purchases keep supporting Romy's project; the other stores' links carry this fork's affiliate tag where it has one, and the page says so beside them.</li><li><b>Save and open designs:</b> from the File menu at the top of the page. In Chrome and Edge, Save writes your stacks, loose parts and colours into your Vault folder, next to the part files. Save as… and Open… work anywhere; other browsers download the file.</li><li><b>Lost folder, said plainly:</b> when the page can no longer read your Vault folder (the browser asks again after a reload, the folder was moved, or Firefox and Safari don't keep it between visits), a popup says the 3D view needs it, with a button to reconnect it. Chrome and Edge reconnect on their own when you chose "Allow on every visit". "Later: plan without the files" or "Not now" keeps it away for the rest of the visit.</li><li><b>Bases in 3D:</b> the base, wheels, front foot bar and casters are drawn where they go. A base without wheels now stands on its own: no feet. A roof can sit on a top-opening case.</li><li><b>Universal handle lock and module connectors:</b> two parts in the Vault download the planner never offered. On M, L and XL stacks with the pull-out handle, pick the universal lock: two small locks, one per rod, that fit any printer instead of the one-piece lock (up to 419 mm long). "Module connectors", in a stack's settings, screws a small bar over each joint between two drawer modules at the back corners, into the holes every drawer module has there; a 2F one spans a 1F module. Both are drawn in 3D, with their bolts.</li><li><b>Dividers where you want them:</b> a case's plan seen from above fills the slots moulded in its walls with a click. A drawer's grid dividers go in with two clicks on the box's holes: where the divider starts, then where it ends, among the holes the plan marks (a divider covers 5 to 32 holes). It closes against a wall, meets a divider running across, or stops open; the part list and the 3D view count the right file and edge pieces. A click on a divider removes it.</li><li><b>Undo:</b> Ctrl+Z (Cmd+Z on a Mac) takes back the last change to your stacks, colours or loose parts, and Ctrl+Y or Ctrl+Shift+Z puts it back. Removing a level or a stack, painting, a colour preset, a new footprint, a filament removed or a divider plan cleared says what it did, with an Undo button. "Reset all progress" in Print can be undone too. Undo lasts until you reload the page or open a design file.</li><li><b>Light or dark, your pick:</b> two buttons at the top of the page switch the theme. The page starts in your system's setting and keeps the one you pick for your next visits, 3D view included.</li><li><b>File menu and a one-row header</b> (2026-11-14): "File", at the top on every step, saves, saves as and opens design files, and says whether the file has your latest changes ("The file is 3 changes behind"). The tabs count what matters to each: Print and Assemble in %, Hardware what is left to buy. Loose parts is an entry like the stacks. The credit line, What's new and "Report a bug or an idea" are at the bottom of the page.</li><li><b>Support me</b> (2026-11-14): a link at the top right of the page opens this fork's Ko-fi page in a new tab. Nothing is loaded from Ko-fi until you click it.</li><li><b>Report a bug or an idea:</b> the link at the bottom of the page opens a short form on GitHub. The bug form gets your browser and printer filled in.</li><li><b>Right-click in the 3D view</b> (2026-11-14): the level under the pointer lights up and says which it is. Right-click it for its actions: open or close its drawer or case, add a copy of it above or below, move it up or down, remove it (one click, with Undo). Right-click the background for "Fit the stack in the view", "Add a level on top" and the stack's settings. The same level menu opens from "⋯" in the level panel, which also has buttons to go to the level below or above, so everything works from the keyboard. The camera no longer moves by itself when levels are spread or the roof is hidden. The bolt finish is two swatches in the toolbar, and "?" says how to turn, zoom and move the view.</li><li><b>Smaller fixes from a UX review</b> (2026-11-14): a stack's warnings come first in its settings, with a link to the level they name; a new empty stack opens on its settings; "Spread levels" and, while painting, "Whole stack" / "This module only" say what they do; the level buttons have tooltips. In Print, the top line's parts and grams leave out what no longer fits your printer, the warning counts every piece left out, and stacks are no longer removed from the plate options (remove them in Design). In Hardware, a click anywhere on a line ticks it, the panel says how many lines the list has, and the tab's count follows Hardware's own list of stacks.</li><li><b>Print, tidied up</b> (2026-11-14): the selected plate comes first on the right, with "Mark as printed" right under its name; the plate options below it are one line each with their value, opened with a click. The filament filter is one line of pills with their plate counts, the bar of ticked plates shows only once you tick one, and "STL folders (.zip)" sits beside the main download, "for any other slicer". Each stack in Print's and Hardware's lists says whether it is in the plates (or the list) or left out.</li><li><b>Design's panels, shorter</b> (2026-11-14): a level's and a stack's settings fold into sections, each saying what is set ("Drawer · 1F", "Empty · key lock · geared rails"), so a level fits on the screen. Width and depth are set in the stack's settings, first under "Size and roof" (the Footprint button went). Rename a stack with the pencil next to its name. Wheels, casters, the foot bar, the handle lock and the carry handle stay in sight, greyed, saying what they need first. In a module with several drawers, one tab per drawer frames what is that drawer's own. A new case starts with an empty floor, and a stack that needs attention shows a dot on its badge.</li><li><b>A clearer hardware list</b> (2026-11-14): the bolt finish and the store are said once, above the list, so each line gives just the bolt (the copy and the CSV keep the full name). Each line's button says what it opens, "Product page" or "Search". Each group says how many of its lines you've bought, and "Jump to" on the left takes you to a group.</li><li><b>Painting, in one place</b> (2026-11-14): with the Paint tool on, the panel on the right always shows the colours; picking a stack or opening its settings goes back to Select. The brush is picked under the view, one swatch per filament, with "+" to add one, beside "Whole stack" / "This module only". "+" and "Add a filament" open Bambu Lab's colours in the panel, with "Add it and paint with it" and a way back. The part types fold into Outside, Inside, Mechanics and Other, each showing its colours; "Paint these 5 Orange" paints a group. Your filaments are folded at the bottom. The Paint button shows the stack's colours. Holding the cross that removes a filament now shows a ring filling, as on a stack's cross. Fixed: after an undo, painting a single module or right-clicking in the 3D view could do nothing.</li><li><b>Parts you already have:</b> "Already printed", under the stacks in Print, lists the parts you printed before or kept from another build. Pick them among the parts on your plates, with how many: they count as printed and come off the plates, which are laid out again without them.</li><li><b>Fixed:</b> Bambu Studio projects with several colours no longer fail with "Invalid configuration file". The heavyweight roof's carry handle no longer drops out of the print list when the roof is swapped. Store links are plain product pages.</li><li><b>Supports only where USSA asks for them</b> (from Romy's planner, 2026-11-10): supports go only on the files USSA names "Turn On Supports" and on the XL drawer front. Bambu Studio's overhang warnings no longer turn them on: on drawer boxes they filled the channel the bottom geared rail slides into.</li><li><b>No more 10% spares:</b> the part list, the plates and the hardware list give exactly what the build needs. Print or buy extras yourself if you want them (Loose parts takes any single part).</li><li><b>Part counts checked against the manuals:</b> a case now gets one label (the case label on 1F, the drawer label on 2F and 4F), not both. The removable hidden key and its key cap are printed once per stack, not once per drawer. A wall mount gets one wall cleat per opening in its plate. Backbones follow the manual: a column on the back of the stack, from the base to the module under the top one (where the pull-out handle lock goes), in 2F backbones with a 1F for an odd remainder; a pegboard extends it to its module. On an L² or XL², shared parts are listed once, and Design and Print give the same totals.</li><li><b>Works the same on Linux, macOS and Windows:</b> the files macOS adds to a copied folder are ignored, and Firefox and Safari fall back to a folder upload and downloads.</li></ul><h3>2026-11-10</h3><ul><li><b>Shorter drawers in taller modules:</b> a 2F or 4F drawer module can now hold shorter drawers, like two 1F drawers in a 2F, or two 1F drawers above a 2F in a 4F. Pick them under "Drawers inside" in step 1 (each half on its own for L²). The parts list, front bolts and stack picture follow. Thanks to the viewer who pointed out they fit.</li><li><b>Supports only where USSA asks for them:</b> Out of an abundance of caution, supports are now only added if USSA says "Turn On Supports" (plus the XL drawer front, which has the same lock pocket as the fronts USSA labels) since there are some facets that could use supports but aren't mandatory. The onus is on you to think through what makes sense with the part you're building.</li></ul><h3>2026-11-09</h3><ul><li><b>XL units really fit the H2S now:</b> the XL drawer and case modules and the XL bases were still marked as too big. They fit at the angle USSA exported them, and the planner now keeps them there. The XL heavyweight roofs are still too big for the H2S.</li><li><b>Closer filament estimates:</b> checked against the weights USSA publishes per module, the planner was reading about 17% high. It's now within a few percent.</li><li><b>Stack heights with 1F cases:</b> the planner listed a 1F case as 71 mm tall instead of about 66, so stack drawings and overall heights came out a little tall. Only the numbers on the page were off; the parts and print files are unchanged.</li><li><b>Assembly:</b> step 4 now also passes on USSA's advice to put a 2F module right under the roof when you use the base, backbones or handles.</li></ul><h3>2026-11-08</h3><ul><li><b>Filament per color:</b> step 3 shows roughly how much of each color the whole build needs, so you can check your spools before you start.</li><li><b>Labels get their own plate,</b> so you can add your text and print them in several colors without touching the other plates. Turn it off in step 3 to print them with the rest.</li><li><b>Manual supports go where they help:</b> each one prints standing against the end of a roof of the same depth. Ones with no roof to brace are left out (step 3 says which), and STL folder names say where to stand them.</li><li><b>Download names say what's inside:</b> the build, the printer, and which plates if some are already printed, like "Vault - 3 units in 2 stacks - P1S - plates 4-12.3mf".</li><li><b>Printer not listed?</b> Pick "My printer isn't listed" and type its name: the bed size for about 380 printers fills in, taken from OrcaSlicer's printer profiles. Or enter your bed size yourself. The bed size is all the planner needs.</li><li><b>Voron presets:</b> 2.4 and Trident (250, 300, 350) and the 0.2. Like other non-Bambu printers, they get plate files for OrcaSlicer or PrusaSlicer.</li></ul><h3>2026-11-07</h3><ul><li><b>More printers:</b> presets for Prusa (MK4/MK4S, CORE One, MINI+, XL), Creality (K1/K1C, K1 Max, K2 Plus, Ender-3 V3 SE), Elegoo (Centauri Carbon, Neptune 4 Pro and Max), Anycubic (Kobra 3, Kobra S1) and Qidi (Q1 Pro, Plus4), plus Custom size for anything else.</li><li><b>Plate files for non-Bambu printers:</b> step 3 now saves a zip with one standard .3mf per plate. Parts are already laid out, and the parts that need supports or a brim are already marked. Works in OrcaSlicer, PrusaSlicer and the slicers built on them; a settings.txt lists the same settings for any other slicer.</li><li><b>STL folders</b> now name each part's settings in its file name, with a settings.txt per plate.</li><li><b>XL units fit the H2S:</b> facades and backbones that are too long for the bed go on the diagonal, at whatever angle fits.</li><li><b>Missing parts are named:</b> if your Vault folder is missing files, step 3 lists them. File names that an unzip or a newer download changed are still matched.</li><li><b>Print and Assemble stay empty</b> until you add something to your build, with a button to add the unit you picked in step 1.</li><li><b>Fewer slicer conflicts:</b> parts with supports keep clear of neighbouring parts, the rows around them and the bed edge.</li></ul><h3>2026-11-06</h3><ul><li><b>First public version.</b></li><li><b>More Bambu printers:</b> P2S, X2D, A2L, H2D Pro, H2C and H3C; plate spacing fixed on dual-nozzle printers.</li><li><b>Stack pictures:</b> front and side views, overall size with dimension lines, and wheels, feet, casters and handles drawn where USSA's manual puts them.</li><li><b>Step 1 checks whether a unit stacks</b> before adding it and offers a matching size.</li><li><b>Hardware list:</b> bolt head shapes, drawer front bolts counted from the holes in each front, and links to matching products.</li><li><b>Choosing the Vault folder</b> is its own step, with a heads-up about the browser's permission prompt.</li><li><b>Plate numbers stay put</b> when you mark plates as printed.</li><li><b>Tree supports</b> no longer run into the next part.</li><li><b>Part pictures</b> at full size.</li></ul></div></dialog>
 <dialog id="report" aria-labelledby="reportTitle"><button type="button" class="vclose" id="reportClose" aria-label="Close">&times;</button><h2 id="reportTitle">Report a bug or an idea</h2>
   <p>Something wrong, broken or confusing, or something you'd like the planner to do? Tell us on GitHub: the form opens in a new tab and asks a few short questions.</p>
   <div class="acts"><a class="btn primary" id="reportBug" target="_blank" rel="noopener" href="https://github.com/doooools/vault-print-planner/issues/new?template=bug.yml">Report a bug</a><a class="btn" id="reportIdea" target="_blank" rel="noopener" href="https://github.com/doooools/vault-print-planner/issues/new?template=idea.yml">Suggest an improvement</a></div>
@@ -2337,26 +2356,26 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       if (sp) {
         const p = paletteOf(sp);
         big = p.hex; name = p.line && p.name.endsWith(' · ' + p.line) ? p.name.slice(0, -p.line.length - 3) : p.name; sub = `${slotTxt(sp)} · ${p.code ? `${p.line} ${p.code}` : p.hex.toUpperCase()}`;
-        if (!role) { act = 'In your tray'; off = true; note = 'Already in your tray.'; }
+        if (!role) { act = o.addLabel ? 'Paint with it' : 'In your tray'; off = !o.addLabel; note = 'Already in your tray.'; }
         else {
           act = sp === now ? 'In use' : 'Use it'; off = sp === now;
           note = sp === now ? (st.scope === 'unit' && own() ? `This ${unit.name} has it as its own color.` : `What ${r.label.toLowerCase()} print in now.`) : 'Already in your tray: no new filament.';
         }
       } else if (st.sel.bbl == null && !st.sel.hex) {
-        big = 'transparent'; name = 'Pick a color'; sub = 'Bambu Lab’s, or your own'; act = 'Add to the tray'; off = true; note = 'Each filament gets its own slot and plates.';
+        big = 'transparent'; name = 'Pick a color'; sub = 'Bambu Lab’s, or your own'; act = o.addLabel || 'Add to the tray'; off = true; note = 'Each filament gets its own slot and plates.';
       } else {
         const b = st.sel.bbl != null ? BAMBU_COLORS[st.sel.bbl] : null, n = role ? newSlot() : null;
         big = b ? b[3] : st.sel.hex; name = b ? b[2] : 'Your own color'; sub = b ? `${b[0]} · ${b[1]}` : st.sel.hex.toUpperCase();
-        act = n ? `Add as slot ${n}` : 'Add to the tray';
+        act = n ? `Add as slot ${n}` : o.addLabel || 'Add to the tray';
         note = n ? 'A new filament: one more slot and its own plates.' : 'It gets a slot in the Bambu Studio project once a part prints in it.';
       }
       if (st.scope === 'project' && own()) note += ` This ${unit.name} keeps its own, ${colorName(own())}.`;
       const lines = ['All', ...new Set(BAMBU_COLORS.map(c => c[0]))];
-      host.innerHTML = `<div class="fp" role="group" aria-label="Filament for ${esc(r.label.toLowerCase())}">
-        <div class="fp-head"><div><b>${esc(r.label)}</b><small>${esc(o.from || '')}</small></div>${o.close ? '<button type="button" class="vclose" data-fp-close aria-label="Close">&times;</button>' : ''}</div>
+      host.innerHTML = `<div class="fp${o.bare ? ' bare' : ''}" role="group" aria-label="${o.bare ? 'Add a filament' : `Filament for ${esc(r.label.toLowerCase())}`}">
+        ${o.bare ? '' : `<div class="fp-head"><div><b>${esc(r.label)}</b><small>${esc(o.from || '')}</small></div>${o.close ? '<button type="button" class="vclose" data-fp-close aria-label="Close">&times;</button>' : ''}</div>`}
         ${unit ? `<div class="fp-scope" role="group" aria-label="Where this color applies">${[['project', stackNow() ? 'Whole stack' : 'Whole project'], ['unit', `Only this ${unit.name}`]].map(([id, t]) => `<button type="button" data-fp-scope="${id}" aria-pressed="${st.scope === id}" title="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}
-        <div class="fp-sec">In your tray</div>
-        <div class="fp-tray">${P.map(p => `<button type="button" class="fp-chip" data-fp-pal="${p.id}" aria-pressed="${p.id === sp}" title="${slotTxt(p.id)}${p.id === now ? ', in use here' : ''}">${swatch(p.id)}<span>${esc(p.name)}</span></button>`).join('')}</div>
+        ${o.bare ? '' : `<div class="fp-sec">In your tray</div>
+        <div class="fp-tray">${P.map(p => `<button type="button" class="fp-chip" data-fp-pal="${p.id}" aria-pressed="${p.id === sp}" title="${slotTxt(p.id)}${p.id === now ? ', in use here' : ''}">${swatch(p.id)}<span>${esc(p.name)}</span></button>`).join('')}</div>`}
         ${BAMBU_COLORS.length ? `<div class="fp-sec">Bambu Lab <small data-fp-count>${plural(g.n, 'color')}, by shade</small></div>
         <label class="fp-search">${FP_SEARCH}<input type="search" data-fp-q value="${esc(st.q)}" placeholder="Name or code, e.g. blue, 11600" aria-label="Search Bambu Lab colors by name or code"></label>
         <div class="fp-lines">${lines.map(l => `<button type="button" data-fp-line="${esc(l)}" aria-pressed="${st.line === l}">${esc(l)}</button>`).join('')}</div>
@@ -2953,15 +2972,26 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     for (const r of R.ROLES) setRoleColor(r.id, id === 'one' || r.def === 'body' ? a : b);
     saveColors();
   }
-  // ---------- 1b · Paint tool: filaments as brushes, the part types, the catalogue under the view ----------
-  // The panel on the right while the 3D view's Paint tool is on. A filament card is also the brush; a part type's line
-  // paints that type everywhere (and drops the modules' own colours for it); a click in the view paints what was clicked,
-  // everywhere or in that module only (v3paint). Slot numbers stay out of sight: trayUse and buildProject still set them.
-  let fpAdding = false; // "Add a filament": the catalogue under the view
+  // ---------- 1b · Paint tool: filaments as brushes, the part types, the catalogue in the panel ----------
+  // While the 3D view's Paint tool is on, the panel on the right always shows Colors (UX audit C1): picking a stack in
+  // the rail or opening Stack settings goes back to Select. The brush is picked in the bar under the view (one swatch
+  // per filament, "+" adds one); a part type's line paints that type everywhere (and drops the modules' own colours for
+  // it); a click in the view paints what was clicked, everywhere or in that module only (v3paint). "+" and "Add a
+  // filament" show the catalogue in the panel, in place of Colors (fpAdding). Slot numbers stay out of sight: trayUse
+  // and buildProject still set them.
+  let fpAdding = false; // "Add a filament": the catalogue in the panel, in place of Colors
   const brushId = () => { const id = (v3 && v3.brush) || v3ui.brush; return paletteOf(id) ? id : colorPrefs.palette[0].id; };
   function setBrush(id) { v3ui.brush = id; if (v3) { v3.brush = id; v3tools(); } renderInspector(); }
   const painting = () => view === 'build' && !!v3 && v3.tool === 'paint';
-  let inspPaint = true; // with Paint on: the colours (true) or the settings asked for (Stack settings, a stack, a level)
+  // Back to Select (a stack picked in the rail, Stack settings): the panel then shows what was asked for
+  function leavePaint() {
+    v3ui.tool = 'turn'; fpAdding = false;
+    const v = v3; if (!v || v.tool !== 'paint') return;
+    v.tool = 'turn'; v.hot = null; v.hoverOff(); v.recolor(); v3tools(); v3side();
+  }
+  // The catalogue in the panel (from the brush bar's "+" or "Add a filament"), and back to Colors
+  function openCatalog() { fpAdding = true; renderInspector(); const q = document.querySelector('#dInsp [data-fp-q]'); if (q) q.focus({ preventScroll: true }); }
+  function closeCatalog() { fpAdding = false; renderInspector(); const b = document.querySelector('#dInsp [data-cat-back]') || $('dInsp'); if (b) b.focus({ preventScroll: true }); }
   function paintRole(role, id) {
     setRoleColor(role, id);
     (stackNow() ? [stackNow()] : towers).forEach(t => t.levels.forEach(lv => lv.forEach(u => {
@@ -2975,35 +3005,53 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     (stackNow() ? [stackNow()] : towers).forEach(t => t.levels.forEach((lv, i) => lv.forEach((u, j) => {
       if (!u.colors) return;
       for (const [role, id] of Object.entries(u.colors)) if (paletteOf(id) && ROLE_BY_ID.has(role))
-        out.push({ t, u, role, id, where: `${t.name}, level ${i + 1}${lv.length > 1 ? (j ? ' right' : ' left') : ''} (${unitCode(u)})` });
+        out.push({ t, u, role, id, where: `level ${i + 1}${lv.length > 1 ? (j ? ' right' : ' left') : ''} (${unitCode(u)})` });
     })));
     return out;
   }
+  // The filaments the stack shown prints in, in tray order (the Paint button's swatches, C7)
+  function stackFilaments(t = stackNow()) {
+    const ids = new Set();
+    for (const r of R.ROLES) ids.add(colorFor(r.id, null, t));
+    (t ? [t] : towers).forEach(x => x.levels.forEach(lv => lv.forEach(u => { if (u.colors) Object.entries(u.colors).forEach(([role, id]) => { if (paletteOf(id) && ROLE_BY_ID.has(role)) ids.add(id); }); })));
+    return colorPrefs.palette.filter(p => ids.has(p.id));
+  }
+  // A filament's name without its Bambu Lab line ("Terracotta", not "Terracotta · PLA Matte"), where space is short
+  const shortName = id => { const p = paletteOf(id); return !p ? colorName(id) : p.line && p.name.endsWith(' · ' + p.line) ? p.name.slice(0, -p.line.length - 3) : p.name; };
+  const PAINT_OPEN = { Outside: true }; // the part type groups open at first (then as the user leaves them: foldOpen)
+  const XMARK = '<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
   function paintPanel(box) {
-    const P = colorPrefs.palette, use = trayUse(), brush = brushId(), own = ownColors();
+    const P = colorPrefs.palette, use = trayUse(), brush = brushId(), own = ownColors(), bName = shortName(brush);
     const usedTxt = p => { const r = use.roles.get(p.id) || 0, u = use.units.get(p.id) || 0; return r || u ? [r && plural(r, 'part type'), u && plural(u, 'module')].filter(Boolean).join(' · ') : 'not used yet'; };
     const inUse = P.filter(p => use.slot.has(p.id)).length;
     const roleRow = id => { const r = ROLE_BY_ID.get(id), cur = colorFor(id, null), n = use.owned.get(id) || 0;
-      return `<button type="button" class="prole" data-prole="${id}" title="Paint ${esc(r.label.toLowerCase())} with the brush"><span class="dot2 big" style="background:${colorHex(cur)}"></span><span><b>${esc(r.label)}</b><small>${esc(colorName(cur))}${following(id, null) ? ` · same as ${esc(ROLE_BY_ID.get(r.follow).label.toLowerCase())}` : ''}${n ? ` · ${plural(n, 'module')} with ${n === 1 ? 'its' : 'their'} own` : ''}${id === 'label' && labelsApart ? ' · own plate' : ''}</small></span></button>`; };
+      return `<button type="button" class="prole" data-prole="${id}" title="Paint ${esc(r.label.toLowerCase())} ${esc(bName)}"><span class="dot2 big" style="background:${colorHex(cur)}"></span><span><b>${esc(r.label)}</b><small>${esc(colorName(cur))}${following(id, null) ? ` · same as ${esc(ROLE_BY_ID.get(r.follow).label.toLowerCase())}` : ''}${n ? ` · ${plural(n, 'module')} with ${n === 1 ? 'its' : 'their'} own` : ''}${id === 'label' && labelsApart ? ' · own plate' : ''}</small></span></button>`; };
+    // A group's header: its colours as swatches and how many part types it holds
+    const dots = ids => [...new Set(ids.map(id => colorFor(id, null)))].map(c => `<span class="dot2" style="background:${colorHex(c)}" title="${esc(colorName(c))}"></span>`).join('');
+    const grpSum = (title, ids) => `<span class="pdots" aria-hidden="true">${dots(title === 'Other' ? [...ids, 'tpu'] : ids)}</span>${title === 'Other' ? 'print aids, tires' : plural(ids.length, 'part type')}`;
+    const grp = ([title, ids]) => fold('paint-' + title, esc(title), grpSum(title, ids), !!PAINT_OPEN[title],
+      `<button type="button" class="linkbtn pall" data-pall="${ids.join(',')}">Paint these ${ids.length} ${esc(bName)}</button>
+      ${ids.map(roleRow).join('')}${title === 'Other' ? `<div class="prole fixed"><span class="dot2 big" style="background:${colorHex('tpu')}"></span><span><b>Tires</b><small>TPU, fixed</small></span></div>` : ''}`);
     box.innerHTML = `<div class="ihead"><span class="v3-sec">Colors</span><h2>${esc((curTower() || { name: 'Loose parts' }).name)}</h2>
+        <p class="pnote">Pick a brush under the view, then click a part there or a line here. Double-click a drawer to open it and paint its box.</p>
         <div class="cstart" role="group" aria-label="Start from"><span>Start from</span>${COLOR_PRESETS.map(([id, t, why]) => `<button type="button" class="btn" data-cpreset="${id}" title="${esc(why)}">${t}</button>`).join('')}</div></div>
-      <div class="ibody">
-        <div class="field"><div class="lbl">Your filaments · pick the brush <span class="hint">${inUse} in use</span></div>
-          <div class="ptray">${P.map(p => `<div class="pfil"><button type="button" class="pbrush" data-brush="${esc(p.id)}" aria-pressed="${p.id === brush}"><span class="dot2 big" style="background:${p.hex}"></span><span><b>${esc(p.name)}</b><small>${esc(usedTxt(p))}</small></span></button>${P.length > 1 ? `<button type="button" class="pdel" data-pal-del="${esc(p.id)}" aria-label="Remove ${esc(p.name)}" title="Remove this filament"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</div>`).join('')}
+      <div class="ibody ipaintb">
+        ${ROLE_GROUPS.map(grp).join('')}
+        ${own.length ? fold('paint-own', 'Modules with their own color', String(own.length), true, own.map((x, k) => `<div class="pown"><span class="dot2" style="background:${colorHex(x.id)}"></span><span><b>${esc(ROLE_BY_ID.get(x.role).label)}</b>, ${esc(x.where)}</span><button type="button" class="linkbtn" data-pown="${k}">Back to the stack color</button></div>`).join('')) : ''}
+        ${fold('paint-fil', 'Your filaments', `${inUse} in use · add, remove`, false, `<div class="ptray">${P.map(p => `<div class="pfil"><button type="button" class="pbrush" data-brush="${esc(p.id)}" aria-pressed="${p.id === brush}" title="Paint with ${esc(p.name)}"><span class="dot2 big" style="background:${p.hex}"></span><span><b>${esc(p.name)}</b><small>${esc(usedTxt(p))}</small></span></button>${P.length > 1 ? `<button type="button" class="pdel" data-pal-del="${esc(p.id)}" aria-label="Remove ${esc(p.name)}" title="Remove this filament">${XMARK}</button>` : ''}</div>`).join('')}
             <div class="pfil fixed"><span class="dot2 big" style="background:${colorHex('tpu')}"></span><span><b>TPU</b><small>tires only, fixed</small></span></div>
-            <button type="button" class="btn padd" data-padd aria-expanded="${fpAdding}">${icon('plus')} Add a filament</button></div></div>
-        ${ROLE_GROUPS.map(([title, ids]) => `<div class="pgrp"><div class="pgrp-h"><h3>${esc(title)}</h3><button type="button" class="linkbtn" data-pall="${ids.join(',')}">Paint all</button></div>
-          ${ids.map(roleRow).join('')}${title === 'Other' ? `<div class="prole fixed"><span class="dot2 big" style="background:${colorHex('tpu')}"></span><span><b>Tires</b><small>TPU, fixed</small></span></div>` : ''}</div>`).join('')}
-        ${own.length ? `<div class="pgrp"><div class="pgrp-h"><h3>Modules with their own color</h3></div>${own.map((x, k) => `<div class="pown"><span class="dot2" style="background:${colorHex(x.id)}"></span><span><b>${esc(ROLE_BY_ID.get(x.role).label)}</b> in ${esc(x.where)}</span><button type="button" class="linkbtn" data-pown="${k}">Back to the stack color</button></div>`).join('')}</div>` : ''}
+            <button type="button" class="btn padd" data-padd>${icon('plus')} Add a filament</button></div>`)}
         ${preset().bambu && P.some(p => /^PETG/.test(p.line || '')) ? '<p class="pnote" style="margin:0">PETG colors: the Bambu Studio project gives every color PLA settings. In Bambu Studio, set the PETG filaments to a PETG profile.</p>' : ''}
         <p class="pnote" style="margin:0">Each filament prints on its own plates. Fewer filaments, fewer plates. <button type="button" class="linkbtn" data-go="print" style="display:inline;margin:0;padding:0">See the plates</button></p>
       </div>`;
+    bindFolds(box);
     const done = () => { saveColors(); renderAll(); };
     box.querySelectorAll('[data-brush]').forEach(b => b.onclick = () => setBrush(b.dataset.brush));
     box.querySelectorAll('[data-prole]').forEach(b => b.onclick = () => { const r = b.dataset.prole; undoAs(`${ROLE_BY_ID.get(r).label} painted ${colorName(brushId())}`); paintRole(r, brushId()); done(); });
     box.querySelectorAll('[data-pall]').forEach(b => b.onclick = () => { const g = ROLE_GROUPS.find(([, ids]) => ids.join() === b.dataset.pall); undoAs(`${g ? g[0] : 'Part types'} painted ${colorName(brushId())}`); b.dataset.pall.split(',').forEach(r => paintRole(r, brushId())); done(); });
     box.querySelectorAll('[data-pown]').forEach(b => b.onclick = () => {
       const x = own[+b.dataset.pown], c = { ...x.u.colors }; delete c[x.role];
+      undoAs(`${ROLE_BY_ID.get(x.role).label}, ${x.where}: back to the stack color`);
       if (Object.keys(c).length) x.u.colors = c; else delete x.u.colors;
       save(); done();
     });
@@ -3023,14 +3071,18 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       undoAs(id === 'render' ? `USSA render colors back${t ? ' on ' + t.name : ''}` : `${id === 'two' ? 'Two-tone' : 'One color'} applied${t ? ' to ' + t.name : ''}`);
       applyColorPreset(id); renderAll();
     });
-    box.querySelector('[data-padd]').onclick = () => { fpAdding = !fpAdding; renderAll(); const c = $('dCat'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
+    box.querySelector('[data-padd]').onclick = openCatalog;
     box.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { view = b.dataset.go; renderAll(); });
   }
-  // The catalogue under the view: a click adds the colour to the filaments and takes it as the brush
-  function bindCatalog() {
-    const host = $('dCat'); if (!host) return;
-    filamentPicker(host, { role: null, quick: true, from: 'Bambu Lab colors on sale in the EU store. A click adds the color to your filaments and takes it as the brush.',
-      close: () => { fpAdding = false; renderAll(); }, after: id => { if (id) { v3ui.brush = id; if (v3) { v3.brush = id; v3tools(); } } renderInspector(); } });
+  // The catalogue in the panel: pick a colour, then "Add it and paint with it" adds it to the filaments and takes it as
+  // the brush (one already in the tray: "Paint with it"). "‹ Colors" goes back.
+  function catalogPanel(box) {
+    box.innerHTML = `<div class="ihead"><button type="button" class="linkbtn cat-back" data-cat-back aria-label="Back to the colors"><span aria-hidden="true">‹</span> Colors</button><h2>Add a filament</h2>
+        <p class="pnote">Bambu Lab colors on sale in the EU store, or your own.</p></div>
+      <div class="ibody"><div class="cat-host"></div></div>`;
+    box.querySelector('[data-cat-back]').onclick = closeCatalog;
+    filamentPicker(box.querySelector('.cat-host'), { role: null, bare: true, addLabel: 'Add it and paint with it',
+      after: id => { if (id) { v3ui.brush = id; if (v3) { v3.brush = id; v3tools(); } toast(`Brush: ${colorName(id)}`); } closeCatalog(); } });
   }
   // ---------- 1 · Design: stacks rail, the stack in 3D, the inspector ----------
   // A stack owns its footprint (t.fp: width family and depth, the same for every level), its roof (kept on the top
@@ -3235,7 +3287,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     return { head: 'Whole stack', sub: t.name, items: [
       { icon: 'fit', label: 'Fit the stack in the view', dis: !v3, fn: () => { if (v3) v3.aim(null); } },
       { sep: true, icon: 'plus', label: 'Add a level on top', fn: () => levelOp(t, 'top') },
-      { icon: 'chev', label: 'Stack settings', fn: () => { inspPaint = false; dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); } }] };
+      { icon: 'chev', label: 'Stack settings', fn: () => { leavePaint(); dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); } }] };
   }
   const segBtns = (items, cur, attr) => items.map(it => `<button type="button" ${attr}="${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}"${it.dis ? ' disabled' : ''}>${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   const useg = (key, items, cur) => items.map(it => `<button type="button" data-useg="${key}=${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
@@ -3420,7 +3472,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     <dialog id="tplDlg" aria-labelledby="tplTitle"><button type="button" class="vclose" data-tpl-close aria-label="Close">&times;</button><h2 id="tplTitle">Start from a template</h2><p class="pnote">A ready-made stack, added as a new stack. Change anything in it afterwards.</p>
       <div class="tpls">${PRESETS.map((p, i) => ({ p, i })).filter(({ p }) => presetFits(p)).map(({ p, i }) => tplCard(p, i)).join('')}</div></dialog>`;
     const V = $('view-build');
-    V.querySelectorAll('[data-stack]').forEach(b => b.onclick = () => { const x = towers.find(y => y.id === +b.dataset.stack); dsel = { t: x.id, l: null, u: 0 }; saveSel(); inspPaint = false; renderAll(); });
+    V.querySelectorAll('[data-stack]').forEach(b => b.onclick = () => { const x = towers.find(y => y.id === +b.dataset.stack); dsel = { t: x.id, l: null, u: 0 }; saveSel(); leavePaint(); renderAll(); });
     V.querySelectorAll('[data-sdel]').forEach(holdToDelete);
     V.querySelector('[data-loose]').onclick = () => { dsel = { t: 'loose' }; saveSel(); renderAll(); };
     $('dNew').onclick = () => { newStack(); renderAll(); };
@@ -3468,10 +3520,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     // the stack's name is renamed here, in place (dRename): the pencil turns the title into its field
     return `<section class="panel dcenter" aria-label="Stack">
       <div class="dhead"><div class="dtitle"><div class="dname"><h1>${esc(t.name)}</h1><button type="button" class="iconbtn dren" data-rename aria-label="Rename ${esc(t.name)}" title="Rename the stack">${icon('pen')}</button></div><span class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></span></div>
-        <div class="dacts"><button type="button" class="btn" data-dstack aria-pressed="${dsel.l == null}">Stack settings</button>
+        <div class="dacts"><button type="button" class="btn" data-dstack aria-pressed="${dsel.l == null && !painting()}">Stack settings</button>
           <button type="button" class="btn primary" data-addtop title="Adds a level like the top one">${icon('plus')} Add a level on top</button></div></div>
       ${t.levels.length ? '<div class="v3-slot"></div>' : `<div class="dempty"><p>This stack has no level yet.</p><button type="button" class="btn primary big" data-addtop>${icon('plus')} Add a level</button></div>`}
-      ${fpAdding && painting() ? '<div class="dcat" id="dCat"></div>' : ''}
     </section>`;
   }
   // Renaming the stack: its title becomes a field; Enter or leaving it keeps the name, Esc puts the old one back
@@ -3501,21 +3552,20 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // "Stack settings" after the selection changed without a redraw of step 1
   function markLevels() {
     const V = $('view-build'); if (!V) return;
-    const sb = V.querySelector('[data-dstack]'); if (sb) sb.setAttribute('aria-pressed', String(!!dsel && dsel.l == null));
+    const sb = V.querySelector('[data-dstack]'); if (sb) sb.setAttribute('aria-pressed', String(!!dsel && dsel.l == null && !painting())); // painting: the panel shows Colors
   }
   function bindCenter(t) {
     const V = $('view-build');
     // "Stack settings" opens them; a second click leaves them open (the levels are picked in the view or the panel)
-    V.querySelectorAll('[data-dstack]').forEach(b => b.onclick = () => { if (painting() && inspPaint) inspPaint = false; dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); });
+    V.querySelectorAll('[data-dstack]').forEach(b => b.onclick = () => { leavePaint(); dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); });
     V.querySelectorAll('[data-rename]').forEach(b => b.onclick = () => dRename(t, b));
     V.querySelectorAll('[data-addtop]').forEach(b => b.onclick = () => levelOp(t, 'top'));
-    bindCatalog();
   }
   // The inspector: the selected level, or the stack's settings
   // A change made in the selection panel redraws it (and step 1): keep its scroll and its folded sections as they were,
   // while it shows the same level, so the option just changed stays under the pointer
   let inspKeep = null;
-  const inspSel = () => dsel ? `${dsel.t}|${dsel.l}|${dsel.u}|${painting() && inspPaint}` : ''; // no selection: a stack was just removed
+  const inspSel = () => dsel ? `${dsel.t}|${dsel.l}|${dsel.u}|${painting() && (fpAdding ? 'cat' : 'paint')}` : ''; // no selection: a stack was just removed
   const inspDetails = b => [...b.querySelectorAll('details')].map(d => { const sm = d.querySelector('summary'); return [sm && sm.firstChild ? sm.firstChild.textContent.trim() : '', d]; });
   // The panel's foldable sections: the name, what is set in a few words, and the settings. Open or folded as the user
   // left them, per section, for the page's life (else as `open` says); inspSave / inspRestore keep them over a redraw.
@@ -3549,15 +3599,11 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (menuNow && box.contains(menuNow.opener)) menuClose(); // its "⋯" is drawn again
     inspSave();
     renderInspector0(box, curTower());
-    if (painting() && !inspPaint) {
-      box.insertAdjacentHTML('afterbegin', '<div class="ipaint"><span>Paint is on in the view.</span><button type="button" class="btn" data-insp-colors>Show the colors</button></div>');
-      box.querySelector('[data-insp-colors]').onclick = () => { inspPaint = true; renderInspector(); };
-    }
     inspRestore(box);
   }
   function renderInspector0(box, t) {
     box.classList.remove('istack'); // only the stack's settings wear the stack colour (stackInspector)
-    if (painting() && inspPaint) return paintPanel(box);
+    if (painting()) return fpAdding ? catalogPanel(box) : paintPanel(box); // the Paint tool shows Colors (C1)
     if (dsel.l == null || !t.levels[dsel.l]) return stackInspector(box, t);
     const i = dsel.l, L = t.levels, lv = L[i], ui = Math.min(dsel.u || 0, lv.length - 1), u = lv[ui], top = i === L.length - 1;
     const k = clean(u); if (!top) k.roof = 'none';
@@ -4185,8 +4231,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   function v3picked() {
     if (v3 && v3.tool !== v3lastTool) {
       v3lastTool = v3.tool;
-      if (v3.tool !== 'paint' && fpAdding) { fpAdding = false; const c = $('dCat'); if (c) c.remove(); }
-      if (view === 'build') renderInspector();
+      if (v3.tool !== 'paint') fpAdding = false;
+      if (view === 'build') { renderInspector(); markLevels(); }
     }
     const v = v3; if (!v || view !== 'build' || !v.sel || v.sel === v3lastPick) { v3mark(); return; }
     v3lastPick = v.sel;
@@ -6024,7 +6070,10 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     v3ui.brush = v.brush;
     const seg = (items, cur, attr) => items.map(([id, label]) => `<button type="button" ${attr}="${id}" aria-pressed="${cur === id}">${label}</button>`).join('');
     const roof = v.units.some(u => u.roof);
-    $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool">${seg([['turn', 'Select'], ['paint', 'Paint']], v.tool, 'data-v3tool')}</div>
+    // The Paint button carries the stack's filaments as swatches, so the tool says where colours are set (C7)
+    const fil = stackFilaments(v.t), shown = fil.slice(0, 4);
+    const paintLbl = `Paint<span class="v3-pdots" aria-hidden="true">${shown.map(p => `<span class="dot2" style="background:${p.hex}"></span>`).join('')}${fil.length > shown.length ? `<small>+${fil.length - shown.length}</small>` : ''}</span>`;
+    $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool"><button type="button" data-v3tool="turn" aria-pressed="${v.tool === 'turn'}">Select</button><button type="button" data-v3tool="paint" aria-pressed="${v.tool === 'paint'}" title="Paint: ${esc(fil.map(p => p.name).join(', '))}" aria-label="Paint, ${plural(fil.length, 'filament')} on this stack">${paintLbl}</button></div>
       <div class="v3-right">
         ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}">Spread levels</button>` : ''}
         ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}">Hide roof</button>` : ''}
@@ -6036,10 +6085,12 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const B = $('v3dBrush');
     if (v.tool === 'paint') {
       B.hidden = false; B.className = 'v3-brush';
-      const bp = paletteOf(v.brush);
-      B.innerHTML = `<span class="v3-bnow"><span class="dot2 big" style="background:${bp.hex}"></span><span><small>Brush</small><b>${esc(bp.name)}</b></span></span>
-        <span class="v3-brush-hint">Click a part in the view, or a line on the right. A double-click, or <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click, opens a drawer, to paint its box.</span>
-        <div class="v3-seg" role="group" aria-label="What a click in the view paints">${seg([['project', 'Whole stack'], ['unit', 'This module only']], v.pscope, 'data-v3scope')}</div>`;
+      // The brush bar (C3): one swatch per filament (the brush in use says its name), "+" for the catalogue, then
+      // what a click in the view paints
+      B.innerHTML = `<div class="v3-brushes" role="group" aria-label="Brush"><span class="v3-seglbl" aria-hidden="true">Brush</span>
+          ${P.map(p => `<button type="button" class="v3-bsw" data-v3brush="${esc(p.id)}" aria-pressed="${p.id === v.brush}" title="${esc(p.name)}" aria-label="${esc(p.name)}"><span class="dot2 big" style="background:${p.hex}"></span>${p.id === v.brush ? `<b>${esc(shortName(p.id))}</b>` : ''}</button>`).join('')}
+          <button type="button" class="v3-bsw v3-badd" data-v3add aria-expanded="${fpAdding}" title="Add a filament" aria-label="Add a filament">${icon('plus')}</button></div>
+        <div class="v3-bscope"><span id="v3dScopeLbl">A click paints</span><div class="v3-seg" role="group" aria-labelledby="v3dScopeLbl">${seg([['project', 'Whole stack'], ['unit', 'This module only']], v.pscope, 'data-v3scope')}</div></div>`;
     } else {
       const tip = !store.get('openTip', false) && v.units.some(u => u.travel || u.movers || u.lid);
       B.hidden = false; B.className = 'v3-hintbar' + (tip ? ' tip' : '');
@@ -6047,11 +6098,13 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         : '<b>Click</b> a level to set it up \u00b7 <b>right-click</b> for its actions \u00b7 <b>double-click</b> opens a drawer';
     }
     const on = (sel, f) => document.querySelectorAll(sel).forEach(b => b.onclick = () => f(b));
-    on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; if (v.tool === 'paint') inspPaint = true; v.hot = null; v.hoverOff(); v.recolor(); v3tools(); v3side(); });
+    on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; fpAdding = false; v.hot = null; v.hoverOff(); v.recolor(); v3tools(); v3side(); });
     on('[data-v3help]', () => { v3ui.help = !v3ui.help; v3tools(); const b = $('v3dTools').querySelector('[data-v3help]'); if (b) b.focus({ preventScroll: true }); });
     on('[data-v3tipok]', () => { store.set('openTip', true); v3tools(); });
     on('[data-v3tog]', b => { v[b.dataset.v3tog] = !v[b.dataset.v3tog]; v.arrange(); v3tools(); v3side(); });
     on('[data-v3scope]', b => { v.pscope = b.dataset.v3scope; v3tools(); });
+    on('[data-v3brush]', b => { setBrush(b.dataset.v3brush); const n = $('v3dBrush').querySelector(`[data-v3brush="${CSS.escape(b.dataset.v3brush)}"]`); if (n) n.focus({ preventScroll: true }); });
+    on('[data-v3add]', () => { if (fpAdding) closeCatalog(); else openCatalog(); v3tools(); });
     on('[data-v3fin]', b => { setHwFinish(b.dataset.v3fin); v.recolor(); v3tools(); v3side(); });
   }
   // The side column: what is selected, then the units top to bottom, then the project's colours
@@ -6073,6 +6126,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     ch.onclick = () => togglePicker(ch, { role: s.role, from: `${name}, selected in 3D`, unit: owner, after: () => v3refresh(v) });
     const back = box.querySelector('[data-v3back]');
     if (back) back.onclick = () => {
+      undoAs(`${r.label}, ${owner.name}: back to the stack color`);
       const x = { ...owner.cfg.colors }; delete x[s.role];
       if (Object.keys(x).length) owner.cfg.colors = x; else delete owner.cfg.colors;
       owner.save(); v3refresh(v);
@@ -6387,8 +6441,10 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       v.recolor(); v3tools(); v3side(); maybeRelink();
       return;
     }
-    if (v3want && v3want.key === mode.key) return; // already on its way
-    open3d(tw, mode); v3want.key = mode.key;
+    // already on its way: the same stack, made of the same objects (an undo brings back equal levels as new objects,
+    // with the same key: the model must be made again, or a click would paint or select levels no longer in the stack)
+    if (v3want && v3want.key === mode.key && v3want.cfgs.length === mode.cfgs.length && mode.cfgs.every((x, i) => x === v3want.cfgs[i])) return;
+    open3d(tw, mode); v3want.key = mode.key; v3want.cfgs = mode.cfgs;
     maybeRelink();
   }
   // Before steps 1 and 2 redraw, the view steps out of the way, so the redraw doesn't take it with the old page

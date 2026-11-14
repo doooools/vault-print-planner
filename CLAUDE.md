@@ -22,7 +22,7 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   B6, C2, D7, D8, E1, E4, E5) is done on its branch. Session 6 (Print: D1 to D6) on `claude/print`. Session 7 (Hardware: E2, E3, E6) is done on its branch. Session 3 (the 3D
   view: hover, right-click menus, "⋯", one-line hint, "Bolts" swatches, "?"; A1, A2, A3, A4, A5, A6) is done on its branch.
   Session 4 (Design's panels: A7, A8, B2, B3, B4, X3, X4) is done on its branch. Session 8 (header, File menu,
-  tabs: A9, A10) is done on its branch.
+  tabs: A9, A10) is done on its branch. Session 5 (Paint: C1, C3, C4, C5, C6, C7) is done on its branch.
 - What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file
   `3d/stl-absents-de-la-3d.md`.
 
@@ -69,7 +69,7 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   (0.15 mm, cached in IndexedDB). Shown in step 1 (Design) in the middle of the stack's card (`designCenter`'s
   `.v3-slot`): `v3sync()` (after every render) moves the one persistent `#v3view` into the shown step's `.v3-slot`, or
   parks it in `#v3home`, and shows the selected stack (`curTower()`) as it is. The model is rebuilt only when
-  the stack changes (`v.key`, colours left out), and just repainted otherwise. A rebuild of the same stack (any change: an option, a divider,
+  the stack changes (`v.key`, colours left out, or the same levels as new objects: an undo), and just repainted otherwise. A rebuild of the same stack (any change: an option, a divider,
   a level added) keeps the camera (position and target), every drawer and lid open or closed, and the selection:
   `close3d` → `v3keep` saves them in `v3ui.keep`; `open3d` matches the new units to them (`v3match`: same `cfg` object
   first, then same kind, level and rank). Another stack is framed afresh. `v3park()` takes the view
@@ -77,9 +77,10 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   drops a model's scene; `v3ui` carries tools and camera direction over. The `#v3d` dialog ("3D view, enlarged") is
   still in the page and `v3sync` still honours it, but nothing opens it any more.
   One view since step 3 of `docs/colors-3d-redesign.md` (`open3d`):
-  toolbar `v3tools` (Turn: a click selects; Paint: brush bar with the tray's colours, "More…" adds one, "Whole
-  stack" / "This module only", hover tints what a click would paint via `v.hot`; Drawers: a click opens or closes a
-  drawer), the first framing from three quarters (`V3_DIR`, `v.aim`; the Front / ¾ / Side buttons went on 2026-11-14), "Spread levels" and "Hide roof" (`v.arrange`, which no longer reframes: the camera never moves by itself), "Bolts" (two swatches) and "?" (`v3ui.help`: drag, scroll, right-drag).
+  toolbar `v3tools` (Turn: a click selects; Paint, whose button carries the stack's filaments as swatches
+  (`stackFilaments`): brush bar `#v3dBrush` with one swatch per filament (`data-v3brush`), "+" for the catalogue
+  (`data-v3add`), "A click paints" "Whole stack" / "This module only", hover tints what a click would paint via `v.hot`;
+  Drawers: a click opens or closes a drawer), the first framing from three quarters (`V3_DIR`, `v.aim`; the Front / ¾ / Side buttons went on 2026-11-14), "Spread levels" and "Hide roof" (`v.arrange`, which no longer reframes: the camera never moves by itself), "Bolts" (two swatches) and "?" (`v3ui.help`: drag, scroll, right-drag).
   UX audit session 3: with Select, `hoverOn` outlines the level under the pointer and names it in `.v3-hover` (placed
   from its projected box, `placeTip`, again on every camera change); a right-click (button 2 let go within 5 px,
   `rightAt`) on a level selects it and opens `levelMenu` (open or close via `v.openable` / `v.toggle`, add a copy
@@ -111,10 +112,14 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   filters, grid by shade), and a footer button "Use it" / "Add as slot N" (a new colour joins the palette only then).
   `fpButton` + `bindPickers` show a role's colour as a button that opens it: in place inside dialogs, as a popover
   elsewhere. Used by the part preview and the 3D view's "Selected" card; with `role: null` it only adds to the tray
-  (the Colors panel's "Add a filament", the brush bar's "More…"). `after(id)` gets the colour applied.
-- Colors (`paintPanel`: the inspector while the Paint tool is on): the filament tray with each colour's use, the role
-  list (a click paints a role with the brush, `paintRole`), the modules' own colours as exceptions (`ownColors`),
-  "Add a filament" (the catalogue under the view, `fpAdding`); presets (`applyColorPreset`) and `ROLE_GROUPS`.
+  (`catalogPanel`, with `bare` (no header, no tray) and `addLabel`). `after(id)` gets the colour applied.
+- Colors (`paintPanel`: the inspector whenever the Paint tool is on, UX audit session 5; `inspPaint` and its "Show the
+  colors" strip went, and the rail's stacks and Stack settings go back to Select through `leavePaint`): presets
+  (`applyColorPreset`), the role groups (`ROLE_GROUPS`) as `fold` sections with their swatches ("Paint these N
+  <brush>", a click on a role paints it, `paintRole`), the modules' own colours as exceptions (`ownColors`), then
+  "Your filaments" folded (brush, use, the press-and-hold cross `.pdel` with the stack cross's ring, "Add a filament").
+  "Add a filament" and the brush bar's "+" show the catalogue in the panel instead (`fpAdding`, `catalogPanel`,
+  `openCatalog` / `closeCatalog`); no block under the view any more.
   Slots come from `trayUse()`: one per colour in use, in tray order (1, then 3…), like `buildProject`; labels on their
   own plate (`labelsApart`) don't count.
 - Tabs: 1 · Design (`view` 'build'; a saved 'unit' opens it), 2 · Print, 3 · Hardware, 4 · Assemble (`renderTabs`;
@@ -126,7 +131,7 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   the stacks, `.dloose`), the selected stack's card (`designCenter`: name with its pencil, `dRename`;
   Stack settings, which opens and does not toggle; "Add a level on top"; the 3D view) and the inspector (`#dInsp`,
   `renderInspector`: the selected level, the stack's settings with width and depth first (`setFootprint`; no Footprint
-  button nor strip since UX audit session 4), or Colors while painting). Both panels are foldable sections (`fold`,
+  button nor strip since UX audit session 4), or Colors while painting, always). Both panels are foldable sections (`fold`,
   `bindFolds`, `.ifold`: name and a summary, `insideLine`, `backLine`; open state in `foldOpen` for the page's life);
   stack options that need another are greyed with the reason (`sbool(…, dis)`, `.field.off`, `.need`). Selection: `dsel` = `{t, l, u}` (stack id, level, unit in the level), or
   `{t: 'loose'}`. With no stack yet, `renderStart` ("Start your build": printer, Vault folder, templates; skipping the
