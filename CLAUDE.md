@@ -253,6 +253,15 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   the filter is one line of pills with plate counts; the selection bar shows only while a plate is ticked; the two
   exports sit side by side; Print's and Hardware's rails say "In the plates" / "In the list" / "Left out" (`railState`).
 
+- Print: Already printed (Dols, 2026-11-14, branch `claude/project-thread-e6g0mi`). The rail's "Already printed" button
+  (`printHave`) shows `havePanel` in place of the sheet: the parts on these plates (`haveLines`: the picked stacks'
+  lines that fit), "Add" / "All N", and the list with steppers capped by `haveRoom`. Counts in localStorage `vpp.onHand`
+  (progress key → pieces, `plainHave` on load), apart from `printed` so plates marked printed keep their own count.
+  `have(k)` = printed + onHand is what `printProgress`, `planPlates` and `stablePlates` read: a change lays the plates
+  out again (plates marked printed fold into the plan's `base`). Per part like `printed`; only up to the line's total
+  counts; keys no line has (stack left out) stay, shown "Not on these plates". "Reset all progress" and the list's
+  "Clear" empty it (undoable: `progSnap` holds it).
+
 - Module shells' supports (Dols, 2026-11-13): rules.js gives them `supports: 'shell'`, a named set in the page's
   `SUPPORT_SETS` (tree(auto), default style, threshold 80°, on build plate only, critical regions only, remove small
   overhangs), written per object into the Bambu project and the plate files (`supportKeys`; PrusaSlicer: organic, 80°,
