@@ -128,8 +128,9 @@ A step of its own, fed by the same data as `hwTable` for the whole build.
 - Lines grouped by what is bought: M4 bolts, M6 bolts and inserts, axle rods and bearings.
 - Per line: a "bought" checkbox, quantity, head shape drawing, name, spare note, what it is for, which stack, store link.
 - Laid out like Print (Dols, 2026-11-14, "double bandeau"): a left rail "Hardware for" with each stack as a button
-  (dark = in the list, a click leaves it out or puts it back, the last one stays; its line count under it; saved as
-  `hwSkip`), then "In this list", the groups with how many lines are bought, a click scrolls to the group. Centre:
+  (dark = in the list, a click leaves it out or puts it back; its line count under it; saved as `hwSkip`). Nothing
+  picked is allowed, as in Print: "Nothing picked" in the middle, no Copy or CSV (Dols, 2026-11-14). Then "In this
+  list", always shown, even with one group: the groups with how many lines are bought, a click scrolls to the group. Centre:
   the title, progress, "Copy the list" (orange) and "Export as CSV", then the list. Right column, a "List options"
   panel: "Where you buy", "Bolt finish", the head shape legend. Copy and CSV hold what the list shows; the tab's
   count stays the whole build's.

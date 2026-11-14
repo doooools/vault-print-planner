@@ -5468,13 +5468,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // Same data as the hardware tables (the rules' hardware, merged). Lines are grouped by what is bought; each says which
   // stacks need it. "Bought" ticks are kept per item.
   let hwBought = store.get('hwBought', {});
-  // Stacks left out of the shopping list (Hardware's rail, like Print's): ids; never all of them
+  // Stacks left out of the shopping list (Hardware's rail, like Print's): ids; all of them = nothing picked
   let hwSkip = store.get('hwSkip', []);
   const HW_GROUPS = [['M4 bolts', /^M4\b/], ['M6 bolts and inserts', /^M6\b/], ['Axle, rods and bearings', /M16|bearing|collar/i], ['Other', /./]];
   const hwGroupOf = item => HW_GROUPS.find(([, re]) => re.test(item))[0];
   function hardwareList() {
-    const kept = hwSkip.filter(id => towers.some(t => t.id === id));
-    if (kept.length >= towers.length) kept.length = 0; // every stack left out: all back in
+    const kept = hwSkip.filter(id => towers.some(t => t.id === id)); // stacks gone from Design drop out
     if (kept.length !== hwSkip.length) { hwSkip = kept; store.set('hwSkip', hwSkip); }
     const b = computeBuild(false, hwSkip);
     if (b.empty) return { b, rows: [], per: [] };
@@ -5506,6 +5505,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const V = $('view-hardware');
     const bought = rows.filter(r => r.bought).length, pct = rows.length ? Math.round(bought / rows.length * 100) : 0;
     const groups = HW_GROUPS.map(([g]) => g).filter(g => rows.some(r => r.group === g));
+    const none = towers.length > 0 && !b.list.length; // every stack left out in the rail
     const gid = g => 'hwg-' + HW_GROUPS.findIndex(x => x[0] === g);
     let group = '';
     const list = rows.map(r => {
@@ -5524,9 +5524,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const rail = `<aside class="drail prail hwrail" aria-label="Hardware for">
       <div class="v3-sec">Hardware for</div>
       ${per.map(({ t, items }) => `<button type="button" class="pchip" data-hwskip="${esc(t.id)}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(items.size, 'line')}</small></button>`).join('')}
-      <p class="pnote">${!towers.length ? 'Loose parts need no bolts.' : towers.length < 2 ? 'The list holds everything in Design.' : b.list.length === towers.length ? 'The list holds every stack. Click a stack to leave it out.' : 'Only what is highlighted is in the list, the copy and the CSV. Click to put a stack back.'}</p>
-      ${groups.length > 1 ? `<div class="v3-sec">In this list</div>
-      ${groups.map(g => { const gr = rows.filter(r => r.group === g), got = gr.filter(r => r.bought).length; return `<button type="button" class="hwjump${got === gr.length ? ' got' : ''}" data-hwjump="${gid(g)}"><b>${esc(g)}</b><small class="mono">${got} of ${plural(gr.length, 'line')} bought</small></button>`; }).join('')}` : ''}
+      <p class="pnote">${!towers.length ? 'Loose parts need no bolts.' : none ? 'Nothing is picked. Click a stack to list its hardware.' : towers.length < 2 ? 'The list holds everything in Design.' : b.list.length === towers.length ? 'The list holds every stack. Click a stack to leave it out.' : 'Only what is highlighted is in the list, the copy and the CSV. Click to put a stack back.'}</p>
+      <div class="v3-sec">In this list</div>
+      ${!groups.length ? `<p class="pnote">${none ? 'Nothing: no stack is picked.' : 'Nothing to buy.'}</p>` : groups.map(g => { const gr = rows.filter(r => r.group === g), got = gr.filter(r => r.bought).length; return `<button type="button" class="hwjump${got === gr.length ? ' got' : ''}" data-hwjump="${gid(g)}"><b>${esc(g)}</b><small class="mono">${got} of ${plural(gr.length, 'line')} bought</small></button>`; }).join('')}
     </aside>`;
     // Right column, like Print's plate options: where you buy, the bolt finish, the head shapes
     const side = `<aside class="hwside" aria-label="List options"><section class="panel popts">
@@ -5545,13 +5545,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           ${headIcon('hex bolt')}<span><b>Hex head</b>, for a wrench</span></div></div>` : ''}
       </div></section></aside>`;
     V.innerHTML = `<div class="hwpage">${rail}
-      <section class="panel hwlist" aria-label="Shopping list">
+      ${none ? `<section class="panel hwlist pnone" aria-label="Shopping list"><p><strong>Nothing picked.</strong> Click a stack on the left to list the hardware it needs.</p></section>` : `<section class="panel hwlist" aria-label="Shopping list">
         <div class="hwtop"><div class="hwtop-prog"><div class="hwtitle"><h1>Hardware to buy</h1><span class="mono">${bought} of ${plural(rows.length, 'line')} bought</span></div>
           <div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
           <p>Everything that is not printed, for ${b.list.length < towers.length ? esc(b.list.map(t => t.name).join(', ')) : towers.length === 1 ? esc(towers[0].name) : 'the whole build'}. Order it while the plates run.</p></div>
           ${rows.length ? `<div class="hwx"><button type="button" class="btn primary big" id="hwCopy">Copy the list</button><button type="button" class="btn" id="hwCsv">Export as CSV</button></div>` : ''}</div>
         ${rows.length ? list : '<p class="pp" style="padding:16px 20px">This build needs no bolts or other bought parts.</p>'}
-      </section>
+      </section>`}
       ${side}</div>`;
     V.querySelectorAll('[data-hw-bought]').forEach(cb => cb.onchange = () => {
       if (cb.checked) hwBought[cb.dataset.hwBought] = 1; else delete hwBought[cb.dataset.hwBought];
@@ -5559,7 +5559,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     });
     V.querySelectorAll('[data-hwskip]').forEach(btn => btn.onclick = () => {
       const id = +btn.dataset.hwskip, on = btn.getAttribute('aria-pressed') === 'true';
-      if (on && b.list.length === 1) { toast('Keep at least one stack in the list'); return; }
       hwSkip = [...hwSkip.filter(x => x !== id), ...(on ? [id] : [])]; store.set('hwSkip', hwSkip);
       renderHardware();
     });
