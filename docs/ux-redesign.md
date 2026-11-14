@@ -126,7 +126,12 @@ Today's "Extra parts" (`extrasPanel`), as an entry of the rail: search among the
 A step of its own, fed by the same data as `hwTable` for the whole build.
 - Lines grouped by what is bought: M4 bolts, M6 bolts and inserts, axle rods and bearings.
 - Per line: a "bought" checkbox, quantity, head shape drawing, name, spare note, what it is for, which stack, store link.
-- Side: "Copy the list", "Export as CSV", "Include spares", and the head shape legend.
+- Laid out like Print (Dols, 2026-11-14, "double bandeau"): a left rail "Hardware for" with each stack as a button
+  (dark = in the list, a click leaves it out or puts it back, the last one stays; its line count under it; saved as
+  `hwSkip`), then "In this list", the groups with how many lines are bought, a click scrolls to the group. Centre:
+  the title, progress, "Copy the list" (orange) and "Export as CSV", then the list. Right column, a "List options"
+  panel: "Where you buy", "Bolt finish", the head shape legend. Copy and CSV hold what the list shows; the tab's
+  count stays the whole build's.
 
 ### 4 · Assemble
 `GUIDE` and `stepsDone` as today, shown one section at a time.
@@ -171,9 +176,9 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
 - **Removing or clearing** is pressed and held for half a second (`holdButton`, `HOLD_MS`), the button filling in red;
   let go sooner and a toast says to hold it: a stack (its cross and "Remove stack"), a level, a filament, the loose
   parts, a divider plan, the plates, the print progress, an assembly count (Dols, 2026-11-14).
-- **Rails**: Design and Print also have a right column (Design's inspector; Print's plate options over the selected
-  plate, `.pside`). Design, Print and Assemble each have a left rail with an eyebrow naming its items (Stacks, What to
-  print, Sections). Every tab past Design shows its progress (Print and Assemble in %, Hardware the lines to buy).
+- **Rails**: Design, Print and Hardware also have a right column (Design's inspector; Print's plate options over the
+  selected plate, `.pside`; Hardware's list options, `.hwside`). Design, Print, Hardware and Assemble each have a left
+  rail with an eyebrow naming its items (Stacks, What to print, Hardware for, Sections). Every tab past Design shows its progress (Print and Assemble in %, Hardware the lines to buy).
 - The 3D view has no Front / ¾ / Side buttons any more (Dols, 2026-11-14): a stack opens from three quarters, then
   one drags to turn it.
 

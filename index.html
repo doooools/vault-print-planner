@@ -348,11 +348,20 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .hw td { padding: 8px 18px; border-top: 1px solid var(--line); }
 .hw td.q { width: 70px; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
 .hw svg.bolt { display: block; width: 72px; height: 30px; fill: var(--muted); }
-/* Step 3 · Hardware: the list, and the options beside it */
+/* Step 3 · Hardware, like Print: the stacks and groups on the left, the list, its options on the right */
 .hwpage { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
-.hwlist { flex: 999 1 640px; min-width: 0; overflow: hidden; }
-.hwside { flex: 1 1 280px; min-width: 0; display: grid; gap: 12px; position: sticky; top: 12px; }
-.hwtop { display: grid; gap: 8px; padding: 18px 20px; }
+@media (min-width: 1200px) { .hwrail { position: sticky; top: 12px; } } /* stacked above the list, it would cover it */
+.hwjump { display: grid; gap: 1px; min-height: 52px; padding: 6px 14px; text-align: left; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet-2); color: var(--ink); }
+.hwjump:hover { border-color: var(--edge); }
+.hwjump b { font-size: 14px; } .hwjump small { font-size: 11.5px; color: var(--muted); }
+.hwjump.got small { color: var(--ok); }
+.hwlist { flex: 999 1 520px; min-width: 0; overflow: hidden; }
+.hwside { flex: 1 1 clamp(300px, 18vw, 400px); min-width: 0; display: grid; gap: 14px; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
+.hwtop { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 32px; padding: 18px 20px; }
+.hwtop-prog { flex: 999 1 320px; min-width: 0; display: grid; gap: 8px; }
+.hwx { flex: 1 1 200px; display: grid; gap: 8px; }
+.hwx .btn { min-height: 44px; }
+.hwg { scroll-margin-top: 12px; }
 .hwtitle { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
 .hwtitle h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
 .hwtitle .mono, .hwg .mono { color: var(--muted); }
@@ -376,11 +385,8 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .hwbuy .btn { min-height: 44px; display: inline-flex; align-items: center; text-decoration: none; color: var(--ink); }
 .hwrow.got .hwq, .hwrow.got .hwhead, .hwrow.got .hwname, .hwrow.got .hwuse { opacity: .5; }
 .hwrow.got .hwname b { text-decoration: line-through; }
-.hwbox { display: grid; gap: 8px; padding: 16px; }
-.hwbox .btn { min-height: 44px; }
 .btn.big { min-height: 48px; font-size: 15px; font-weight: 700; }
-.hwlegend { grid-template-columns: auto 1fr; align-items: center; gap: 10px 12px; }
-.hwlegend .v3-sec { grid-column: 1 / -1; margin: 0; }
+.hwlegend { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px 12px; font-size: 13.5px; }
 .hwside .pnote { margin: 0 4px; }
 .xtitle { padding: 18px 18px 4px; }
 .xtitle h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
@@ -1889,7 +1895,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   }
 
   // The whole build (Hardware, Assemble), or what Print plans (forPrint: the stacks and loose parts picked there)
-  function computeBuild(forPrint) {
+  function computeBuild(forPrint, leaveOut) {
     const xl = extraLines();
     // Nothing in the build: steps 3 and 4 stay empty rather than planning the unit open in step 1 unasked
     const empty = !towers.length && !xl.length;
@@ -1899,7 +1905,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       const kept = ids.filter(id => printSkip.includes(id));
       if (kept.length !== printSkip.length) { printSkip = kept; savePrintSkip(); }
     }
-    const skip = new Set(forPrint ? printSkip : []);
+    const skip = new Set(forPrint ? printSkip : leaveOut || []); // leaveOut: stacks Hardware's rail leaves out
     let list = towers.filter(t => !skip.has(t.id)), withX = xl.length > 0 && !skip.has('loose');
     const onlyExtras = !list.length && withX, whole = list.length === towers.length && withX === xl.length > 0;
     const all = [], issues = [];
@@ -5904,17 +5910,23 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // Same data as the hardware tables (the rules' hardware, merged). Lines are grouped by what is bought; each says which
   // stacks need it. "Bought" ticks are kept per item.
   let hwBought = store.get('hwBought', {});
+  // Stacks left out of the shopping list (Hardware's rail, like Print's): ids; never all of them
+  let hwSkip = store.get('hwSkip', []);
   const HW_GROUPS = [['M4 bolts', /^M4\b/], ['M6 bolts and inserts', /^M6\b/], ['Axle, rods and bearings', /M16|bearing|collar/i], ['Other', /./]];
   const hwGroupOf = item => HW_GROUPS.find(([, re]) => re.test(item))[0];
   function hardwareList() {
-    const b = computeBuild();
-    if (b.empty) return { b, rows: [] };
-    // Which stacks use each item
+    const kept = hwSkip.filter(id => towers.some(t => t.id === id));
+    if (kept.length >= towers.length) kept.length = 0; // every stack left out: all back in
+    if (kept.length !== hwSkip.length) { hwSkip = kept; store.set('hwSkip', hwSkip); }
+    const b = computeBuild(false, hwSkip);
+    if (b.empty) return { b, rows: [], per: [] };
+    // Each stack's own lines (the rail says how many), and which stacks use each item
+    const per = towers.map(t => ({ t, items: new Set(analyzeTower(t).parts.flatMap(p => p.hardware.map(h => h.item))) }));
     const where = new Map();
-    b.list.forEach(t => analyzeTower(t).parts.forEach(p => p.hardware.forEach(h => {
-      if (!where.has(h.item)) where.set(h.item, new Set());
-      where.get(h.item).add(t.name);
-    })));
+    per.filter(x => b.list.includes(x.t)).forEach(({ t, items }) => items.forEach(item => {
+      if (!where.has(item)) where.set(item, new Set());
+      where.get(item).add(t.name);
+    }));
     const names = b.list.map(t => t.name);
     const whereText = item => {
       const set = where.get(item); if (!set) return '';
@@ -5925,20 +5937,22 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       const qty = h.total, shop = shopOf(h.item);
       return { item: h.item, name: hwItem(h.item), qty, why: h.why, where: whereText(h.item), group: hwGroupOf(h.item), head: headOf(h.item), link: shop.link, store: shop.store, page: shop.page, aff: shop.aff, note: shop.note, bought: !!hwBought[h.item] };
     }).sort((x, y) => HW_GROUPS.findIndex(g => g[0] === x.group) - HW_GROUPS.findIndex(g => g[0] === y.group));
-    return { b, rows };
+    return { b, rows, per };
   }
   const hwText = rows => 'Vault hardware\n' + rows.map(r => `${r.qty}x  ${r.name}  \u2014  ${r.why}${r.where ? ' \u00b7 ' + r.where : ''}${r.bought ? '  [bought]' : ''}`).join('\n');
   const csvCell = v => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
   const hwCsv = rows => ['Bought,Quantity,Item,Used for,Stacks,Store link', ...rows.map(r => [r.bought ? 'yes' : '', r.qty, r.name, r.why, r.where, r.link || ''].map(csvCell).join(','))].join('\r\n');
   function renderHardware() {
-    const { b, rows } = hardwareList();
+    const { b, rows, per } = hardwareList();
     if (b.empty) return emptyStep('view-hardware', 'to buy');
     const V = $('view-hardware');
     const bought = rows.filter(r => r.bought).length, pct = rows.length ? Math.round(bought / rows.length * 100) : 0;
+    const groups = HW_GROUPS.map(([g]) => g).filter(g => rows.some(r => r.group === g));
+    const gid = g => 'hwg-' + HW_GROUPS.findIndex(x => x[0] === g);
     let group = '';
     const list = rows.map(r => {
       let head = '';
-      if (r.group !== group) { group = r.group; head = `<div class="hwg"><h2>${esc(group)}</h2><span class="mono">${plural(rows.filter(x => x.group === group).length, 'line')}</span></div>`; }
+      if (r.group !== group) { group = r.group; head = `<div class="hwg" id="${gid(group)}"><h2>${esc(group)}</h2><span class="mono">${plural(rows.filter(x => x.group === group).length, 'line')}</span></div>`; }
       return head + `<div class="hwrow${r.bought ? ' got' : ''}">
         <label class="hwtick"><input type="checkbox" data-hw-bought="${esc(r.item)}" ${r.bought ? 'checked' : ''} aria-label="${esc(r.name)} bought"></label>
         <span class="hwq num">${r.qty}\u00d7</span>
@@ -5947,38 +5961,55 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <span class="hwuse"><span>${esc(r.why)}</span><small>${esc(r.where)}</small></span>
         <span class="hwbuy">${r.link ? `<a class="btn" href="${esc(r.link)}" data-buy="${esc(r.item)}" target="_blank" rel="${r.aff ? 'sponsored noopener' : 'noopener'}" title="${esc(r.page ? `${r.store}: the product page` : `${r.store}: search for ${shopQuery(r.item)}`)}">${esc(r.store)}</a>` : ''}</span></div>`;
     }).join('');
-    V.innerHTML = `<div class="hwpage">
-      <section class="panel hwlist" aria-label="Shopping list">
-        <div class="hwtop"><div class="hwtitle"><h1>Hardware to buy</h1><span class="mono">${bought} of ${plural(rows.length, 'line')} bought</span></div>
-          <div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
-          <p>Everything that is not printed, for the whole build. Order it while the plates run.</p></div>
-        ${rows.length ? list : '<p class="pp" style="padding:16px 20px">This build needs no bolts or other bought parts.</p>'}
-      </section>
-      <aside class="hwside" aria-label="List options">
-        <div class="panel hwbox"><div class="v3-sec">Bolt finish</div>
-          <div class="seg" role="group" aria-label="Bolt finish">${HW_FINISHES.map(([id, hex, n, sub]) => `<button type="button" data-hwfin="${id}" aria-pressed="${hwFinish() === id}"><span class="dot2" style="background:${hex};vertical-align:-2px;margin-right:6px"></span>${n}<small>${id === 'black' ? 'black' : 'grey'}</small></button>`).join('')}</div>
-          <small class="pnote" style="margin:0">Names the bolts and rods in this list and in the store searches, and colors them in the 3D view (its toolbar button sets it too).${shopStore === 'com' && rows.some(r => r.page && HW_FINISHED.test(r.item)) ? ' Amazon.com product pages stay the original planner’s picks: choose the finish on the page when it offers one.' : ''}</small></div>
-        <div class="panel hwbox"><label class="v3-sec" for="hwShop">Where you buy</label>
+    const storeName = (SHOP_STORES.flatMap(([, l]) => l).find(([id]) => id === shopStore) || [, ''])[1];
+    // Left rail: which stacks the list is for (dark = in it, a click toggles, like Print's), then its groups
+    const rail = `<aside class="drail prail hwrail" aria-label="Hardware for">
+      <div class="v3-sec">Hardware for</div>
+      ${per.map(({ t, items }) => `<button type="button" class="pchip" data-hwskip="${t.id}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(items.size, 'line')}</small></button>`).join('')}
+      <p class="pnote">${!towers.length ? 'Loose parts need no bolts.' : towers.length < 2 ? 'The list holds everything in Design.' : b.list.length === towers.length ? 'The list holds every stack. Click a stack to leave it out.' : 'Only what is highlighted is in the list, the copy and the CSV. Click to put a stack back.'}</p>
+      ${groups.length > 1 ? `<div class="v3-sec">In this list</div>
+      ${groups.map(g => { const gr = rows.filter(r => r.group === g), got = gr.filter(r => r.bought).length; return `<button type="button" class="hwjump${got === gr.length ? ' got' : ''}" data-hwjump="${gid(g)}"><b>${esc(g)}</b><small class="mono">${got} of ${plural(gr.length, 'line')} bought</small></button>`; }).join('')}` : ''}
+    </aside>`;
+    // Right column, like Print's plate options: where you buy, the bolt finish, the head shapes
+    const side = `<aside class="hwside" aria-label="List options"><section class="panel popts">
+      <div class="ihead"><span class="v3-sec">List options</span><h2>${esc(storeName)}</h2><div class="mono">${esc(hwFin()[2])} bolts</div></div>
+      <div class="ibody">
+        <div class="field"><label class="lbl" for="hwShop">Where you buy</label>
           <select class="full" id="hwShop">${SHOP_STORES.map(([cont, list]) => `<optgroup label="${esc(cont)}">${list.map(([id, name, where]) => `<option value="${id}" ${id === shopStore ? 'selected' : ''}>${esc(name)} · ${esc(where)}</option>`).join('')}</optgroup>`).join('')}</select>
           <small class="pnote" style="margin:0">${shopStore === 'com' ? 'Links go to product pages checked against the manual’s sizes and head shapes.' : SHOP_PAGES.some(([, id]) => id === shopStore) ? 'Some bolts open a product page in the chosen finish: pick the length there. Other links search this store for the same size, head shape and standard.' : 'Links search this store for the same size, head shape and standard.'} Any store with the same sizes will do.</small>
           ${rows.some(r => r.aff) ? `<small class="pnote aff" style="margin:0">${esc(shopDisclosure(shopStore))}</small>` : ''}</div>
-        <div class="panel hwbox">
-          <button type="button" class="btn primary big" id="hwCopy">Copy the list</button>
-          <button type="button" class="btn" id="hwCsv">Export as CSV</button>
-        </div>
-        ${rows.some(r => r.head) ? `<div class="panel hwbox hwlegend"><div class="v3-sec">Match the head shape</div>
+        <div class="field"><div class="lbl">Bolt finish</div>
+          <div class="seg" role="group" aria-label="Bolt finish">${HW_FINISHES.map(([id, hex, n, sub]) => `<button type="button" data-hwfin="${id}" aria-pressed="${hwFinish() === id}"><span class="dot2" style="background:${hex};vertical-align:-2px;margin-right:6px"></span>${n}<small>${id === 'black' ? 'black' : 'grey'}</small></button>`).join('')}</div>
+          <small class="pnote" style="margin:0">Names the bolts and rods in this list and in the store searches, and colors them in the 3D view (its toolbar button sets it too).${shopStore === 'com' && rows.some(r => r.page && HW_FINISHED.test(r.item)) ? ' Amazon.com product pages stay the original planner’s picks: choose the finish on the page when it offers one.' : ''}</small></div>
+        ${rows.some(r => r.head) ? `<div class="field"><div class="lbl">Match the head shape</div><div class="hwlegend">
           ${headIcon('button-head')}<span><b>Button head</b>, domed</span>
           ${headIcon('countersunk')}<span><b>Countersunk</b>, flat and flush</span>
-          ${headIcon('hex bolt')}<span><b>Hex head</b>, for a wrench</span></div>` : ''}
-      </aside></div>`;
+          ${headIcon('hex bolt')}<span><b>Hex head</b>, for a wrench</span></div></div>` : ''}
+      </div></section></aside>`;
+    V.innerHTML = `<div class="hwpage">${rail}
+      <section class="panel hwlist" aria-label="Shopping list">
+        <div class="hwtop"><div class="hwtop-prog"><div class="hwtitle"><h1>Hardware to buy</h1><span class="mono">${bought} of ${plural(rows.length, 'line')} bought</span></div>
+          <div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
+          <p>Everything that is not printed, for ${b.list.length < towers.length ? esc(b.list.map(t => t.name).join(', ')) : towers.length === 1 ? esc(towers[0].name) : 'the whole build'}. Order it while the plates run.</p></div>
+          ${rows.length ? `<div class="hwx"><button type="button" class="btn primary big" id="hwCopy">Copy the list</button><button type="button" class="btn" id="hwCsv">Export as CSV</button></div>` : ''}</div>
+        ${rows.length ? list : '<p class="pp" style="padding:16px 20px">This build needs no bolts or other bought parts.</p>'}
+      </section>
+      ${side}</div>`;
     V.querySelectorAll('[data-hw-bought]').forEach(cb => cb.onchange = () => {
       if (cb.checked) hwBought[cb.dataset.hwBought] = 1; else delete hwBought[cb.dataset.hwBought];
       store.set('hwBought', hwBought); renderHardware(); renderTabs();
     });
+    V.querySelectorAll('[data-hwskip]').forEach(btn => btn.onclick = () => {
+      const id = +btn.dataset.hwskip, on = btn.getAttribute('aria-pressed') === 'true';
+      if (on && b.list.length === 1) { toast('Keep at least one stack in the list'); return; }
+      hwSkip = [...hwSkip.filter(x => x !== id), ...(on ? [id] : [])]; store.set('hwSkip', hwSkip);
+      renderHardware();
+    });
+    V.querySelectorAll('[data-hwjump]').forEach(btn => btn.onclick = () => { const g = $(btn.dataset.hwjump); if (g) g.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); });
     $('hwShop').onchange = e => { shopStore = e.target.value; store.set('shopStore', shopStore); renderHardware(); };
-    $('hwCopy').onclick = () => copy(hwText(rows), 'Hardware list copied');
+    if ($('hwCopy')) $('hwCopy').onclick = () => copy(hwText(rows), 'Hardware list copied');
     V.querySelectorAll('[data-hwfin]').forEach(b => b.onclick = () => { setHwFinish(b.dataset.hwfin); renderHardware(); });
-    $('hwCsv').onclick = () => {
+    if ($('hwCsv')) $('hwCsv').onclick = () => {
       const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob(['\ufeff' + hwCsv(rows)], { type: 'text/csv' })), download: 'Vault hardware.csv' });
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     };
