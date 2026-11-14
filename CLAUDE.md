@@ -325,6 +325,18 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   copies, page's life), `copySel(t, i)` / `pasteClip(t, i)` (also in the level and stack menus); a pasted level goes
   through `levelTo` (the footprint per level, shared with `setFootprint`).
 
+- Several levels selected (Dols, 2026-11-14, branch `claude/project-thread-jku6bd`): Ctrl/Cmd + click and Shift + click in
+  the 3D view no longer open drawers (double-click, O, the menu do); with Select they pick levels of the stack shown
+  (`selectLevels`: 'add', 'range', 'addRange'). `dsel.m = { l, a, s }` (last clicked, Shift's anchor, levels);
+  `multiSel(t)` gives the levels only while `m.l === dsel.l` and drops a stale one, so any gesture that selects one
+  level, the stack's settings or another stack ends it (the sites that set `dsel.l` also `delete dsel.m`); the load's
+  sanitizer drops it, undo keeps it. `setLevels`, `selLevels`, `levelsName` ("Levels 1, 3 and 4"). `multiInspector`
+  shows only the settings every module of every selected level has, with the options all can take; a value that
+  differs: no button pressed and a "Mixed" pill; a change goes to every module (every drawer of a module holding
+  several, for `R.INSIDE` keys) with `undoAs`, one Undo. `levelsOp` (up, down, dup, dupBelow, del), `openLevels`,
+  `levelsMenu`; `keyDesign`, `copySel` and `pasteClip` (clip `lvs`: several levels) take the selection.
+  `v3mark` outlines every selected level. Rules: `docs/ux-redesign.md`, "Several levels selected".
+
 - Undo (UX audit 2026-11, session 1, branch `claude/undo`): section "undo" next to `store` in `src/template.html`.
   `save()`, `saveColors()`, `saveExtras()` and `saveSel()` call `undoNote()`; at the end of the task `undoCommit`
   compares `[towers, seq, colorPrefs, extras]` as JSON with the last state kept and, when it differs, pushes the state
