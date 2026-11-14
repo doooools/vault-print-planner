@@ -225,8 +225,8 @@ They came from the audit but were on no mockup. Dols answered them on 2026-11-14
   stack was picked counts for any picked stack that uses that file, and the plates of the selection are planned for
   what is still missing. Measured on "Workbench stack" + "Rolling tool cart": 22 of 184 parts printed with both
   picked (6 plates); the Workbench alone then reads 16 of 75 parts and "10 of 10 plates left", the cart alone 15 of
-  109 (16 + 15 > 22: their shared M5 files count for both). Keeping progress per stack would change what `printed`
-  stores; asked to Dols on 2026-11-14, not done in session 2.
+  109 (16 + 15 > 22: their shared M5 files count for both). **Kept per part file** (Dols, 2026-11-14): a printed
+  part serves any picked stack that uses it, as the plates already assume. No change for session 6.
 
 ## Rules of `ux-redesign.md` this brief changes
 
