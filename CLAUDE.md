@@ -19,7 +19,8 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
 - UX audit of 2026-11-14: `docs/ux-audit-2026-11.md` (decisions, eight sessions, open points, findings A1…X4) and its
   mockups in `docs/ux-audit-mockups/`. Where it disagrees with `docs/ux-redesign.md`, the audit wins. Its four open
   points were answered by Dols on 2026-11-14 (written in the brief). Session 2 (fixes without a mockup: A4, A6, B1,
-  B6, C2, D7, D8, E1, E4, E5) is done on its branch.
+  B6, C2, D7, D8, E1, E4, E5) is done on its branch. Session 3 (the 3D view: hover, right-click menus, "⋯", one-line
+  hint, "Bolts" swatches, "?"; A1, A2, A3, A4, A5, A6) is done on its branch.
 - What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file
   `3d/stl-absents-de-la-3d.md`.
 
@@ -76,7 +77,15 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   One view since step 3 of `docs/colors-3d-redesign.md` (`open3d`):
   toolbar `v3tools` (Turn: a click selects; Paint: brush bar with the tray's colours, "More…" adds one, "Whole
   stack" / "This module only", hover tints what a click would paint via `v.hot`; Drawers: a click opens or closes a
-  drawer), the first framing from three quarters (`V3_DIR`, `v.aim`; the Front / ¾ / Side buttons went on 2026-11-14), "Spread levels" and "Hide roof" (`v.arrange`). Side column `v3side`:
+  drawer), the first framing from three quarters (`V3_DIR`, `v.aim`; the Front / ¾ / Side buttons went on 2026-11-14), "Spread levels" and "Hide roof" (`v.arrange`, which no longer reframes: the camera never moves by itself), "Bolts" (two swatches) and "?" (`v3ui.help`: drag, scroll, right-drag).
+  UX audit session 3: with Select, `hoverOn` outlines the level under the pointer and names it in `.v3-hover` (placed
+  from its projected box, `placeTip`, again on every camera change); a right-click (button 2 let go within 5 px,
+  `rightAt`) on a level selects it and opens `levelMenu` (open or close via `v.openable` / `v.toggle`, add a copy
+  above / below: `levelOp` 'dup' / 'dupBelow', move, remove in one click with `undoAs`), elsewhere `stackMenu` (Fit
+  the stack in the view = `v.aim(null)`, the only reframing; Add a level on top; Stack settings). Menus: `menuOpen` /
+  `menuClose`, one `.vmenu[role=menu]` in `<body>`, closed by `v3park`, `close3d`, the panel redrawn, a scroll or the
+  camera moving. The level panel's header has Level below / Level above (`data-lgo`, the selection moves) and "⋯"
+  (`data-lmenu`, the same menu); its up / down / duplicate / remove buttons went. Side column `v3side`:
   "Selected" card (`v3sel`, "Change color…" opens the picker, "Back to the project color"), units top to bottom
   (`v3list`: progress, role swatches ringed when the unit has its own). `v3paint` writes the colour; `v3owner` says
   whose `cfg.colors` a part's own colour goes in (a roof's parts are its unit's).
@@ -149,8 +158,8 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   holes each bolt goes in and writes `hardware: [[spec, group, m, {part, why}]]` per unit plus `hardware_sizes` (ISO
   sizes) into `stl-placements.json`; rerun it after every export. The page makes the bolts from the sizes
   (`hwProfile`/`hwRevolve`, section "hardware" in `src/template.html`), draws each with the part that holds it (`part`),
-  in its group; always shown (Dols, 2026-11-13: the old "Bolts" show/hide toggle is gone); the toolbar button (`data-v3fin`)
-  switches the build's bolt finish, raw steel (black) or zinc-plated / stainless (grey), saved in `colorPrefs.hardware`
+  in its group; always shown (Dols, 2026-11-13: the old "Bolts" show/hide toggle is gone); the toolbar's "Bolts" swatches
+  (`data-v3fin="black"` / `"zinc"`, `aria-pressed` on the one in use; UX audit session 3) set the build's bolt finish, raw steel (black) or zinc-plated / stainless (grey), saved in `colorPrefs.hardware`
   (`hwFinish`/`setHwFinish`; Hardware's "Bolt finish" and the "Selected" card set the same one). It also names the
   bolts and rods in Hardware (`hwItem`) and goes into the store searches (`shopQuery`); Amazon.com product pages stay
   as they are. Not a filament role: plates and the tray ignore it. The grid roof's top handle now stands
