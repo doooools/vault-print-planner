@@ -275,6 +275,11 @@ Placements are matched to the unit's lines by file path; parts with no placement
 part the planner lists is placed now but a few (springs, L² accessories…): `tools/placements/COVERAGE.md`.
 
 ## Gotchas met in the page
+- Stacks, colours, loose parts and the selection are rebuilt on every load and on opening a design file
+  (`plainTowers`, `plainColors`, `plainExtras`, `plainData` near `clean`): a design file is anyone's JSON and once put
+  HTML into the page (PR #50). A unit's or stack's string survives only as a plain word (`SAFE_STR`: letters, digits,
+  `.,:#+-/()²` and spaces), keys likewise; names are free text, escaped where shown. A new saved field that needs other
+  characters needs its own rule there, or it is dropped on the next load.
 - Claude desktop's built-in browser can't hand a folder to a page (`showDirectoryPicker` aborts at once and the
   folder upload field reports a cancel). Test with real files in Chrome or Firefox.
 - The biggest STL are ~215 MB (L7 Module 2F, 4.3M triangles). Simplifying several at once in one tab ran it out of
