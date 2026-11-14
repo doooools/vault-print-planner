@@ -156,7 +156,9 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   stores). A tick box marks an item of a list (plates, hardware bought, assembly steps), never a
   setting (Dols, 2026-11-14: "on enlève tout ce qui se coche"). What to print is a choice, not a list to tick: each
   stack (and the loose parts) is a button in Print's rail, dark when it is in the plates, plain when it is left out,
-  a click toggles it; the last one in stays in (a toast says so). A case's floor is Empty / Dividers / Gridfinity
+  a click toggles it. Nothing picked is allowed: no plates, "Nothing picked to print" in the middle (Dols,
+  2026-11-14). The plate options' clear button takes only what is picked: "Clear all plates" when everything is,
+  else "Remove <stack>" / "Remove N stacks" (they leave Design), "Clear loose parts"; none when nothing is picked. A case's floor is Empty / Dividers / Gridfinity
   (`caseFloor`; Empty sets `caseEmpty`, which keeps the dividers placed but counts none); a drawer's grid dividers
   "At a wall": Divider alone / Closed (recommended).
 - **Headings**: each step's main title is 28 px display (`.dtitle`, `.ptop-prog`, `.hwtitle`, `.asm-title`, `.xtitle`);
