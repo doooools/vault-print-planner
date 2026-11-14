@@ -795,6 +795,15 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 .xitem .lbl b { font-stretch: 105%; }
 .xitem .tag, .xitem .badge { margin-left: 4px; }
 .xhead { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding-top: 4px; border-top: 1px solid var(--line); padding-block: 10px 2px; }
+/* Print's "Already printed": the rail's button, then the list in place of the plate sheet */
+.prail .phbtn { width: 100%; margin-top: 10px; }
+.hitem .hcol { margin-left: 6px; padding: 1px 8px 1px 4px; font-size: 12px; vertical-align: 1px; }
+.hitem .hcol .dot2 { width: 12px; height: 12px; }
+.hadd { display: flex; gap: 6px; align-items: center; }
+.hadd .pnote { margin: 0; white-space: nowrap; }
+.hwarn { color: var(--warn); font-weight: 600; }
+.hitem.off .lbl b { color: var(--muted); }
+.stepper button:disabled { opacity: .35; cursor: default; }
 .gprog { margin: 10px 18px 0; display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
 .gprog[hidden] { display: none; }
 .linkbtn { border: 0; background: none; color: var(--accent); font-size: 12px; font-weight: 600; padding: 4px 0 0; text-decoration: underline; text-underline-offset: 2px; display: block; margin-left: auto; }
@@ -1037,12 +1046,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // undoes, Ctrl/Cmd + Y or Ctrl/Cmd + Shift + Z redoes (not while typing in a field: the browser's own undo works
   // there). In memory only, 50 entries: a reload or a design file opened starts afresh. The camera stays (open3d keeps
   // it for the same stack). Print's progress (printed, plateState) is kept in an entry only when the gesture asks for
-  // it (undoAs(…, true): "Reset all progress", "Clear" in Print).
+  // it (undoAs(…, true): "Reset all progress", "Clear" in Print's "Already printed"), with the parts declared there (onHand).
   const UNDO_MAX = 50;
   const undo = { on: false, applying: false, timer: 0, base: '', sel: 'null', label: '', prog: null, past: [], next: [] };
   const undoSnap = () => JSON.stringify([towers, seq, colorPrefs, extras]);
   const undoSelNow = () => JSON.stringify({ sel: dsel, skip: printSkip, hw: hwSkip });
-  const progSnap = () => JSON.stringify([printed, plateState]);
+  const progSnap = () => JSON.stringify([printed, plateState, onHand]);
   function undoNote() { if (undo.on && !undo.applying && !undo.timer) undo.timer = setTimeout(undoCommit); }
   // Name the coming change (the undo message); withProgress: Print's progress is part of it
   function undoAs(label, withProgress) {
@@ -1080,7 +1089,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const d = aux.sel;
       dsel = !d ? null : d.t === 'loose' || towers.some(t => t.id === d.t) ? d : towers[0] ? { t: towers[0].id, l: null, u: 0 } : null;
       if (dsel && Number.isInteger(dsel.l)) { const t = towers.find(x => x.id === dsel.t); if (!t || dsel.l >= t.levels.length) { dsel.l = t && t.levels.length ? t.levels.length - 1 : null; dsel.u = 0; delete dsel.d; } }
-      if (st.p != null) { [printed, plateState] = JSON.parse(st.p); store.set('printed', printed); store.set('plateState', plateState); }
+      if (st.p != null) { [printed, plateState, onHand = {}] = JSON.parse(st.p); store.set('printed', printed); store.set('plateState', plateState); saveHave(); }
       gpend = null;
       save(); saveColors(); saveExtras(); saveSel();
       renderAll();
@@ -1241,6 +1250,19 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   let labelsApart = store.get('labelsApart', true); // labels on a plate of their own
   let mixSupports = store.get('mixSupports', false); // parts that need supports share plates with the rest
   let printed = store.get('printed', {});   // path -> pieces already printed
+  // Parts printed before, declared by hand in Print's "Already printed" list (Dols, 2026-11-14): progress key -> pieces.
+  // They count as printed (have) and come off the plates, like plates marked printed, but are kept apart from `printed`
+  // so the list shows only what was declared and a plate marked printed keeps its own count. Per part, as `printed`:
+  // a part declared counts in every stack that uses it. Only what the build needs counts (min with the line's total).
+  let onHand = plainHave(store.get('onHand', {}));
+  const saveHave = () => store.set('onHand', onHand);
+  const have = k => (printed[k] || 0) + (onHand[k] || 0);
+  function plainHave(o) {
+    const r = {};
+    if (o && typeof o === 'object' && !Array.isArray(o))
+      for (const [k, v] of Object.entries(o)) if (k.length < 600 && Number.isInteger(v) && v > 0 && v < 1e5) r[k] = v;
+    return r;
+  }
   // Plate numbers stay put as plates are marked printed, so they keep matching a project made earlier. Plates are
   // packed from everything except `base` (parts printed before the current plan was made); plates marked printed
   // since are kept by number and contents in `done`. Any other change (build, printer, settings) starts a new plan.
@@ -1879,7 +1901,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     let total = 0, done = 0, g = 0, gDone = 0;
     lines.forEach(l => {
       if (l.fit.s === 'no' || l.fit.s === 'reorient') return;
-      const n = Math.min(l.total, printed[pkey(l)] || 0), w = gramsOf(l.file);
+      const n = Math.min(l.total, have(pkey(l))), w = gramsOf(l.file);
       total += l.total; done += n; g += l.total * w; gDone += n * w;
     });
     return { total, done, g, gDone };
@@ -3398,7 +3420,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const rowStart = y => (ex && y < KY ? KX : MARGIN);
     const pieces = [], skipped = [];
     lines.forEach(l => {
-      const left = Math.max(0, l.total - ((base || printed)[pkey(l)] || 0));
+      const left = Math.max(0, l.total - (base ? base[pkey(l)] || 0 : have(pkey(l))));
       for (let i = 0; i < left; i++) {
         // Parts that would only fit tipped onto another face are left out too: a drawer box printed on its side
         // needs heavy supports and is weak along its layers, and as exported it would hang off the plate
@@ -3593,12 +3615,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         pl.done = true; pool.splice(i, 1);
         pl.lines.forEach(x => { want[pkey(x.l)] += x.count; });
       });
-      // The plan still holds if every printed part is accounted for by the base or a plate marked printed
-      return !pool.length && keys.every(k => want[k] === (printed[k] || 0)) ? r : null;
+      // The plan still holds if every printed part is accounted for by the base or a plate marked printed. Parts
+      // declared already printed are in the base: changing them lays the plates out again.
+      return !pool.length && keys.every(k => want[k] === have(k)) ? r : null;
     };
     let st = plateState[scope] || { base: {}, done: [] }, r = tryPlan(st);
     if (!r) {
-      st = { base: Object.fromEntries(keys.filter(k => printed[k]).map(k => [k, printed[k]])), done: [] };
+      st = { base: Object.fromEntries(keys.filter(k => have(k)).map(k => [k, have(k)])), done: [] };
       r = tryPlan(st);
     }
     plateState[scope] = st; store.set('plateState', plateState);
@@ -3628,6 +3651,50 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // Print's and Hardware's rails write each stack's state in words, not only by its fill (UX audit D6)
   const railState = (on, inWord) => `<small class="pstate">${on ? inWord : 'Left out'}</small>`;
   const plateNote = (pl, next) => pl.done ? 'Printed' : next ? 'Up next' : pl.color === 'tpu' ? 'TPU settings' : pl.supports ? 'Supports on' : pl.someSup ? 'Supports on ' + (pl.someSup === pl.items.length ? 'all' : pl.someSup) : '';
+  // ---------- Already printed: parts printed before, declared by hand (onHand) ----------
+  // Shown in place of the plate sheet while the rail's "Already printed" button is on (printHave, for the page's life).
+  // It offers only the parts on these plates: the lines of the stacks picked in the rail that fit the printer.
+  let printHave = false, hq = '', hScroll = 0;
+  const haveLines = lines => lines.filter(l => l.fit.s !== 'no' && l.fit.s !== 'reorient');
+  // Pieces of a line still free to declare: the build's count less the plates marked printed and the list's
+  const haveRoom = l => Math.max(0, l.total - Math.min(l.total, printed[pkey(l)] || 0) - (onHand[pkey(l)] || 0));
+  const partColor = l => l.tpu ? 'tpu' : l.color;
+  const haveTag = l => `<span class="ftag hcol"><span class="dot2" style="background:${colorHex(partColor(l))}"></span>${esc(colorName(partColor(l)).split(' \u00b7 ')[0])}</span>`;
+  // A key declared that no line of these plates has (a stack left out or changed): named from the key itself
+  const haveName = k => { const m = /^(?:extra:)?(.*?)(?:#([^#/]*))?$/.exec(k), f = FILE_BY_PATH.get(m[1]);
+    return (f ? niceName(m[1]) : fileName(m[1]).replace(/\.stl$/i, '')) + (m[2] ? ' \u00b7 ' + colorName(m[2]).split(' \u00b7 ')[0] : ''); };
+  function haveItem(l) {
+    const k = pkey(l), h = onHand[k] || 0, p = Math.min(l.total, printed[k] || 0), room = haveRoom(l);
+    return `<div class="pitem xitem hitem">${thumb(l, 'sm')}<span class="lbl"><b>${esc(l.label)}</b>${haveTag(l)}<small class="mono">${esc(fileName(l.file.path))} \u00b7 ${l.total} in these plates${p ? ` \u00b7 ${p} on plates marked printed` : ''}${h ? ` \u00b7 <span class="xin">${h} in your list</span>` : ''}</small></span>
+      <span class="hadd">${room ? `<button type="button" class="btn" data-hadd="${esc(k)}" data-n="1">Add</button>${room > 1 ? `<button type="button" class="btn" data-hadd="${esc(k)}" data-n="${room}" title="Add the ${room} left to print">All ${room}</button>` : ''}` : '<span class="pnote">All printed</span>'}</span></div>`;
+  }
+  function haveResults(lines) {
+    const q = hq.trim().toLowerCase(), toks = q.length < 2 ? [] : q.split(/\s+/);
+    const hits = haveLines(lines).filter(l => { const hay = (l.label + ' ' + l.file.path + ' ' + l.group + ' ' + colorName(partColor(l))).toLowerCase(); return toks.every(t => hay.includes(t)); });
+    if (!hits.length) return `<p class="pnote">${toks.length ? 'No part of these plates matches. Try fewer words.' : 'No parts on these plates.'}</p>`;
+    const groups = [];
+    hits.forEach(l => { let g = groups.find(g => g.name === l.group); if (!g) groups.push(g = { name: l.group, items: [] }); g.items.push(l); });
+    return (toks.length ? `<p class="pnote xcount">${plural(hits.length, 'part')} match.</p>` : '') + groups.map(g => `<div class="xhead">${esc(g.name)}</div>${g.items.map(haveItem).join('')}`).join('');
+  }
+  function havePanel(lines) {
+    const byKey = new Map(haveLines(lines).map(l => [pkey(l), l]));
+    const rows = Object.keys(onHand).map(k => ({ k, l: byKey.get(k), n: onHand[k] })).sort((a, b) => !a.l - !b.l);
+    const stepper = (k, n, name, more) => `<span class="stepper" style="padding:4px 4px 4px 10px">\u00d7<div><button type="button" data-hstep="${esc(k)}" data-d="-1" aria-label="Fewer ${esc(name)}">\u2212</button><output>${n}</output><button type="button" data-hstep="${esc(k)}" data-d="1" aria-label="More ${esc(name)}" ${more ? '' : 'disabled'}>+</button></div></span>`;
+    const row = ({ k, l, n }) => {
+      if (!l) return `<div class="pitem xitem hitem off"><span class="thumb sm none"></span><span class="lbl"><b>${esc(haveName(k))}</b><small class="mono">Not on these plates: its stack is left out, or no longer uses it</small></span>${stepper(k, n, haveName(k), false)}</div>`;
+      const p = Math.min(l.total, printed[k] || 0), over = n + p - l.total;
+      return `<div class="pitem xitem hitem">${thumb(l, 'sm')}<span class="lbl"><b>${esc(l.label)}</b>${haveTag(l)}<small class="mono">${esc(fileName(l.file.path))} \u00b7 ${l.total} in these plates${p ? ` \u00b7 ${p} on plates marked printed` : ''}${over > 0 ? ` \u00b7 <span class="hwarn">${over} more than these plates need</span>` : ''}</small></span>${stepper(k, n, l.label, haveRoom(l) > 0)}</div>`;
+    };
+    return `<section class="panel phave" aria-label="Already printed">
+      <div class="xtitle"><h1>Already printed</h1></div>
+      <p class="pp">Parts you printed before, or have from another build. They count as printed and come off the plates. The plates left are laid out again without them, so their numbers can change: download the project again after. Only the parts on these plates are offered.</p>
+      <div class="xsearch"><input id="hq" type="search" placeholder="Search the parts on these plates\u2026" value="${esc(hq)}" autocomplete="off" aria-label="Search the parts on these plates"></div>
+      <div class="xresults" id="hresults" tabindex="-1">${haveResults(lines)}</div>
+      ${rows.length ? `<div class="xlist"><div class="xhead">Your parts already printed</div>${rows.map(row).join('')}
+        <div class="actions" style="padding-top:8px"><button type="button" class="btn primary" id="hBack">Back to the plates</button><button type="button" class="btn" id="hClear">Clear</button></div></div>`
+        : `<div class="xlist"><div class="actions"><button type="button" class="btn" id="hBack">Back to the plates</button></div></div>`}
+    </section>`;
+  }
   function renderPrint() {
     const b = computeBuild(true);
     if (b.empty) return emptyStep('view-print', 'to print');
@@ -3720,6 +3787,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // Nothing picked in the rail: no plates, an empty state in the middle. Print removes nothing: stacks and loose parts
     // are removed in Design (Dols, 2026-11-14, UX audit D7).
     const none = !b.list.length && !b.extras;
+    if (none) printHave = false;
+    // Pieces of these plates taken off by the "Already printed" list
+    const nHave = haveLines(b.lines).reduce((a, l) => a + Math.min(onHand[pkey(l)] || 0, l.total), 0);
     const opts = `<section class="panel popts" aria-label="Plate options">
       <div class="ihead"><span class="v3-sec">Plate options</span><h2>${plural(allPlates.length, 'plate')}</h2><div class="mono">${esc(printerShort())} · ${printer.v[0]} × ${printer.v[1]} mm bed</div></div>
       <div class="ibody">
@@ -3733,7 +3803,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <aside class="drail prail" role="group" aria-label="What to print"><div class="v3-sec">What to print</div>
         ${towers.map(t => `<button type="button" class="pchip" data-pskip="${esc(t.id)}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small>${railState(b.list.includes(t), 'In the plates')}</button>`).join('')}
         ${extras.length ? `<button type="button" class="pchip" data-pskip="loose" aria-pressed="${b.extras > 0}"><b>Loose parts</b><small class="mono">${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small>${railState(b.extras > 0, 'In the plates')}</button>` : ''}
-        <p class="pnote">${none ? 'Nothing is picked. Click a stack to print it.' : towers.length + (extras.length ? 1 : 0) < 2 ? 'Everything in Design is in these plates.' : 'Click a stack to put it in the plates or leave it out.'}</p></aside>
+        <p class="pnote">${none ? 'Nothing is picked. Click a stack to print it.' : towers.length + (extras.length ? 1 : 0) < 2 ? 'Everything in Design is in these plates.' : 'Click a stack to put it in the plates or leave it out.'}</p>
+        ${none ? '' : `<button type="button" class="dloose phbtn" data-phave aria-pressed="${printHave}"><span class="v3-sec">Already printed</span><span>${nHave ? `${plural(nHave, 'part')} taken off the plates` : 'Parts you printed before, to take off the plates. None yet.'}</span></button>`}</aside>
       <div class="pmain">
       ${none ? `<section class="panel pnone" aria-label="Plates"><p><strong>Nothing picked to print.</strong> Click a stack on the left to print it.</p></section>` : `
       <section class="panel ptop" aria-label="Progress and export">
@@ -3742,13 +3813,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="ptop-x">${exportBtn}${canMake && target.length ? `<button type="button" class="xbtn alt" id="gFolders"><b>STL folders (.zip)</b><span class="mono">for any other slicer</span></button>` : ''}</div>
         <div class="gprog" id="gProg" hidden><div class="bar"><i></i></div><span></span></div>
       </section>
-      ${alerts}
+      ${printHave ? havePanel(b.lines) : `${alerts}
       <div class="fchips" role="group" aria-label="Show plates for a filament">${chips}</div>
       ${selBar}
       <section class="psheet" aria-label="Plates">${sheet || '<p class="pnote">No plates here.</p>'}</section>
       <details class="panel fold"><summary>All parts in this build <small>${s.prints} parts · ${s.files} files</small></summary>
         <div class="parts">${partRows(b.lines)}</div>
-        <div class="actions" style="padding:0 18px 16px"><button class="btn" id="copyAll">Copy part list</button></div></details>
+        <div class="actions" style="padding:0 18px 16px"><button class="btn" id="copyAll">Copy part list</button></div></details>`}
       `}
       </div>
       <div class="pside">${detail}${opts}</div></div>`;
@@ -3797,7 +3868,33 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (key === 'printAids') { printAids = on; store.set('manualSupports', on); }
       renderPrint();
     });
-    holdButton($('resetPrinted'), () => { undoAs('Progress reset', true); printed = {}; store.set('printed', printed); renderPrint(); renderTabs(); }, 'Hold the button down to reset all progress');
+    // Already printed: the rail's button shows the list in place of the sheet; Add, All N and the steppers change it
+    V.querySelectorAll('[data-phave]').forEach(btn => btn.onclick = () => { printHave = !printHave; renderPrint(); });
+    if ($('hBack')) $('hBack').onclick = () => { printHave = false; renderPrint(); };
+    const hLine = k => b.lines.find(l => pkey(l) === k);
+    const haveSet = (k, n) => { if (n > 0) onHand[k] = n; else delete onHand[k]; saveHave(); renderPrint(); renderTabs(); };
+    V.querySelectorAll('[data-hstep]').forEach(btn => btn.onclick = () => {
+      const k = btn.dataset.hstep, l = hLine(k), d = +btn.dataset.d;
+      if (d > 0 && (!l || !haveRoom(l))) return;
+      haveSet(k, (onHand[k] || 0) + d);
+    });
+    const hres = $('hresults');
+    if (hres) {
+      const inp = $('hq');
+      inp.oninput = () => { const was = hq.trim().length >= 2; hq = inp.value; hres.innerHTML = haveResults(b.lines); if (was !== hq.trim().length >= 2) hres.scrollTop = 0; };
+      hres.scrollTop = hScroll;
+      hres.onscroll = () => { hScroll = hres.scrollTop; };
+      // Delegated: the results are redrawn as the search changes
+      hres.onclick = e => {
+        const a = e.target.closest('[data-hadd]'); if (!a) return;
+        const k = a.dataset.hadd, l = hLine(k); if (!l) return;
+        const n = Math.min(+a.dataset.n || 1, haveRoom(l)); if (!n) return;
+        haveSet(k, (onHand[k] || 0) + n);
+        toast(`${l.label}: ${onHand[k]} already printed`);
+      };
+    }
+    holdButton($('hClear'), () => { undoAs('Already printed list cleared', true); onHand = {}; saveHave(); renderPrint(); renderTabs(); }, 'Hold the button down to clear the list');
+    holdButton($('resetPrinted'), () => { undoAs('Progress reset', true); printed = {}; store.set('printed', printed); onHand = {}; saveHave(); renderPrint(); renderTabs(); }, 'Hold the button down to reset all progress');
     if ($('copyAll')) $('copyAll').onclick = () => copy(listText(b.lines, 'Vault build'), 'Part list copied');
     if ($('gMake')) $('gMake').onclick = () => hasFolder ? makeDownload(target, false, 'project') : openFolder(false);
     if ($('gFolders')) $('gFolders').onclick = () => makeDownload(target, false, 'folders');

@@ -126,6 +126,12 @@ Today's "Extra parts" (`extrasPanel`), as an entry of the rail: search among the
   right under it (then selects the next unprinted plate), its tags, the large nesting with numbered parts, the numbered
   part list with file name and settings (walls, supports).
 - Plate options, under the selected plate in the right column (Dols, 2026-11-14, "double bandeau" like Design: a rail on the left, a column of settings on the right), always shown: one folded line per setting with its value (`popt`: "Parts with supports · plates of their own"), which opens on its segmented buttons: "Parts with supports" (`mixSupports`), "Manual supports" (`printAids`), "Labels" (`labelsApart`); then the folded "How plates are laid out" text and "Reset all progress" on one row (no clear button since UX audit D7). It was a "Plate options…" popover before.
+- Already printed (Dols, 2026-11-14): under the rail's stacks, a dashed button "Already printed" (like Design's
+  "Loose parts") shows, in place of the filters and the sheet, a list of parts printed before: search among the parts
+  on these plates only (the picked stacks' lines that fit the printer), "Add" or "All N" on each, then "Your parts
+  already printed" with a stepper per part (no more than the plates need), "Back to the plates" and "Clear" (press and
+  hold, with "Undo"). They count as printed and come off the plates, which are laid out again without them. Kept per
+  part like the plates' progress (`onHand`, apart from `printed`); "Reset all progress" clears them too.
 - States in `PrintStates.dc.html`: printer without a Bambu preset, folder not chosen, parts missing from the folder (today's "not found in" errors, shown before the download starts), parts that no longer fit after a change of printer.
 
 ### 3 · Hardware
