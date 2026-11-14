@@ -17,7 +17,9 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   wording still hold. Its "Open points" and "Later" are what is left of it (store links, an XL 1F level asked for 2F,
   animated GIFs in Assemble). `docs/colors-3d-redesign.md` is history.
 - UX audit of 2026-11-14: `docs/ux-audit-2026-11.md` (decisions, eight sessions, open points, findings A1…X4) and its
-  mockups in `docs/ux-audit-mockups/`. Where it disagrees with `docs/ux-redesign.md`, the audit wins.
+  mockups in `docs/ux-audit-mockups/`. Where it disagrees with `docs/ux-redesign.md`, the audit wins. Its four open
+  points were answered by Dols on 2026-11-14 (written in the brief). Session 2 (fixes without a mockup: A4, A6, B1,
+  B6, C2, D7, D8, E1, E4, E5) is done on its branch.
 - What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file
   `3d/stl-absents-de-la-3d.md`.
 
@@ -72,9 +74,9 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   drops a model's scene; `v3ui` carries tools and camera direction over. The `#v3d` dialog ("3D view, enlarged") is
   still in the page and `v3sync` still honours it, but nothing opens it any more.
   One view since step 3 of `docs/colors-3d-redesign.md` (`open3d`):
-  toolbar `v3tools` (Turn: a click selects; Paint: brush bar with the tray's colours, "More…" adds one, "Same part
-  everywhere" / "This unit only", hover tints what a click would paint via `v.hot`; Drawers: a click opens or closes a
-  drawer), the first framing from three quarters (`V3_DIR`, `v.aim`; the Front / ¾ / Side buttons went on 2026-11-14), "Spread units" and "Hide roof" (`v.arrange`). Side column `v3side`:
+  toolbar `v3tools` (Turn: a click selects; Paint: brush bar with the tray's colours, "More…" adds one, "Whole
+  stack" / "This module only", hover tints what a click would paint via `v.hot`; Drawers: a click opens or closes a
+  drawer), the first framing from three quarters (`V3_DIR`, `v.aim`; the Front / ¾ / Side buttons went on 2026-11-14), "Spread levels" and "Hide roof" (`v.arrange`). Side column `v3side`:
   "Selected" card (`v3sel`, "Change color…" opens the picker, "Back to the project color"), units top to bottom
   (`v3list`: progress, role swatches ringed when the unit has its own). `v3paint` writes the colour; `v3owner` says
   whose `cfg.colors` a part's own colour goes in (a roof's parts are its unit's).
@@ -248,8 +250,9 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   Diagonal and as-exported shells (L 1F, L 2F) sit alone on their plate and get no room.
 
 - Hardware in two side columns like Print (Dols, 2026-11-14): left rail "Hardware for" (stacks as buttons, `hwSkip`,
-  `computeBuild(false, leaveOut)`) and the groups to jump to; right column "List options" (store, bolt finish, head
-  shapes); Copy and CSV under the title.
+  `computeBuild(false, leaveOut)`) and the groups to jump to; right column "List options" (titled with the line count;
+  store, bolt finish, head shapes); Copy and CSV under the title. The tab's count follows `hwSkip` too, and a click
+  anywhere on a row but its store link ticks it (UX audit E1, E4, E5).
 
 - One look everywhere (thread "Unifier l'interface de tout le planner", Dols 2026-11-13): orange fill = action, dark
   fill = selected, settings as segmented buttons (the stack's too, and the plate options), ticks only for list items,

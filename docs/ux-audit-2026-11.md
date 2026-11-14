@@ -207,17 +207,26 @@ Needs session 1.
 - **Credit line** moves to the footer, so the header is one row at 1440 px (l. 78, 833) [A10].
 - Mockup: the header of every screen, `6-details.png` column 5.
 
-## Open points: ask the user before doing them
+## Open points: decided with the user (2026-11-14)
 
-They come from the audit but were on no mockup.
+They came from the audit but were on no mockup. Dols answered them on 2026-11-14.
 
-- **"Clear loose parts" in Print's plate options** (the same button as "Remove <stack>", l. 3564): remove it too?
-  Loose parts already have "Clear" in Design.
+- **"Clear loose parts" in Print's plate options** (the same button as "Remove <stack>", l. 3564): **removed too**.
+  Loose parts keep their "Clear" in Design. Done in session 2 with D7: Print's plate options have no clear button.
 - **The folder dialog on every visit** [X1]: "Later: plan without the files" is kept for the visit only
-  (`sessionStorage`, l. 1998-2001, a choice written in the code's comment). Keep it across visits?
-- **A new case shows Floor = "Dividers" with 0 dividers** [X3] (`caseFloor`, l. 2736). Default to "Empty"?
-- **Print's top line after a stack is left out**: "15% printed · 28 of 28 plates left" (parts printed are counted
-  per part, plates per scope). Which figure should lead?
+  (`sessionStorage`, l. 1998-2001). **Kept as it is**: almost nobody will use the planner without the files. No change.
+- **A new case shows Floor = "Dividers" with 0 dividers** [X3] (`caseFloor`, l. 2736): **yes, a new case starts on
+  "Empty"**. For session 4 (Design's panels).
+- **Print's top line after a stack is left out**: "15% printed · 28 of 28 plates left". **The print percentage
+  counts only the stacks picked in Print's rail**, and the figures keep their order (percentage, then parts, plates,
+  grams). Checked in session 2: it already did (`computeBuild(true)` holds only the picked stacks); since session 2
+  the parts and grams also leave out what no longer fits the printer (`printProgress`, D8). What made the line look
+  wrong: progress is kept per part file, not per stack (`printed`, keyed by `pkey`), so a part printed while every
+  stack was picked counts for any picked stack that uses that file, and the plates of the selection are planned for
+  what is still missing. Measured on "Workbench stack" + "Rolling tool cart": 22 of 184 parts printed with both
+  picked (6 plates); the Workbench alone then reads 16 of 75 parts and "10 of 10 plates left", the cart alone 15 of
+  109 (16 + 15 > 22: their shared M5 files count for both). Keeping progress per stack would change what `printed`
+  stores; asked to Dols on 2026-11-14, not done in session 2.
 
 ## Rules of `ux-redesign.md` this brief changes
 
