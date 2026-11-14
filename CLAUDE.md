@@ -25,6 +25,10 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   listed), the page's scripts parse, no mesh file is committed. Run it before pushing.
 - Every merge to `main` publishes the site within a minute. `index.html` is generated: on a merge conflict in it,
   merge `src/` and rebuild, never edit it by hand.
+- Review subagents (Dols kept them, 2026-11-14, PR #45): `.claude/agents/voltagent/` holds three of VoltAgent's
+  (`surgeon-reviewer` for a diff's real bugs, `security-auditor`, `ux-microcopy-reviewer` for page text against
+  `docs/ux-redesign.md`), copied unchanged (`SOURCE.txt`). Run them on request, not on every PR. Their long files ask
+  for a "context manager" that doesn't exist and show made-up figures: tell them to skip both and cite file:line.
 
 ## Hard rules
 - The page is **one HTML file** (`index.html`) built from `src/` and runs entirely in the browser. It has no external
