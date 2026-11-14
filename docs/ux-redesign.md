@@ -27,7 +27,7 @@ Figures in the mockups (plates, grams, hardware, steps, nesting) were read from 
 
 - Step 1 holds two objects: a draft unit in the settings column (`c`, `renderUnit`, `renderControls`) and the stacks further down. Hence the destination menu (`currentDest`), the ghost in 3D (`v.ghost`), the "Preview" toggle and the "Won't sit on…" errors (`stackProblem`, `stackMatch`).
 - Step 1 is one page of about 6,700 px with ten blocks, and 148 visible controls before anything is built.
-- Colours expose the Bambu project's logic: a 14 role × N slot matrix, slots numbered 1, 3, 4. Step 2 has its own plate colour modes (`plateColors`) on top.
+- Colours expose the Bambu project's logic: a role × N slot matrix, slots numbered 1, 3, 4. Step 2 has its own plate colour modes (`plateColors`) on top.
 - The shopping list sits under all the plates in step 2 (`hwTable` at the end of `renderPrint`); step 3 has no consolidated list.
 - Step 2 mixes progress, plate settings, export and a wall of open plate cards.
 - The Vault folder is asked for in three places; the header still carries upstream's links.
@@ -105,7 +105,7 @@ Shown when there is no stack. Three rows: printer, Vault folder (same text and "
 Replaces `colorsPanel`, the brush bar of `v3tools` and the "Selected" card's colour actions.
 - "Your filaments": one card per palette colour, which is also the brush. It shows how many part types use it. A small cross removes it, with today's behaviour (`data-pal-del`): parts go back to their role's colour, per-module colours using it are dropped, the last filament cannot be removed. TPU is fixed, for the tires.
 - "Add a filament" opens the Bambu catalogue (`bambu-colors.tsv`, line filters, own colour) under the view. A click adds the colour and takes it as the brush.
-- The 14 roles of `R.ROLES`, grouped as today (`ROLE_GROUPS`), one swatch per line. A click paints the line with the brush; "Paint all" paints the group.
+- The roles of `R.ROLES`, grouped as today (`ROLE_GROUPS`), one swatch per line. A click paints the line with the brush; "Paint all" paints the group.
 - In the view, a click paints the clicked part's role. A switch says what the click covers: "Same part everywhere" or "Only this module" (writes the unit's `cfg.colors`, as `v3owner` decides today).
 - "Modules with their own color" lists the exceptions, each with "Back to the project color".
 - Slot numbers are not shown here. `trayUse` and `buildProject` keep assigning them for the export.

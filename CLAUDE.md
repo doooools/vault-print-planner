@@ -110,6 +110,9 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   `{t: 'loose'}`. With no stack yet, `renderStart` ("Start your build": printer, Vault folder, templates; skipping the
   folder sets `folderHeroSkipped`).
   The old `mech` role was split into `runners`, `lock`, `hinge` (saved choices are carried over on load).
+  The old `accent` role was split the same way (Dols, 2026-11-14): `latches` (the latch under each module, "Latches
+  between levels"), `stoppers` (runner stoppers), `rods` (hinge rods); `accent` keeps the springs and geared rails. Each
+  takes accent's saved colour once (`splitRoles`: localStorage flag `vpp.rolesSplit`, design files under version 3).
 - Opening and closing (branch claude/open-close-kinematics-…): every drawer and case has `motion` in the JSON
   (README "Motion"): the key turns a quarter turn and its 20-tooth pinion moves both racks 20 mm (a closed drawer is
   locked: key back, then slide); a case's toggle latch is a linkage (link about pin A, lever on pin B, tooth sliding

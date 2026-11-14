@@ -1119,9 +1119,21 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const newId = () => { seq = Math.max(seq, ...towers.map(t => t.id + 1)); return seq++; };
   // The 'mech' colour role (runner slides, keys, hinges and locks) became three: carry a choice made before over
   const splitMech = o => { if (o && o.mech) { for (const k of ['runners', 'lock', 'hinge']) if (!o[k]) o[k] = o.mech; delete o.mech; } };
-  splitMech(colorPrefs.roles); towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => splitMech(u.colors))));
+  // The 'accent' role (latches, runner stoppers, hinge rods, springs, geared rails) gave the latches, stoppers and rods
+  // roles of their own (Dols, 2026-11-14): each starts with the colour accent had at the same place (project, stack,
+  // unit), so a saved build looks and plans as before. Once only: a later accent choice is the springs' and rails' alone.
+  // Local data carries the flag vpp.rolesSplit; a design file from before it has a version under 3.
+  const ACCENT_SPLIT = ['latches', 'stoppers', 'rods'];
+  const splitAccent = o => { if (o && o.accent) for (const k of ACCENT_SPLIT) if (!o[k]) o[k] = o.accent; };
+  const splitRoles = () => { splitMech(colorPrefs.roles); splitAccent(colorPrefs.roles);
+    towers.forEach(t => { splitMech(t.roles); splitAccent(t.roles); t.levels.forEach(lv => lv.forEach(u => { splitMech(u.colors); splitAccent(u.colors); })); }); };
   // Stacks saved before they had colours of their own start from the project's
-  towers.forEach(t => { if (!t.roles) t.roles = { ...colorPrefs.roles }; splitMech(t.roles); });
+  towers.forEach(t => { if (!t.roles) t.roles = { ...colorPrefs.roles }; });
+  if (!store.get('rolesSplit', false)) {
+    splitRoles(); store.set('rolesSplit', true);
+    if (store.get('colors', null)) saveColors();
+    if (store.get('towers', null)) save();
+  } else { splitMech(colorPrefs.roles); towers.forEach(t => { splitMech(t.roles); t.levels.forEach(lv => lv.forEach(u => splitMech(u.colors))); }); }
   // USSA's manual supports, one per drawer roof, printed against it (Print step, "Plate options"). It was a unit option
   // before: a build that had it on any unit starts with it on.
   let printAids = store.get('manualSupports', towers.some(t => t.levels.some(lv => lv.some(u => u.manualSupports))));
@@ -2076,7 +2088,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   // The colour map's rows, grouped. A label sits on the front, so it is an outside part.
   const ROLE_GROUPS = [['Outside', ['shell', 'facade', 'roof', 'base', 'label']], ['Inside', ['box', 'interior', 'dividers']],
-    ['Mechanics', ['runners', 'lock', 'hinge', 'accent', 'fittings']], ['Other', ['aids']]];
+    ['Mechanics', ['runners', 'stoppers', 'lock', 'latches', 'hinge', 'rods', 'accent', 'fittings']], ['Other', ['aids']]];
   // "Start from": USSA's render colours (and no unit colours), or the tray's first two colours / first colour on
   // every part. Two-tone: what is light in USSA's renders gets the first, the rest the second.
   const COLOR_PRESETS = [['render', 'USSA render', 'USSA’s three render colors, and no unit with colors of its own'],
@@ -2336,7 +2348,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (!('showDirectoryPicker' in window)) return null;
     try { return (await idb('readonly', st => st.get('folder'))) || null; } catch (e) { return null; }
   }
-  const designText = () => JSON.stringify({ app: 'vault-print-planner', kind: 'design', version: 2, saved: new Date().toISOString(), towers, extras, seq, colors: colorPrefs }, null, 1);
+  const designText = () => JSON.stringify({ app: 'vault-print-planner', kind: 'design', version: 3, saved: new Date().toISOString(), towers, extras, seq, colors: colorPrefs }, null, 1);
   const designFileName = () => (towers.length === 1 ? towers[0].name : 'Vault design').replace(/[\\/:*?"<>|]+/g, '-').trim() + '.vault.json';
   const fileIn = async (dir, name) => { try { await dir.getFileHandle(name); return true; } catch (e) { return false; } };
   // Whether a file the user picked sits right in the Vault folder (then it is the design open there)
@@ -2386,6 +2398,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const cp = plainColors(d.colors); if (cp) { colorPrefs = cp; saveColors(); }
     towers = plainTowers(d.towers);
     towers.forEach(t => { t.fp = fpOf(t); if (!t.roles) t.roles = { ...colorPrefs.roles }; if (!(d.version >= 2)) dropAutoBackbones(t); t.levels.flat().forEach(fixUnit); fixTower(t); });
+    if (!(d.version >= 3)) splitRoles(); // saved before the latches, stoppers and rods had colours of their own
     extras = plainExtras(d.extras);
     seq = Math.max(Number.isInteger(d.seq) && d.seq > 0 && d.seq < 1e9 ? d.seq : 1, ...towers.map(t => t.id + 1));
     printSkip = []; savePrintSkip();
