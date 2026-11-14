@@ -179,8 +179,6 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   parts, a divider plan, the plates, the print progress, an assembly count (Dols, 2026-11-14). A click that comes from
   no pointer and no key (a screen reader, voice control: `detail` 0) can't be held, so it asks for a confirmation
   instead.
-- **Levels** are picked in the 3D view or in the row of level buttons under the stack's header (`levelRow`, top to
-  bottom, dark = selected), which works from the keyboard and without the 3D view.
 - **Rails**: Design, Print and Hardware also have a right column (Design's inspector; Print's plate options over the
   selected plate, `.pside`; Hardware's list options, `.hwside`). Design, Print, Hardware and Assemble each have a left
   rail with an eyebrow naming its items (Stacks, What to print, Hardware for, Sections). Every tab past Design shows its progress (Print and Assemble in %, Hardware the lines to buy).
