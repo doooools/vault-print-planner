@@ -110,8 +110,7 @@ window.T = (() => {
     return { towers: JSON.parse(localStorage.getItem('vpp.towers') || '[]').length, folder: /733/.test(txt(document.querySelector('header') || document.body)) };
   }
   async function footprint(w, d) {
-    await stackPanel();
-    await c('#dInsp [data-fp]');
+    await stackPanel(); // width and depth are in Stack settings
     if (w) await c(`[data-fpw="${w}"]`);
     if (d) await c(`[data-fpd="${d}"]`);
   }
@@ -119,7 +118,7 @@ window.T = (() => {
   async function topLevel() {
     await tab(1);
     const b = document.querySelector('[data-dstack]');
-    if (b.getAttribute('aria-pressed') === 'true') await c(b);
+    if (b.getAttribute('aria-pressed') === 'true') await c('#dInsp [data-ltop]'); // "Stack settings" no longer toggles
   }
   const insp = () => document.querySelector('#dInsp');
   async function printerTo(id) { const s = document.getElementById('printer'); s.value = id; s.dispatchEvent(new Event('change', { bubbles: true })); await sleep(400); return JSON.parse(localStorage.getItem('vpp.printer')); }
