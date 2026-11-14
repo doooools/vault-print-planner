@@ -242,6 +242,17 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   `R.anyHidden` says whether a unit needs the stack's removable key); `placeParts` keeps each drawer's own key, key
   cap or hidden key and racks (`mine`: drawer from the tags, else from the joint's side). The rest stays per module.
 
+- Labels (Dols, 2026-11-14, branch `claude/project-thread-760e4t`): each drawer and case front's text in `cfg.labels`
+  (key = the drawer's id from `R.drawerIds`, `'0'` for a module holding one drawer and for a case; section "labels" in
+  `src/template.html`: `labelOf`, `labelsOf`, `setLabel`, `LABEL_MAX` 24). The level panel's "Label" field
+  (`data-ulabel`, first field of Inside, in the drawer's frame when there are several) redraws the 3D on `input` and
+  saves on `change` (one undo step). In 3D, `loadParts` collects each Label part (`LABEL_PART`, with the drawer it rides
+  in) in `v.labelParts`; `v.relabel` lays a canvas text (`labelText`) on its face towards the viewer, in the part's group.
+  `noColors` leaves `labels` out of the view's key, so typing never rebuilds the model. Free text: `plainUnit` keeps it
+  apart (`freeText`), escaped where shown. Not shown: boxes before the folder is picked, and 2F/4F cases, whose
+  "Case label" (Label.stl) has no placement (only the Sustainers label is placed, on every case height). `rules.js` doesn't
+  read labels: the Label line is the same and the slicer's text tool still writes the text.
+
 - Stack size (branch `claude/project-thread-mam5az`, Dols 2026-11-13): the stack header and the template cards give
   the outside size as it stands, drawers closed (`stackSize`): units' `bbox` placed by `stackLayout`, base, wheels,
   foot, casters (70 mm, a guess), roof and its handle, key locks, latches, hinges, column pieces, wall plates.
