@@ -51,6 +51,9 @@
     { id: 'box', label: 'Drawer boxes', def: 'inner' },
     { id: 'roof', label: 'Roofs and lids', def: 'body' },
     { id: 'runners', label: 'Runner slides', def: 'inner' },
+    // The runner guides ride in the module: until given a colour of their own they take the module shells' (follow),
+    // wherever that was chosen (project, stack, unit), so a saved build looks and plans as before (Dols, 2026-11-14)
+    { id: 'guides', label: 'Runner guides', def: 'body', follow: 'shell' },
     { id: 'lock', label: 'Key locks and case locks', def: 'inner' },
     { id: 'hinge', label: 'Hinges', def: 'inner' },
     { id: 'latches', label: 'Latches between levels', def: 'accent' },
@@ -76,13 +79,14 @@
     if (/front \(facade\)|^drawer front|^case front|facade cap|key cap/i.test(label)) return 'facade';
     if (/drawer box|back panel/i.test(label)) return 'box';
     if (/runner slide/i.test(label)) return 'runners';
+    if (/runner guide/i.test(label)) return 'guides';
     if (/^hinge/i.test(label)) return 'hinge';
     if (/key lock|hidden key|^lock (holder|inner|outer|pin)/i.test(label)) return 'lock';
     if (/^divider$|depth divider|width divider|seal divider/i.test(label)) return 'dividers';
     if (/gridfinity baseplate|grid divider|divider edge|divider pin/i.test(label)) return 'interior';
     if (/backbone|handle lock|module connector|knob|^foot$|top handle|heavyweight roof handle|second part/i.test(label)) return 'fittings';
     if (group === 'Roof' || group === 'Lid') return 'roof';
-    if (/module shell|case body|accessory|runner guide/i.test(label)) return 'shell';
+    if (/module shell|case body|accessory/i.test(label)) return 'shell';
     if (/^base|wheel|bushing|stationary handle|pull-out handle|pegboard|wall mount plate/i.test(label)) return 'base';
     const c = colorOf(label, group);
     return c === 'inner' ? 'fittings' : c === 'accent' ? 'accent' : 'shell';

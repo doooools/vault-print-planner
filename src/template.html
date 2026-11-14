@@ -1085,11 +1085,20 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // out: the stack being planned, the unit's, or the one shown; null: no stack, the loose parts' colours)
   function colorFor(role, cfg, st) {
     if (role === 'tpu') return 'tpu';
-    const def = (ROLE_BY_ID.get(role) || { def: 'body' }).def;
+    const r = ROLE_BY_ID.get(role) || { def: 'body' };
     const t = st === undefined ? colorStack || towerOf(cfg) || stackNow() : st;
-    const pick = (cfg && cfg.colors && cfg.colors[role]) || (t && t.roles && t.roles[role]) || colorPrefs.roles[role];
-    return pick && paletteOf(pick) ? pick : paletteOf(def) ? def : colorPrefs.palette[0].id;
+    const pick = ownPick(role, cfg, t);
+    if (pick) return pick;
+    if (r.follow) return colorFor(r.follow, cfg, t); // runner guides: the module shells' colour until they have one
+    return paletteOf(r.def) ? r.def : colorPrefs.palette[0].id;
   }
+  // The colour chosen for this role in this unit, its stack or the project, if any (null: the role's default)
+  function ownPick(role, cfg, t) {
+    const pick = (cfg && cfg.colors && cfg.colors[role]) || (t && t.roles && t.roles[role]) || colorPrefs.roles[role];
+    return pick && paletteOf(pick) ? pick : null;
+  }
+  // A role that follows another one's colour (R.ROLES `follow`) and has none of its own here
+  const following = (role, cfg, t) => { const r = ROLE_BY_ID.get(role); return !!(r && r.follow) && !ownPick(role, cfg, t === undefined ? stackNow() : t); };
   // Lines in their chosen colours. A part in another colour than its default is a different print, so it gets its
   // own key: two units with different fronts list two lines, and plates and progress keep them apart.
   // Whether anything differs from USSA's render colours (the palette, a role, or a unit of a stack)
@@ -2088,7 +2097,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   // The colour map's rows, grouped. A label sits on the front, so it is an outside part.
   const ROLE_GROUPS = [['Outside', ['shell', 'facade', 'roof', 'base', 'label']], ['Inside', ['box', 'interior', 'dividers']],
-    ['Mechanics', ['runners', 'stoppers', 'lock', 'latches', 'hinge', 'rods', 'accent', 'fittings']], ['Other', ['aids']]];
+    ['Mechanics', ['runners', 'guides', 'stoppers', 'lock', 'latches', 'hinge', 'rods', 'accent', 'fittings']], ['Other', ['aids']]];
   // "Start from": USSA's render colours (and no unit colours), or the tray's first two colours / first colour on
   // every part. Two-tone: what is light in USSA's renders gets the first, the rest the second.
   const COLOR_PRESETS = [['render', 'USSA render', 'USSA’s three render colors, and no unit with colors of its own'],
@@ -2141,7 +2150,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const usedTxt = p => { const r = use.roles.get(p.id) || 0, u = use.units.get(p.id) || 0; return r || u ? [r && plural(r, 'part type'), u && plural(u, 'module')].filter(Boolean).join(' · ') : 'not used yet'; };
     const inUse = P.filter(p => use.slot.has(p.id)).length;
     const roleRow = id => { const r = ROLE_BY_ID.get(id), cur = colorFor(id, null), n = use.owned.get(id) || 0;
-      return `<button type="button" class="prole" data-prole="${id}" title="Paint ${esc(r.label.toLowerCase())} with the brush"><span class="dot2 big" style="background:${colorHex(cur)}"></span><span><b>${esc(r.label)}</b><small>${esc(colorName(cur))}${n ? ` · ${plural(n, 'module')} with ${n === 1 ? 'its' : 'their'} own` : ''}${id === 'label' && labelsApart ? ' · own plate' : ''}</small></span></button>`; };
+      return `<button type="button" class="prole" data-prole="${id}" title="Paint ${esc(r.label.toLowerCase())} with the brush"><span class="dot2 big" style="background:${colorHex(cur)}"></span><span><b>${esc(r.label)}</b><small>${esc(colorName(cur))}${following(id, null) ? ` · same as ${esc(ROLE_BY_ID.get(r.follow).label.toLowerCase())}` : ''}${n ? ` · ${plural(n, 'module')} with ${n === 1 ? 'its' : 'their'} own` : ''}${id === 'label' && labelsApart ? ' · own plate' : ''}</small></span></button>`; };
     box.innerHTML = `<div class="ihead"><span class="v3-sec">Colors</span><h2>${esc((curTower() || { name: 'Loose parts' }).name)}</h2>
         <div class="cstart" role="group" aria-label="Start from"><span>Start from</span>${COLOR_PRESETS.map(([id, t, why]) => `<button type="button" class="btn" data-cpreset="${id}" title="${esc(why)}">${t}</button>`).join('')}</div></div>
       <div class="ibody">
@@ -4897,7 +4906,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const owner = s.cfg ? v3owner(v, s.cfg) : null;
     box.innerHTML = `<div class="v3-card" data-fp-row><div class="v3-sec">Selected</div>
       <div class="v3-selrow"><span class="v3-selsw" style="background:${colorHex(cur)}"></span><div><b>${esc(r.label)} · ${esc(colorName(cur))}</b>
-        <small>${own ? `${esc(owner.name)} only (the stack uses ${esc(colorName(colorFor(s.role, null)))})` : 'Stack color, every module of this stack'}</small></div></div>
+        <small>${own ? `${esc(owner.name)} only (the stack uses ${esc(colorName(colorFor(s.role, null)))})` : following(s.role, s.cfg) ? `Same as the ${esc(ROLE_BY_ID.get(r.follow).label.toLowerCase())} until you change it` : 'Stack color, every module of this stack'}</small></div></div>
       <div class="v3-selact"><button type="button" class="btn" data-v3change aria-expanded="false">Change color…</button>${own ? '<button type="button" class="btn" data-v3back>Back to the stack color</button>' : ''}</div></div>`;
     const ch = box.querySelector('[data-v3change]');
     ch.onclick = () => togglePicker(ch, { role: s.role, from: `${name}, selected in 3D`, unit: owner, after: () => v3refresh(v) });
@@ -4952,7 +4961,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const r = ROLE_BY_ID.get(role); if (!r) return;
     const t = stackNow();
     if (t) { t.roles = { ...(t.roles || {}), [role]: id }; save(); }
-    else if (id === r.def) delete colorPrefs.roles[role]; else colorPrefs.roles[role] = id;
+    else if (id === r.def && !r.follow) delete colorPrefs.roles[role]; else colorPrefs.roles[role] = id; // a follower's pick stays: without it, it takes the shells'
     saveColors();
   }
   function addPaletteColor(entry) {
