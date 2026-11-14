@@ -185,6 +185,10 @@ dialog#keys { width: min(540px, calc(100vw - 32px)); }
 .field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .field > .lbl { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 .field > .lbl .hint { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.tfield { width: 100%; box-sizing: border-box; min-width: 0; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 14px; }
+.tfield:hover { border-color: var(--muted); }
+.tfield:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tfield::placeholder { color: var(--muted); opacity: .8; }
 .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; background: var(--sheet-2); padding: 4px; border-radius: 9px; }
 .seg button { border: 0; background: transparent; border-radius: 6px; padding: 8px 6px; font-weight: 600; line-height: 1.15; }
 .seg button small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; margin-top: 2px; }
@@ -1303,6 +1307,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     for (const [k, x] of Object.entries(v)) { if (!SAFE_KEY.test(k) || NO_KEY.has(k)) continue; const y = plainData(x, depth + 1); if (y !== undefined) out[k] = y; }
     return out;
   }
+  const LABEL_MAX = 24; // a front's label (section "labels")
   const freeText = (v, max = 80) => typeof v === 'string' || typeof v === 'number' ? String(v).slice(0, max) : '';
   const SAFE_ID = /^[\w-]{1,40}$/, HEX = /^#[0-9a-f]{6}$/i;
   function plainUnit(u) {
@@ -1314,6 +1319,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (k.roof !== 'none' && !R.ROOFS.some(r => r.id === k.roof)) delete k.roof;
     if (!isObj(k.dividers)) delete k.dividers;
     if (k.colors !== undefined && !isObj(k.colors)) delete k.colors;
+    // a front's label is free text (escaped wherever it is shown, drawn on a canvas in 3D), kept by plain keys
+    delete k.labels;
+    if (isObj(u.labels)) {
+      const L = {};
+      for (const [id, x] of Object.entries(u.labels)) { const s = freeText(x, LABEL_MAX).trim(); if (s && SAFE_KEY.test(id) && !NO_KEY.has(id)) L[id] = s; }
+      if (Object.keys(L).length) k.labels = L;
+    }
     return clean(k);
   }
   const plainRoles = r => Object.fromEntries(Object.entries(plainData(isObj(r) ? r : {})).filter(([, id]) => typeof id === 'string' && SAFE_ID.test(id)));
@@ -2691,7 +2703,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     : `<rect x="2" y="3" width="${v === 'SS' ? 19 : 16}" height="20" rx="2"/><rect x="${v === 'SS' ? 23 : 20}" y="3" width="${v === 'SS' ? 19 : 22}" height="20" rx="2"/><path d="M${v === 'SS' ? 8 : 7} 13h6M${v === 'SS' ? 29 : 27} 13h8"/>`}</svg>`;
   function newUnit(t, from) {
     const fp = fpOf(t), u = from ? clean(JSON.parse(JSON.stringify(from))) : clean({ type: 'drawer', w: fp.w, d: fp.d, h: 1 });
-    delete u.colors; u.roof = 'none'; u.w = from ? u.w : fp.w; u.d = fp.d; fixUnit(u);
+    delete u.colors; delete u.labels; u.roof = 'none'; u.w = from ? u.w : fp.w; u.d = fp.d; fixUnit(u);
     return u;
   }
   function newStack(fp) {
@@ -3130,16 +3142,17 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const foldOpen = new Map();
   const fold = (id, name, sum, open, body) => `<details class="ifold" data-fold="${id}"${(foldOpen.has(id) ? foldOpen.get(id) : open) ? ' open' : ''}><summary><span class="fname">${name}</span><span class="fsum">${sum}</span></summary><div class="fbody">${body}</div></details>`;
   const bindFolds = box => box.querySelectorAll('[data-fold]').forEach(d => d.addEventListener('toggle', () => foldOpen.set(d.dataset.fold, d.open)));
-  // What a level's sections hold, in a line: its drawers or its inside, and its back
+  // What a level's sections hold, in a line (HTML: the label is escaped): its label, its drawers or its inside, and its back
   function insideLine(u, ids) {
+    const lab = ids.length > 1 ? '' : (labelsOf(u)[0] ? esc(quoted(labelsOf(u)[0])) : '');
     if (u.type === 'case') {
       const f = caseFloor(u), n = Object.values(u.dividers || {}).reduce((a, x) => a + (+x || 0), 0);
-      return [f === 'plate' ? 'Gridfinity' : f === 'dividers' ? plural(n, 'divider') : 'Empty', u.w === 'L' || u.w === 'XL' ? { flat: 'flat', dividers: 'slotted', sealed: 'sealed' }[caseStyle(u)] + ' body' : ''].filter(Boolean).join(' \u00b7 ');
+      return [lab, f === 'plate' ? 'Gridfinity' : f === 'dividers' ? plural(n, 'divider') : 'Empty', u.w === 'L' || u.w === 'XL' ? { flat: 'flat', dividers: 'slotted', sealed: 'sealed' }[caseStyle(u)] + ' body' : ''].filter(Boolean).join(' \u00b7 ');
     }
     const lay = R.drawersOf(u).map(h => h + 'F').join(' + ');
     if (ids.length > 1) return ids.some(d => d.side) ? (R.drawersOf(u).length > 1 ? `${lay} on each side` : 'two drawers side by side') : lay;
     const w = insideWord(u);
-    return [w.charAt(0).toUpperCase() + w.slice(1), u.lock === 'hidden' ? 'hidden key' : 'key lock', u.gearedRails ? 'geared rails' : ''].filter(Boolean).join(' \u00b7 ');
+    return [lab, w.charAt(0).toUpperCase() + w.slice(1), u.lock === 'hidden' ? 'hidden key' : 'key lock', u.gearedRails ? 'geared rails' : ''].filter(Boolean).join(' \u00b7 ');
   }
   const backLine = u => [u.wallMount ? 'wall mount' : '', { ikea: 'IKEA pegboard', ussa: 'USSA pegboard' }[u.pegboard] || '', { family: 'backbone', universal: 'universal backbone' }[u.backbone] || ''].filter(Boolean).join(' \u00b7 ') || 'nothing on the back';
   function inspSave() {
@@ -3179,13 +3192,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // the drawer whose inside is shown, when the module holds several (dsel.d, its id)
     const dids = R.drawerIds(u), dv = u.type === 'drawer' ? drawerView(u, dsel.d) : u;
     if (dv !== u && dsel.d !== dv.dr.id) { dsel.d = dv.dr.id; saveSel(); }
+    // The front's label: this drawer's (in the drawer's frame) or the module's
+    const lid = labelId(dv), labelField = `<div class="field"><label class="lbl" for="ulabel">Label <span class="hint">${dv !== u ? 'on this drawer\u2019s front' : u.type === 'case' ? 'on the case front' : 'on the drawer front'}</span></label>
+      <input type="text" class="tfield" id="ulabel" data-ulabel="${lid}" value="${esc(labelOf(u, lid))}" maxlength="${LABEL_MAX}" placeholder="e.g. M6 bolts" autocomplete="off" spellcheck="false"></div>`;
     if (u.type === 'drawer') {
       const lay = R.drawersOf(u), layOpts = layoutsReady(u) ? R.LAYOUTS[u.h] || [] : [];
       if (layOpts.length > 1) o += `<div class="field"><div class="lbl">Drawers in this module <span class="hint">${lay.map(x => x + 'F').join(' + ')}${lay.length > 1 ? ', top to bottom' : ''}</span></div>
         <div class="seg lays" role="group" aria-label="Drawers in this module, top to bottom">${layOpts.map(l => `<button type="button" data-lay="${l.join(',')}" aria-pressed="${l.join() === lay.join()}" aria-label="${l.length === 1 ? `One ${l[0]}F drawer` : l.map(x => x + 'F').join(', ') + ', top to bottom'}">${layIcon(l, u.h)}<small>${l.length === 1 ? l[0] + 'F' : new Set(l).size === 1 ? l.length + '\u00d7' + l[0] + 'F' : l.join('+') + 'F'}</small></button>`).join('')}</div>
         ${new Set(lay).size > 1 ? '<span class="badge inf" title="USSA\u2019s manuals don\u2019t show a 2F with two 1F in one 4F module">Inferred</span>' : ''}</div>`;
       // Several drawers: each has its own inside, in a frame under one tab per drawer (or a click on it in the view)
-      let f = '';
+      let f = labelField;
       f += `<div class="field"><div class="lbl">Inside</div><div class="seg">${useg('interior', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], dv.interior)}</div></div>`;
       if (dv.interior === 'gridfinity' && ['S', 'M', 'L2', 'XL2'].includes(dv.w))
         f += `<div class="field"><div class="lbl">Baseplate cut-outs <span class="hint">for lifting it out</span></div><div class="seg">${useg('baseplateHandles', [{ v: '0', label: 'None' }, ...(dv.w === 'M' ? [] : [{ v: '1', label: '1 handle' }]), { v: '2', label: '2 handles' }], dv.baseplateHandles)}</div></div>`;
@@ -3197,10 +3213,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       f += `<div class="field"><div class="lbl">Lock</div><div class="seg">${useg('lock', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], dv.lock)}</div></div>`;
       f += `<div class="field"><div class="lbl">Geared rails</div><div class="seg">${ubool('gearedRails', { label: 'Without', sub: 'optional in the manual' }, { label: 'With', sub: dids.length > 1 ? 'USSA: several drawers' : 'for 2F, 4F, more locking' }, dv.gearedRails)}</div></div>`;
       if (dv === u) o += f;
-      else o += `<div class="dtabs" role="tablist" aria-label="Drawer to set up" style="${drGrid(dids)}">${dids.map(dr => `<button type="button" role="tab" id="dtab-${dr.id}" aria-controls="dframe" data-dpick="${dr.id}" aria-selected="${dr.id === dv.dr.id}" tabindex="${dr.id === dv.dr.id ? 0 : -1}"><span>${esc(drawerName(u, dr))}</span><small>${dr.side ? dr.w + ' \u00b7 ' : ''}${dr.h}F \u00b7 ${insideWord(u.inside[dr.id])}</small></button>`).join('')}</div>
+      else o += `<div class="dtabs" role="tablist" aria-label="Drawer to set up" style="${drGrid(dids)}">${dids.map(dr => `<button type="button" role="tab" id="dtab-${dr.id}" aria-controls="dframe" data-dpick="${dr.id}" aria-selected="${dr.id === dv.dr.id}" tabindex="${dr.id === dv.dr.id ? 0 : -1}"><span>${esc(drawerName(u, dr))}</span><small>${dtabSub(u, dr)}</small></button>`).join('')}</div>
         <div class="dframe" id="dframe" role="tabpanel" aria-labelledby="dtab-${dv.dr.id}">${f}<button type="button" class="btn" data-dcopy>Same settings in every drawer</button></div>
         <p class="pnote dfnote">In the frame: this drawer only. Outside it: the whole module.</p>`;
     } else {
+      o += labelField;
       if (u.w === 'L' || u.w === 'XL') o += `<div class="field"><div class="lbl">Case body style</div><div class="seg">${useg('caseInterior', [{ v: 'flat', label: 'Flat', sub: 'open box' }, { v: 'dividers', label: 'Dividers', sub: 'slotted walls' }, { v: 'sealed', label: 'Sealed', sub: 'seal dividers' }], u.caseInterior || 'flat')}</div></div>`;
       // What is on the case's floor: nothing, dividers in its slots, or a Gridfinity baseplate over the grooves
       const st = caseStyle(u), floor = caseFloor(u), kept = Object.values(divSel(u) || {}).flat(2).length;
@@ -3292,6 +3309,21 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       fixUnit(u); fixTower(t); save(); renderAll();
       toast(`Every drawer of this module now has the ${drawerName(u, dv.dr, false)} drawer\u2019s inside, lock and rails${new Set(dids.map(x => x.w)).size > 1 ? ' (the other box size keeps its own divider plan)' : ''}.`);
     }; }
+    // The label: drawn in the view as it is typed, saved (one undo step) when the field is left or Enter pressed
+    { const lf = box.querySelector('[data-ulabel]'); if (lf) {
+      const id = lf.dataset.ulabel, was = labelOf(u, id);
+      const show = () => {
+        if (v3 && v3.relabel) v3.relabel();
+        const tb = box.querySelector(`.dtabs [data-dpick="${id}"] small`); if (tb) tb.innerHTML = dtabSub(u, R.drawerIds(u).find(d => d.id === id));
+        const sm = box.querySelector('[data-fold="l-inside"] .fsum'); if (sm) sm.innerHTML = insideLine(u, dids);
+      };
+      lf.oninput = () => { setLabel(u, id, lf.value); show(); };
+      lf.onchange = () => { setLabel(u, id, lf.value.trim()); show(); if (labelOf(u, id) !== was) save(); };
+      lf.onkeydown = e => {
+        if (e.key === 'Enter') { e.preventDefault(); lf.blur(); }
+        else if (e.key === 'Escape') { e.preventDefault(); lf.value = was; setLabel(u, id, was); show(); lf.blur(); }
+      };
+    } }
     box.querySelectorAll('[data-cfloor]').forEach(b => b.onclick = () => { const f = b.dataset.cfloor; set({ caseEmpty: f === 'empty', caseBaseplate: f === 'plate' }); });
     box.querySelectorAll('[data-ubool]').forEach(b => b.onclick = () => { const [key, val] = b.dataset.ubool.split('='); set({ [key]: val === '1' }); });
     box.querySelectorAll('[data-ustep]').forEach(b => b.onclick = () => {
@@ -3315,7 +3347,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // Several levels selected (Dols, 2026-11-14): only the settings every module of them has, offered with the options
   // each of them can take, and a change goes to every module of every level at once (one Undo, named). A setting whose
   // value differs between them has no button pressed and says "Mixed". What is set per module or per drawer box (the
-  // divider plans, the drawer to set up, one side of a pair) stays in the one-level panel.
+  // divider plans, the fronts' labels, the drawer to set up, one side of a pair) stays in the one-level panel.
   function multiInspector(box, t, s) {
     const L = t.levels, lvs = s.map(i => L[i]), us = lvs.flat(), n = s.length, top = L.length - 1;
     const MIX = {}, same = vals => vals.every(x => x === vals[0]) ? vals[0] : MIX;
@@ -3380,7 +3412,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="iacts"><button type="button" class="iconbtn sq" data-lmenu aria-haspopup="menu" aria-expanded="false" aria-label="Actions for ${esc(levelsName(s).toLowerCase())}" title="Add, move or remove these levels">${icon('more')}</button></div></div>
         <h2>${esc(levelsName(s))}</h2><div class="mono">${plural(us.length, 'module')} \u00b7 ${prints} parts \u00b7 ${aboutG(g)}</div></div>
       <div class="mlevels" role="group" aria-label="Levels selected: click one to set it up alone">${[...s].reverse().map(i => `<button type="button" class="mlevel" data-mone="${i}" title="Set up level ${i + 1} alone"><b>${i + 1}</b><span>${esc(levelTitle(L[i]))}</span></button>`).join('')}</div>
-      <p class="pnote mnote">The settings these levels share. A change goes to every module of the ${n}. ${esc(MOD)}+click a level in the view adds it or takes it out, Shift+click selects the ones in between.</p>
+      <p class="pnote mnote">The settings these levels share. A change goes to every module of the ${n}; labels and divider plans stay one level at a time. ${esc(MOD)}+click a level in the view adds it or takes it out, Shift+click selects the ones in between.</p>
       <div class="ibody folds">
         ${mod ? fold('m-module', 'Module', [acr !== MIX && across.length > 1 ? (ACROSS[fw].find(x => x[0] === acr) || [])[1] : '', word(type, x => x === 'drawer' ? 'Drawer' : 'Case', 'drawers and cases'), word(hh, x => x + 'F', 'mixed heights')].filter(Boolean).join(' \u00b7 '), true, mod) : ''}
         ${fold('m-inside', insName, insSum, true, ins)}
@@ -3662,6 +3694,22 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const s = dr.side ? (u.w === 'XL2' ? dr.w + ' side' : dr.side) : '';
     const t = [s, pos].filter(Boolean).join(', ');
     return cap ? t.charAt(0).toUpperCase() + t.slice(1) : t;
+  }
+  // A drawer tab's second line: its label, else its size and inside
+  const dtabSub = (u, dr) => labelOf(u, dr.id) ? esc(quoted(labelOf(u, dr.id))) : `${dr.side ? dr.w + ' \u00b7 ' : ''}${dr.h}F \u00b7 ${insideWord(u.inside[dr.id])}`;
+  // ---------- labels ----------
+  // Each drawer and case front takes a Label part (rules.js: “Label”, “Case label”). Its text is the user's,
+  // kept per front in cfg.labels: by the drawer's id (R.drawerIds: '0' in a module holding one drawer, '1', 'left0'…),
+  // '0' for a case. Shown on the label in the 3D view (v.relabel, labelText), in the level panel and the view's tip.
+  // Free text: escaped wherever it goes into HTML; plainUnit keeps it apart from the plain words.
+  const labelId = dv => dv && dv.dr ? dv.dr.id : '0';
+  const labelOf = (u, id) => u && u.labels && typeof u.labels[id] === 'string' ? u.labels[id] : '';
+  const labelsOf = u => !u.labels ? [] : (u.type === 'drawer' && R.drawerIds(u).length ? R.drawerIds(u).map(d => d.id) : ['0']).map(id => labelOf(u, id)).filter(Boolean);
+  const quoted = s => '\u201c' + s + '\u201d';
+  function setLabel(u, id, text) {
+    const L = { ...(u.labels || {}) }, s = String(text).slice(0, LABEL_MAX);
+    if (s.trim()) L[id] = s; else delete L[id];
+    if (Object.keys(L).length) u.labels = L; else delete u.labels;
   }
   // Placing a divider takes two clicks on a box's plan: where it starts, then where it ends. `gpend` is the first one
   // ({u, fam, i, j}: the hole, column i, row j) until the second; the plan then shows the holes it can end on.
@@ -5416,6 +5464,18 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const render = () => renderer.render(scene, camera);
     v.render = render;
     v.recolor = () => { scene.traverse(o => { if (o.isMesh && o.userData.role) o.material = mat(o.userData.role, o.userData.cfg, !!(v.hot && v.hot(o))); }); render(); };
+    // The fronts' labels: each Label part read from the folder (loadParts) gets its text, drawn again only when the
+    // text or the label's colour changed
+    v.labelParts = [];
+    v.relabel = (draw = true) => {
+      for (const e of v.labelParts) {
+        const text = labelOf(e.u.cfg, e.id).trim(), ink = labelInk(e.mesh), k = text + '\n' + ink;
+        if (e.k === k && (!e.text || e.text.parent)) continue;
+        e.k = k; labelDrop(e);
+        if (text && e.mesh.parent) { e.text = labelText(T, e.mesh, text, ink); e.mesh.parent.add(e.text); }
+      }
+      if (draw) render();
+    };
     // The theme switched: background and highlight from the new tokens, highlighted materials made again, outline redrawn
     v.retheme = () => {
       const c = getComputedStyle(document.documentElement);
@@ -5631,7 +5691,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const ink = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#1d1f1e';
       const objs = selLevels(v.t).includes(i) ? [] : boxes.map(b => { const o = new T.Box3Helper(b, ink); scene.add(o); return o; });
       hov = { i, objs, box: all };
-      tip.innerHTML = `<b>Level ${i + 1} \u00b7 ${esc(levelTitle(lv))}</b><span>Click to set it up \u00b7 ${MOD}+click to select several \u00b7 right-click for actions</span>`;
+      const labs = lv.flatMap(labelsOf);
+      tip.innerHTML = `<b>Level ${i + 1} \u00b7 ${esc(levelTitle(lv))}</b>${labs.length ? `<span>${esc(labs.map(quoted).join(' \u00b7 '))}</span>` : ''}<span>Click to set it up \u00b7 ${MOD}+click to select several \u00b7 right-click for actions</span>`;
       tip.hidden = false; placeTip(); render();
     }
     // A right-click (let go where it was pressed): on a level, it selects it as a click would, then opens its menu;
@@ -5901,6 +5962,32 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const m = u.movers.find(m => (!m.side || (m.side === 'left') === (x < u.split)) && level >= m.level && level < m.level + m.h);
     return m ? m.rail : null;
   }
+  // A front's label in the view: its text on a canvas laid on the Label part's face towards the viewer (the part's own
+  // bounds, placed; the front faces +z), in the part's group, so that it slides out with its drawer. Never picked.
+  const LABEL_PART = /\/Label( for Sustainers)?\.stl$/i;
+  function labelText(T, mesh, text, ink) {
+    const g = mesh.geometry; if (!g.boundingBox) g.computeBoundingBox();
+    const b = g.boundingBox.clone().applyMatrix4(mesh.matrix), w = b.max.x - b.min.x, h = b.max.y - b.min.y;
+    const W = 512, H = Math.max(64, Math.round(W * h / w)), c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const x = c.getContext('2d'), fam = getComputedStyle(document.body).fontFamily || 'sans-serif';
+    let px = Math.round(H * 0.46);
+    do x.font = `700 ${px}px ${fam}`; while (x.measureText(text).width > W * 0.84 && --px > 10);
+    x.fillStyle = ink; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillText(text, W / 2, H / 2 + px * 0.05);
+    const tex = new T.CanvasTexture(c); tex.colorSpace = T.SRGBColorSpace; tex.anisotropy = 4;
+    const m = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+    m.position.set((b.min.x + b.max.x) / 2, (b.min.y + b.max.y) / 2, b.max.z + 0.05);
+    m.raycast = () => {}; m.renderOrder = 1; m.userData.own = true; m.userData.labelText = true;
+    return m;
+  }
+  // Dark letters on a light label, light ones on a dark label
+  const labelInk = mesh => { const c = mesh.material && mesh.material.color; return !c || 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b > 0.16 ? '#1b1c1a' : '#f3f3ef'; };
+  function labelDrop(e) {
+    if (!e.text) return;
+    if (e.text.parent) e.text.parent.remove(e.text);
+    e.text.geometry.dispose(); e.text.material.map.dispose(); e.text.material.dispose(); e.text = null;
+  }
   async function loadParts(v) {
     v.folder = vaultFolder;
     const todo = v.units.filter(u => u.place && u.place.parts.length), token = v.token = {};
@@ -5921,6 +6008,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       u.jn = new Map(); // the joints' groups went with the drawer and parts groups
       (u.movers || []).forEach(m => { m.drawer.clear(); m.drawer.add(m.front); m.jn = new Map(); });
     });
+    v.labelParts.forEach(labelDrop); v.labelParts = [];
     say(); v3list();
     // Each file's copies go in as soon as it's ready, and a unit's box goes with its first part
     const geom = ({ pos, idx }) => {
@@ -5948,6 +6036,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         const at = p.group === 'drawer' ? own.drawer : p.group === 'lid' && u.lid ? u.lid.userData.inner : u.parts;
         const rl = p.guide != null && railOf(u, p.guide, mesh);
         (rl || p.joint && v3joint(T, own, p.joint, at) || at).add(mesh);
+        if (LABEL_PART.test(path)) v.labelParts.push({ u, id: own !== u && own.id != null ? own.id : '0', mesh });
         u.loaded++;
       }
       // The bolts this file's parts hold, in the same group (they slide out with a drawer front, turn with a lid) and
@@ -5965,6 +6054,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         u.bolts++;
       }
       todo.forEach(v3pose);
+      v.relabel(false);
     };
     await Promise.all(paths.map(p => partMesh(p).then(m => {
       if (!live()) return;
@@ -6108,7 +6198,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   // Put the view where it belongs and show the right model: step 1's unit, or the chosen stack of step 2. Called after
   // every page render; a change of colour only repaints, a change of the unit or stack builds the model again.
-  const noColors = x => JSON.stringify(x, (k, val) => k === 'colors' ? undefined : val);
+  // (colours and the fronts' labels left out of the key: they only repaint, v.recolor and v.relabel)
+  const noColors = x => JSON.stringify(x, (k, val) => k === 'colors' || k === 'labels' ? undefined : val);
   function v3sync() {
     const page = $('view-' + view), slot = page && !page.hidden ? page.querySelector('.v3-slot') : null, box = $('v3view'), big = $('v3d').open;
     const tw = curTower();
@@ -6121,7 +6212,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const v = v3;
     if (v && v.key === mode.key && mode.cfgs.length === v.cfgs.length && mode.cfgs.every((x, i) => x === v.cfgs[i])) {
       if (vaultFolder && v.folder !== vaultFolder) loadParts(v); // the folder was chosen since
-      v.recolor(); v3tools(); v3side(); maybeRelink();
+      v.recolor(); v.relabel(); v3tools(); v3side(); maybeRelink();
       return;
     }
     // already on its way: the same stack, made of the same objects (an undo brings back equal levels as new objects,
