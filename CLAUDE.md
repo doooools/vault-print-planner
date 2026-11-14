@@ -153,7 +153,7 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   rerun after a Blender export. Inferred, not measured: which backbone section a pegboard takes, the wall plate's height,
   the pins' places along their bores (README "Pegboards, wall mounts, baseplates and lock pins"). Still not placed:
   the key lock's springs, the L² accessories, the "Connector for Modules" (never listed by the planner).
-- Manual supports are a Print option now ("Plate options…" → "Manual supports", `printAids`, saved as
+- Manual supports are a Print option now (Print's right column, Plate options → "Manual supports", `printAids`, saved as
   `manualSupports`; on at first load if any unit had the old unit option): one `x<d>` prop per drawer roof (`roof()` in
   rules.js, `aids` argument), packed against its roof by `planPlates`. A roof printed diagonally (`care`) can't take one:
   the step says the prop was left out. L² and XL² take one set of accessories (1st + 2nd) per F (the user's rule,

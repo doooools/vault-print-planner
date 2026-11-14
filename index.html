@@ -489,7 +489,12 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .design .v3-side > :not(#v3dStatus):not(#v3dPick) { display: none; }
 .design .v3-side .v3-status { flex: 1 1 300px; font-size: 12.5px; }
 .prt { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
-.pmain { flex: 999 1 720px; min-width: 0; display: grid; gap: 14px; }
+.pmain { flex: 999 1 520px; min-width: 0; display: grid; gap: 14px; }
+/* Print's right column, like Design's inspector: the plate options, then the selected plate */
+.pside { flex: 1 1 clamp(320px, 20vw, 440px); min-width: 0; display: grid; gap: 14px; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
+.popts .ibody { gap: 14px; }
+.popts details.info p { font-size: 13px; color: var(--muted); }
+.popts .actions { margin: 0; }
 .prail .pchip { width: 100%; min-height: 60px; }
 .prail .pnote { margin: 0 2px; }
 .pchip { display: grid; gap: 1px; min-height: 44px; padding: 6px 14px; text-align: left; border: 2px solid var(--line); border-radius: 10px; background: var(--sheet); color: var(--muted); }
@@ -625,14 +630,8 @@ button.prole:hover { background: var(--sheet-2); }
 .xbtn:disabled { opacity: .45; cursor: not-allowed; }
 .xbtn:hover:not(:disabled) { filter: brightness(1.06); }
 .xrow { display: flex; flex-wrap: wrap; gap: 8px; }
-.xrow > .btn, .popwrap > .btn { min-height: 44px; }
+.xrow > .btn { min-height: 44px; }
 .xrow > .btn { flex: 1 1 auto; }
-.popwrap { position: relative; flex: 1 1 auto; display: flex; }
-.popwrap > .btn { flex: 1 1 auto; }
-.popbox { position: absolute; z-index: 20; top: calc(100% + 6px); right: 0; width: min(420px, calc(100vw - 32px)); padding: 16px 18px; display: grid; gap: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, .18); }
-.popbox h2 { margin: 0; font-family: var(--f-display); font-size: 20px; font-weight: 800; font-stretch: 112%; }
-.popbox details.info { border-top: 1px solid var(--line); padding-top: 4px; }
-.popbox details.info p { font-size: 13px; color: var(--muted); }
 .fchips { display: flex; flex-wrap: wrap; gap: 8px; }
 .fchip { display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px 0 10px; border: 2px solid var(--line); border-radius: 10px; background: var(--sheet); text-align: left; }
 .fchip > span:last-child { display: grid; line-height: 1.2; }
@@ -640,8 +639,7 @@ button.prole:hover { background: var(--sheet-2); }
 .fchip[aria-pressed=true] { border-color: var(--ink); background: var(--raised); }
 .dot2 { display: inline-block; flex: none; width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--edge); }
 .dot2.big { width: 26px; height: 26px; }
-.pbody { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
-.psheet { flex: 999 1 560px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
+.psheet { min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
 .pgroup { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 10px 2px 0; }
 .pgroup h2 { margin: 0; display: inline-flex; align-items: center; gap: 8px; font-family: var(--f-display); font-size: 16px; font-weight: 800; font-stretch: 112%; }
 .pgroup .mono { font-size: 12px; }
@@ -662,7 +660,7 @@ button.prole:hover { background: var(--sheet-2); }
 .pselbar > span { flex: 1 1 220px; min-width: 0; }
 .pselbar .pnote { margin: 0; }
 .pselbar .btn { min-height: 40px; }
-.psel { flex: 1 1 400px; min-width: 0; position: sticky; top: 12px; display: grid; gap: 12px; padding: 16px; }
+.psel { min-width: 0; display: grid; gap: 12px; padding: 16px; }
 .psel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .psel-head > div:first-child { display: grid; gap: 2px; min-width: 0; }
 .psel-head h2 { margin: 2px 0 0; font-family: var(--f-display); font-size: 22px; font-weight: 800; font-stretch: 112%; line-height: 1.15; }
@@ -3880,7 +3878,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // Plates ticked on the sheet: the downloads hold only these (every plate left when none is ticked), and "Mark as
   // printed" in the bar marks them all. Kept for the page's life, per print scope; a tick never marks a plate printed.
   let plateSel = { scope: null, ns: new Set() };
-  let plateOptsOpen = false;
   const two = n => String(n).padStart(2, '0');
   const plateNote = (pl, next) => pl.done ? 'Printed' : next ? 'Up next' : pl.color === 'tpu' ? 'TPU settings' : pl.supports ? 'Supports on' : pl.someSup ? 'Supports on ' + (pl.someSup === pl.items.length ? 'all' : pl.someSup) : '';
   function renderPrint() {
@@ -3969,6 +3966,16 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       <div class="plist">${sel.lines.map((x, i) => `<div class="prow"><span class="pk" style="background:${colorHex(sel.color)};color:${LIGHT_FILL(sel.color) ? '#222' : '#fff'}">${i + 1}</span><span class="q num">${x.count}×</span><span class="lbl"><b>${esc(x.l.label)}</b><small class="mono">${esc(fileName(x.l.file.path))}</small></span>${x.l.walls ? `<span class="tag wall">${x.l.walls} walls${x.l.infill ? ' · ' + x.l.infill + '%' : ''}</span>` : ''}${x.l.supports ? '<span class="tag sup">supports</span>' : ''}</div>`).join('')}</div>
       <button type="button" class="btn ${sel.done ? '' : 'primary'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button></aside>`;
     const hasLabels = b.lines.some(isLabel);
+    const opts = `<section class="panel popts" aria-label="Plate options">
+      <div class="ihead"><span class="v3-sec">Plate options</span><h2>${plural(allPlates.length, 'plate')}</h2><div class="mono">${esc(printerShort())} · ${printer.v[0]} × ${printer.v[1]} mm bed</div></div>
+      <div class="ibody">
+        <p class="pnote" style="margin:0">Plates follow the colors chosen in Design.</p>
+        <div class="field"><div class="lbl">Parts with supports</div><div class="seg">${pbool('mixSupports', { label: 'Plates of their own' }, { label: 'Fewer plates', sub: 'shared, supports on just for them' }, mixSupports)}</div></div>
+        <div class="field"><div class="lbl">Manual supports <span class="hint">USSA’s prop for each drawer roof</span></div><div class="seg">${pbool('printAids', { label: 'None' }, { label: 'One per roof', sub: 'standing against it' }, printAids)}</div></div>
+        ${hasLabels ? `<div class="field"><div class="lbl">Labels <span class="hint">text and colors in the slicer</span></div><div class="seg">${pbool('labelsApart', { label: 'With the rest' }, { label: 'Own plate' }, labelsApart)}</div></div>` : ''}
+        <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Each shell keeps 15 mm clear beyond its top and bottom walls for them (dashed). Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
+        <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}<button type="button" class="btn" id="clearPlates">${b.onlyExtras ? 'Clear loose parts' : 'Clear all plates'}</button></div>
+      </div></section>`;
     $('view-print').innerHTML = `<div class="prt">
       <aside class="drail prail" role="group" aria-label="What to print"><div class="v3-sec">What to print</div>
         ${towers.map(t => `<button type="button" class="pchip" data-pskip="${t.id}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small></button>`).join('')}
@@ -3979,28 +3986,18 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <div class="ptop-prog"><h1>${pct}% printed</h1><div class="bar2" aria-hidden="true"><i style="width:${pct}%"></i></div>
           <div class="mono">${done} of ${total} parts · ${plates.length} of ${plural(allPlates.length, 'plate')} left · ${aboutG(gDone)} of ${gramsStr(s.g)}</div></div>
         <div class="ptop-x">${exportBtn}
-          <div class="xrow">${canMake && target.length ? '<button type="button" class="btn" id="gFolders">STL folders (.zip)</button>' : ''}<span class="popwrap"><button type="button" class="btn" id="plateOpts" aria-expanded="${plateOptsOpen}" aria-controls="plateOptsBox">Plate options…</button>
-            <div class="panel popbox" id="plateOptsBox" ${plateOptsOpen ? '' : 'hidden'}><h2>Plate options</h2>
-              <div class="field"><div class="lbl">Parts with supports</div><div class="seg">${pbool('mixSupports', { label: 'Plates of their own' }, { label: 'Fewer plates', sub: 'shared, supports on just for them' }, mixSupports)}</div></div>
-              <div class="field"><div class="lbl">Manual supports <span class="hint">USSA’s prop for each drawer roof</span></div><div class="seg">${pbool('printAids', { label: 'None' }, { label: 'One per roof', sub: 'standing against it' }, printAids)}</div></div>
-              ${hasLabels ? `<div class="field"><div class="lbl">Labels <span class="hint">text and colors in the slicer</span></div><div class="seg">${pbool('labelsApart', { label: 'With the rest' }, { label: 'Own plate' }, labelsApart)}</div></div>` : ''}
-              <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Each shell keeps 15 mm clear beyond its top and bottom walls for them (dashed). Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
-              <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}<button type="button" class="btn" id="clearPlates">${b.onlyExtras ? 'Clear loose parts' : 'Clear all plates'}</button></div>
-            </div></span></div>
-          <div class="pnote" style="margin:0">Plates follow the colors chosen in Design.${labelsApart && hasLabels ? ' Labels on their own plate.' : ''}${mixSupports ? '' : ' Parts with supports kept apart.'}</div>
+          <div class="xrow">${canMake && target.length ? '<button type="button" class="btn" id="gFolders">STL folders (.zip)</button>' : ''}</div>
           <div class="gprog" id="gProg" hidden><div class="bar"><i></i></div><span></span></div></div>
       </section>
       ${alerts}
       <div class="fchips" role="group" aria-label="Show plates for a filament">${chips}</div>
       ${selBar}
-      <div class="pbody">
-        <section class="psheet" aria-label="Plates">${sheet || '<p class="pnote">No plates here.</p>'}</section>
-        ${detail}
-      </div>
+      <section class="psheet" aria-label="Plates">${sheet || '<p class="pnote">No plates here.</p>'}</section>
       <details class="panel fold"><summary>All parts in this build <small>${s.prints} parts · ${s.files} files</small></summary>
         <div class="parts">${partRows(b.lines)}</div>
         <div class="actions" style="padding:0 18px 16px"><button class="btn" id="copyAll">Copy part list</button></div></details>
-      </div></div>`;
+      </div>
+      <div class="pside">${opts}${detail}</div></div>`;
     const V = $('view-print');
     const markPlate = (pl, on, quiet) => {
       if (on) { pl.lines.forEach(x => { printed[pkey(x.l)] = (printed[pkey(x.l)] || 0) + x.count; }); pst.done.push({ n: pl.n, sig: pl.sig }); }
@@ -4040,9 +4037,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       if (!was) { const after = plates.find(p => p.n > sel.n) || plates.find(p => p !== sel); if (after) selPlate = after.n; }
       renderPrint(); renderTabs();
     };
-    $('plateOpts').onclick = e => { e.stopPropagation(); plateOptsOpen = !plateOptsOpen; $('plateOptsBox').hidden = !plateOptsOpen; $('plateOpts').setAttribute('aria-expanded', String(plateOptsOpen)); };
     V.querySelectorAll('[data-pbool]').forEach(b => b.onclick = e => {
-      e.stopPropagation(); // the menu stays open
       const [key, val] = b.dataset.pbool.split('='), on = val === '1';
       if (key === 'labelsApart') { labelsApart = on; store.set('labelsApart', on); }
       if (key === 'mixSupports') { mixSupports = on; store.set('mixSupports', on); }
@@ -4055,7 +4050,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       if (b.onlyExtras) { for (const k of Object.keys(printed)) if (k.startsWith('extra:')) delete printed[k]; }
       else { towers = []; save(); printed = {}; }
       extras = []; saveExtras(); store.set('printed', printed);
-      printSkip = []; savePrintSkip(); plateOptsOpen = false;
+      printSkip = []; savePrintSkip();
       renderAll(); toast(b.onlyExtras ? 'Loose parts cleared' : 'All plates cleared');
     }, 'Hold the button down to clear');
     $('copyAll').onclick = () => copy(listText(b.lines, 'Vault build'), 'Part list copied');
@@ -4067,7 +4062,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if ('showDirectoryPicker' in window && !vaultFolder && !rememberedFolder)
       idb('readonly', st => st.get('folder')).then(h => { if (h && h.name && !vaultFolder && !rememberedFolder) { rememberedFolder = h.name; renderPrint(); renderHeader(); } }).catch(() => {});
   }
-  document.addEventListener('click', e => { if (plateOptsOpen && !e.target.closest('.popwrap')) { plateOptsOpen = false; const bx = $('plateOptsBox'); if (bx) { bx.hidden = true; $('plateOpts').setAttribute('aria-expanded', 'false'); } } });
 
   // ---------- gather script: one folder per plate, optional .3mf per plate ----------
   function plateFolder(pl) { return `Plate ${String(pl.n).padStart(2, '0')} - ${colorName(pl.color).replace(/[\\/:*?"<>|]/g, '-')}${pl.supports ? ' - supports' : ''}`; }
