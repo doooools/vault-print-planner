@@ -492,10 +492,10 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .pmain { flex: 999 1 720px; min-width: 0; display: grid; gap: 14px; }
 .prail .pchip { width: 100%; min-height: 60px; }
 .prail .pnote { margin: 0 2px; }
-.pchip { display: grid; gap: 1px; min-height: 44px; padding: 6px 14px 6px 34px; position: relative; text-align: left; border: 2px solid var(--line); border-radius: 10px; background: var(--sheet); }
-.pchip::before { content: ''; position: absolute; left: 10px; top: 50%; width: 16px; height: 16px; margin-top: -8px; border: 2px solid var(--edge); border-radius: 4px; }
-.pchip[aria-pressed=true] { border-color: var(--ink); background: var(--raised); }
-.pchip[aria-pressed=true]::before { background: var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.3l3 3 6-6.6' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat; border-color: var(--ink); }
+.pchip { display: grid; gap: 1px; min-height: 44px; padding: 6px 14px; text-align: left; border: 2px solid var(--line); border-radius: 10px; background: var(--sheet); color: var(--muted); }
+.pchip:hover { border-color: var(--edge); color: var(--ink); }
+.pchip[aria-pressed=true] { border-color: var(--ink); background: var(--ink); color: var(--sheet); }
+.pchip[aria-pressed=true] small { color: inherit; opacity: .75; }
 .pchip b { font-size: 14px; } .pchip small { font-size: 11.5px; color: var(--muted); }
 .v3-hintbar kbd { display: inline-block; padding: 0 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 11.5px var(--f-mono); color: var(--ink); background: var(--sheet); }
 .dempty { display: grid; justify-items: center; align-content: center; gap: 12px; min-height: 360px; padding: 24px; color: var(--muted); background: var(--sheet-2); }
@@ -1323,9 +1323,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // Nothing in the build: steps 3 and 4 stay empty rather than planning the unit open in step 1 unasked
     const empty = !towers.length && !xl.length;
     if (forPrint && printSkip === null) printSkip = towers.map(t => t.id); // "only the loose parts", from before
+    if (forPrint) { // left out: only what is still there, once each; when that leaves nothing, everything is in again
+      const ids = [...towers.map(t => t.id), ...(xl.length ? ['loose'] : [])];
+      const kept = ids.filter(id => printSkip.includes(id));
+      if (kept.length === ids.length) kept.length = 0; // e.g. "Print loose parts only", then the loose parts cleared
+      if (kept.length !== printSkip.length) { printSkip = kept; savePrintSkip(); }
+    }
     const skip = new Set(forPrint ? printSkip : []);
     let list = towers.filter(t => !skip.has(t.id)), withX = xl.length > 0 && !skip.has('loose');
-    if (!list.length && !withX) { list = towers; withX = xl.length > 0; } // nothing left picked: everything
     const onlyExtras = !list.length && withX, whole = list.length === towers.length && withX === xl.length > 0;
     const all = [], issues = [];
     list.forEach(t => { const a = analyzeTower(t); all.push(...a.parts); a.issues.filter(i => i.k === 'bad').forEach(i => issues.push(t.name + ': ' + i.m)); });
@@ -3397,7 +3402,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <aside class="drail prail" role="group" aria-label="What to print"><div class="v3-sec">What to print</div>
         ${towers.map(t => `<button type="button" class="pchip" data-pskip="${t.id}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small></button>`).join('')}
         ${extras.length ? `<button type="button" class="pchip" data-pskip="loose" aria-pressed="${b.extras > 0}"><b>Loose parts</b><small class="mono">${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button>` : ''}
-        <p class="pnote">${towers.length + (extras.length ? 1 : 0) < 2 ? 'Everything in Design is in these plates.' : b.whole ? 'Everything is in these plates. Untick a stack to leave it out.' : 'Only what is ticked is in these plates and in the file.'}</p></aside>
+        <p class="pnote">${towers.length + (extras.length ? 1 : 0) < 2 ? 'Everything in Design is in these plates.' : b.whole ? 'Everything is in these plates. Click a stack to leave it out.' : 'Only what is highlighted is in these plates and in the file. Click to put a stack back.'}</p></aside>
       <div class="pmain">
       <section class="panel ptop" aria-label="Progress and export">
         <div class="ptop-prog"><h1>${pct}% printed</h1><div class="bar2" aria-hidden="true"><i style="width:${pct}%"></i></div>
@@ -3438,7 +3443,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     V.querySelectorAll('[data-pskip]').forEach(btn => btn.onclick = () => {
       const id = btn.dataset.pskip === 'loose' ? 'loose' : +btn.dataset.pskip, on = btn.getAttribute('aria-pressed') === 'true';
       if (on && V.querySelectorAll('[data-pskip][aria-pressed=true]').length === 1) { toast('Keep at least one stack or the loose parts to print'); return; }
-      printSkip = on ? [...printSkip, id] : printSkip.filter(x => x !== id); savePrintSkip();
+      printSkip = [...printSkip.filter(x => x !== id), ...(on ? [id] : [])]; savePrintSkip();
       selPlate = null; plateFilter = 'all'; renderPrint(); renderTabs();
     });
     V.querySelectorAll('[data-filter]').forEach(btn => btn.onclick = () => { plateFilter = btn.dataset.filter; renderPrint(); });
