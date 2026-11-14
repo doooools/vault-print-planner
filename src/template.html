@@ -412,6 +412,12 @@ pre.code { margin: 0; background: var(--sheet-2); border-radius: 8px; padding: 1
 .empty { padding: 18px; color: var(--muted); }
 .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); transform: translateX(-50%); background: var(--ink); color: var(--sheet); padding: 8px 14px; border-radius: 8px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
 .toast.show { opacity: 1; }
+/* A message with a button ("Level 3 removed · Undo"): it takes clicks while it shows */
+.toast.act { display: flex; align-items: center; gap: 14px; padding: 6px 6px 6px 14px; max-width: calc(100vw - 32px); }
+.toast.act.show { pointer-events: auto; }
+.toast .tact { flex: none; display: inline-flex; align-items: center; gap: 6px; background: transparent; color: inherit; border: 1px solid color-mix(in srgb, var(--sheet) 45%, transparent); border-radius: 6px; padding: 5px 10px; font: inherit; font-size: 13.5px; cursor: pointer; }
+.toast .tact:hover { background: color-mix(in srgb, var(--sheet) 14%, transparent); }
+.toast .tact:focus-visible { outline: 2px solid var(--sheet); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
 footer.site { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr); gap: 18px 40px; border-top: 1px solid var(--line); margin-top: 24px; padding: 22px 0 8px; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
 footer.site h2 { margin: 0 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--ink); }
@@ -993,6 +999,88 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     set(k, v) { try { localStorage.setItem('vpp.' + k, JSON.stringify(v)); } catch (e) {} },
   };
 
+  // ---------- undo ----------
+  // Any change to the stacks (towers, seq), the colours (colorPrefs) or the loose parts (extras) can be taken back.
+  // Nothing calls undo from its handler: save(), saveColors(), saveExtras() and saveSel() call undoNote(), and at the
+  // end of the task (one gesture often saves twice) undoCommit compares the state with the last one kept. When it
+  // differs, the state before goes on the undo stack with the selection (dsel) as it was before the gesture. A gesture
+  // that overwrites or removes names its entry first (undoAs): that shows "<what> · Undo" for about 6 s. Ctrl/Cmd + Z
+  // undoes, Ctrl/Cmd + Y or Ctrl/Cmd + Shift + Z redoes (not while typing in a field: the browser's own undo works
+  // there). In memory only, 50 entries: a reload or a design file opened starts afresh. The camera stays (open3d keeps
+  // it for the same stack). Print's progress (printed, plateState) is kept in an entry only when the gesture asks for
+  // it (undoAs(…, true): "Reset all progress", "Clear" in Print).
+  const UNDO_MAX = 50;
+  const undo = { on: false, applying: false, timer: 0, base: '', sel: 'null', label: '', prog: null, past: [], next: [] };
+  const undoSnap = () => JSON.stringify([towers, seq, colorPrefs, extras]);
+  const undoSelNow = () => JSON.stringify({ sel: dsel, skip: printSkip, hw: hwSkip });
+  const progSnap = () => JSON.stringify([printed, plateState]);
+  function undoNote() { if (undo.on && !undo.applying && !undo.timer) undo.timer = setTimeout(undoCommit); }
+  // Name the coming change (the undo message); withProgress: Print's progress is part of it
+  function undoAs(label, withProgress) {
+    if (!undo.on) return;
+    undo.label = label;
+    if (withProgress && undo.prog == null) undo.prog = progSnap();
+    undoNote();
+  }
+  function undoCommit() {
+    clearTimeout(undo.timer); undo.timer = 0;
+    if (!undo.on) return;
+    const d = undoSnap(), s = undoSelNow(), p = undo.prog == null ? null : progSnap();
+    const changed = d !== undo.base || (p != null && p !== undo.prog);
+    if (changed) {
+      undo.past.push({ label: undo.label, before: { d: undo.base, s: undo.sel, p: undo.prog }, after: { d, s, p } });
+      if (undo.past.length > UNDO_MAX) undo.past.shift();
+      undo.next = [];
+      if (undo.label) toast(undo.label, { label: 'Undo', fn: undoBack }); else toastDrop();
+    }
+    undo.base = d; undo.sel = s; undo.label = ''; undo.prog = null;
+  }
+  // The selection a gesture starts from: taken as the pointer goes down or a key is pressed, before any handler runs
+  const undoSettle = () => { if (undo.on && !undo.timer && !undo.applying) undo.sel = undoSelNow(); };
+  addEventListener('pointerdown', undoSettle, true);
+  addEventListener('keydown', undoSettle, true);
+  function undoApply(st) {
+    const [tw, sq, cp, ex] = JSON.parse(st.d), aux = JSON.parse(st.s), had = new Set(towers.map(t => t.id));
+    undo.applying = true;
+    try {
+      towers = tw; seq = sq; colorPrefs = cp; extras = ex;
+      // Stacks that come back keep whether Print and Hardware had them left out
+      const back = towers.map(t => t.id).filter(id => !had.has(id));
+      if (printSkip) { printSkip = printSkip.filter(id => id === 'loose' || towers.some(t => t.id === id)); back.forEach(id => { if ((aux.skip || []).includes(id)) printSkip.push(id); }); savePrintSkip(); }
+      hwSkip = hwSkip.filter(id => towers.some(t => t.id === id)); back.forEach(id => { if ((aux.hw || []).includes(id)) hwSkip.push(id); }); store.set('hwSkip', hwSkip);
+      const d = aux.sel;
+      dsel = !d ? null : d.t === 'loose' || towers.some(t => t.id === d.t) ? d : towers[0] ? { t: towers[0].id, l: null, u: 0 } : null;
+      if (dsel && Number.isInteger(dsel.l)) { const t = towers.find(x => x.id === dsel.t); if (!t || dsel.l >= t.levels.length) { dsel.l = t && t.levels.length ? t.levels.length - 1 : null; dsel.u = 0; delete dsel.d; } }
+      if (st.p != null) { [printed, plateState] = JSON.parse(st.p); store.set('printed', printed); store.set('plateState', plateState); }
+      gpend = null;
+      save(); saveColors(); saveExtras(); saveSel();
+      renderAll();
+    } finally { undo.applying = false; }
+    undo.base = undoSnap(); undo.sel = undoSelNow();
+  }
+  function undoBack() {
+    if (undo.timer) undoCommit();
+    const e = undo.past.pop(); if (!e) { toast('Nothing to undo'); return; }
+    undoApply(e.before); undo.next.push(e);
+    toast(e.label ? `Undone: ${e.label}` : 'Change undone', { label: 'Redo', redo: true, fn: undoForth });
+  }
+  function undoForth() {
+    if (undo.timer) undoCommit();
+    const e = undo.next.pop(); if (!e) { toast('Nothing to redo'); return; }
+    undoApply(e.after); undo.past.push(e);
+    toast(e.label ? `Redone: ${e.label}` : 'Change redone', { label: 'Undo', fn: undoBack });
+  }
+  // A fresh start (first render, a design file opened): nothing to undo
+  function undoReset() { clearTimeout(undo.timer); undo.timer = 0; undo.past = []; undo.next = []; undo.label = ''; undo.prog = null; undo.base = undoSnap(); undo.sel = undoSelNow(); undo.on = true; }
+  addEventListener('keydown', e => {
+    if (!undo.on || !(e.ctrlKey || e.metaKey) || e.altKey) return;
+    const k = e.key.toLowerCase(), a = e.target;
+    if (k !== 'z' && k !== 'y') return;
+    if (a && (a.isContentEditable || /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName))) return; // the field's own undo
+    e.preventDefault();
+    if (k === 'y' || e.shiftKey) undoForth(); else undoBack();
+  });
+
   // ---------- theme ----------
   // The header's Light / Dark buttons. Until one is clicked the page follows the system (and its changes); a click
   // forces that theme, kept in vpp.theme and set by the <head> script before the next visit is drawn (no flash).
@@ -1092,7 +1180,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const PALETTE_DEFAULT = [{ id: 'body', name: 'Light grey', hex: '#d4d6d3' }, { id: 'inner', name: 'Charcoal', hex: '#3a3d3f' }, { id: 'accent', name: 'Orange', hex: '#e8742f' }];
   let colorPrefs = plainColors(store.get('colors', null)) || { palette: PALETTE_DEFAULT.map(p => ({ ...p })), roles: {} };
   if (store.get('colors', null)) store.set('colors', colorPrefs);
-  const saveColors = () => store.set('colors', colorPrefs);
+  const saveColors = () => { store.set('colors', colorPrefs); undoNote(); };
   const ROLE_BY_ID = new Map(R.ROLES.map(r => [r.id, r]));
   const paletteOf = id => colorPrefs.palette.find(p => p.id === id);
   // Each stack has its own part colours (t.roles): painting one stack leaves the others as they are. colorPrefs.roles
@@ -1120,10 +1208,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const following = (role, cfg, t) => { const r = ROLE_BY_ID.get(role); return !!(r && r.follow) && !ownPick(role, cfg, t === undefined ? stackNow() : t); };
   // Lines in their chosen colours. A part in another colour than its default is a different print, so it gets its
   // own key: two units with different fronts list two lines, and plates and progress keep them apart.
-  // Whether anything differs from USSA's render colours (the palette, a role, or a unit of a stack)
-  const colorsCustom = () => Object.keys(colorPrefs.roles).length > 0 || JSON.stringify(colorPrefs.palette) !== JSON.stringify(PALETTE_DEFAULT)
-    || towers.some(t => t.roles && Object.entries(t.roles).some(([k, id]) => id !== (ROLE_BY_ID.get(k) || {}).def))
-    || towers.some(t => t.levels.some(lv => lv.some(u => u.colors && Object.keys(u.colors).length)));
   const paintLines = (res, cfg) => ({ ...res, lines: res.lines.map(l => { const c = colorFor(l.role, cfg); return c === l.color ? l : { ...l, color: c, key: l.file.path + '#' + c }; }) });
   let labelsApart = store.get('labelsApart', true); // labels on a plate of their own
   let mixSupports = store.get('mixSupports', false); // parts that need supports share plates with the rest
@@ -1142,7 +1226,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   if (!towers) { // migrate the old flat build list: each unit becomes its own tower
     towers = (store.get('build', []) || []).map(b => ({ id: seq++, name: 'Stack ' + (seq - 1), levels: [[clean(b.cfg)]], stack: { ...STACK_DEFAULT } }));
   }
-  const save = () => { store.set('towers', towers); store.set('seq', seq); };
+  const save = () => { store.set('towers', towers); store.set('seq', seq); undoNote(); };
   // A stack id no stack has (seq can lag behind ids that came from elsewhere)
   const newId = () => { seq = Math.max(seq, ...towers.map(t => t.id + 1)); return seq++; };
   // The 'mech' colour role (runner slides, keys, hinges and locks) became three: carry a choice made before over
@@ -1171,7 +1255,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const savePrintSkip = () => store.set('printSkip', printSkip);
   let xq = '';                                        // current part search
   const xOpen = new Set(); let xScroll = 0;           // the parts list: families unfolded, and where it was scrolled
-  const saveExtras = () => store.set('extras', extras);
+  const saveExtras = () => { store.set('extras', extras); undoNote(); };
   // Progress key: extras are tracked apart from the same file used in a tower
   const pkey = l => l.key || l.file.path;
   const isExtra = l => !!l.key && l.key.startsWith('extra:');
@@ -1938,7 +2022,21 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
     toast('Copy blocked here. The text is selected; press \u2318C.');
   }
-  let tt; function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2400); }
+  // A short message at the bottom. With `act` ({ label, fn }) it carries a button ("Undo", "Redo") and stays about 6 s,
+  // longer while the pointer is on it.
+  let tt; function toast(m, act) {
+    const t = $('toast'); clearTimeout(tt);
+    t.classList.toggle('act', !!act);
+    if (act) {
+      t.innerHTML = `<span>${esc(m)}</span><button type="button" class="tact"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${act.redo ? '<path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>' : '<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>'}</svg>${esc(act.label)}</button>`;
+      t.querySelector('.tact').onclick = () => { t.classList.remove('show'); act.fn(); };
+    } else t.textContent = m;
+    t.classList.add('show');
+    const hide = () => { tt = setTimeout(() => t.classList.remove('show'), act ? 6000 : 2400); };
+    t.onpointerenter = act ? () => clearTimeout(tt) : null; t.onpointerleave = act ? hide : null;
+    hide();
+  }
+  const toastDrop = () => { const t = $('toast'); if (t.classList.contains('act')) { clearTimeout(tt); t.classList.remove('show'); } };
   const listText = (lines, label) => label + '\n' + lines.map(l => `${l.total}x  ${l.label}  \u2014  ${l.file.path}`).join('\n');
 
   // ---------- unit editor ----------
@@ -2101,7 +2199,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       saveExtras(); renderTabs(); renderBuild();
     });
     if ($('xprint')) $('xprint').onclick = () => { printSkip = towers.map(t => t.id); savePrintSkip(); view = 'print'; renderAll(); window.scrollTo(0, 0); };
-    holdButton($('xclear'), () => { extras = []; saveExtras(); renderTabs(); renderBuild(); }, 'Hold the button down to clear the loose parts');
+    holdButton($('xclear'), () => { undoAs('Loose parts cleared'); extras = []; saveExtras(); renderTabs(); renderBuild(); }, 'Hold the button down to clear the loose parts');
   }
 
   // Bambu Lab's own PLA and PETG colours (src/bambu-colors.tsv): [line, colour code, name, hex]
@@ -2196,8 +2294,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       </div>`;
     const done = () => { saveColors(); renderAll(); };
     box.querySelectorAll('[data-brush]').forEach(b => b.onclick = () => setBrush(b.dataset.brush));
-    box.querySelectorAll('[data-prole]').forEach(b => b.onclick = () => { paintRole(b.dataset.prole, brushId()); done(); });
-    box.querySelectorAll('[data-pall]').forEach(b => b.onclick = () => { b.dataset.pall.split(',').forEach(r => paintRole(r, brushId())); done(); });
+    box.querySelectorAll('[data-prole]').forEach(b => b.onclick = () => { const r = b.dataset.prole; undoAs(`${ROLE_BY_ID.get(r).label} painted ${colorName(brushId())}`); paintRole(r, brushId()); done(); });
+    box.querySelectorAll('[data-pall]').forEach(b => b.onclick = () => { const g = ROLE_GROUPS.find(([, ids]) => ids.join() === b.dataset.pall); undoAs(`${g ? g[0] : 'Part types'} painted ${colorName(brushId())}`); b.dataset.pall.split(',').forEach(r => paintRole(r, brushId())); done(); });
     box.querySelectorAll('[data-pown]').forEach(b => b.onclick = () => {
       const x = own[+b.dataset.pown], c = { ...x.u.colors }; delete c[x.role];
       if (Object.keys(c).length) x.u.colors = c; else delete x.u.colors;
@@ -2205,6 +2303,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     });
     box.querySelectorAll('[data-pal-del]').forEach(b => holdButton(b, () => {
       const id = b.dataset.palDel;
+      undoAs(`${colorName(id)} removed from your filaments`);
       colorPrefs.palette = colorPrefs.palette.filter(p => p.id !== id);
       for (const k of Object.keys(colorPrefs.roles)) if (colorPrefs.roles[k] === id) delete colorPrefs.roles[k];
       towers.forEach(t => { if (t.roles) for (const k of Object.keys(t.roles)) if (t.roles[k] === id) delete t.roles[k]; });
@@ -2212,9 +2311,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { if (u.colors) { for (const k of Object.keys(u.colors)) if (u.colors[k] === id) delete u.colors[k]; if (!Object.keys(u.colors).length) delete u.colors; } })));
       save(); done();
     }, 'Hold the cross down to remove this filament'));
+    // No question first: like the other two, it applies and offers "Undo"
     box.querySelectorAll('[data-cpreset]').forEach(b => b.onclick = () => {
-      if (b.dataset.cpreset === 'render' && colorsCustom() && !confirm(stackNow() ? `Go back to USSA’s render colors on ${stackNow().name}? This also removes the colors chosen for its single modules. Other stacks keep theirs.` : 'Go back to USSA’s render colors? This removes the filaments you added.')) return;
-      applyColorPreset(b.dataset.cpreset); renderAll();
+      const id = b.dataset.cpreset, t = stackNow();
+      undoAs(id === 'render' ? `USSA render colors back${t ? ' on ' + t.name : ''}` : `${id === 'two' ? 'Two-tone' : 'One color'} applied${t ? ' to ' + t.name : ''}`);
+      applyColorPreset(id); renderAll();
     });
     box.querySelector('[data-padd]').onclick = () => { fpAdding = !fpAdding; renderAll(); const c = $('dCat'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
     box.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { view = b.dataset.go; renderAll(); });
@@ -2238,7 +2339,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       : { t: d.t, l: Number.isInteger(d.l) && d.l >= 0 ? d.l : null, u: Number.isInteger(d.u) && d.u >= 0 ? d.u : 0, ...(typeof d.d === 'string' && SAFE_ID.test(d.d) ? { d: d.d } : {}) };
     if (d) store.set('dsel', dsel); }
   let fpStrip = false;                  // the footprint strip under the toolbar
-  const saveSel = () => store.set('dsel', dsel);
+  const saveSel = () => { store.set('dsel', dsel); undoNote(); };
   const curTower = () => dsel && towers.find(t => t.id === dsel.t);
   // Does a unit have a part too big for the printer? (wall mount, pegboard and backbone parts are judged on their own)
   const tooBig = k => computeUnit(clean({ ...k, wallMount: false, pegboard: 'none', backbone: 'none' })).lines.some(l => l.fit.s === 'no' || l.fit.s === 'reorient');
@@ -2289,6 +2390,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   // The footprint: written on every level. A pair that doesn't make the new width becomes one module of that width.
   function setFootprint(t, w, d) {
+    const was = fpCode(fpOf(t)), lvWas = t.levels.map(lv => JSON.stringify(lv));
     t.fp = { w, d };
     let split = 0;
     t.levels = t.levels.map(lv => {
@@ -2299,8 +2401,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       u.w = (u.w === 'L2' && w === 'L') || (u.w === 'XL2' && w === 'XL') ? u.w : w; fixUnit(u);
       return [u];
     });
+    const changed = t.levels.filter((lv, i) => JSON.stringify(lv) !== lvWas[i]).length;
+    if (was !== fpCode(t.fp)) undoAs(`Footprint ${was} → ${fpCode(t.fp)}${split ? `: XL modules only come in 1F, ${plural(split, 'taller level')} ${split === 1 ? 'is' : 'are'} now an S and an M side by side` : changed ? `, ${plural(changed, 'level')} changed` : ''}`);
     fixTower(t); save();
-    if (split) toast(`XL modules only come in 1F: ${plural(split, 'taller level')} ${split === 1 ? 'is' : 'are'} now an S and an M side by side.`);
   }
   // Across the width, on L and XL stacks: one module, one shell holding two drawers (L\u00b2, XL\u00b2), or two modules side by side
   const ACROSS = { L: [['L', 'L', 'one module'], ['L2', 'L\u00b2', 'two drawers, one shell'], ['SS', 'S + S', 'two modules']],
@@ -2344,7 +2447,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (op === 'up' && i < L.length - 1) { [L[i], L[i + 1]] = [L[i + 1], L[i]]; dsel.l = i + 1; }
     if (op === 'down' && i > 0) { [L[i], L[i - 1]] = [L[i - 1], L[i]]; dsel.l = i - 1; }
     if (op === 'dup') { L.splice(i + 1, 0, L[i].map(u => { const k = JSON.parse(JSON.stringify(u)); k.roof = 'none'; return k; })); dsel.l = i + 1; }
-    if (op === 'del') { L.splice(i, 1); dsel.l = L.length ? Math.min(i, L.length - 1) : null; dsel.u = 0; }
+    if (op === 'del') { undoAs(`Level ${i + 1} removed`); L.splice(i, 1); dsel.l = L.length ? Math.min(i, L.length - 1) : null; dsel.u = 0; }
     if (op === 'top') { const top = L[L.length - 1]; L.push(top ? top.map(u => newUnit(t, u)) : [newUnit(t)]); dsel.l = L.length - 1; dsel.u = 0; }
     fixTower(t); saveSel(); save(); renderAll();
   }
@@ -2442,7 +2545,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     seq = Math.max(Number.isInteger(d.seq) && d.seq > 0 && d.seq < 1e9 ? d.seq : 1, ...towers.map(t => t.id + 1));
     printSkip = []; savePrintSkip();
     dsel = towers[0] ? { t: towers[0].id, l: null, u: 0 } : extras.length ? { t: 'loose' } : null;
-    saveSel(); save(); saveExtras(); view = 'build'; renderAll(); toast(`Opened ${name}`);
+    saveSel(); save(); saveExtras(); view = 'build'; renderAll(); undoReset(); toast(`Opened ${name}`);
     return true;
   }
   // First launch: printer, Vault folder, first stack
@@ -2520,7 +2623,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // Everything that removes or clears is pressed and held (Dols, 2026-11-13): half a second, while the button fills
   // in red (the stack's cross: its ring); let go sooner and nothing happens but a hint
   const HOLD_MS = 500;
-  function removeStack(t) { towers = towers.filter(x => x.id !== t.id); printSkip = printSkip ? printSkip.filter(x => x !== t.id) : printSkip; savePrintSkip(); if (dsel && dsel.t === t.id) dsel = null; saveSel(); save(); renderAll(); toast(`${t.name} removed`); }
+  function removeStack(t) { towers = towers.filter(x => x.id !== t.id); printSkip = printSkip ? printSkip.filter(x => x !== t.id) : printSkip; savePrintSkip(); if (dsel && dsel.t === t.id) dsel = null; undoAs(`${t.name} removed`); saveSel(); save(); renderAll(); }
   function holdButton(b, act, hint = 'Press and hold to confirm') {
     if (!b) return;
     let timer = null;
@@ -2684,18 +2787,24 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         Object.assign(dv.gk, patch); fixUnit(u); fixTower(t); saveSel(); save(); renderAll();
         return;
       }
+      // A type or a height that resets other settings is named, for its "Undo"
+      const bare = () => JSON.stringify(L[i].map(x => ({ ...x, h: 0 }))), was = bare();
       if ('h' in patch && xl && patch.h > 1) {
         L[i] = acrossLevel(lv, 'SM', { ...u, h: patch.h }); dsel.u = 0;
-        toast(`XL modules only come in 1F: level ${i + 1} is now an S and an M side by side, ${patch.h}F.`);
+        undoAs(`XL modules only come in 1F: level ${i + 1} is now an S and an M side by side, ${patch.h}F`);
       } else {
+        const type = u.type;
         Object.assign(u, patch); fixUnit(u);
         if ('h' in patch) lv.forEach(x => { if (x !== u) { x.h = u.h; fixUnit(x); } });
+        if ('type' in patch && u.type !== type) undoAs(`Level ${i + 1} is now a ${u.type}`);
+        else if ('h' in patch && bare() !== was) undoAs(`Level ${i + 1} is now ${u.h}F, some of its settings were reset`);
       }
       fixTower(t); saveSel(); save(); renderAll();
     };
     box.querySelectorAll('[data-across]').forEach(b => b.onclick = () => {
       const v = b.dataset.across, one = v === 'XL' || v === 'XL2';
-      if (one && u.h > 1) toast(`${WNAME[v]} modules only come in 1F: level ${i + 1} is now 1F.`);
+      if (one && u.h > 1) undoAs(`${WNAME[v]} modules only come in 1F: level ${i + 1} is now 1F`);
+      else if (lv.length > 1 && acrossOf(lv) !== v) undoAs(`Level ${i + 1} is now ${WNAME[v] || (v === 'SS' ? 'S + S' : 'S + M')}, one module’s settings dropped`);
       L[i] = acrossLevel(lv, v, { ...u, h: one ? 1 : u.h }); dsel.u = 0;
       fixTower(t); saveSel(); save(); renderAll();
     });
@@ -2726,13 +2835,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       g.onclick = () => set(divToggle(u, g.dataset.dvslot));
       g.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set(divToggle(u, g.dataset.dvslot)); } };
     });
-    box.querySelectorAll('[data-dvall]').forEach(b => b.onclick = () => set(divAll(u, b.dataset.dvall)));
+    box.querySelectorAll('[data-dvall]').forEach(b => b.onclick = () => { if (b.dataset.dvall === 'none') undoAs('Dividers taken out'); set(divAll(u, b.dataset.dvall)); });
     box.querySelectorAll('[data-gplan]').forEach(svg => {
       svg.onclick = e => { const pt = gridClick(dv, svg.dataset.gplan, svg, e); if (pt) set(pt); };
       svg.onpointermove = e => gridHover(dv, svg.dataset.gplan, svg, e);
       svg.onpointerleave = () => gridHover(dv, svg.dataset.gplan, svg, null);
     });
-    box.querySelectorAll('[data-gclear]').forEach(b => holdButton(b, () => { gpend = null; set({ gridPlans: { ...(dv.gridPlans || {}), [b.dataset.gclear]: [] } }); }, 'Hold the button down to clear the plan'));
+    box.querySelectorAll('[data-gclear]').forEach(b => holdButton(b, () => { gpend = null; undoAs('Divider plan cleared'); set({ gridPlans: { ...(dv.gridPlans || {}), [b.dataset.gclear]: [] } }); }, 'Hold the button down to clear the plan'));
   }
   // The measured placements a shell's drawer layouts need before the inspector offers them
   const layoutsReady = u => !!((PLACE.units[`drawer|${u.w}|${u.d}|${u.h}`] || {}).layouts);
@@ -3653,7 +3762,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (key === 'printAids') { printAids = on; store.set('manualSupports', on); }
       renderPrint();
     });
-    holdButton($('resetPrinted'), () => { printed = {}; store.set('printed', printed); renderPrint(); renderTabs(); toast('Progress reset'); }, 'Hold the button down to reset all progress');
+    holdButton($('resetPrinted'), () => { undoAs('Progress reset', true); printed = {}; store.set('printed', printed); renderPrint(); renderTabs(); }, 'Hold the button down to reset all progress');
     if ($('copyAll')) $('copyAll').onclick = () => copy(listText(b.lines, 'Vault build'), 'Part list copied');
     if ($('gMake')) $('gMake').onclick = () => hasFolder ? makeDownload(target, false, 'project') : openFolder(false);
     if ($('gFolders')) $('gFolders').onclick = () => makeDownload(target, false, 'folders');
@@ -4866,11 +4975,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function v3paint(v, mesh) {
     const { role, cfg } = mesh.userData;
     if (!ROLE_BY_ID.has(role)) { toast(role === 'hardware' || role === 'caster' ? 'Bolts and casters are bought, not printed. Click one with Select to change their finish.' : 'Tires print in TPU.'); return; }
-    const id = v.brush;
+    const id = v.brush, what = `${ROLE_BY_ID.get(role).label} painted ${colorName(id)}`;
     if (v.pscope === 'unit' && cfg) {
       const o = v3owner(v, cfg);
+      undoAs(`${what} in ${o.name}`);
       o.cfg.colors = { ...(o.cfg.colors || {}), [role]: id }; o.save();
     } else {
+      undoAs(what);
       setRoleColor(role, id);
       const drop = k => { if (k && k.colors && k.colors[role]) { const x = { ...k.colors }; delete x[role]; if (Object.keys(x).length) k.colors = x; else delete k.colors; } };
       (stackNow() ? [stackNow()] : towers).forEach(t => t.levels.forEach(lv => lv.forEach(drop)));
@@ -5855,6 +5966,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 
   migrateTowers();
   renderAll();
+  undoReset(); // what the page opened with is where undo stops
 })();
 </script>
 </body>
