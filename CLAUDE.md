@@ -113,6 +113,9 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   The old `accent` role was split the same way (Dols, 2026-11-14): `latches` (the latch under each module, "Latches
   between levels"), `stoppers` (runner stoppers), `rods` (hinge rods); `accent` keeps the springs and geared rails. Each
   takes accent's saved colour once (`splitRoles`: localStorage flag `vpp.rolesSplit`, design files under version 3).
+  The runner guides left `shell` for a role of their own, `guides` (Dols, 2026-11-14): no carry-over, `follow: 'shell'`
+  in `R.ROLES` instead. `colorFor` gives them the shells' colour (unit, stack or project) until a `guides` colour is
+  chosen anywhere (`ownPick`, `following`); Paint's row and the "Selected" card say "same as …" meanwhile.
 - Opening and closing (branch claude/open-close-kinematics-…): every drawer and case has `motion` in the JSON
   (README "Motion"): the key turns a quarter turn and its 20-tooth pinion moves both racks 20 mm (a closed drawer is
   locked: key back, then slide); a case's toggle latch is a linkage (link about pin A, lever on pin B, tooth sliding
