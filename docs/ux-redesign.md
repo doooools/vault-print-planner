@@ -61,7 +61,8 @@ There is no draft unit any more. Remove `currentDest`, the Add destination menu,
 - **Plate colour modes** of step 2 (`plateColors`: "Like the renders", "Big & small", "One color"): removed. Plates always follow the colours of Design. "Two-tone" and "One color" remain as colour presets (`applyColorPreset`).
 - **Painting a role "everywhere"** clears the per-module colours for that role.
 - **Colour exceptions** are per module, not per drawer: in a module with several drawers, all fronts change together.
-- **Theme**: follows the system setting, as today (`prefers-color-scheme`). No switch.
+- **Theme**: follows the system setting (`prefers-color-scheme`) until the header's Light / Dark buttons are used;
+  then the theme picked stays, saved in the browser (changed 2026-11-14 at the user's request; it was "No switch").
 - **Phones**: not a target. Do not spend time on touch layouts.
 - **Branding**: one credit line "A fork of Romy's Vault Print Planner" linking to the original. Remove the Ko-fi and YouTube buttons. The store links must stop being upstream's affiliate links (see "Open points"); the "As an Amazon Associate…" line goes with them. (Changed 2026-11-13 at the user's request: Amazon.com links are upstream's affiliate links again, other stores take the fork's own tags; see CLAUDE.md.)
 - **Opening drawers and cases**: no "Drawers" tool. Ctrl + click, Shift + click or Cmd + click on a drawer or a case opens or closes it, in both tools. A plain click selects (Select tool) or paints (Paint tool).
