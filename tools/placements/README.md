@@ -87,11 +87,12 @@ Each joint goes from 0 (the part as placed) to 1:
   as placed, then move B to where the link has it". The same lines are in `kinematics.py` (`Latch`) and in the
   page (`latchSetup`, `latchPose`).
 
-`drawer` (the drawer's slide, group `drawer`, along +Z; the page pulls it out by 0.6 × its depth) and `lid` (the
-case's `hinge`, 0 to `open_deg`) are the unit's own joints. `open` lists the steps, in order: each moves its
-`joints` from `from` to `to`, together, eased, in a share `s` of the time (the page runs the whole in 0.6–1 s). A
-closed unit is at the start of the steps, an open one at the end; closing runs them backwards.
-- Drawer: `[{joints: [key, rack_lo, rack_hi], from: 1, to: 0, s: 0.35}, {joints: [drawer], from: 0, to: 1, s: 0.55}]`
+`drawer` (the drawer's slide, group `drawer`, along +Z, on its telescopic runners: see "Runners" below) and `lid`
+(the case's `hinge`, 0 to `open_deg`) are the unit's own joints. `open` lists the steps, in order: each moves its
+`joints` from `from` to `to`, together, eased, in a share `s` of the time (the page runs the whole in 0.6–1 s, a
+drawer's in up to 1.6 s). A closed unit is at the start of the steps, an open one at the end; closing runs them
+backwards (the runner guides excepted: below).
+- Drawer: `[{joints: [key, rack_lo, rack_hi], from: 1, to: 0, s: 0.35}, {joints: [drawer], from: 0, to: 1, s: 1.0}]`
   (L² and XL²: `key_left`/`key_right`, `key_S`/`key_M`, … all in the first step). Closed, the drawer is locked.
 - Case: `[{joints: [latch_1(, latch_2)], from: 0, to: 1, s: 0.45}, {joints: [lid], from: 0, to: 1, s: 0.6}]`.
 - Case under a unit (`release`, `measure_rods.py`): the lid can't turn up into the unit on it, so it stays latched to
@@ -104,6 +105,47 @@ closed unit is at the start of the steps, an open one at the end; closing runs t
   side by side along the axis). The page takes `release` when a unit (not a roof) stands on the next level over the
   case. Not from USSA (no manual use of it): the user's idea, 2026-11-12. On S the rods' heads stick out 25 mm past
   the case's side once out (into an S or M beside it).
+
+### Runners
+
+A drawer runs on two telescopic runners per level (one each side, so 2 per F; an L² or XL² has 4 per F, two per
+drawer), each three parts (manual "Drawer Assembly" 4/8 to 8/8):
+- the **runner slide** (`x<d> Runner Slide`, group `drawer`) is pushed into the box's side groove and goes with it;
+- the **runner guide** (`x<d> Runner Guide`) is the C-shaped channel the slide runs in, and runs itself in the module's
+  side recess;
+- the **runner stopper** (`Runner Stopper`, group `module`), pushed through the module's side wall once the box is in
+  (manual 8/8 step 11), sits in a slot of the guide's outer wall.
+
+Opening, the box and its slides move alone first, the guides staying (the slide runs more easily in the guide than
+the guide in the module): until each slide's back tab meets the lip at the guide's open front. The slide then drags
+its guide, which runs out of the module until the back end of the guide's slot meets the stopper. Closing, the slide
+goes back in first, until its tab is home at the back of the guide, then the box pushes the guides in. (Dols's
+description, 2026-11-14, checked on the files.) So the guides don't follow a step of their own: the page keeps where
+they are and moves them only when a slide drags them (they stay within [x − slide, x] of the box's x, and within
+[0, guide]), which makes the two ways different and lets a drawer turn back half way.
+
+`measure_runners.py` measures it on horizontal sections (y = const, every 0.5 mm through the runners) of the parts
+as placed: a part's section is moved along +z until it overlaps the other's by 0.05 mm² more than as placed (sections
+that already overlap by more than 0.5 mm² as placed are left out: the stopper's rounded foot on the guide's slot
+floor). The smallest over both sides and every level is the stop. It writes:
+
+- `motion.runners = {"slide": s1, "guide": s2}` (mm) on every drawer: the box goes out s1 + s2;
+- `{"guide": k}` on each runner guide part, k its level (0 the module's bottom one), and on an L² or XL²
+  `{"side": "left" | "right"}`, the drawer it guides (the nearest key). In a module holding several drawers the page
+  gives each guide to the drawer on its level and side (`railOf`).
+
+| depth | slide in the guide | guide to the stopper | the box goes out | module depth |
+|---|---|---|---|---|
+| 3 | 65.9 (XL 66.2) | 82.9 (XL 83.0) | 148.9 (XL 149.2) | 143.6 |
+| 4 | 87.9 (XL 87.2) | 102.9 (XL 104.0) | 190.8 (XL 191.2) | 185.6 |
+| 5 | 108.9 (XL 108.2) | 123.9 (XL 125.0) | 232.8 (XL 233.2) | 227.6 |
+| 6 | 129.9 (XL 129.2) | 144.9 (XL 145.9) | 274.8 (XL 275.2) | 269.6 |
+| 7 | 150.9 (XL 150.2) | 165.9 (XL 166.9) | 316.8 (XL 317.2) | 311.6 |
+
+(1F drawers, S and XL runner files; every drawer unit's own figures are in the JSON, within 0.1 mm of these for the
+same files.) The box comes out about its module's depth plus 5 mm: a full-extension slide, the slide's stage
+44 % of it. The figures depend on the depth only: S, M, L, L² and XL² take the same `x<d>` files, XL its own, within
+1 mm. Checked with `kinematics.py check` both ways (`--closing`): the runners add no overlap on the way.
 
 What it is (measured with sections of the user's files, `kinematics.py`, and the manual):
 
@@ -483,6 +525,7 @@ The files are exported in print orientation (some at 45° to fit the bed) and sc
 | `measure_lock_pins.py` | The case locks' pins, one `piece` each, on the latches' pins A and B (every `case|*`). |
 | `measure_dividers.py` | The case bodies' divider slots (`dividers` in every `case|*`) and each divider file standing (`divider_files`). |
 | `measure_grid.py` | The drawer boxes' peg-hole grids (`grid_boxes`) and each grid divider, edge piece and pin file standing (`grid_files`). |
+| `measure_runners.py` | How far a drawer's runner slides go in their guides and the guides to the stoppers (`motion.runners`), and each guide's level and side (README "Runners"). |
 | `check_layouts.py` | The layouts' motion, one drawer at a time with the others in place (kinematics.py's check). |
 | `kinematics.py` | The units' motion as the page runs it (every part's pose at t, 0 closed … 1 open), and a check that no part goes through another on the way (sections across the motion, shapely). |
 | `blender_motion.py` | Key frames of a unit opening, from the JSON alone with kinematics.py's pose: views and sections. |
@@ -513,6 +556,7 @@ blender -b --factory-startup --python tools/placements/blender_export_placements
 # after every export (it rewrites a unit with only its own parts): the XL drawers' and cases' baseplates, the lock pins
 python -I tools/placements/measure_baseplates.py src/stl-placements.json xl case
 python -I tools/placements/measure_lock_pins.py src/stl-placements.json
+python -I tools/placements/measure_runners.py src/stl-placements.json "/path/to/261021_VAULT_USSA_S" all --jobs 4 --write
 # after measure_column.py and every export: the column pieces' bounds, the fronts without a key lock, the grid roofs' plate
 python -I tools/placements/measure_envelope.py src/stl-placements.json
 # the bolts: after every export (the export rewrites a unit without its `hardware`)

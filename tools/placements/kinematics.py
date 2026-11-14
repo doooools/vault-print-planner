@@ -1,15 +1,16 @@
 """Opening and closing a unit, from src/stl-placements.json ("motion", README "Motion"), as the page does it, and a
 check that no part goes through another on the way.
 
-  python -I kinematics.py check <placements.json> <vault download> <unit key> [...] [--steps 41] [--hidden]
+  python -I kinematics.py check <placements.json> <vault download> <unit key> [...] [--steps 41] [--hidden] [--closing]
   python -I kinematics.py pose <placements.json> <unit key> <t>        (prints each moving part's matrix at t)
 
 t runs from 0 (closed: a drawer locked, a case latched) to 1 (open), through the unit's steps. `check` poses the
 unit's parts (as a part list would draw them: one baseplate, the key lock or with --hidden the hidden key) at
 `steps` values of t, cuts them by planes across the motion (a drawer: planes z = const through the key and racks,
-whose motion is in those planes, and y = const through the drawer; a case: planes x = const through each latch),
+whose motion is in those planes, and y = const through the drawer and its runners; a case: planes x = const through each latch),
 and reports, for every pair of parts of which one moves, the largest overlap of their sections (mm^2) with where
-it happens, next to the overlap when closed (t = 0). An overlap that is there when closed and doesn't grow is how
+it happens, next to the overlap when closed (t = 0). --closing poses the runner guides as on the way back
+from open (the slide goes in first, the guides stay out until the box pushes them), the parts drawn the same. An overlap that is there when closed and doesn't grow is how
 the parts are placed (a preload, or a small error), not the motion.
 
 The pose maths (no Blender, no shapely) is shared with blender_motion.py; `check` needs numpy, scipy and shapely.
@@ -262,7 +263,7 @@ def planes(key, unit):
     return xs
 
 
-def check(pl, download, key, steps=41, hidden=False, quiet=False):
+def check(pl, download, key, steps=41, hidden=False, quiet=False, closing=False):
     unit = pl["units"][key]
     skip = SKIP_HIDDEN if hidden else SKIP_DEFAULT
     parts = [p for p in unit["parts"] if not re.search(skip, p[0])]
@@ -296,7 +297,7 @@ def check(pl, download, key, steps=41, hidden=False, quiet=False):
         posed, rel = {}, {}
         for k, (p, T) in enumerate(zip(parts, tris)):
             if mov[k]:
-                M = part_matrix(unit, p, t, latches, travel)
+                M = part_matrix(unit, p, t, latches, travel, closing)
                 posed[k] = T @ M[:3, :3].T + M[:3, 3]
                 rel[k] = M @ np.linalg.inv(part_matrix(unit, p, 0.0))   # how it moved since closed
         sig = {k: np.round(P[0, 0], 4).tobytes() for k, P in posed.items()}
@@ -348,7 +349,7 @@ if __name__ == "__main__":
         pl = json.load(open(a[1], encoding="utf-8"))
         sys.stdout.reconfigure(encoding="utf-8")
         for k in keys:
-            check(pl, a[2], k, st, hidden="--hidden" in a)
+            check(pl, a[2], k, st, hidden="--hidden" in a, closing="--closing" in a)
     elif a and a[0] == "pose":
         pl = json.load(open(a[1], encoding="utf-8"))
         u = pl["units"][a[2]]
