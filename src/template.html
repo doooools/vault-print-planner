@@ -70,15 +70,16 @@ button { cursor: pointer; }
 .mono { font-family: var(--f-mono); font-size: 12.5px; }
 .num { font-variant-numeric: tabular-nums; }
 
-/* Header: logo, the four steps, the printer and the Vault folder, the credit line */
+/* Header: logo, the four steps, the File menu, the theme, the printer and the Vault folder, on one row at 1440 px.
+   The credit line is the footer's first row (UX audit A10) */
 header.appbar { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; padding: 10px max(20px, env(safe-area-inset-right, 0px)) 10px max(20px, env(safe-area-inset-left, 0px)); background: var(--sheet); border-bottom: 1px solid var(--line); }
 .logo { display: flex; align-items: center; gap: 10px; }
 .logo h1 { margin: 0; font-family: var(--f-display); font-weight: 800; font-stretch: 125%; font-size: 17px; letter-spacing: -0.01em; white-space: nowrap; }
 header.appbar .tabs { flex: 1 1 auto; }
-.credit { margin: 0; flex-basis: 100%; font-size: 12.5px; color: var(--muted); order: 5; }
-.credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
-.credit a:hover { color: var(--ink); }
-@media (min-width: 1280px) { .credit { flex-basis: auto; order: 0; } }
+/* The File menu's button; its menu is a .vmenu with a note on how the file stands (.mnote) */
+#fileBtn .chev { color: var(--muted); }
+.vmenu .mnote { margin-top: 2px; font-size: 12.5px; line-height: 1.4; color: var(--muted); max-width: 300px; text-wrap: pretty; }
+.vmenu .mnote.ok { color: var(--ok); }
 .newsbtn { border: 0; background: none; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 .newsbtn:hover { color: var(--ink); }
 dialog#news, dialog#relink, dialog#report { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px 22px; width: min(620px, calc(100vw - 32px)); max-height: min(80vh, 720px); overflow-y: auto; overscroll-behavior: contain; position: fixed; }
@@ -100,6 +101,14 @@ dialog#news h2, dialog#relink h2, dialog#report h2 { margin: 0 32px 4px 0; font-
 .hbtn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); font-weight: 600; white-space: nowrap; }
 .hbtn:hover, .hbtn[aria-expanded=true] { border-color: var(--ink); }
 .hbtn .mono { font-size: 12px; color: var(--muted); font-weight: 400; }
+/* Ko-fi: a quiet link at the end of the header (no orange: that is for actions), the cup drawn here, nothing loaded from Ko-fi */
+.hbtn.kofi { border-color: transparent; background: none; color: var(--muted); text-decoration: none; }
+.hbtn.kofi:hover, .hbtn.kofi:focus-visible { border-color: var(--line); color: var(--ink); }
+/* Where the header's buttons only just fit beside the tabs, the cup alone (its name stays in aria-label and title) */
+@media (min-width: 1240px) and (max-width: 1599px) { .hbtn.kofi { padding: 0 4px; } .hbtn.kofi span { display: none; } }
+/* One row from 1240 px (UX audit A10): the header's gaps and paddings tighten so the File menu and the cup fit at 1440 */
+@media (min-width: 1240px) { header.appbar { column-gap: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  header.appbar .tabs button { padding: 0 12px; } .hbtns { gap: 6px; } .hbtn:not(.kofi) { padding: 0 10px; } }
 /* Light / dark: two segmented buttons in the header, dark fill = the theme shown. 44 px tall like the header buttons */
 .seg.theme { grid-auto-columns: 36px; align-self: center; }
 .seg.theme button { display: grid; place-items: center; height: 36px; padding: 0; }
@@ -475,6 +484,9 @@ footer.site { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr
 footer.site h2 { margin: 0 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--ink); }
 footer.site p { margin: 0; max-width: 75ch; text-wrap: pretty; }
 footer.site h2.h2next { margin-top: 14px; }
+/* The credit line, first and across the footer: the fork, Romy's planner, What's new, Report a bug or an idea */
+footer.site .credit { grid-column: 1 / -1; max-width: none; font-size: 13.5px; color: var(--ink); }
+footer.site .credit .newsbtn { color: inherit; }
 footer.site .linkbtn { display: inline; margin: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 footer.site a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 @media (max-width: 760px) { footer.site { grid-template-columns: minmax(0, 1fr); } }
@@ -545,14 +557,13 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .dst { display: grid; min-width: 0; line-height: 1.25; }
 .dst b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dst small { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
-.dfile { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-top: 8px; }
-.dfile .v3-sec { grid-column: 1 / -1; padding: 0 2px; display: flex; gap: 6px; min-width: 0; }
-.dfile .dfname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: none; letter-spacing: 0; color: var(--ink); }
-.dfile .dsave { grid-column: 1 / -1; }
-.dfile .btn { min-height: 40px; }
 .drail > .btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-.dloose { display: grid; gap: 4px; padding: 12px; text-align: left; background: transparent; border: 1px dashed var(--edge); border-radius: 10px; font-size: 13px; color: var(--muted); }
-.dloose[aria-pressed=true] { border: 2px solid var(--ink); background: var(--raised); color: var(--ink); }
+.dloose { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 12px; text-align: left; background: var(--sheet); border: 2px solid var(--line); border-radius: 10px; }
+.dloose:hover { border-color: var(--muted); }
+.dloose[aria-pressed=true] { border-color: var(--ink); background: var(--raised); }
+.dloose .dst { flex: 1 1 auto; }
+.dloose .dst small { font-family: var(--f-body); font-size: 12.5px; }
+.dloose .dlc { flex: none; color: var(--muted); white-space: nowrap; }
 .dcenter { flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
 .dcenter.loose { overflow: visible; }
 .dhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
@@ -940,17 +951,18 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   <div class="logo"><svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#222526"/><rect x="11" y="10" width="42" height="13" rx="3" fill="#d4d6d3"/><rect x="11" y="25.5" width="42" height="13" rx="3" fill="#d4d6d3"/><rect x="11" y="41" width="42" height="13" rx="3" fill="#d4d6d3"/><circle cx="32" cy="32" r="3.6" fill="#e8742f"/></svg>
     <h1>Vault Print Planner</h1></div>
   <nav class="tabs" role="tablist" aria-label="Steps">
-    <button role="tab" id="tab-build" data-tab="build">1 · Design <span class="count" id="countBuild"></span></button>
+    <button role="tab" id="tab-build" data-tab="build">1 · Design</button>
     <button role="tab" id="tab-print" data-tab="print">2 · Print <span class="count" id="countPrint"></span></button>
     <button role="tab" id="tab-hardware" data-tab="hardware">3 · Hardware <span class="count" id="countHw"></span></button>
     <button role="tab" id="tab-assemble" data-tab="assemble">4 · Assemble <span class="count" id="countAsm"></span></button>
   </nav>
   <div class="hbtns">
+    <button type="button" class="hbtn" id="fileBtn" aria-haspopup="menu" aria-expanded="false" title="Save this design to a file, or open one"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>File<svg class="chev" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
     <div class="seg theme" role="group" aria-label="Theme"><button type="button" data-themeset="light" aria-pressed="false" aria-label="Light theme" title="Light theme"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button><button type="button" data-themeset="dark" aria-pressed="false" aria-label="Dark theme" title="Dark theme"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button></div>
     <button type="button" class="hbtn" id="printerBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="printerBox"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg><b id="printerName"></b><span class="mono" id="printerBed"></span></button>
     <button type="button" class="hbtn" id="folderBtn"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path class="ok" d="M9 13l2 2 4-4"/></svg><b>Vault folder</b><span class="mono" id="folderState"></span></button>
+    <a class="hbtn kofi" id="kofi" href="https://ko-fi.com/dols_" target="_blank" rel="noopener" aria-label="Support me on Ko-fi (opens a new tab)" title="Support this fork on Ko-fi"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5h13v6.5a5 5 0 0 1-5 5h-3a5 5 0 0 1-5-5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M16.5 9.5h1.3a2.6 2.6 0 0 1 0 5.2h-1.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 16.2s-3.2-1.9-3.2-3.9a1.6 1.6 0 0 1 3.2-.5 1.6 1.6 0 0 1 3.2.5c0 2-3.2 3.9-3.2 3.9z" fill="#ff5e5b"/></svg><span>Support me</span></a>
   </div>
-  <p class="credit">A <a href="https://github.com/doooools" target="_blank" rel="noopener">Dols</a> fork of <a href="https://vault.romy.io" target="_blank" rel="noopener">Romy’s Vault Print Planner</a> · <button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog">What’s new</button> · <button type="button" class="newsbtn" id="reportBtn" aria-haspopup="dialog">Report a bug or an idea</button></p>
   <div class="printer pop" id="printerBox" hidden role="dialog" aria-label="Printer">
       <label for="printer">Printer</label>
       <select id="printer"></select>
@@ -978,6 +990,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   </div>
 
   <footer class="site">
+    <p class="credit">A <a href="https://github.com/doooools" target="_blank" rel="noopener">Dols</a> fork of <a href="https://vault.romy.io" target="_blank" rel="noopener">Romy’s Vault Print Planner</a> · <button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog">What’s new</button> · <button type="button" class="newsbtn" id="reportBtn" aria-haspopup="dialog">Report a bug or an idea</button></p>
     <section>
       <h2>Not affiliated with USSA</h2>
       <p>An unofficial, fan-made planner. <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault</a>, its designs and its files belong to USSA; you need your own copy of the files to print anything.</p>
@@ -1139,6 +1152,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (!undo.on) return;
     const d = undoSnap(), s = undoSelNow(), p = undo.prog == null ? null : progSnap();
     const changed = d !== undo.base || (p != null && p !== undo.prog);
+    if (d !== undo.base) fileChanged(1); // one more change the design file doesn't have
     if (changed) {
       undo.past.push({ label: undo.label, before: { d: undo.base, s: undo.sel, p: undo.prog }, after: { d, s, p } });
       if (undo.past.length > UNDO_MAX) undo.past.shift();
@@ -1173,13 +1187,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function undoBack() {
     if (undo.timer) undoCommit();
     const e = undo.past.pop(); if (!e) { toast('Nothing to undo'); return; }
-    undoApply(e.before); undo.next.push(e);
+    undoApply(e.before); undo.next.push(e); if (e.before.d !== e.after.d) fileChanged(-1);
     toast(e.label ? `Undone: ${e.label}` : 'Change undone', { label: 'Redo', redo: true, fn: undoForth });
   }
   function undoForth() {
     if (undo.timer) undoCommit();
     const e = undo.next.pop(); if (!e) { toast('Nothing to redo'); return; }
-    undoApply(e.after); undo.past.push(e);
+    undoApply(e.after); undo.past.push(e); if (e.before.d !== e.after.d) fileChanged(1);
     toast(e.label ? `Redone: ${e.label}` : 'Change redone', { label: 'Undo', fn: undoBack });
   }
   // A fresh start (first render, a design file opened): nothing to undo
@@ -2131,7 +2145,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   function footCount() {
     const off = store.get('noCount', false);
-    $('footCount').innerHTML = 'Visits are counted with <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>: the page, the site you came from, your country, browser and screen width, and which store a Hardware link opens. No cookie, no IP address kept, nothing about your build. ' +
+    $('footCount').innerHTML = 'Visits are counted with <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>: the page, the site you came from, your country, browser and screen width, which store a Hardware link opens, and a click on Support me. No cookie, no IP address kept, nothing about your build. ' +
       `<button type="button" class="linkbtn" id="countOff">${off ? 'Count this browser again' : 'Don’t count this browser'}</button>${off ? ' (not counted now)' : ''}`;
     $('countOff').onclick = () => { store.set('noCount', !off); footCount(); toast(off ? 'Visits from this browser are counted again' : 'Visits from this browser are no longer counted'); };
   }
@@ -2140,6 +2154,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const countBuy = e => { const a = e.target.closest && e.target.closest('a[data-buy]'); if (a && (e.type === 'click' || e.button === 1)) count('buy/' + (a.dataset.store || a.textContent.trim()), { e: true, t: a.dataset.buy }); };
   document.addEventListener('click', countBuy);
   document.addEventListener('auxclick', countBuy);
+  ['click', 'auxclick'].forEach(ev => $('kofi').addEventListener(ev, e => { if (e.type === 'click' || e.button === 1) count('kofi', { e: true, t: 'Ko-fi' }); }));
 
   // ---------- copy helpers ----------
   function copy(text, msg, fallbackEl) {
@@ -2627,11 +2642,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (m.opener && m.opener.hasAttribute('aria-expanded')) m.opener.setAttribute('aria-expanded', 'false');
     if (refocus && m.opener && m.opener.isConnected) m.opener.focus({ preventScroll: true });
   }
-  function menuOpen({ head, sub, items, x, y, opener, keys }) {
+  function menuOpen({ head, sub, note, noteOk, items, x, y, opener, keys, left }) {
     menuClose();
     const el = document.createElement('div'), id = 'menuHead' + (++menuOpen.n);
     el.className = 'vmenu'; el.tabIndex = -1; el.setAttribute('role', 'menu'); el.setAttribute('aria-labelledby', id);
-    el.innerHTML = `<div class="mhead" id="${id}"><small>${esc(head)}</small><b>${esc(sub)}</b></div>` + items.map((it, k) =>
+    el.innerHTML = `<div class="mhead" id="${id}"><small>${esc(head)}</small><b>${esc(sub)}</b>${note ? `<span class="mnote${noteOk ? ' ok' : ''}">${esc(note)}</span>` : ''}</div>` + items.map((it, k) =>
       `${it.sep ? '<div class="msep" role="separator"></div>' : ''}<button type="button" role="menuitem" tabindex="-1" data-mi="${k}"${it.dis ? ' disabled aria-disabled="true"' : ''}${it.tip ? ` title="${esc(it.tip)}"` : ''}>${it.icon ? icon(it.icon) : ''}<span>${esc(it.label)}</span>${it.key ? `<span class="mkey">${esc(it.key)}</span>` : ''}</button>`).join('');
     document.body.append(el);
     const off = new AbortController(), sig = { signal: off.signal, capture: true };
@@ -2639,7 +2654,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (opener && opener.hasAttribute('aria-expanded')) opener.setAttribute('aria-expanded', 'true');
     // where: at the pointer, or under the button, its right edges lined up; kept inside the window
     const r = el.getBoundingClientRect(), W = innerWidth, H = innerHeight;
-    if (x == null) { const b = opener.getBoundingClientRect(); x = b.right - r.width; y = b.bottom + 6; if (y + r.height > H - 8) y = b.top - 6 - r.height; }
+    if (x == null) { const b = opener.getBoundingClientRect(); x = left ? b.left : b.right - r.width; y = b.bottom + 6; if (y + r.height > H - 8) y = b.top - 6 - r.height; }
     else { if (x + r.width > W - 8) x -= r.width; if (y + r.height > H - 8) y -= r.height; }
     el.style.left = Math.round(Math.max(8, Math.min(W - 8 - r.width, x))) + 'px';
     el.style.top = Math.round(Math.max(8, Math.min(H - 8 - r.height, y))) + 'px';
@@ -2707,7 +2722,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     del: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>', plus: '<path d="M12 5v14M5 12h14"/>',
     more: '<circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="19" cy="12" r="1.2" fill="currentColor"/>',
     fit: '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>', drawer: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 12h6"/>',
-    chev: '<path d="M9 6l6 6-6 6"/>', pen: '<path d="M4 20l1-4L16 5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/>', help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>',
+    chev: '<path d="M9 6l6 6-6 6"/>', save: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>', file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
+    open: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', pen: '<path d="M4 20l1-4L16 5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/>', help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>',
   };
   const icon = k => `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
   // Width × depth × height of the whole stack as it stands, with its base, wheels, roof, handles… (stackSize)
@@ -2749,19 +2765,19 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         if (name !== designName) for (let k = 2, stem = name.replace(/\.vault\.json$/, ''); await fileIn(dir, name); k++) name = `${stem} ${k}.vault.json`;
         const fh = await dir.getFileHandle(name, { create: true }), w = await fh.createWritable();
         await w.write(text); await w.close();
-        setDesignName(name); toast(`Saved to ${dir.name}/${name}`); renderBuild(); return;
+        setDesignName(name); markFile(name); toast(`Saved to ${dir.name}/${name}`); return;
       } catch (e) { /* write refused or failed: ask where, as below */ }
     }
     if (window.showSaveFilePicker) {
       try {
         const h = await window.showSaveFilePicker({ id: 'vault-design', startIn: dir || 'downloads', suggestedName: designName || designFileName(), types: DESIGN_TYPES });
         const w = await h.createWritable(); await w.write(text); await w.close();
-        setDesignName(await inVault(dir, h) ? h.name : null); toast(`Saved ${h.name}`); renderBuild(); return;
+        setDesignName(await inVault(dir, h) ? h.name : null); markFile(h.name); toast(`Saved ${h.name}`); return;
       } catch (e) { if (e.name === 'AbortError') return; }
     }
     const name = designFileName(), a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([text], { type: 'application/json' })), download: name });
     document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-    toast(`Saved ${name} to your downloads`);
+    markFile(name); toast(`Saved ${name} to your downloads`);
   }
   async function openDesign() {
     if (window.showOpenFilePicker) {
@@ -2769,12 +2785,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       try {
         const [h] = await window.showOpenFilePicker({ id: 'vault-design', startIn: dir || 'downloads', types: DESIGN_TYPES });
         const f = await h.getFile();
-        if (loadDesign(await f.text(), f.name)) { setDesignName(await inVault(dir, h) ? f.name : null); renderBuild(); }
+        if (loadDesign(await f.text(), f.name)) setDesignName(await inVault(dir, h) ? f.name : null);
         return;
       } catch (e) { if (e.name === 'AbortError') return; }
     }
     const inp = Object.assign(document.createElement('input'), { type: 'file', accept: '.json,application/json' });
-    inp.onchange = async () => { const f = inp.files[0]; if (f && loadDesign(await f.text(), f.name)) { setDesignName(null); renderBuild(); } };
+    inp.onchange = async () => { const f = inp.files[0]; if (f && loadDesign(await f.text(), f.name)) setDesignName(null); };
     inp.click();
   }
   function loadDesign(text, name) {
@@ -2790,9 +2806,34 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     seq = Math.max(Number.isInteger(d.seq) && d.seq > 0 && d.seq < 1e9 ? d.seq : 1, ...towers.map(t => t.id + 1));
     printSkip = []; savePrintSkip();
     dsel = towers[0] ? { t: towers[0].id, l: null, u: 0 } : extras.length ? { t: 'loose' } : null;
-    saveSel(); save(); saveExtras(); view = 'build'; renderAll(); undoReset(); toast(`Opened ${name}`);
+    saveSel(); save(); saveExtras(); view = 'build'; renderAll(); undoReset(); markFile(name); toast(`Opened ${name}`);
     return true;
   }
+  // ---------- the File menu ----------
+  // In the header on every step (UX audit A9): the file's name, how the design here stands against it, Save, Save as…,
+  // Open…. designMark = { name, h, n }: the file last saved or opened, a hash of the design as it was then (the same
+  // JSON undo compares) and the changes made since (undoCommit adds one, Undo takes one back). Kept in this browser.
+  let designMark = store.get('designMark', null);
+  if (!designMark || typeof designMark.name !== 'string' || typeof designMark.h !== 'string' || !Number.isInteger(designMark.n)) designMark = null;
+  function designHash() { const s = undoSnap(); let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + '.' + s.length; }
+  function markFile(name) { designMark = { name, h: designHash(), n: 0 }; store.set('designMark', designMark); }
+  function fileChanged(by) { if (!designMark) return; designMark.n = Math.max(0, designMark.n + by); store.set('designMark', designMark); }
+  function fileState() {
+    if (!designMark) return { name: 'Not saved to a file yet', note: 'Kept in this browser only. Save it to a file to open it again elsewhere or share it.' };
+    const same = designMark.h === designHash(), n = designMark.n;
+    return { name: designMark.name, ok: same, note: 'Kept in this browser. ' + (same ? 'The file has every change.' : n ? `The file is ${plural(n, 'change')} behind.` : 'The file is not up to date.') };
+  }
+  // Where Save goes: straight into the Vault folder when the browser can write there, else it asks or downloads
+  const saveWhere = () => (vaultFolder && typeof vaultFolder.handle === 'object') || (rememberedFolder && 'showDirectoryPicker' in window) ? 'in the Vault folder' : window.showSaveFilePicker ? '' : 'to downloads';
+  $('fileBtn').onclick = e => {
+    const b = $('fileBtn'); if (menuFrom(b)) { menuClose(); return; }
+    const f = fileState(), empty = !towers.length && !extras.length, where = saveWhere();
+    menuOpen({ head: 'Design file', sub: f.name, note: f.note, noteOk: f.ok, opener: b, keys: e.detail === 0, left: true, items: [
+      { label: 'Save', icon: 'save', key: where, dis: empty, tip: empty ? 'Nothing to save yet' : where === 'in the Vault folder' ? 'Save these stacks, loose parts and colors into the Vault folder, next to the part files' : 'Save these stacks, loose parts and colors to a file', fn: () => saveDesign(false) },
+      { label: 'Save as…', icon: 'file', dis: empty, tip: empty ? 'Nothing to save yet' : 'Save a copy somewhere else, or under another name', fn: () => saveDesign(true) },
+      { label: 'Open…', icon: 'open', tip: 'Open a design saved before: it replaces the stacks and loose parts here', fn: openDesign },
+    ] });
+  };
   // First launch: printer, Vault folder, first stack
   function renderStart() {
     const items = PRESETS.map((p, i) => ({ p, i })).filter(({ p }) => presetFits(p));
@@ -2841,9 +2882,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <aside class="drail" aria-label="Stacks"><div class="v3-sec">Stacks</div>${rail}
         <button type="button" class="btn dnew" id="dNew">${icon('plus')} New stack</button>
         <button type="button" class="btn" id="dTpl">Start from a template…</button>
-        <button type="button" class="dloose" data-loose aria-pressed="${loose}"><span class="v3-sec">Loose parts</span><span>${nx ? `${plural(nx, 'part')} outside any stack` : 'Spares or single parts outside any stack. None yet.'}</span></button>
-        <div class="dfile" role="group" aria-label="Design file"><span class="v3-sec">Design file${designName ? ` <span class="mono dfname" title="${esc(designName)}">${esc(designName.replace(/\.vault\.json$/, ''))}</span>` : ''}</span>
-          <button type="button" class="btn dsave" id="dSave" title="${vaultFolder && typeof vaultFolder.handle === 'object' ? `Save into ${esc(vaultFolder.name)}, next to the part files` : 'Save these stacks, loose parts and colors to a file'}">Save</button><button type="button" class="btn" id="dSaveAs" title="Save a copy somewhere else, or under another name">Save as…</button><button type="button" class="btn" id="dOpen" title="Open a design saved before">Open…</button></div>
+        <button type="button" class="dloose" data-loose aria-pressed="${loose}" title="Spare or single parts outside any stack"><span class="dst"><b>Loose parts</b><small>spares, single parts</small></span><span class="dlc mono">${nx ? plural(nx, 'part') : 'none yet'}</span></button>
       </aside>
       ${loose ? `<section class="dcenter loose">${extrasPanel(true)}</section>` : designCenter(t, info.find(x => x.t === t).a)}
       ${loose ? '' : `<aside class="panel dinsp" id="dInsp" aria-label="Selection"></aside>`}
@@ -2856,7 +2895,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     V.querySelector('[data-loose]').onclick = () => { dsel = { t: 'loose' }; saveSel(); renderAll(); };
     $('dNew').onclick = () => { newStack(); renderAll(); };
     $('dTpl').onclick = () => $('tplDlg').showModal();
-    $('dSave').onclick = () => saveDesign(false); $('dSaveAs').onclick = () => saveDesign(true); $('dOpen').onclick = openDesign;
     V.querySelector('[data-tpl-close]').onclick = () => $('tplDlg').close();
     $('tplDlg').querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => { $('tplDlg').close(); addPreset(PRESETS[+b.dataset.tpl]); });
     if (loose) { bindExtras(); v3sync(); return; }
@@ -4049,7 +4087,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         ${towers.map(t => `<button type="button" class="pchip" data-pskip="${esc(t.id)}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small>${railState(b.list.includes(t), 'In the plates')}</button>`).join('')}
         ${extras.length ? `<button type="button" class="pchip" data-pskip="loose" aria-pressed="${b.extras > 0}"><b>Loose parts</b><small class="mono">${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small>${railState(b.extras > 0, 'In the plates')}</button>` : ''}
         <p class="pnote">${none ? 'Nothing is picked. Click a stack to print it.' : towers.length + (extras.length ? 1 : 0) < 2 ? 'Everything in Design is in these plates.' : 'Click a stack to put it in the plates or leave it out.'}</p>
-        ${none ? '' : `<button type="button" class="dloose phbtn" data-phave aria-pressed="${printHave}"><span class="v3-sec">Already printed</span><span>${nHave ? `${plural(nHave, 'part')} taken off the plates` : 'Parts you printed before, to take off the plates. None yet.'}</span></button>`}</aside>
+        ${none ? '' : `<button type="button" class="dloose phbtn" data-phave aria-pressed="${printHave}" title="Parts you printed before, taken off the plates"><span class="dst"><b>Already printed</b><small>taken off the plates</small></span><span class="dlc mono">${nHave ? plural(nHave, 'part') : 'none yet'}</span></button>`}</aside>
       <div class="pmain">
       ${none ? `<section class="panel pnone" aria-label="Plates"><p><strong>Nothing picked to print.</strong> Click a stack on the left to print it.</p></section>` : `
       <section class="panel ptop" aria-label="Progress and export">
@@ -6381,16 +6419,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const nothing = !towers.length && !extras.length;
     ['print', 'hardware', 'assemble'].forEach(v => { $('tab-' + v).disabled = nothing; });
     if (nothing && view !== 'build') { view = 'build'; return renderTabs(); }
-    const units = towers.reduce((a, t) => a + t.levels.reduce((x, l) => x + l.length, 0), 0);
-    const nx = extras.reduce((a, e) => a + e.qty, 0);
-    $('countBuild').textContent = units + nx ? `(${units + nx})` : '';
-    $('countBuild').title = units + nx ? [units && plural(units, 'module'), nx && plural(nx, 'loose part')].filter(Boolean).join(' and ') : '';
+    // Counters (UX audit A10): none on Design; Print and Assemble in %, Hardware what is left to buy
     const b = computeBuild(true), { total, done } = printProgress(b.lines);
     $('countPrint').textContent = total ? `${Math.round(done / total * 100)}%` : '';
     $('countPrint').title = total ? `${done} of ${plural(total, 'part')} printed` : '';
     // Hardware's counter follows Hardware's own rail (hwSkip), not Print's (UX audit E5)
     const hb = b.empty ? null : computeBuild(false, hwSkip), hwLeft = hb ? hb.hardware.filter(h => !hwBought[h.item]).length : 0;
-    $('countHw').textContent = hwLeft ? `(${hwLeft})` : '';
+    $('countHw').textContent = hwLeft ? `${hwLeft} to buy` : '';
     $('countHw').title = hwLeft ? `${plural(hwLeft, 'line')} still to buy` : '';
     const ab = b.empty ? null : computeBuild(), ap = ab && !ab.empty ? asmPct(ab) : null;
     $('countAsm').textContent = ap == null ? '' : `${ap}%`;
