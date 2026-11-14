@@ -4,6 +4,13 @@ An unofficial, fan-made planner for [Vault by USSA](https://www.ussadesign.com/p
 
 Open it at **https://doooools.github.io/vault-print-planner/** (nothing to install).
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/design-dark.png">
+  <img src="docs/images/design.png" alt="The Design step: a stack of drawers with coloured fronts in the 3D view, one drawer open, the selected level's settings on the right">
+</picture>
+
+<sub>A six-level L7 stack with coloured fronts, its blue drawer open, drawn by the page from a Vault download on the maintainer's computer. The repository holds these screenshots only, never the files.</sub>
+
 Design your stacks and the planner tells you exactly which STL files to print and how many. It checks every part against your printer's bed, packs the parts onto plates, and makes a Bambu Studio project with one plate per tab (or plate files for other slicers).
 
 > This project is not made, endorsed or supported by USSA. It contains no Vault files: it works only with your own copy of the Vault STL download, [bought from USSA](https://www.ussadesign.com/products/vault). Vault, its designs and its files belong to USSA.
@@ -11,10 +18,19 @@ Design your stacks and the planner tells you exactly which STL files to print an
 ## What it does
 
 1. **Design:** build stacks level by level: drawers or top-opening cases, S to XL, L² and two modules side by side, 1F to 4F, several drawers in one 2F or 4F module, locks, interiors, roofs, a base with wheels, a foot bar or casters, handles. Start from a template or a blank stack.
-   - **3D view** of the stack, made from your own Vault files: every part where the assembled unit puts it, with its bolts. Turn it, spread the units apart, hide the roof. **Ctrl** or **Shift** + click opens a drawer (its key turns, the racks slide) or a case (latches, then the lid, with the roof on it).
+   - **3D view** of the stack, made from your own Vault files: every part where the assembled unit puts it, with its bolts. Turn it, spread the units apart, hide the roof. A **double-click** (or **Ctrl** / **Shift** + click) opens a drawer (its key turns, the racks slide) or a case (latches, then the lid, with the roof on it).
    - **Colors:** the Paint tool gives each kind of part (shells, fronts, boxes, latches, labels…) a filament, for the whole stack or for one module, from your filaments or Bambu Lab's PLA and PETG colours.
+
+   ![The Paint tool: a brush bar with the stack's filaments under the 3D view, and the colors by kind of part on the right](docs/images/paint.png)
+
 2. **Print:** pick the stacks to print. Parts are packed onto plates by colour, under one 1 kg spool each, kept apart when they need supports. Press **Download the Bambu Studio project**: one `.3mf` with every plate as its own tab, with supports, walls and brims already set where the parts need them. Other printers get a zip with one `.3mf` per plate, or STL folders.
+
+   ![The Print step: plates grouped by colour, the selected plate drawn on the right with its parts](docs/images/print.png)
+
 3. **Hardware:** one shopping list for the whole build, each bolt with its head shape, a tick when bought, copy or CSV.
+
+   ![The Hardware step: bolts grouped by kind, each with its head shape, what it holds and a store link](docs/images/hardware.png)
+
 4. **Assemble:** a checklist that follows USSA's manuals, stack by stack.
 
 Save a design to a file and open it again later (Chrome and Edge save it straight into your Vault folder, next to the part files).

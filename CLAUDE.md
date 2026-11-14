@@ -44,6 +44,8 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
 - **Never commit USSA geometry**: no STL (original or decimated), no `.blend`, no renders of the parts. Vault's
   files are commercial and the page must keep reading them from the user's own folder only. Numbers derived from
   them (measurements, placements) are fine, like the existing `src/stl-measurements.tsv`.
+  One exception (Dols, 2026-11-14): the README's screenshots in `docs/images/` may show the real parts, as the page
+  draws them from the user's folder. Nowhere else.
 - After any change in `src/`, rebuild and check the page:
   `python -I src/build.py --public src/stl-measurements.tsv index.html previews/index.tsv`, then
   `python -I tools/check.py`. `.gitattributes` keeps text files in LF on every system. Keep `build.py` reading and
