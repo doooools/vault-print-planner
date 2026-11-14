@@ -185,6 +185,16 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   parts, a divider plan, the plates, the print progress, an assembly count (Dols, 2026-11-14). A click that comes from
   no pointer and no key (a screen reader, voice control: `detail` 0) can't be held, so it asks for a confirmation
   instead.
+- **Undo** (UX audit 2026-11, session 1): every change to the stacks, the colours or the loose parts can be taken back
+  with Ctrl/Cmd + Z, and put back with Ctrl/Cmd + Y or Ctrl/Cmd + Shift + Z (not while typing in a field: the field
+  keeps its own undo). A gesture that overwrites or removes says what it did with an "Undo" button for about 6 s
+  ("Level 3 removed · Undo", "Two-tone applied to Rolling tool cart · Undo", "Footprint M5 → S3, 2 levels changed ·
+  Undo"); other changes show nothing but are undone the same way. The selection comes back with what is undone; the
+  camera stays where it is. A gesture that overwrites asks no question first: the colour presets apply, then offer
+  "Undo" (the "USSA render" confirmation is gone). Print's "Reset all progress" and "Clear" keep press and hold and
+  offer "Undo" too. Undo lives in memory only: a reload or a design file opened starts with nothing to undo.
+  "Remove level" becomes a plain click with "Undo" in the 3D view's right-click menu (session 3); every other removal
+  keeps press and hold.
 - **Rails**: Design, Print and Hardware also have a right column (Design's inspector; Print's plate options over the
   selected plate, `.pside`; Hardware's list options, `.hwside`). Design, Print, Hardware and Assemble each have a left
   rail with an eyebrow naming its items (Stacks, What to print, Hardware for, Sections). Every tab past Design shows its progress (Print and Assemble in %, Hardware the lines to buy).
