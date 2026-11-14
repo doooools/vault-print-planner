@@ -4430,8 +4430,15 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const fill = new T.DirectionalLight(0xffffff, 0.6); fill.position.set(-1, 0.4, -0.6); scene.add(fill);
     const lay = stackLayout(t);
     const size = Math.max(lay.width, lay.depth, lay.height);
-    const grid = new T.GridHelper(Math.ceil(size * 2.4 / 100) * 100, Math.ceil(size * 2.4 / 100) * 2, 0x9a9e9b, 0xc4c7c3);
-    grid.position.set(0, 0, -lay.depth / 2); grid.material.transparent = true; grid.material.opacity = 0.5; scene.add(grid);
+    // No floor grid (Dols, 2026-11-14: a cleaner view): a soft contact shadow under the stack keeps it standing on
+    // something. A radial fade on a plane a little wider than the footprint, drawn under everything, never clicked.
+    const shc = document.createElement('canvas'); shc.width = shc.height = 128;
+    const shx = shc.getContext('2d'), shg = shx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    shg.addColorStop(0, 'rgba(0,0,0,.3)'); shg.addColorStop(0.6, 'rgba(0,0,0,.18)'); shg.addColorStop(1, 'rgba(0,0,0,0)');
+    shx.fillStyle = shg; shx.fillRect(0, 0, 128, 128);
+    const shadow = new T.Mesh(new T.PlaneGeometry(lay.width * 1.35 + 40, lay.depth * 1.35 + 40),
+      new T.MeshBasicMaterial({ map: new T.CanvasTexture(shc), transparent: true, depthWrite: false }));
+    shadow.rotation.x = -Math.PI / 2; shadow.position.set(0, 0, -lay.depth / 2); shadow.renderOrder = -1; shadow.userData.own = true; scene.add(shadow);
     const camera = new T.PerspectiveCamera(32, 1, 5, size * 60);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.maxPolarAngle = Math.PI * 0.55;
@@ -4999,7 +5006,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     v3keep(v);
     v3 = null; v.token = null; v.ac.abort();
     v.ro.disconnect(); v.controls.dispose();
-    v.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+    v.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.userData.own) { o.material.map.dispose(); o.material.dispose(); } });
     v.mats.forEach(m => m.dispose());
     document.querySelectorAll('.v3-morepop').forEach(x => x.remove());
   }
