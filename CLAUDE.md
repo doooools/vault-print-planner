@@ -230,6 +230,10 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   is too small; `insetOf` gives the part's place inside its box (brim + room) to the export and the plate drawing.
   Diagonal and as-exported shells (L 1F, L 2F) sit alone on their plate and get no room.
 
+- Hardware in two side columns like Print (Dols, 2026-11-14): left rail "Hardware for" (stacks as buttons, `hwSkip`,
+  `computeBuild(false, leaveOut)`) and the groups to jump to; right column "List options" (store, bolt finish, head
+  shapes); Copy and CSV under the title.
+
 - One look everywhere (thread "Unifier l'interface de tout le planner", Dols 2026-11-13): orange fill = action, dark
   fill = selected, settings as segmented buttons (the stack's too, and the plate options), ticks only for list items,
   the same title and section sizes on every step, removing by press and hold (`holdButton`), a left rail on Print
