@@ -101,6 +101,11 @@ dialog#news h2, dialog#relink h2, dialog#report h2 { margin: 0 32px 4px 0; font-
 .hbtn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); font-weight: 600; white-space: nowrap; }
 .hbtn:hover, .hbtn[aria-expanded=true] { border-color: var(--ink); }
 .hbtn .mono { font-size: 12px; color: var(--muted); font-weight: 400; }
+/* Ko-fi: a quiet link at the end of the header (no orange: that is for actions), the cup drawn here, nothing loaded from Ko-fi */
+.hbtn.kofi { border-color: transparent; background: none; color: var(--muted); text-decoration: none; }
+.hbtn.kofi:hover, .hbtn.kofi:focus-visible { border-color: var(--line); color: var(--ink); }
+/* Where the header's buttons only just fit beside the tabs, the cup alone (its name stays in aria-label and title) */
+@media (min-width: 1240px) and (max-width: 1399px) { .hbtn.kofi { padding: 0 4px; } .hbtn.kofi span { display: none; } }
 /* Light / dark: two segmented buttons in the header, dark fill = the theme shown. 44 px tall like the header buttons */
 .seg.theme { grid-auto-columns: 36px; align-self: center; }
 .seg.theme button { display: grid; place-items: center; height: 36px; padding: 0; }
@@ -934,6 +939,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     <div class="seg theme" role="group" aria-label="Theme"><button type="button" data-themeset="light" aria-pressed="false" aria-label="Light theme" title="Light theme"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button><button type="button" data-themeset="dark" aria-pressed="false" aria-label="Dark theme" title="Dark theme"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button></div>
     <button type="button" class="hbtn" id="printerBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="printerBox"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg><b id="printerName"></b><span class="mono" id="printerBed"></span></button>
     <button type="button" class="hbtn" id="folderBtn"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path class="ok" d="M9 13l2 2 4-4"/></svg><b>Vault folder</b><span class="mono" id="folderState"></span></button>
+    <a class="hbtn kofi" id="kofi" href="https://ko-fi.com/dols_" target="_blank" rel="noopener" aria-label="Support me on Ko-fi (opens a new tab)" title="Support this fork on Ko-fi"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5h13v6.5a5 5 0 0 1-5 5h-3a5 5 0 0 1-5-5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M16.5 9.5h1.3a2.6 2.6 0 0 1 0 5.2h-1.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 16.2s-3.2-1.9-3.2-3.9a1.6 1.6 0 0 1 3.2-.5 1.6 1.6 0 0 1 3.2.5c0 2-3.2 3.9-3.2 3.9z" fill="#ff5e5b"/></svg><span>Support me</span></a>
   </div>
   <div class="printer pop" id="printerBox" hidden role="dialog" aria-label="Printer">
       <label for="printer">Printer</label>
@@ -2117,7 +2123,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   function footCount() {
     const off = store.get('noCount', false);
-    $('footCount').innerHTML = 'Visits are counted with <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>: the page, the site you came from, your country, browser and screen width, and which store a Hardware link opens. No cookie, no IP address kept, nothing about your build. ' +
+    $('footCount').innerHTML = 'Visits are counted with <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>: the page, the site you came from, your country, browser and screen width, which store a Hardware link opens, and a click on Support me. No cookie, no IP address kept, nothing about your build. ' +
       `<button type="button" class="linkbtn" id="countOff">${off ? 'Count this browser again' : 'Don’t count this browser'}</button>${off ? ' (not counted now)' : ''}`;
     $('countOff').onclick = () => { store.set('noCount', !off); footCount(); toast(off ? 'Visits from this browser are counted again' : 'Visits from this browser are no longer counted'); };
   }
@@ -2126,6 +2132,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const countBuy = e => { const a = e.target.closest && e.target.closest('a[data-buy]'); if (a && (e.type === 'click' || e.button === 1)) count('buy/' + (a.dataset.store || a.textContent.trim()), { e: true, t: a.dataset.buy }); };
   document.addEventListener('click', countBuy);
   document.addEventListener('auxclick', countBuy);
+  ['click', 'auxclick'].forEach(ev => $('kofi').addEventListener(ev, e => { if (e.type === 'click' || e.button === 1) count('kofi', { e: true, t: 'Ko-fi' }); }));
 
   // ---------- copy helpers ----------
   function copy(text, msg, fallbackEl) {
