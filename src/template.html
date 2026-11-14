@@ -495,6 +495,8 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .popts .ibody { gap: 14px; }
 .popts details.info p { font-size: 13px; color: var(--muted); }
 .popts .actions { margin: 0; }
+.pnone { padding: 32px 24px; color: var(--muted); text-align: center; }
+.pnone p { margin: 0; } .pnone strong { color: var(--ink); }
 .prail .pchip { width: 100%; min-height: 60px; }
 .prail .pnote { margin: 0 2px; }
 .pchip { display: grid; gap: 1px; min-height: 44px; padding: 6px 14px; text-align: left; border: 2px solid var(--line); border-radius: 10px; background: var(--sheet); color: var(--muted); }
@@ -1321,10 +1323,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // Nothing in the build: steps 3 and 4 stay empty rather than planning the unit open in step 1 unasked
     const empty = !towers.length && !xl.length;
     if (forPrint && printSkip === null) printSkip = towers.map(t => t.id); // "only the loose parts", from before
-    if (forPrint) { // left out: only what is still there, once each; when that leaves nothing, everything is in again
+    if (forPrint) { // left out: only what is still there, once each (all of it: nothing picked, Print says so)
       const ids = [...towers.map(t => t.id), ...(xl.length ? ['loose'] : [])];
       const kept = ids.filter(id => printSkip.includes(id));
-      if (kept.length === ids.length) kept.length = 0; // e.g. "Print loose parts only", then the loose parts cleared
       if (kept.length !== printSkip.length) { printSkip = kept; savePrintSkip(); }
     }
     const skip = new Set(forPrint ? printSkip : []);
@@ -3395,6 +3396,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <div class="plist">${sel.lines.map((x, i) => `<div class="prow"><span class="pk" style="background:${colorHex(sel.color)};color:${LIGHT_FILL(sel.color) ? '#222' : '#fff'}">${i + 1}</span><span class="q num">${x.count}×</span><span class="lbl"><b>${esc(x.l.label)}</b><small class="mono">${esc(fileName(x.l.file.path))}</small></span>${x.l.walls ? `<span class="tag wall">${x.l.walls} walls${x.l.infill ? ' · ' + x.l.infill + '%' : ''}</span>` : ''}${x.l.supports ? '<span class="tag sup">supports</span>' : ''}</div>`).join('')}</div>
       <button type="button" class="btn ${sel.done ? '' : 'primary'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button></aside>`;
     const hasLabels = b.lines.some(isLabel);
+    // Nothing picked in the rail: no plates, an empty state in the middle. "Clear" takes only what is picked.
+    const none = !b.list.length && !b.extras;
+    const clearWhat = b.whole ? 'Clear all plates' : b.onlyExtras ? 'Clear loose parts'
+      : `Remove ${b.list.length === 1 ? b.list[0].name : plural(b.list.length, 'stack')}${b.extras ? ' and the loose parts' : ''}`;
     const opts = `<section class="panel popts" aria-label="Plate options">
       <div class="ihead"><span class="v3-sec">Plate options</span><h2>${plural(allPlates.length, 'plate')}</h2><div class="mono">${esc(printerShort())} · ${printer.v[0]} × ${printer.v[1]} mm bed</div></div>
       <div class="ibody">
@@ -3403,14 +3408,15 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="field"><div class="lbl">Manual supports <span class="hint">USSA’s prop for each drawer roof</span></div><div class="seg">${pbool('printAids', { label: 'None' }, { label: 'One per roof', sub: 'standing against it' }, printAids)}</div></div>
         ${hasLabels ? `<div class="field"><div class="lbl">Labels <span class="hint">text and colors in the slicer</span></div><div class="seg">${pbool('labelsApart', { label: 'With the rest' }, { label: 'Own plate' }, labelsApart)}</div></div>` : ''}
         <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Each shell keeps 15 mm clear beyond its top and bottom walls for them (dashed). Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
-        <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}<button type="button" class="btn" id="clearPlates">${b.onlyExtras ? 'Clear loose parts' : 'Clear all plates'}</button></div>
+        <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}${none ? '' : `<button type="button" class="btn" id="clearPlates">${esc(clearWhat)}</button>`}</div>
       </div></section>`;
     $('view-print').innerHTML = `<div class="prt">
       <aside class="drail prail" role="group" aria-label="What to print"><div class="v3-sec">What to print</div>
         ${towers.map(t => `<button type="button" class="pchip" data-pskip="${t.id}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small></button>`).join('')}
         ${extras.length ? `<button type="button" class="pchip" data-pskip="loose" aria-pressed="${b.extras > 0}"><b>Loose parts</b><small class="mono">${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button>` : ''}
-        <p class="pnote">${towers.length + (extras.length ? 1 : 0) < 2 ? 'Everything in Design is in these plates.' : b.whole ? 'Everything is in these plates. Click a stack to leave it out.' : 'Only what is highlighted is in these plates and in the file. Click to put a stack back.'}</p></aside>
+        <p class="pnote">${none ? 'Nothing is picked. Click a stack to print it.' : towers.length + (extras.length ? 1 : 0) < 2 ? 'Everything in Design is in these plates.' : b.whole ? 'Everything is in these plates. Click a stack to leave it out.' : 'Only what is highlighted is in these plates and in the file. Click to put a stack back.'}</p></aside>
       <div class="pmain">
+      ${none ? `<section class="panel pnone" aria-label="Plates"><p><strong>Nothing picked to print.</strong> Click a stack on the left to print it.</p></section>` : `
       <section class="panel ptop" aria-label="Progress and export">
         <div class="ptop-prog"><h1>${pct}% printed</h1><div class="bar2" aria-hidden="true"><i style="width:${pct}%"></i></div>
           <div class="mono">${done} of ${total} parts · ${plates.length} of ${plural(allPlates.length, 'plate')} left · ${aboutG(gDone)} of ${gramsStr(s.g)}</div></div>
@@ -3425,6 +3431,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <details class="panel fold"><summary>All parts in this build <small>${s.prints} parts · ${s.files} files</small></summary>
         <div class="parts">${partRows(b.lines)}</div>
         <div class="actions" style="padding:0 18px 16px"><button class="btn" id="copyAll">Copy part list</button></div></details>
+      `}
       </div>
       <div class="pside">${opts}${detail}</div></div>`;
     const V = $('view-print');
@@ -3439,7 +3446,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     };
     V.querySelectorAll('[data-pskip]').forEach(btn => btn.onclick = () => {
       const id = btn.dataset.pskip === 'loose' ? 'loose' : +btn.dataset.pskip, on = btn.getAttribute('aria-pressed') === 'true';
-      if (on && V.querySelectorAll('[data-pskip][aria-pressed=true]').length === 1) { toast('Keep at least one stack or the loose parts to print'); return; }
       printSkip = [...printSkip.filter(x => x !== id), ...(on ? [id] : [])]; savePrintSkip();
       selPlate = null; plateFilter = 'all'; renderPrint(); renderTabs();
     });
@@ -3475,14 +3481,19 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     });
     holdButton($('resetPrinted'), () => { printed = {}; store.set('printed', printed); renderPrint(); renderTabs(); toast('Progress reset'); }, 'Hold the button down to reset all progress');
     holdButton($('clearPlates'), () => {
-      // Only loose parts: drop them and their progress, keep the stacks. Otherwise wipe the whole build.
-      if (b.onlyExtras) { for (const k of Object.keys(printed)) if (k.startsWith('extra:')) delete printed[k]; }
-      else { towers = []; save(); printed = {}; }
-      extras = []; saveExtras(); store.set('printed', printed);
+      // Everything picked: wipe the whole build. Otherwise only what is picked: those stacks leave Design (as "Remove
+      // stack" does, progress kept), the loose parts and their progress if they are picked.
+      if (b.whole) { towers = []; save(); printed = {}; extras = []; }
+      else {
+        const gone = new Set(b.list.map(t => t.id));
+        if (gone.size) { towers = towers.filter(t => !gone.has(t.id)); save(); if (dsel && gone.has(dsel.t)) { dsel = null; saveSel(); } }
+        if (b.extras) { extras = []; for (const k of Object.keys(printed)) if (k.startsWith('extra:')) delete printed[k]; }
+      }
+      saveExtras(); store.set('printed', printed);
       printSkip = []; savePrintSkip();
-      renderAll(); toast(b.onlyExtras ? 'Loose parts cleared' : 'All plates cleared');
+      renderAll(); toast(b.whole ? 'All plates cleared' : b.onlyExtras ? 'Loose parts cleared' : clearWhat.replace(/^Remove /, '') + ' removed');
     }, 'Hold the button down to clear');
-    $('copyAll').onclick = () => copy(listText(b.lines, 'Vault build'), 'Part list copied');
+    if ($('copyAll')) $('copyAll').onclick = () => copy(listText(b.lines, 'Vault build'), 'Part list copied');
     if ($('gMake')) $('gMake').onclick = () => hasFolder ? makeDownload(target, false, 'project') : openFolder(false);
     if ($('gFolders')) $('gFolders').onclick = () => makeDownload(target, false, 'folders');
     if ($('gPick')) $('gPick').onclick = () => openFolder(true);
