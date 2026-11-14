@@ -226,7 +226,12 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   Y undo and redo. In Design: ↑ ↓ the level above or below (from Stack settings, ↓ picks the top level and ↑ the
   bottom one), Esc back to Stack settings (or from Paint back to Select), Shift + ↑ ↓ the stack above or below in the
   rail, Alt (Option on a Mac) + ↑ ↓ move the level, D a copy of the level above it, Shift + D below it, A a level on top, Delete (or
-  Backspace) removes the level, one press with "Undo" like the menu's "Remove level"; in the 3D view O opens or closes
+  Backspace) removes the level, one press with "Undo" like the menu's "Remove level"; Ctrl/Cmd + C copies the selected
+  level, or the stack when its settings are shown, and Ctrl/Cmd + V pastes a level above the selected level (on top
+  from Stack settings) or a stack right after the selected one in the rail, named "… copy" (Dols, 2026-11-14; the copy
+  is taken when copied and kept for the page's life, in this page only; a level pasted into a stack of another
+  footprint is made to it; a paste says what it did, with "Undo"; text selected on the page is copied as usual; the
+  level menu has "Copy level" / "Paste a level above", the stack menu "Copy stack" / "Paste …"); in the 3D view O opens or closes
   the level's drawer or case, P Paint on or off, F fits the stack in the view (the one reframing, asked for), E Spread
   levels, H Hide roof. Rules: never while typing in a field or with a menu, a dialog, the filament picker or the
   printer list open; bare keys take no Ctrl, Cmd or Alt, so the browser's own shortcuts stay theirs (only Ctrl/Cmd + S

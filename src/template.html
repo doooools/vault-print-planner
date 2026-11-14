@@ -2614,17 +2614,20 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const was = fpCode(fpOf(t)), lvWas = t.levels.map(lv => JSON.stringify(lv));
     t.fp = { w, d };
     let split = 0;
-    t.levels = t.levels.map(lv => {
-      if (lv.length > 1 && R.familyForWidth(levelWidth(lv)) === w) { lv.forEach(u => { u.d = d; fixUnit(u); }); return lv; }
-      const u = lv[0];
-      u.d = d;
-      if (w === 'XL' && u.h > 1) { split++; return acrossLevel(lv, 'SM', u); }
-      u.w = (u.w === 'L2' && w === 'L') || (u.w === 'XL2' && w === 'XL') ? u.w : w; fixUnit(u);
-      return [u];
-    });
+    t.levels = t.levels.map(lv => { const r = levelTo(lv, w, d); split += r.split; return r.lv; });
     const changed = t.levels.filter((lv, i) => JSON.stringify(lv) !== lvWas[i]).length;
     if (was !== fpCode(t.fp)) undoAs(`Footprint ${was} → ${fpCode(t.fp)}${split ? `: XL modules only come in 1F, ${plural(split, 'taller level')} ${split === 1 ? 'is' : 'are'} now an S and an M side by side` : changed ? `, ${plural(changed, 'level')} changed` : ''}`);
     fixTower(t); save();
+  }
+  // One level made to a footprint (setFootprint, a level pasted into another stack): split = 1 when a tall XL module
+  // became an S and an M side by side
+  function levelTo(lv, w, d) {
+    if (lv.length > 1 && R.familyForWidth(levelWidth(lv)) === w) { lv.forEach(u => { u.d = d; fixUnit(u); }); return { lv, split: 0 }; }
+    const u = lv[0];
+    u.d = d;
+    if (w === 'XL' && u.h > 1) return { lv: acrossLevel(lv, 'SM', u), split: 1 };
+    u.w = (u.w === 'L2' && w === 'L') || (u.w === 'XL2' && w === 'XL') ? u.w : w; fixUnit(u);
+    return { lv: [u], split: 0 };
   }
   // Across the width, on L and XL stacks: one module, one shell holding two drawers (L\u00b2, XL\u00b2), or two modules side by side
   const ACROSS = { L: [['L', 'L', 'one module'], ['L2', 'L\u00b2', 'two drawers, one shell'], ['SS', 'S + S', 'two modules']],
@@ -2741,6 +2744,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     items.push(
       { sep: items.length > 0, icon: 'plus', label: 'Add a level above', key: 'D', fn: () => levelOp(t, 'dup', i) },
       { icon: 'plus', label: 'Add a level below', key: 'Shift+D', fn: () => levelOp(t, 'dupBelow', i) },
+      { icon: 'dup', label: 'Copy level', key: MOD + '+C', fn: () => copySel(t, i) },
+      { icon: 'paste', label: clip && clip.kind === 'stack' ? 'Paste the stack after this one' : 'Paste a level above', key: MOD + '+V', dis: !clip, tip: clip ? '' : 'Copy a level or a stack first', fn: () => pasteClip(t, i) },
       { icon: 'up', label: 'Move up', key: ALT + '+↑', dis: i === L.length - 1, fn: () => levelOp(t, 'up', i) },
       { icon: 'down', label: 'Move down', key: ALT + '+↓', dis: !i, fn: () => levelOp(t, 'down', i) },
       { sep: true, icon: 'del', label: 'Remove level', key: 'Delete', fn: () => levelOp(t, 'del', i) });
@@ -2751,6 +2756,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     return { head: 'Whole stack', sub: t.name, items: [
       { icon: 'fit', label: 'Fit the stack in the view', key: 'F', dis: !v3, fn: () => { if (v3) v3.aim(null); } },
       { sep: true, icon: 'plus', label: 'Add a level on top', key: 'A', fn: () => levelOp(t, 'top') },
+      { icon: 'dup', label: 'Copy stack', key: MOD + '+C', fn: () => copySel(t, null) },
+      { icon: 'paste', label: clip && clip.kind === 'level' ? 'Paste the level on top' : 'Paste the stack after this one', key: MOD + '+V', dis: !clip, tip: clip ? '' : 'Copy a level or a stack first', fn: () => pasteClip(t, null) },
       { icon: 'chev', label: 'Stack settings', key: 'Esc', fn: () => { leavePaint(); dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); } }] };
   }
   const segBtns = (items, cur, attr) => items.map(it => `<button type="button" ${attr}="${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}"${it.dis ? ' disabled' : ''}>${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
@@ -2768,7 +2775,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     del: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>', plus: '<path d="M12 5v14M5 12h14"/>',
     more: '<circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="19" cy="12" r="1.2" fill="currentColor"/>',
     fit: '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>', drawer: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 12h6"/>',
-    chev: '<path d="M9 6l6 6-6 6"/>', save: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>', file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
+    chev: '<path d="M9 6l6 6-6 6"/>', paste: '<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 11h6M9 15h4"/>', save: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>', file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
     open: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', pen: '<path d="M4 20l1-4L16 5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/>', help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>',
   };
   const icon = k => `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
@@ -6525,7 +6532,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       [['Shift + ↑ ↓'], 'Stack above, stack below in the list'],
       [[ALT + ' + ↑ ↓'], 'Move the level up or down'],
       [['D'], 'Add a copy of the level above it'], [['Shift + D'], 'Add a copy of the level below it'],
-      [['A'], 'Add a level on top'], [['Delete'], 'Remove the level (Undo takes it back)']]],
+      [['A'], 'Add a level on top'],
+      [[MOD + ' + C'], 'Copy the selected level, or the stack when its settings are shown'],
+      [[MOD + ' + V'], 'Paste: a level above the selected level (on top from Stack settings), a stack after the selected one'], [['Delete'], 'Remove the level (Undo takes it back)']]],
     ['3D view', [
       [['O'], 'Open or close the level’s drawer or case'], [['P'], 'Paint on or off'],
       [['F'], 'Fit the stack in the view'], [['E'], 'Spread levels'], [['H'], 'Hide roof']]],
@@ -6577,6 +6586,38 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     }
     return false;
   }
+  // Copy and paste (Dols, 2026-11-14), in Design: Ctrl/Cmd + C copies the selected level, or the stack when its
+  // settings are shown (no level selected); Ctrl/Cmd + V pastes a level above the selected level (on top with no level
+  // selected), a stack right after the selected one in the rail. The copy is taken when copied (later changes don't
+  // follow) and kept for the page's life, in this page only (not the system clipboard). A level pasted into a stack of
+  // another footprint is made to it, as a new footprint would (levelTo).
+  let clip = null; // { kind: 'level', lv, from } or { kind: 'stack', t }
+  const clipCopy = x => JSON.parse(JSON.stringify(x));
+  const selLevel = t => t && dsel && dsel.t === t.id && Number.isInteger(dsel.l) && t.levels[dsel.l] ? dsel.l : null;
+  // t, i: the stack and the level (null: the whole stack); the keys take the selection, the menus the level or stack they are about
+  function copySel(t = curTower(), i = selLevel(t)) {
+    if (!t) return false;
+    if (i != null) { clip = { kind: 'level', lv: clipCopy(t.levels[i]), from: levelTitle(t.levels[i]) }; toast(`Level ${i + 1} copied (${clip.from}): ${MOD}+V pastes it above the selected level`); }
+    else { clip = { kind: 'stack', t: clipCopy(t) }; toast(`“${t.name}” copied: ${MOD}+V pastes a copy of the stack after the selected one`); }
+    return true;
+  }
+  function pasteClip(t = curTower(), i = selLevel(t)) {
+    if (!clip) { toast(`Nothing copied yet: select a level or a stack, then ${MOD}+C`); return; }
+    if (clip.kind === 'stack') {
+      const x = { ...clipCopy(clip.t), id: newId(), name: clip.t.name + ' copy' }, at = t ? towers.indexOf(t) + 1 : towers.length;
+      undoAs(`“${x.name}” pasted`);
+      towers.splice(at, 0, x); dsel = { t: x.id, l: null, u: 0 }; leavePaint(); saveSel(); save(); renderAll();
+      return;
+    }
+    if (!t) { toast('Select a stack to paste the level into'); return; }
+    const L = t.levels, fp = fpOf(t);
+    let lv = clipCopy(clip.lv).map(u => { u.roof = 'none'; return u; }); // the roof stays on the top level (fixTower)
+    const was = levelTitle(lv), r = levelTo(lv, fp.w, fp.d); lv = r.lv;
+    const at = i == null ? L.length : i + 1, made = levelTitle(lv) !== was ? `, made ${levelTitle(lv)} to fit` : '';
+    undoAs(i == null ? `Level pasted on top${made}` : `Level pasted above level ${i + 1}${made}`);
+    L.splice(at, 0, lv); dsel = { t: t.id, l: at, u: 0 }; leavePaint();
+    fixTower(t); saveSel(); save(); renderAll();
+  }
   addEventListener('keydown', e => {
     if (e.defaultPrevented || e.isComposing || typing(e.target) || typing(document.activeElement)) return;
     if (menuNow || fpOpen || !$('printerBox').hidden) return;
@@ -6589,6 +6630,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (k.toLowerCase() === 'o') { openDesign(); return; }
       if (!towers.length && !extras.length) toast('Nothing to save yet'); else saveDesign(false);
       return;
+    }
+    // copy and paste in Design; text selected on the page is copied as usual
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && view === 'build' && (k === 'c' || k === 'C' || k === 'v' || k === 'V')) {
+      if (k.toLowerCase() === 'c') { if (String(getSelection() || '').trim() || !copySel()) return; }
+      else { if (e.repeat) { e.preventDefault(); return; } pasteClip(); }
+      e.preventDefault(); return;
     }
     if (e.ctrlKey || e.metaKey) return;
     // a tab list, a radio group… with arrow keys of its own keeps them
