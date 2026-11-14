@@ -124,9 +124,6 @@ dialog#news h2, dialog#relink h2, dialog#report h2 { margin: 0 32px 4px 0; font-
 .seg button.nofit:not([aria-pressed=true]) { color: var(--muted); }
 .ring { display: inline-block; width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--warn, #c98a12); box-sizing: border-box; flex: none; }
 .seg button .ring { position: absolute; top: 5px; right: 5px; }
-.opt { display: flex; gap: 10px; align-items: flex-start; }
-.opt input[type=checkbox] { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
-.opt span small { display: block; color: var(--muted); font-size: 12.5px; }
 select.full { width: 100%; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
 .dvplan svg { display: block; width: 100%; max-width: 340px; height: auto; margin: 4px 0; }
 .dvplan .dvin { fill: var(--sheet-2); stroke: var(--edge); stroke-width: 1.5; }
@@ -178,6 +175,10 @@ select.full { width: 100%; background: var(--sheet-2); border: 1px solid var(--l
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .btn { border: 1px solid var(--line); background: var(--sheet); border-radius: 8px; padding: 8px 12px; font-weight: 600; }
 .btn.primary { background: var(--accent-btn); border-color: var(--accent-btn); color: var(--accent-ink); }
+.btn.primary:hover:not(:disabled) { border-color: var(--accent-btn); filter: brightness(1.08); }
+/* One look for each kind of thing, on every step: a filled orange button does the step's main action; dark fill only
+   ever means selected (tabs, segmented buttons, toggles); a ticked box marks an item of a list (plates, hardware,
+   steps); settings are segmented buttons, a list only when the choices don't fit (printers, stores) */
 .btn:hover { border-color: var(--ink); }
 
 .group { padding: 4px 0 6px; }
@@ -286,7 +287,7 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .fp-head .vclose { position: static; padding: 0 2px; font-size: 22px; }
 .fp-scope { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 3px; background: var(--sheet-2); border: 1px solid var(--line); border-radius: 10px; }
 .fp-scope button { border: 0; border-radius: 7px; background: transparent; color: var(--muted); padding: 7px 8px; font-size: 13px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fp-scope button[aria-pressed=true] { background: var(--sheet); color: var(--ink); font-weight: 650; box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
+.fp-scope button[aria-pressed=true] { background: var(--ink); color: var(--sheet); font-weight: 650; }
 .fp-sec { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: -4px; }
 .fp-sec small { font-size: 12px; letter-spacing: 0; text-transform: none; font-weight: 400; }
 .fp-tray { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -319,8 +320,7 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .fp-own input { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; }
 /* Colors: the Paint panel's "Start from" presets */
 .cstart { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-left: 18px; font-size: 13px; color: var(--muted); }
-.cstart .chip { border: 1px solid var(--line); border-radius: 999px; background: var(--sheet-2); color: var(--ink); padding: 6px 12px; font-size: 13px; cursor: pointer; }
-.cstart .chip:hover { border-color: var(--ink); }
+.cstart .btn { padding: 6px 10px; font-size: 13px; }
 @media (max-width: 760px) { dialog#v3d .v3-view { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } dialog#v3d .v3-side { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } .v3-brush-hint { display: none; } }
 .row.done { opacity: .45; }
 .row.done .pname { text-decoration: line-through; }
@@ -354,7 +354,7 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .hwside { flex: 1 1 280px; min-width: 0; display: grid; gap: 12px; position: sticky; top: 12px; }
 .hwtop { display: grid; gap: 8px; padding: 18px 20px; }
 .hwtitle { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
-.hwtitle h1 { margin: 0; font-family: var(--f-display); font-size: 30px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
+.hwtitle h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
 .hwtitle .mono, .hwg .mono { color: var(--muted); }
 .hwtop p { margin: 0; color: var(--muted); font-size: 13px; }
 .hwtop .bar { height: 8px; border-radius: 4px; background: var(--ground); overflow: hidden; }
@@ -379,10 +379,11 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 .hwbox { display: grid; gap: 8px; padding: 16px; }
 .hwbox .btn { min-height: 44px; }
 .btn.big { min-height: 48px; font-size: 15px; font-weight: 700; }
-.hwbox .opt { align-items: center; min-height: 44px; }
 .hwlegend { grid-template-columns: auto 1fr; align-items: center; gap: 10px 12px; }
 .hwlegend .v3-sec { grid-column: 1 / -1; margin: 0; }
 .hwside .pnote { margin: 0 4px; }
+.xtitle { padding: 18px 18px 4px; }
+.xtitle h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
 .panel > h3.ph { margin: 0; padding: 14px 18px 4px; font-family: var(--f-display); font-stretch: 112%; font-size: 17px; }
 .panel > p.pp { margin: 0; padding: 0 18px 10px; color: var(--muted); font-size: 13.5px; }
 pre.code { margin: 0; background: var(--sheet-2); border-radius: 8px; padding: 12px; overflow-x: auto; font-family: var(--f-mono); font-size: 12px; line-height: 1.55; max-height: 240px; }
@@ -438,27 +439,34 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .dsdel:hover, .dsdel:focus-visible { color: var(--bad); background: var(--bad-soft); }
 .dsdel::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(var(--bad) 0turn, transparent 0turn); -webkit-mask: radial-gradient(circle, transparent 12px, #000 13px); mask: radial-gradient(circle, transparent 12px, #000 13px); opacity: 0; }
 .dsdel.holding { color: var(--bad); background: var(--bad-soft); }
-.dsdel.holding::after { opacity: 1; animation: dshold .9s linear forwards; }
+.dsdel.holding::after { opacity: 1; animation: dshold var(--hold-ms, .5s) linear forwards; }
 @property --hold { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 @keyframes dshold { from { --hold: 0deg; } to { --hold: 360deg; } }
+/* Press and hold (holdButton): the button fills in red from the left while it is held */
+.hold:not(.dsdel) { position: relative; overflow: hidden; isolation: isolate; }
+.hold:not(.dsdel)::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--bad-soft); transform: scaleX(0); transform-origin: left; }
+.hold.holding:not(.dsdel) { color: var(--bad); border-color: var(--bad); }
+.hold.holding:not(.dsdel)::before { animation: holdfill var(--hold-ms, .5s) linear forwards; }
+@keyframes holdfill { to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .hold.holding:not(.dsdel)::before { animation-duration: 0s; animation-delay: var(--hold-ms, .5s); } }
 .dsdel.holding::after { background: conic-gradient(var(--bad) var(--hold), transparent var(--hold)); }
 .dbadge { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; background: var(--ink); color: var(--sheet); font-weight: 800; font-stretch: 112%; font-size: 16px; }
 .dst { display: grid; min-width: 0; line-height: 1.25; }
 .dst b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dst small { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
-.dfile { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-top: 4px; }
+.dfile { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-top: 8px; }
 .dfile .v3-sec { grid-column: 1 / -1; padding: 0 2px; display: flex; gap: 6px; min-width: 0; }
 .dfile .dfname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: none; letter-spacing: 0; color: var(--ink); }
 .dfile .dsave { grid-column: 1 / -1; }
 .dfile .btn { min-height: 40px; }
 .drail > .btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-.dloose { display: grid; gap: 4px; margin-top: 8px; padding: 12px; text-align: left; background: transparent; border: 1px dashed var(--edge); border-radius: 10px; font-size: 13px; color: var(--muted); }
+.dloose { display: grid; gap: 4px; padding: 12px; text-align: left; background: transparent; border: 1px dashed var(--edge); border-radius: 10px; font-size: 13px; color: var(--muted); }
 .dloose[aria-pressed=true] { border: 2px solid var(--ink); background: var(--raised); color: var(--ink); }
 .dcenter { flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
 .dcenter.loose { overflow: visible; }
 .dhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
 .dtitle { display: grid; min-width: 0; }
-.dtitle h1 { margin: 0; font-family: var(--f-display); font-size: 22px; font-weight: 800; font-stretch: 112%; line-height: 1.15; }
+.dtitle h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
 .dtitle .mono { color: var(--muted); }
 .dacts { display: flex; flex-wrap: wrap; gap: 8px; }
 .dacts .btn { min-height: 40px; display: inline-flex; align-items: center; gap: 6px; }
@@ -466,6 +474,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .dacts .btn .mono { color: var(--muted); font-size: 12px; }
 .fpstrip { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 32px; padding: 12px 16px; background: var(--sheet-2); border-bottom: 1px solid var(--line); }
 .fpstrip .field { flex: 1 1 260px; }
+.fpstrip .seg { background: var(--sheet); box-shadow: inset 0 0 0 1px var(--line); }
 .fpstrip .pnote { flex-basis: 100%; margin: 0; }
 .design .v3-slot { border-bottom: 1px solid var(--line); }
 .design .v3-view { grid-template-columns: minmax(0, 1fr); }
@@ -479,8 +488,10 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .design .v3-side { max-height: none; overflow: visible; border-left: 0; border-top: 1px solid var(--line); padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
 .design .v3-side > :not(#v3dStatus):not(#v3dPick) { display: none; }
 .design .v3-side .v3-status { flex: 1 1 300px; font-size: 12.5px; }
-.pscope { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
-.pscope .pnote { flex-basis: 100%; margin: 0; }
+.prt { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
+.pmain { flex: 999 1 720px; min-width: 0; display: grid; gap: 14px; }
+.prail .pchip { width: 100%; min-height: 60px; }
+.prail .pnote { margin: 0 2px; }
 .pchip { display: grid; gap: 1px; min-height: 44px; padding: 6px 14px 6px 34px; position: relative; text-align: left; border: 2px solid var(--line); border-radius: 10px; background: var(--sheet); }
 .pchip::before { content: ''; position: absolute; left: 10px; top: 50%; width: 16px; height: 16px; margin-top: -8px; border: 2px solid var(--edge); border-radius: 4px; }
 .pchip[aria-pressed=true] { border-color: var(--ink); background: var(--raised); }
@@ -519,6 +530,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .imore > summary .mono { color: var(--muted); font-size: 12px; font-weight: 400; }
 .isec { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px; margin-bottom: -4px; font-size: 14px; }
 .isec .hint { font-size: 12px; font-weight: 400; color: var(--muted); }
+.isec.first { border-top: 0; padding-top: 0; }
 .ilist { display: grid; gap: 6px; margin-top: 8px; }
 .ilist h3 { display: flex; justify-content: space-between; gap: 8px; margin: 6px 0 0; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .ilist h3 .mono { text-transform: none; letter-spacing: 0; }
@@ -528,12 +540,14 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .ilist li .n { overflow-wrap: anywhere; }
 .ilist li small { color: var(--muted); font-size: 11.5px; }
 .ilist .linkbtn { justify-self: start; margin: 4px 0 0; padding: 0; font-size: 13px; }
-.ifp { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
-.ifp > span { display: grid; gap: 2px; }
+.ifp { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 4px 4px 12px; background: var(--sheet-2); border-radius: 9px; }
+.ifp .btn { flex: none; min-height: 40px; }
+.ifp b { min-width: 0; }
 .ialerts { display: grid; gap: 6px; }
 .seg.wrap { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); width: 100%; box-sizing: border-box; min-width: 0; }
-.seg.wrap button { min-width: 0; padding-left: 4px; padding-right: 4px; font-size: 13px; overflow-wrap: break-word; }
-.dinsp .field .seg button { min-height: 40px; }
+.seg.wrap button { min-width: 0; padding-left: 4px; padding-right: 4px; overflow-wrap: break-word; }
+.seg button { min-height: 40px; }
+.dinsp .steppers { grid-template-columns: minmax(0, 1fr); }
 /* First launch */
 .start { width: 100%; max-width: 1080px; margin: 0 auto; display: grid; gap: 16px; padding: 12px 0 24px; }
 .start h1 { margin: 0; font-family: var(--f-display); font-size: 34px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
@@ -554,7 +568,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .sacts .linkbtn { margin: 0 auto; font-size: 13px; }
 .sbig { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; background: var(--raised); }
 .sbig .mono { color: var(--muted); font-size: 12px; }
-.btn.ink.big, .btn.primary.big { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn.primary.big { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .tpls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 10px; }
 .tpl { display: flex; flex-direction: column; gap: 4px; min-height: 96px; padding: 12px 14px; text-align: left; background: var(--raised); border: 1px solid var(--line); border-radius: 8px; }
 .tpl:hover { border-color: var(--ink); }
@@ -563,9 +577,8 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .tpl .mono { margin-top: auto; color: var(--muted); font-size: 12px; }
 dialog#tplDlg { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px 22px; width: min(980px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; }
 dialog#tplDlg::backdrop { background: rgba(10, 12, 12, .45); }
-dialog#tplDlg h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 22px; }
+dialog#tplDlg h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
 /* 1b · Paint tool: filaments as brushes, part types, catalogue under the view */
-.dinsp .ihead h2 { margin-top: 0; }
 .dinsp .cstart { padding-left: 0; margin-top: 6px; }
 .ptray { display: grid; gap: 6px; }
 .pfil { position: relative; display: flex; align-items: center; gap: 10px; }
@@ -580,9 +593,9 @@ dialog#tplDlg h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-str
 .pdel:hover { background: var(--bad-soft); color: var(--bad); }
 .padd { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-style: dashed; }
 .padd[aria-expanded=true] { border-style: solid; border-color: var(--ink); }
-.pgrp { display: grid; gap: 2px; border-top: 1px solid var(--line); padding-top: 10px; }
+.pgrp { display: grid; gap: 2px; border-top: 1px solid var(--line); padding-top: 14px; }
 .pgrp-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-.pgrp-h h3 { margin: 0; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+.pgrp-h h3 { margin: 0; font-size: 14px; font-weight: 700; color: var(--ink); }
 .pgrp-h .linkbtn { display: inline; margin: 0; padding: 0; font-size: 12.5px; }
 .prole { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 8px; border: 0; border-radius: 8px; background: transparent; text-align: left; }
 button.prole:hover { background: var(--sheet-2); }
@@ -601,7 +614,7 @@ button.prole:hover { background: var(--sheet-2); }
 /* Step 2 · Print: progress and export, filament chips, the plate sheet and the selected plate */
 .ptop { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; padding: 18px 20px; }
 .ptop-prog { flex: 999 1 420px; min-width: 0; display: grid; gap: 8px; }
-.ptop-prog h1 { margin: 0; font-family: var(--f-display); font-size: 30px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
+.ptop-prog h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
 .ptop-prog .mono, .pgroup .mono, .fchip .mono, .psel-head .mono { color: var(--muted); }
 .bar2 { height: 8px; border-radius: 4px; background: var(--ground); overflow: hidden; }
 .bar2 i { display: block; height: 100%; background: var(--accent); }
@@ -652,7 +665,7 @@ button.prole:hover { background: var(--sheet-2); }
 .psel { flex: 1 1 400px; min-width: 0; position: sticky; top: 12px; display: grid; gap: 12px; padding: 16px; }
 .psel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .psel-head > div:first-child { display: grid; gap: 2px; min-width: 0; }
-.psel-head h2 { margin: 0; font-family: var(--f-display); font-size: 24px; font-weight: 800; font-stretch: 112%; line-height: 1.1; }
+.psel-head h2 { margin: 2px 0 0; font-family: var(--f-display); font-size: 22px; font-weight: 800; font-stretch: 112%; line-height: 1.15; }
 .pnav { display: flex; gap: 4px; }
 .iconbtn.sq { width: 44px; height: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; }
 .ptags { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -665,8 +678,6 @@ button.prole:hover { background: var(--sheet-2); }
 .prow .q { flex: none; min-width: 32px; text-align: right; font-weight: 800; }
 .prow .lbl { flex: 1 1 auto; min-width: 0; display: grid; }
 .prow .lbl small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.btn.ink { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
-.btn.ink:hover { filter: brightness(1.15); }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
 .pitem { display: grid; grid-template-columns: 44px 30px minmax(0, 1fr); gap: 8px; align-items: center; font-size: 13.5px; }
 .pitem .thumb { width: 44px; height: 44px; }
@@ -740,8 +751,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 .asm-steps { flex: 999 1 560px; min-width: 0; overflow: hidden; }
 .asm-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding: 18px 20px; }
 .asm-title { display: grid; gap: 4px; min-width: 0; }
-.asm-title h1 { margin: 0; font-family: var(--f-display); font-size: 30px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
-.asm-title .mono { color: var(--muted); }
+.asm-title h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
+.asm-title > span:not(.asm-inf) { color: var(--muted); font-size: 13.5px; }
 .asm-inf { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 4px; font-size: 13px; color: var(--muted); }
 .asm-rep { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .asm-rep > span { display: grid; line-height: 1.2; text-align: right; }
@@ -779,7 +790,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     <button role="tab" id="tab-build" data-tab="build">1 · Design <span class="count" id="countBuild"></span></button>
     <button role="tab" id="tab-print" data-tab="print">2 · Print <span class="count" id="countPrint"></span></button>
     <button role="tab" id="tab-hardware" data-tab="hardware">3 · Hardware <span class="count" id="countHw"></span></button>
-    <button role="tab" id="tab-assemble" data-tab="assemble">4 · Assemble</button>
+    <button role="tab" id="tab-assemble" data-tab="assemble">4 · Assemble <span class="count" id="countAsm"></span></button>
   </nav>
   <div class="hbtns">
     <button type="button" class="hbtn" id="printerBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="printerBox"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg><b id="printerName"></b><span class="mono" id="printerBed"></span></button>
@@ -2358,9 +2369,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       el.appendChild(b);
     });
   }
-  function checkbox(id, label, sub, val) {
-    return `<label class="opt"><input type="checkbox" id="${id}" ${val ? 'checked' : ''}><span>${label}${sub ? `<small>${sub}</small>` : ''}</span></label>`;
-  }
   function stepper(id, label, val) {
     return `<div class="stepper"><span>${label}</span><div><button type="button" data-step="${id}" data-d="-1" aria-label="Fewer ${label}">\u2212</button><output>${val}</output><button type="button" data-step="${id}" data-d="1" aria-label="More ${label}">+</button></div></div>`;
   }
@@ -2477,7 +2485,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   function extrasPanel() {
     const xl = extraLines();
     return `<div class="panel">
-      <h3 class="ph">Loose parts</h3>
+      <div class="xtitle"><h1>Loose parts</h1></div>
       <p class="pp">Spares, replacements or single parts outside any stack. Browse every part by family below, or search by name, like \u201cS3 grid roof\u201d or \u201clatch\u201d.</p>
       <div class="xsearch"><input id="xq" type="search" placeholder="Search all ${FILES.length} parts\u2026" value="${esc(xq)}" autocomplete="off" aria-label="Search parts"></div>
       <div class="xresults" id="xresults" tabindex="-1">${xResults()}</div>
@@ -2505,7 +2513,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       saveExtras(); renderTabs(); renderBuild();
     });
     if ($('xprint')) $('xprint').onclick = () => { printSkip = towers.map(t => t.id); savePrintSkip(); view = 'print'; renderAll(); window.scrollTo(0, 0); };
-    if ($('xclear')) $('xclear').onclick = () => { extras = []; saveExtras(); renderTabs(); renderBuild(); };
+    holdButton($('xclear'), () => { extras = []; saveExtras(); renderTabs(); renderBuild(); }, 'Hold the button down to clear the loose parts');
   }
 
   // Bambu Lab's own PLA and PETG colours (src/bambu-colors.tsv): [line, colour code, name, hex]
@@ -2585,8 +2593,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const inUse = P.filter(p => use.slot.has(p.id)).length;
     const roleRow = id => { const r = ROLE_BY_ID.get(id), cur = colorFor(id, null), n = use.owned.get(id) || 0;
       return `<button type="button" class="prole" data-prole="${id}" title="Paint ${esc(r.label.toLowerCase())} with the brush"><span class="dot2 big" style="background:${colorHex(cur)}"></span><span><b>${esc(r.label)}</b><small>${esc(colorName(cur))}${n ? ` · ${plural(n, 'module')} with ${n === 1 ? 'its' : 'their'} own` : ''}${id === 'label' && labelsApart ? ' · own plate' : ''}</small></span></button>`; };
-    box.innerHTML = `<div class="ihead"><h2>Colors</h2>
-        <div class="cstart" role="group" aria-label="Start from"><span>Start from</span>${COLOR_PRESETS.map(([id, t, why]) => `<button type="button" class="chip" data-cpreset="${id}" title="${esc(why)}">${t}</button>`).join('')}</div></div>
+    box.innerHTML = `<div class="ihead"><span class="v3-sec">Colors</span><h2>${esc((curTower() || { name: 'Loose parts' }).name)}</h2>
+        <div class="cstart" role="group" aria-label="Start from"><span>Start from</span>${COLOR_PRESETS.map(([id, t, why]) => `<button type="button" class="btn" data-cpreset="${id}" title="${esc(why)}">${t}</button>`).join('')}</div></div>
       <div class="ibody">
         <div class="field"><div class="lbl">Your filaments · pick the brush <span class="hint">${inUse} in use</span></div>
           <div class="ptray">${P.map(p => `<div class="pfil"><button type="button" class="pbrush" data-brush="${p.id}" aria-pressed="${p.id === brush}"><span class="dot2 big" style="background:${p.hex}"></span><span><b>${esc(p.name)}</b><small>${esc(usedTxt(p))}</small></span></button>${P.length > 1 ? `<button type="button" class="pdel" data-pal-del="${p.id}" aria-label="Remove ${esc(p.name)}" title="Remove this filament"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</div>`).join('')}
@@ -2607,7 +2615,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       if (Object.keys(c).length) x.u.colors = c; else delete x.u.colors;
       save(); done();
     });
-    box.querySelectorAll('[data-pal-del]').forEach(b => b.onclick = () => {
+    box.querySelectorAll('[data-pal-del]').forEach(b => holdButton(b, () => {
       const id = b.dataset.palDel;
       colorPrefs.palette = colorPrefs.palette.filter(p => p.id !== id);
       for (const k of Object.keys(colorPrefs.roles)) if (colorPrefs.roles[k] === id) delete colorPrefs.roles[k];
@@ -2615,7 +2623,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       // Parts that used it go back to their role's colour; module colours using it are dropped
       towers.forEach(t => t.levels.forEach(lv => lv.forEach(u => { if (u.colors) { for (const k of Object.keys(u.colors)) if (u.colors[k] === id) delete u.colors[k]; if (!Object.keys(u.colors).length) delete u.colors; } })));
       save(); done();
-    });
+    }, 'Hold the cross down to remove this filament'));
     box.querySelectorAll('[data-cpreset]').forEach(b => b.onclick = () => {
       if (b.dataset.cpreset === 'render' && colorsCustom() && !confirm(stackNow() ? `Go back to USSA’s render colors on ${stackNow().name}? This also removes the colors chosen for its single modules. Other stacks keep theirs.` : 'Go back to USSA’s render colors? This removes the filaments you added.')) return;
       applyColorPreset(b.dataset.cpreset); renderAll();
@@ -2752,8 +2760,10 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   const useg = (key, items, cur) => items.map(it => `<button type="button" data-useg="${key}=${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   // An on/off setting of the selected module as two segmented buttons (data-ubool="key=1" / "key=0")
   const ubool = (key, off, on, cur) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-ubool="${key}=${it.v}" aria-pressed="${!!cur === !!it.v}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
-  const optRow = (attr, label, sub, val) => `<label class="opt"><input type="checkbox" ${attr} ${val ? 'checked' : ''}><span>${label}${sub ? `<small>${sub}</small>` : ''}</span></label>`;
-  const selRow = (attr, label, options, val) => `<div class="field"><div class="lbl">${label}</div><select class="full" ${attr}>${options.map(o => `<option value="${o[0]}" ${String(o[0]) === String(val) ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></div>`;
+  // An on/off setting of the stack (or its roof's carry handle) as two segmented buttons (data-sbool="key=1" / "key=0")
+  const sbool = (key, off, on, cur) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-sbool="${key}=${it.v}" aria-pressed="${!!cur === !!it.v}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
+  // A print setting (plate options) as two segmented buttons (data-pbool="key=1" / "key=0")
+  const pbool = (key, off, on, cur) => [{ ...off, v: 0 }, { ...on, v: 1 }].map(it => `<button type="button" data-pbool="${key}=${it.v}" aria-pressed="${!!cur === !!it.v}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   const stepRow = (key, label, val) => `<div class="stepper"><span>${label}</span><div><button type="button" data-ustep="${key}" data-d="-1" aria-label="Fewer: ${label}">−</button><output>${val}</output><button type="button" data-ustep="${key}" data-d="1" aria-label="More: ${label}">+</button></div></div>`;
   const ICON = {
     up: '<path d="M12 19V5M6 11l6-6 6 6"/>', down: '<path d="M12 5v14M6 13l6 6 6-6"/>', dup: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
@@ -2857,7 +2867,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
           : `<button type="button" class="btn primary big" id="startFolder">${rememberedFolder ? `Open ${esc(rememberedFolder)}` : 'Choose your Vault folder…'}</button>${folderHeroSkipped ? '' : '<button type="button" class="linkbtn" id="startLater">Later: plan without the files</button>'}`}</div></section>` : ''}
       <section class="panel srow col"><div class="srow-h"><span class="snum" aria-hidden="true">${canPickFolder ? 3 : 2}</span>
         <div class="stext"><h2>Your first stack</h2><p>Start empty, or from a ready-made stack and change anything in it.</p></div>
-        <button type="button" class="btn ink big" id="startEmpty">${icon('plus')} Empty stack</button></div>
+        <button type="button" class="btn primary big" id="startEmpty">${icon('plus')} Empty stack</button></div>
         <div class="tpls">${items.map(({ p, i }) => tplCard(p, i)).join('')}</div></section></div>`;
     $('startPrinter').onclick = e => { e.stopPropagation(); printerPop(true); };
     if ($('startOpen')) $('startOpen').onclick = openDesign;
@@ -2882,16 +2892,16 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const info = towers.map(x => ({ t: x, a: analyzeTower(x) }));
     const rail = info.map(({ t: x, a }) => { const fp = fpOf(x), bad = stackAlerts(x, a).some(m => m.k !== 'info');
       return `<div class="dstackw"><button type="button" class="dstack" data-stack="${x.id}" aria-pressed="${!!t && x.id === t.id}"><span class="dbadge" aria-hidden="true">${fp.w}</span><span class="dst"><b>${esc(x.name)}</b><small>${fpCode(fp)} · ${plural(x.levels.length, 'level')}</small></span>${bad ? '<i class="dot" aria-label="needs attention"></i>' : ''}</button>
-        <button type="button" class="dsdel" data-sdel="${x.id}" aria-label="Delete ${esc(x.name)}: press and hold" title="Press and hold to delete"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('');
+        <button type="button" class="dsdel" data-sdel="${x.id}" aria-label="Remove ${esc(x.name)}: press and hold" title="Press and hold to remove"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('');
     const nx = extras.reduce((a, e) => a + e.qty, 0);
     const loose = dsel.t === 'loose';
     $('view-build').innerHTML = `<div class="design">
       <aside class="drail" aria-label="Stacks"><div class="v3-sec">Stacks</div>${rail}
         <button type="button" class="btn dnew" id="dNew">${icon('plus')} New stack</button>
         <button type="button" class="btn" id="dTpl">Start from a template…</button>
+        <button type="button" class="dloose" data-loose aria-pressed="${loose}"><span class="v3-sec">Loose parts</span><span>${nx ? `${plural(nx, 'part')} outside any stack` : 'Spares or single parts outside any stack. None yet.'}</span></button>
         <div class="dfile" role="group" aria-label="Design file"><span class="v3-sec">Design file${designName ? ` <span class="mono dfname" title="${esc(designName)}">${esc(designName.replace(/\.vault\.json$/, ''))}</span>` : ''}</span>
           <button type="button" class="btn dsave" id="dSave" title="${vaultFolder && typeof vaultFolder.handle === 'object' ? `Save into ${esc(vaultFolder.name)}, next to the part files` : 'Save these stacks, loose parts and colors to a file'}">Save</button><button type="button" class="btn" id="dSaveAs" title="Save a copy somewhere else, or under another name">Save as…</button><button type="button" class="btn" id="dOpen" title="Open a design saved before">Open…</button></div>
-        <button type="button" class="dloose" data-loose aria-pressed="${loose}"><span class="v3-sec">Loose parts</span><span>${nx ? `${plural(nx, 'part')} outside any stack` : 'Spares or single parts outside any stack. None yet.'}</span></button>
       </aside>
       ${loose ? `<section class="dcenter loose">${extrasPanel(true)}</section>` : designCenter(t, info.find(x => x.t === t).a)}
       ${loose ? '' : `<aside class="panel dinsp" id="dInsp" aria-label="Selection"></aside>`}
@@ -2913,18 +2923,28 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     v3sync();
   }
   function closeTpl() { const d = $('tplDlg'); if (d && d.open) d.close(); }
-  // A stack card's cross: held down for a second it deletes the stack (the ring fills meanwhile); let go sooner, nothing
-  const HOLD_MS = 900;
-  function removeStack(t) { towers = towers.filter(x => x.id !== t.id); printSkip = printSkip ? printSkip.filter(x => x !== t.id) : printSkip; savePrintSkip(); if (dsel && dsel.t === t.id) dsel = null; saveSel(); save(); renderAll(); toast(`${t.name} deleted`); }
-  function holdToDelete(b) {
+  // Everything that removes or clears is pressed and held (Dols, 2026-11-13): half a second, while the button fills
+  // in red (the stack's cross: its ring); let go sooner and nothing happens but a hint
+  const HOLD_MS = 500;
+  function removeStack(t) { towers = towers.filter(x => x.id !== t.id); printSkip = printSkip ? printSkip.filter(x => x !== t.id) : printSkip; savePrintSkip(); if (dsel && dsel.t === t.id) dsel = null; saveSel(); save(); renderAll(); toast(`${t.name} removed`); }
+  function holdButton(b, act, hint = 'Press and hold to confirm') {
+    if (!b) return;
     let timer = null;
-    const t = () => towers.find(x => x.id === +b.dataset.sdel);
-    const start = e => { if (timer || (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ')) return; if (e.type === 'keydown') e.preventDefault(); b.classList.add('holding'); timer = setTimeout(() => { timer = null; b.classList.remove('holding'); if (t()) removeStack(t()); }, HOLD_MS); };
-    const stop = e => { if (!timer) return; clearTimeout(timer); timer = null; b.classList.remove('holding'); if (e && e.type !== 'pointerleave') toast('Hold the cross down to delete the stack'); };
+    b.classList.add('hold'); b.style.setProperty('--hold-ms', HOLD_MS + 'ms');
+    if (!/hold/i.test(b.title)) b.title = b.title ? b.title + ' (press and hold)' : 'Press and hold';
+    const al = b.getAttribute('aria-label'); if (al && !/hold/i.test(al)) b.setAttribute('aria-label', al + ': press and hold');
+    const start = e => {
+      if (timer || b.disabled || (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') || (e.type === 'pointerdown' && e.button !== 0)) return;
+      if (e.type === 'keydown') e.preventDefault();
+      b.classList.add('holding');
+      timer = setTimeout(() => { timer = null; b.classList.remove('holding'); act(); }, HOLD_MS);
+    };
+    const stop = e => { if (!timer) return; clearTimeout(timer); timer = null; b.classList.remove('holding'); if (e && (e.type === 'pointerup' || e.type === 'keyup')) toast(hint); };
     b.addEventListener('pointerdown', start); b.addEventListener('keydown', start);
     b.addEventListener('pointerup', stop); b.addEventListener('pointerleave', stop); b.addEventListener('pointercancel', stop); b.addEventListener('keyup', stop);
     b.onclick = e => e.preventDefault();
   }
+  const holdToDelete = b => holdButton(b, () => { const t = towers.find(x => x.id === +b.dataset.sdel); if (t) removeStack(t); }, 'Hold the cross down to remove the stack');
   function designCenter(t, a) {
     const fp = fpOf(t);
     const wOpts = FP_W.filter(w => sizeFits(w, R.DEPTHS[0]) || w === fp.w).map(w => ({ v: w, label: w, sub: Math.round(R.WIDTH_MM[w]) + ' mm' }));
@@ -2933,7 +2953,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       <div class="dhead"><div class="dtitle"><h1>${esc(t.name)}</h1><span class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></span></div>
         <div class="dacts"><button type="button" class="btn" data-dstack aria-pressed="${dsel.l == null}">Stack settings</button>
           <button type="button" class="btn" data-fp aria-expanded="${fpStrip}">Footprint <span class="mono">${fpCode(fp)}</span></button>
-          <button type="button" class="btn ink" data-addtop>${icon('plus')} Add a level on top</button></div></div>
+          <button type="button" class="btn primary" data-addtop>${icon('plus')} Add a level on top</button></div></div>
       ${fpStrip ? `<div class="fpstrip"><div class="field"><div class="lbl">Width</div><div class="seg">${segBtns(wOpts, fp.w, 'data-fpw')}</div></div>
         <div class="field"><div class="lbl">Depth <span class="hint">grid units of 42 mm</span></div><div class="seg">${segBtns(dOpts, fp.d, 'data-fpd')}</div></div>
         <p class="pnote">Applies to every level of ${esc(t.name)}. Sizes too big for the ${esc(printerName())} aren’t offered.</p></div>` : ''}
@@ -2954,7 +2974,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // A change made in the selection panel redraws it (and step 1): keep its scroll and its folded sections as they were,
   // while it shows the same level, so the option just changed stays under the pointer
   let inspKeep = null;
-  const inspSel = () => `${dsel.t}|${dsel.l}|${dsel.u}|${painting() && inspPaint}`;
+  const inspSel = () => dsel ? `${dsel.t}|${dsel.l}|${dsel.u}|${painting() && inspPaint}` : ''; // no selection: a stack was just removed
   const inspDetails = b => [...b.querySelectorAll('details')].map(d => { const sm = d.querySelector('summary'); return [sm && sm.firstChild ? sm.firstChild.textContent.trim() : '', d]; });
   function inspSave() {
     const b = $('dInsp'); if (!b || !b.childElementCount) return; // a panel just made, still empty: keep what was saved
@@ -3006,20 +3026,24 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       }
       o += `<div class="field"><div class="lbl">Inside${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${useg('interior', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], dv.interior)}</div></div>`;
       if (dv.interior === 'gridfinity' && ['S', 'M', 'L2', 'XL2'].includes(dv.w))
-        o += selRow('data-usel="baseplateHandles"', 'Baseplate cut-outs <span class="hint">for lifting it out</span>', [['0', 'None'], ...(dv.w === 'M' ? [] : [['1', '1 handle']]), ['2', '2 handles']], dv.baseplateHandles);
+        o += `<div class="field"><div class="lbl">Baseplate cut-outs <span class="hint">for lifting it out</span></div><div class="seg">${useg('baseplateHandles', [{ v: '0', label: 'None' }, ...(dv.w === 'M' ? [] : [{ v: '1', label: '1 handle' }]), { v: '2', label: '2 handles' }], dv.baseplateHandles)}</div></div>`;
       if (dv.interior === 'grid') {
         o += gridPlan(dv) || `<div class="field"><div class="lbl">Grid dividers <span class="hint">full-span pieces</span></div><div class="steppers">${stepRow('gridAcross', 'Side to side', dv.gridAcross || 0)}${stepRow('gridAlong', 'Front to back', dv.gridAlong || 0)}</div></div>`;
-        o += selRow('data-usel="gridHeight"', 'Divider height', [['20', '20 mm (low)'], ['full', dv.h === 1 ? 'Full height, 34.5 mm' : 'Tall, 82.5 mm']], dv.gridHeight);
-        o += optRow('data-ucheck="gridSeal"', 'Close against the walls', 'A divider that ends at a wall takes one hole less and a straight edge piece, which closes the gap (instructions, option 2). Off: the longer divider alone, a few mm short of the wall.', dv.gridSeal !== false);
+        o += `<div class="field"><div class="lbl">Divider height</div><div class="seg">${useg('gridHeight', [{ v: '20', label: 'Low', sub: '20 mm' }, { v: 'full', label: dv.h === 1 ? 'Full height' : 'Tall', sub: dv.h === 1 ? '34.5 mm' : '82.5 mm' }], dv.gridHeight)}</div></div>`;
+        o += `<div class="field"><div class="lbl">At a wall <span class="hint">where a divider ends against one</span></div><div class="seg">${ubool('gridSeal', { label: 'Divider alone', sub: 'a few mm short' }, { label: 'Closed', sub: 'recommended \u00b7 straight edge piece' }, dv.gridSeal !== false)}</div></div>`;
       }
       o += `<div class="field"><div class="lbl">Lock${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${useg('lock', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], dv.lock)}</div></div>`;
       o += `<div class="field"><div class="lbl">Geared rails${dv !== u ? ` <span class="hint">${esc(drawerName(u, dv.dr, false))} drawer</span>` : ''}</div><div class="seg">${ubool('gearedRails', { label: 'Without', sub: 'optional in the manual' }, { label: 'With', sub: dids.length > 1 ? 'USSA: several drawers' : 'for 2F, 4F, more locking' }, dv.gearedRails)}</div></div>`;
       if (dv !== u) o += `<div class="dvfoot"><span class="mono">${esc(insideSum(u, dids))}</span><span class="dvacts"><button type="button" class="btn" data-dcopy>Same settings in every drawer</button></span></div>`;
     } else {
-      if (u.w === 'L' || u.w === 'XL') o += selRow('data-usel="caseInterior"', 'Case body style', [['flat', 'Flat (open box)'], ['dividers', 'Dividers (slotted walls)'], ['sealed', 'Sealed (slots for seal dividers)']], u.caseInterior);
-      if (caseStyle(u) === 'sealed') o += `<div class="field"><div class="lbl">Gridfinity baseplate</div><p class="pnote" style="margin:0">A sealed body's fixed walls make its cells narrower than the baseplate, so it takes none. Pick <b>Flat</b> or <b>Dividers</b> above for one.</p></div>`;
-      else o += optRow('data-ucheck="caseBaseplate"', 'Gridfinity baseplate inside', 'Instead of dividers: it covers the floor grooves they stand in.', u.caseBaseplate);
-      o += casePlate(u) ? `<div class="field"><div class="lbl">Dividers</div><p class="pnote" style="margin:0">The baseplate covers the floor from wall to wall, grooves included, so this case takes no divider. Untick it to place dividers${(Object.values(divSel(u) || {}).flat(2).length) ? ': the ones you placed are kept' : ''}.</p></div>` : dividerPlan(u);
+      if (u.w === 'L' || u.w === 'XL') o += `<div class="field"><div class="lbl">Case body style</div><div class="seg">${useg('caseInterior', [{ v: 'flat', label: 'Flat', sub: 'open box' }, { v: 'dividers', label: 'Dividers', sub: 'slotted walls' }, { v: 'sealed', label: 'Sealed', sub: 'seal dividers' }], u.caseInterior || 'flat')}</div></div>`;
+      // What is on the case's floor: nothing, dividers in its slots, or a Gridfinity baseplate over the grooves
+      const st = caseStyle(u), floor = caseFloor(u), kept = Object.values(divSel(u) || {}).flat(2).length;
+      const floors = [{ v: 'empty', label: 'Empty', sub: 'nothing inside' }, ...(st === 'flat' ? [] : [{ v: 'dividers', label: 'Dividers', sub: 'in the floor slots' }]), ...(st === 'sealed' ? [] : [{ v: 'plate', label: 'Gridfinity', sub: 'baseplate' }])];
+      o += `<div class="field"><div class="lbl">Floor</div><div class="seg">${floors.map(f => `<button type="button" data-cfloor="${f.v}" aria-pressed="${floor === f.v}">${f.label}<small>${f.sub}</small></button>`).join('')}</div>
+        ${st === 'flat' ? '<p class="pnote" style="margin:0">A flat body has no slots for dividers: pick <b>Dividers</b> or <b>Sealed</b> above for some.</p>' : st === 'sealed' ? '<p class="pnote" style="margin:0">A sealed body\u2019s fixed walls make its cells narrower than a baseplate: pick <b>Flat</b> or <b>Dividers</b> above for one.</p>' : ''}
+        ${floor !== 'dividers' && kept ? `<p class="pnote" style="margin:0">The ${plural(kept, 'divider')} you placed ${kept === 1 ? 'is' : 'are'} kept for when you pick <b>Dividers</b> again.</p>` : ''}</div>`;
+      if (floor === 'dividers') o += dividerPlan(u);
     }
     // Back of the stack: what goes on the module's back, laid out like the front's settings
     let back = `<div class="field"><div class="lbl">Wall mount <span class="hint">plate on this module\u2019s back</span></div><div class="seg">${ubool('wallMount', { label: 'None', sub: 'stands free' }, { label: 'Plate and cleats', sub: 'two wall cleats' }, u.wallMount)}</div></div>`;
@@ -3033,6 +3057,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       ${lv.length > 1 ? `<div class="seg ipair" role="group" aria-label="Module to set up">${lv.map((x, j) => `<button type="button" data-umod="${j}" aria-pressed="${j === ui}">${j ? 'Right' : 'Left'}<small>${esc(unitCode(x))}</small></button>`).join('')}</div>` : ''}
       ${nf.length ? `<div class="alert warn" role="alert"><strong>${plural(nf.length, 'part')} of this level no longer ${nf.length === 1 ? 'fits' : 'fit'} the ${esc(printerName())}</strong><span class="mono">${[...new Set(nf.map(l => esc(l.label) + ' · ' + dimStr(l.file.dims)))].join('<br>')}</span><span>${nf.length === 1 ? 'It is' : 'They are'} left out of the plates. Print ${nf.length === 1 ? 'it' : 'them'} on a bigger printer, or change this level.</span></div>` : ''}
       <div class="ibody">
+        <div class="isec first"><b>Module</b><span class="hint">${across && across.length > 1 ? 'across the width, ' : ''}type, height</span></div>
         ${across && across.length > 1 ? `<div class="field"><div class="lbl">Across the width</div><div class="seg across" role="group" aria-label="Across the width">${across.map(([v, label, sub]) => `<button type="button" data-across="${v}" aria-pressed="${acrossOf(lv) === v}">${acrossIcon(v)}<span>${label}</span><small>${sub}</small></button>`).join('')}</div></div>` : ''}
         <div class="field"><div class="lbl">Type</div><div class="seg">${useg('type', typeOpts, u.type)}</div></div>
         <div class="field"><div class="lbl">Module height</div><div class="seg">${useg('h', hOpts, u.h)}</div></div>
@@ -3067,6 +3092,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       fixTower(t); saveSel(); save(); renderAll();
     });
     box.querySelectorAll('[data-lop]').forEach(b => b.onclick = () => levelOp(t, b.dataset.lop, i));
+    holdButton(box.querySelector('[data-lop="del"]'), () => levelOp(t, 'del', i), 'Hold the bin down to remove this level');
     box.querySelectorAll('[data-umod]').forEach(b => b.onclick = () => { dsel.u = +b.dataset.umod; saveSel(); renderInspector(); v3mark(); });
     bindUnitSeg(box, u, set);
     box.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { view = b.dataset.go; renderAll(); window.scrollTo(0, 0); });
@@ -3080,8 +3106,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       fixUnit(u); fixTower(t); save(); renderAll();
       toast(`Every drawer of this module now has the ${drawerName(u, dv.dr, false)} drawer\u2019s inside, lock and rails${new Set(dids.map(x => x.w)).size > 1 ? ' (the other box size keeps its own divider plan)' : ''}.`);
     }; }
-    box.querySelectorAll('[data-usel]').forEach(el => el.onchange = () => set({ [el.dataset.usel]: el.value }));
-    box.querySelectorAll('[data-ucheck]').forEach(el => el.onchange = () => set({ [el.dataset.ucheck]: el.checked }));
+    box.querySelectorAll('[data-cfloor]').forEach(b => b.onclick = () => { const f = b.dataset.cfloor; set({ caseEmpty: f === 'empty', caseBaseplate: f === 'plate' }); });
     box.querySelectorAll('[data-ubool]').forEach(b => b.onclick = () => { const [key, val] = b.dataset.ubool.split('='); set({ [key]: val === '1' }); });
     box.querySelectorAll('[data-ustep]').forEach(b => b.onclick = () => {
       const id = b.dataset.ustep, d = +b.dataset.d, grid = id === 'gridAcross' || id === 'gridAlong';
@@ -3099,7 +3124,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       svg.onpointermove = e => gridHover(dv, svg.dataset.gplan, svg, e);
       svg.onpointerleave = () => gridHover(dv, svg.dataset.gplan, svg, null);
     });
-    box.querySelectorAll('[data-gclear]').forEach(b => b.onclick = () => { gpend = null; set({ gridPlans: { ...(dv.gridPlans || {}), [b.dataset.gclear]: [] } }); });
+    box.querySelectorAll('[data-gclear]').forEach(b => holdButton(b, () => { gpend = null; set({ gridPlans: { ...(dv.gridPlans || {}), [b.dataset.gclear]: [] } }); }, 'Hold the button down to clear the plan'));
   }
   // The measured placements a shell's drawer layouts need before the inspector offers them
   const layoutsReady = u => !!((PLACE.units[`drawer|${u.w}|${u.d}|${u.h}`] || {}).layouts);
@@ -3111,6 +3136,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   const caseStyle = u => u.w === 'L' || u.w === 'XL' ? u.caseInterior || 'flat' : 'plain';
   // A baseplate covers the floor grooves the dividers stand in, so it takes their place (rules.js); a sealed body takes none
   const casePlate = u => u.type === 'case' && !!u.caseBaseplate && caseStyle(u) !== 'sealed';
+  // A case's floor as the inspector shows it: a baseplate, the dividers placed in its slots, or empty (caseEmpty:
+  // nothing inside, the dividers placed kept for later; a flat body has no slot, so no divider)
+  const caseFloor = u => casePlate(u) ? 'plate' : u.caseEmpty || caseStyle(u) === 'flat' ? 'empty' : 'dividers';
   const caseSlots = u => { const p = PLACE.units[`case|${u.w}|${u.d}|${u.h}`]; return (p && p.dividers && p.dividers[caseStyle(u)]) || null; };
   const spreadIdx = (n, k) => Array.from({ length: Math.min(k || 0, n) }, (_, i) => Math.round((i + 0.5) * n / Math.min(k, n) - 0.5));
   // A case saved before it had slots: its counts spread evenly over the slots
@@ -3142,7 +3170,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     u.divSlots = { ...(u.divSlots || {}), [st]: sel };
     const dv = { plain: 0, depth: 0, width: 0, seal: 0 };
     // under a baseplate: none, the slots kept for when it is taken out
-    if (casePlate(u)) { u.dividers = dv; return; }
+    if (casePlate(u) || u.caseEmpty) { u.dividers = dv; return; }
     if (st === 'plain') dv.plain = sel.rows.length;
     else if (st === 'dividers') { dv.width = sel.rows.length; dv.depth = sel.cols.length; }
     else if (sel.cells.length === 3) { dv.seal = sel.cells[1].length; dv.sealSide = sel.cells[0].length + sel.cells[2].length; }
@@ -3500,19 +3528,21 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     box.innerHTML = `<div class="ihead"><span class="v3-sec">Stack settings</span>
         <input class="tname" value="${esc(t.name)}" data-rename aria-label="Stack name"><div class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></div></div>
       <div class="ibody">
-        <div class="ifp"><span><span class="v3-sec">Footprint, same for every level</span><b>${fpCode(fp)} · ${Math.round(R.WIDTH_MM[fp.w])} mm wide, x${fp.d} deep</b></span><button type="button" class="btn" data-fp>Change…</button></div>
+        <div class="isec first"><b>Size and roof</b><span class="hint">the same for every level</span></div>
+        <div class="field"><div class="lbl">Footprint</div><div class="ifp"><b>${fpCode(fp)} \u00b7 ${Math.round(R.WIDTH_MM[fp.w])} mm, x${fp.d}</b><button type="button" class="btn" data-fp>Change\u2026</button></div></div>
         <div class="field"><div class="lbl">Roof ${topIsDrawer ? '' : '<span class="hint">the top level is a case: the roof latches onto its lid</span>'}</div><div class="seg wrap">${segBtns(roofs, roof, 'data-roof')}</div></div>
-        ${roof === 'grid' ? optRow('data-tophandle', 'Carry handle on the roof', '2 × M6 × 50 mm countersunk bolts', ru.topHandle) : ''}
-        <div class="field"><div class="lbl">Base and handles</div>
-          ${optRow('data-st="base"', 'Base', `${fpCode(fp)} base under level 1`, s.base)}
-          ${s.base ? optRow('data-st="wheels"', 'Wheels, with TPU tires', 'bearings and an M16 axle', s.wheels) : ''}
-          ${s.base && s.wheels ? optRow('data-st="feet"', 'Foot bar at the front', 'opposite the wheels', s.feet) : ''}
-          ${s.base && !s.wheels ? optRow('data-st="casters"', 'Casters', '4 × M8, bought, under the base', s.casters) : ''}
-          ${optRow('data-st="pullHandle"', 'Pull-out trolley handle', 'Adds the backbone column on the back', s.pullHandle)}
-          ${s.pullHandle && fp.w !== 'S' ? `<div class="seg" role="group" aria-label="Handle lock">${segBtns([{ v: 'family', label: 'One-piece lock', sub: `${Math.round(R.WIDTH_MM[fp.w])} mm wide` }, { v: 'universal', label: 'Universal lock', sub: 'two, 89 mm: any printer' }], s.handleLock === 'universal' ? 'universal' : 'family', 'data-hlock')}</div>` : ''}
-          ${optRow('data-st="stationaryHandle"', 'Stationary handle', 'Adds the backbone column on the back', s.stationaryHandle)}</div>
-        <div class="field"><div class="lbl">Between the modules</div>
-          ${optRow('data-st="connectors"', 'Module connectors', 'Screwed over each joint between two drawer modules at the back corners, where no backbone, handle lock or wall plate is', s.connectors)}</div>
+        ${roof === 'grid' ? `<div class="field"><div class="lbl">Carry handle <span class="hint">on the grid roof</span></div><div class="seg">${sbool('topHandle', { label: 'None' }, { label: 'Handle', sub: '2 \u00d7 M6 \u00d7 50 mm countersunk' }, ru.topHandle)}</div></div>` : ''}
+        <div class="isec"><b>Under the stack</b><span class="hint">base, wheels, foot bar</span></div>
+        <div class="field"><div class="lbl">Base <span class="hint">under level 1</span></div><div class="seg">${sbool('base', { label: 'None', sub: 'stands on level 1' }, { label: 'Base', sub: `${fpCode(fp)} base` }, s.base)}</div></div>
+        ${s.base ? `<div class="field"><div class="lbl">Wheels</div><div class="seg">${sbool('wheels', { label: 'None' }, { label: 'Wheels', sub: 'TPU tires, M16 axle' }, s.wheels)}</div></div>` : ''}
+        ${s.base && s.wheels ? `<div class="field"><div class="lbl">Foot bar <span class="hint">at the front, opposite the wheels</span></div><div class="seg">${sbool('feet', { label: 'None' }, { label: 'Foot bar' }, s.feet)}</div></div>` : ''}
+        ${s.base && !s.wheels ? `<div class="field"><div class="lbl">Casters <span class="hint">bought, under the base</span></div><div class="seg">${sbool('casters', { label: 'None' }, { label: 'Casters', sub: '4 \u00d7 M8' }, s.casters)}</div></div>` : ''}
+        <div class="isec"><b>Back of the stack</b><span class="hint">handles, module connectors</span></div>
+        <div class="field"><div class="lbl">Pull-out handle <span class="hint">adds the backbone column</span></div><div class="seg">${sbool('pullHandle', { label: 'None' }, { label: 'Trolley handle' }, s.pullHandle)}</div></div>
+        ${s.pullHandle && fp.w !== 'S' ? `<div class="field"><div class="lbl">Handle lock</div><div class="seg" role="group" aria-label="Handle lock">${segBtns([{ v: 'family', label: 'One-piece lock', sub: `${Math.round(R.WIDTH_MM[fp.w])} mm wide` }, { v: 'universal', label: 'Universal lock', sub: 'two, 89 mm: any printer' }], s.handleLock === 'universal' ? 'universal' : 'family', 'data-hlock')}</div></div>` : ''}
+        <div class="field"><div class="lbl">Stationary handle <span class="hint">adds the backbone column</span></div><div class="seg">${sbool('stationaryHandle', { label: 'None' }, { label: 'Handle' }, s.stationaryHandle)}</div></div>
+        <div class="field"><div class="lbl">Module connectors</div><div class="seg">${sbool('connectors', { label: 'None' }, { label: 'Connectors', sub: 'over the back joints' }, s.connectors)}</div>
+          <p class="pnote" style="margin:0">Screwed over each joint between two drawer modules at the back corners, where no backbone, handle lock or wall plate is.</p></div>
         <div class="ialerts">${alerts.length ? alerts.map(x => `<div class="issue ${x.k}">${esc(x.m)}</div>`).join('') : `<div class="issue ok">Everything in this stack fits together and fits the ${esc(printerName())}.</div>`}</div>
         <div class="actions"><button type="button" class="btn" data-tdup>Duplicate stack</button><button type="button" class="btn" data-tdel>Remove stack</button></div>
       </div>`;
@@ -3525,15 +3555,14 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       u.roof = r; if (r === 'grid' && (roof === 'heavy' || roof === 'heavycut')) u.topHandle = true;
       save(); renderAll();
     });
-    const th = box.querySelector('[data-tophandle]'); if (th) th.onchange = () => { ru.topHandle = th.checked; save(); renderAll(); };
-    box.querySelectorAll('[data-st]').forEach(el => el.onchange = () => { t.stack = { ...s, [el.dataset.st]: el.checked }; fixTower(t); save(); renderAll(); });
+    box.querySelectorAll('[data-sbool]').forEach(b => b.onclick = () => {
+      const [key, val] = b.dataset.sbool.split('='), on = val === '1';
+      if (key === 'topHandle') ru.topHandle = on; else { t.stack = { ...s, [key]: on }; fixTower(t); }
+      save(); renderAll();
+    });
     box.querySelectorAll('[data-hlock]').forEach(b => b.onclick = () => { t.stack = { ...s, handleLock: b.dataset.hlock }; save(); renderAll(); });
     box.querySelector('[data-tdup]').onclick = () => { const x = { ...JSON.parse(JSON.stringify(t)), id: newId(), name: t.name + ' copy' }; towers.push(x); dsel = { t: x.id, l: null }; saveSel(); save(); renderAll(); };
-    box.querySelector('[data-tdel]').onclick = e => {
-      const btn = e.currentTarget;
-      if (!btn.dataset.confirm) { btn.dataset.confirm = '1'; btn.textContent = 'Press again to remove'; return; }
-      removeStack(t);
-    };
+    holdButton(box.querySelector('[data-tdel]'), () => removeStack(t), 'Hold the button down to remove the stack');
   }
   // The 3D view tells the inspector which level was clicked; the inspector's level is outlined in the view
   let v3markObj = null;
@@ -3919,7 +3948,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const selBar = !picked.length
       ? `<div class="pselbar" role="group" aria-label="Plate selection"><span class="pnote">Tick plates to download only those, then mark them printed in one go. Nothing ticked: the downloads hold every plate left.</span>${shown.length ? `<button type="button" class="btn" id="pSelAll">Tick the ${plural(shown.length, 'plate')} shown</button>` : ''}</div>`
       : `<div class="pselbar on" role="group" aria-label="Plate selection"><span><b>${plural(picked.length, 'plate')} ticked</b> <span class="mono">· ${aboutG(gramsOfPlates(picked))} · ${esc(picked.map(pl => two(pl.n)).join(', '))}</span><br><span class="pnote">The downloads hold only these.</span></span>
-        ${pickedTodo.length ? `<button type="button" class="btn ink" id="pSelDone">Mark ${pickedTodo.length === 1 ? 'it' : pickedTodo.length === picked.length ? 'them' : pickedTodo.length} as printed</button>` : ''}
+        ${pickedTodo.length ? `<button type="button" class="btn primary" id="pSelDone">Mark ${pickedTodo.length === 1 ? 'it' : pickedTodo.length === picked.length ? 'them' : pickedTodo.length} as printed</button>` : ''}
         ${pickedDone.length ? `<button type="button" class="btn" id="pSelUndo">Put ${pickedDone.length === 1 && picked.length === 1 ? 'it' : pickedDone.length === picked.length ? 'them' : pickedDone.length + ' printed'} back on the list</button>` : ''}
         ${shown.some(pl => !plateSel.ns.has(pl.n)) ? `<button type="button" class="btn" id="pSelAll">Tick all shown</button>` : ''}
         <button type="button" class="btn" id="pSelNone">Untick all</button></div>`;
@@ -3927,28 +3956,29 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const idx = sel ? allPlates.indexOf(sel) : -1;
     const selFlag = sel ? plateNote(sel, false) : '';
     const detail = !sel ? '' : `<aside class="panel psel" aria-label="Selected plate">
-      <div class="psel-head"><div><h2>Plate ${two(sel.n)}</h2><span class="mono">${plural(sel.items.length, 'part')} · ${aboutG(sel.grams)} · ${Math.round(sel.tallest)} mm tall</span></div>
+      <div class="psel-head"><div><span class="v3-sec">Selected plate</span><h2>Plate ${two(sel.n)}</h2><span class="mono">${plural(sel.items.length, 'part')} · ${aboutG(sel.grams)} · ${Math.round(sel.tallest)} mm tall</span></div>
         <div class="pnav"><button type="button" class="iconbtn sq" data-step="-1" aria-label="Previous plate" ${idx > 0 ? '' : 'disabled'}><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button><button type="button" class="iconbtn sq" data-step="1" aria-label="Next plate" ${idx < allPlates.length - 1 ? '' : 'disabled'}><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button></div></div>
       <div class="ptags"><span class="ftag"><span class="dot2" style="background:${colorHex(sel.color)}"></span>${esc(colorName(sel.color))}</span>${selFlag && selFlag !== 'Printed' ? `<span class="ftag flag">${esc(selFlag)}</span>` : ''}</div>
       ${plateSvg(sel)}
       ${sel.care ? `<div class="alert ${sel.items[0].diag || sel.items[0].asis ? 'ok' : 'warn'}" style="font-size:13px">${sel.items[0].asis ? 'Kept at the angle USSA exported it, where it just fits this bed. Check it in the slicer before printing.' : sel.items[0].diag ? 'Too long to lie straight, so it’s placed diagonally, the way USSA exported it.' : 'Lay this part on a different face than exported to fit; check supports.'}</div>` : ''}
       <div class="plist">${sel.lines.map((x, i) => `<div class="prow"><span class="pk" style="background:${colorHex(sel.color)};color:${LIGHT_FILL(sel.color) ? '#222' : '#fff'}">${i + 1}</span><span class="q num">${x.count}×</span><span class="lbl"><b>${esc(x.l.label)}</b><small class="mono">${esc(fileName(x.l.file.path))}</small></span>${x.l.walls ? `<span class="tag wall">${x.l.walls} walls${x.l.infill ? ' · ' + x.l.infill + '%' : ''}</span>` : ''}${x.l.supports ? '<span class="tag sup">supports</span>' : ''}</div>`).join('')}</div>
-      <button type="button" class="btn ${sel.done ? '' : 'ink'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button></aside>`;
+      <button type="button" class="btn ${sel.done ? '' : 'primary'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button></aside>`;
     const hasLabels = b.lines.some(isLabel);
-    $('view-print').innerHTML = `
-      ${towers.length + (extras.length ? 1 : 0) > 1 ? `<div class="pscope" role="group" aria-label="What to print"><span class="v3-sec">Print</span>
+    $('view-print').innerHTML = `<div class="prt">
+      <aside class="drail prail" role="group" aria-label="What to print"><div class="v3-sec">What to print</div>
         ${towers.map(t => `<button type="button" class="pchip" data-pskip="${t.id}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small></button>`).join('')}
         ${extras.length ? `<button type="button" class="pchip" data-pskip="loose" aria-pressed="${b.extras > 0}"><b>Loose parts</b><small class="mono">${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button>` : ''}
-        <span class="pnote">${b.whole ? 'Everything is in these plates.' : 'Only what is ticked is in these plates and in the file.'}</span></div>` : ''}
+        <p class="pnote">${towers.length + (extras.length ? 1 : 0) < 2 ? 'Everything in Design is in these plates.' : b.whole ? 'Everything is in these plates. Untick a stack to leave it out.' : 'Only what is ticked is in these plates and in the file.'}</p></aside>
+      <div class="pmain">
       <section class="panel ptop" aria-label="Progress and export">
         <div class="ptop-prog"><h1>${pct}% printed</h1><div class="bar2" aria-hidden="true"><i style="width:${pct}%"></i></div>
           <div class="mono">${done} of ${total} parts · ${plates.length} of ${plural(allPlates.length, 'plate')} left · ${aboutG(gDone)} of ${gramsStr(s.g)}</div></div>
         <div class="ptop-x">${exportBtn}
           <div class="xrow">${canMake && target.length ? '<button type="button" class="btn" id="gFolders">STL folders (.zip)</button>' : ''}<span class="popwrap"><button type="button" class="btn" id="plateOpts" aria-expanded="${plateOptsOpen}" aria-controls="plateOptsBox">Plate options…</button>
             <div class="panel popbox" id="plateOptsBox" ${plateOptsOpen ? '' : 'hidden'}><h2>Plate options</h2>
-              <label class="opt"><input type="checkbox" id="mixSupports" ${mixSupports ? 'checked' : ''}><span>Fewer plates<small>Support parts share plates; supports stay on just for them</small></span></label>
-              <label class="opt"><input type="checkbox" id="printAids" ${printAids ? 'checked' : ''}><span>Manual supports<small>USSA's prop for each drawer roof, printed standing against it on the same plate</small></span></label>
-              ${hasLabels ? `<label class="opt"><input type="checkbox" id="labelsApart" ${labelsApart ? 'checked' : ''}><span>Labels on their own plate<small>Add text and colors in the slicer without touching other plates</small></span></label>` : ''}
+              <div class="field"><div class="lbl">Parts with supports</div><div class="seg">${pbool('mixSupports', { label: 'Plates of their own' }, { label: 'Fewer plates', sub: 'shared, supports on just for them' }, mixSupports)}</div></div>
+              <div class="field"><div class="lbl">Manual supports <span class="hint">USSA’s prop for each drawer roof</span></div><div class="seg">${pbool('printAids', { label: 'None' }, { label: 'One per roof', sub: 'standing against it' }, printAids)}</div></div>
+              ${hasLabels ? `<div class="field"><div class="lbl">Labels <span class="hint">text and colors in the slicer</span></div><div class="seg">${pbool('labelsApart', { label: 'With the rest' }, { label: 'Own plate' }, labelsApart)}</div></div>` : ''}
               <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Each shell keeps 15 mm clear beyond its top and bottom walls for them (dashed). Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
               <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}<button type="button" class="btn" id="clearPlates">${b.onlyExtras ? 'Clear loose parts' : 'Clear all plates'}</button></div>
             </div></span></div>
@@ -3964,7 +3994,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       </div>
       <details class="panel fold"><summary>All parts in this build <small>${s.prints} parts · ${s.files} files</small></summary>
         <div class="parts">${partRows(b.lines)}</div>
-        <div class="actions" style="padding:0 18px 16px"><button class="btn" id="copyAll">Copy part list</button></div></details>`;
+        <div class="actions" style="padding:0 18px 16px"><button class="btn" id="copyAll">Copy part list</button></div></details>
+      </div></div>`;
     const V = $('view-print');
     const markPlate = (pl, on, quiet) => {
       if (on) { pl.lines.forEach(x => { printed[pkey(x.l)] = (printed[pkey(x.l)] || 0) + x.count; }); pst.done.push({ n: pl.n, sig: pl.sig }); }
@@ -4005,24 +4036,23 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       renderPrint(); renderTabs();
     };
     $('plateOpts').onclick = e => { e.stopPropagation(); plateOptsOpen = !plateOptsOpen; $('plateOptsBox').hidden = !plateOptsOpen; $('plateOpts').setAttribute('aria-expanded', String(plateOptsOpen)); };
-    if ($('labelsApart')) $('labelsApart').onchange = () => { labelsApart = $('labelsApart').checked; store.set('labelsApart', labelsApart); renderPrint(); };
-    $('mixSupports').onchange = () => { mixSupports = $('mixSupports').checked; store.set('mixSupports', mixSupports); renderPrint(); };
-    $('printAids').onchange = () => { printAids = $('printAids').checked; store.set('manualSupports', printAids); renderPrint(); };
-    if ($('resetPrinted')) $('resetPrinted').onclick = () => {
-      const btn = $('resetPrinted');
-      if (btn.dataset.confirm) { printed = {}; store.set('printed', printed); renderPrint(); renderTabs(); toast('Progress reset'); }
-      else { btn.dataset.confirm = '1'; btn.textContent = 'Press again to reset everything'; }
-    };
-    $('clearPlates').onclick = () => {
-      const btn = $('clearPlates');
-      if (!btn.dataset.confirm) { btn.dataset.confirm = '1'; btn.textContent = 'Press again to clear'; return; }
+    V.querySelectorAll('[data-pbool]').forEach(b => b.onclick = e => {
+      e.stopPropagation(); // the menu stays open
+      const [key, val] = b.dataset.pbool.split('='), on = val === '1';
+      if (key === 'labelsApart') { labelsApart = on; store.set('labelsApart', on); }
+      if (key === 'mixSupports') { mixSupports = on; store.set('mixSupports', on); }
+      if (key === 'printAids') { printAids = on; store.set('manualSupports', on); }
+      renderPrint();
+    });
+    holdButton($('resetPrinted'), () => { printed = {}; store.set('printed', printed); renderPrint(); renderTabs(); toast('Progress reset'); }, 'Hold the button down to reset all progress');
+    holdButton($('clearPlates'), () => {
       // Only loose parts: drop them and their progress, keep the stacks. Otherwise wipe the whole build.
       if (b.onlyExtras) { for (const k of Object.keys(printed)) if (k.startsWith('extra:')) delete printed[k]; }
       else { towers = []; save(); printed = {}; }
       extras = []; saveExtras(); store.set('printed', printed);
       printSkip = []; savePrintSkip(); plateOptsOpen = false;
       renderAll(); toast(b.onlyExtras ? 'Loose parts cleared' : 'All plates cleared');
-    };
+    }, 'Hold the button down to clear');
     $('copyAll').onclick = () => copy(listText(b.lines, 'Vault build'), 'Part list copied');
     if ($('gMake')) $('gMake').onclick = () => hasFolder ? makeDownload(target, false, 'project') : openFolder(false);
     if ($('gFolders')) $('gFolders').onclick = () => makeDownload(target, false, 'folders');
@@ -4926,14 +4956,15 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // from the side; units can be spread apart and the roof hidden. It shows the stack picked in Design (v3sync).
   let v3 = null; // the open view: { t, T, renderer, scene, camera, controls, units: [...], token, tool, brush, ... }
   const v3status = msg => { $('v3dStatus').textContent = msg; };
-  const V3_VIEWS = [['front', 'Front', [0, 0.16, 1]], ['3q', '¾', [0.55, 0.42, 1]], ['side', 'Side', [1, 0.22, 0.02]]];
+  // A stack is first framed from three quarters (the Front / ¾ / Side buttons went, Dols 2026-11-13: drag to turn)
+  const V3_DIR = [0.55, 0.42, 1];
   const V3_SPREAD = 60; // mm between units when spread
   const V3_LIFT = 52 + 48 * 3; // mm the stack above an open case rises (with the case's lid): a 4F module's height
   // The view lives in the page (steps 1 and 2, see v3sync) or, enlarged, in the #v3d dialog. One WebGL renderer is
   // kept for the page's life; each model (a unit, a stack) gets its own scene, and the tools and the camera's
   // direction carry over from one to the next (v3ui).
   let v3gl = null, v3want = null;
-  const v3ui = { tool: null, pscope: 'project', brush: null, explode: false, hideRoof: false, view: '3q', dir: null };
+  const v3ui = { tool: null, pscope: 'project', brush: null, explode: false, hideRoof: false, dir: null };
   async function open3d(t, mode = {}) {
     const want = v3want = {};
     if (!v3gl) v3status('Loading the 3D viewer…');
@@ -4973,7 +5004,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     };
     const painted = (geo, role, cfg) => Object.assign(new T.Mesh(geo, mat(role, cfg)), { userData: { role, cfg } });
     const v = v3 = { t, key: mode.key, cfgs: mode.cfgs || [], ac: new AbortController(), extras: [], T, renderer, scene, camera, controls, mat, mats, painted, units: [], token: {},
-      tool: v3ui.tool === 'paint' ? 'paint' : 'turn', pscope: v3ui.pscope, brush: v3ui.brush, sel: null, hot: null, explode: v3ui.explode, hideRoof: v3ui.hideRoof, view: v3ui.view, hwGeo: new Map() };
+      tool: v3ui.tool === 'paint' ? 'paint' : 'turn', pscope: v3ui.pscope, brush: v3ui.brush, sel: null, hot: null, explode: v3ui.explode, hideRoof: v3ui.hideRoof, hwGeo: new Map() };
     // A bolt's shape, made once per size for this model
     v.hwGeom = spec => {
       if (!v.hwGeo.has(spec)) {
@@ -5023,7 +5054,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         v.framed = true;
         const k = v3ui.keep && v3ui.keep.tower === t.id && v3ui.keep.cam;
         if (k) { camera.position.fromArray(k.at); controls.target.fromArray(k.target); controls.update(); }
-        else v.aim(v3ui.dir || V3_VIEWS[1][2]);
+        else v.aim(v3ui.dir || V3_DIR);
       }
       render();
     };
@@ -5236,7 +5267,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const seg = (items, cur, attr) => items.map(([id, label]) => `<button type="button" ${attr}="${id}" aria-pressed="${cur === id}">${label}</button>`).join('');
     const roof = v.units.some(u => u.roof);
     $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool">${seg([['turn', 'Select'], ['paint', 'Paint']], v.tool, 'data-v3tool')}</div>
-      <div class="v3-right"><div class="v3-seg" role="group" aria-label="View">${seg(V3_VIEWS.map(x => [x[0], x[1]]), v.view, 'data-v3view')}</div>
+      <div class="v3-right">
         ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}">Spread units</button>` : ''}
         ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}">Hide roof</button>` : ''}
         ${v.units.some(u => u.place && u.place.bolts.length) ? `<button type="button" class="v3-tog" data-v3fin title="Bolt finish, for the whole build (also in Hardware): click for ${hwFinish() === 'black' ? 'zinc-plated or stainless' : 'raw steel'}"><span class="dot2" style="background:${hwColor()};vertical-align:-2px;margin-right:6px"></span>${hwFin()[2]}</button>` : ''}</div>`;
@@ -5256,7 +5287,6 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const on = (sel, f) => document.querySelectorAll(sel).forEach(b => b.onclick = () => f(b));
     on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; if (v.tool === 'paint') inspPaint = true; v.hot = null; v.recolor(); v3tools(); v3side(); });
     on('[data-v3tipok]', () => { store.set('openTip', true); v3tools(); });
-    on('[data-v3view]', b => { v.view = b.dataset.v3view; v.aim(V3_VIEWS.find(x => x[0] === v.view)[2]); v3tools(); });
     on('[data-v3tog]', b => { v[b.dataset.v3tog] = !v[b.dataset.v3tog]; v.arrange(); v3tools(); v3side(); });
     on('[data-v3scope]', b => { v.pscope = b.dataset.v3scope; v3tools(); });
     on('[data-v3fin]', () => { setHwFinish(hwFinish() === 'black' ? 'zinc' : 'black'); v.recolor(); v3tools(); v3side(); });
@@ -5520,7 +5550,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // Let go of a model (its scene, controls and listeners); the renderer stays for the next one
   function close3d() {
     const v = v3; if (!v) return;
-    Object.assign(v3ui, { tool: v.tool, pscope: v.pscope, brush: v.brush, explode: v.explode, hideRoof: v.hideRoof, view: v.view });
+    Object.assign(v3ui, { tool: v.tool, pscope: v.pscope, brush: v.brush, explode: v.explode, hideRoof: v.hideRoof });
     v3keep(v);
     v3 = null; v.token = null; v.ac.abort();
     v.ro.disconnect(); v.controls.dispose();
@@ -5904,7 +5934,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <span class="hwq num">${r.qty}\u00d7</span>
         <span class="hwhead">${headIcon(r.item)}</span>
         <span class="hwname"><b>${esc(r.name)}</b><small>${esc(r.note || '')}</small></span>
-        <span class="hwuse"><span>${esc(r.why)}</span><small class="mono">${esc(r.where)}</small></span>
+        <span class="hwuse"><span>${esc(r.why)}</span><small>${esc(r.where)}</small></span>
         <span class="hwbuy">${r.link ? `<a class="btn" href="${esc(r.link)}" data-buy="${esc(r.item)}" target="_blank" rel="${r.aff ? 'sponsored noopener' : 'noopener'}" title="${esc(r.page ? `${r.store}: the product page` : `${r.store}: search for ${shopQuery(r.item)}`)}">${esc(r.store)}</a>` : ''}</span></div>`;
     }).join('');
     V.innerHTML = `<div class="hwpage">
@@ -6016,6 +6046,19 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // count how many are built ("Drawer 3 of 8"): "done, next one" clears the ticks and counts one more.
   let asmSec = store.get('asmSec', null);
   let asmBuilt = store.get('asmBuilt', {});
+  // How far the assembly is, as the tab says it: the mean of the sections' progress bars (units built where a
+  // section repeats per unit, else steps ticked)
+  function asmPct(b) {
+    const secs = GUIDE.filter(g => g.when(b)); if (!secs.length) return null;
+    const units = b.list.flatMap(t => t.levels.flat());
+    const part = secs.map(g => {
+      const r = ASM_UNIT[g.id] ? units.reduce((a, u) => a + ASM_UNIT[g.id][1](u), 0) : 0;
+      if (r) return Math.min(asmBuilt[g.id] || 0, r) / r;
+      const st = g.steps.filter(x => !x.when || x.when(b));
+      return st.length ? st.filter(x => stepsDone[g.id + ':' + x.t]).length / st.length : 0;
+    });
+    return Math.round(part.reduce((a, x) => a + x, 0) / part.length * 100);
+  }
   const ASM_UNIT = { drawer: ['Drawer', u => u.type !== 'drawer' ? 0 : R.drawersOf(u).length * (u.w === 'L2' || u.w === 'XL2' ? 2 : 1)], case: ['Case', u => u.type === 'case' ? 1 : 0] };
   function renderAssemble() {
     const b = computeBuild();
@@ -6040,9 +6083,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <span class="asec-s">${esc(scopeOf(x))}</span><span class="asec-bar" aria-hidden="true"><i style="width:${pct}%"></i></span></button>`;
     }).join('');
     $('view-assemble').innerHTML = `<div class="asm">
-      <nav class="asm-rail" aria-label="Assembly sections"><div class="v3-sec">Assembly</div>${rail}</nav>
+      <nav class="asm-rail" aria-label="Assembly sections"><div class="v3-sec">Sections</div>${rail}</nav>
       <section class="panel asm-steps" aria-label="Steps">
-        <div class="asm-head"><div class="asm-title"><h1>${esc(g.title)}</h1><span class="mono">${esc([g.intro, scopeOf(g)].filter(Boolean).join(' · '))}</span>
+        <div class="asm-head"><div class="asm-title"><h1>${esc(g.title)}</h1><span>${esc([g.intro, scopeOf(g)].filter(Boolean).join(' · '))}</span>
           ${g.inferred ? `<span class="asm-inf"><span class="badge inf">Inferred order</span><span>${esc(g.inferred)}</span></span>` : ''}</div>
           ${rep ? `<div class="asm-rep"><span><b>${built >= rep ? `All ${rep} built` : `${unit} ${built + 1} of ${rep}`}</b><small>Same steps for every ${unit.toLowerCase()}</small></span>
             <button type="button" class="btn primary big" id="asmNext" ${built >= rep ? 'disabled' : ''}>${unit} done, next one</button>${built ? '<button type="button" class="linkbtn" id="asmReset">Start the count again</button>' : ''}</div>` : ''}</div>
@@ -6065,14 +6108,14 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     V.querySelectorAll('[data-go]').forEach(btn => btn.onclick = () => { view = btn.dataset.go; renderAll(); });
     V.querySelectorAll('[data-stepkey]').forEach(cb => cb.onchange = () => {
       if (cb.checked) stepsDone[cb.dataset.stepkey] = 1; else delete stepsDone[cb.dataset.stepkey];
-      store.set('steps', stepsDone); renderAssemble();
+      store.set('steps', stepsDone); renderAssemble(); renderTabs();
     });
     if ($('asmNext')) $('asmNext').onclick = () => {
       steps.forEach(s => { delete stepsDone[g.id + ':' + s.t]; });
       asmBuilt[g.id] = built + 1; store.set('asmBuilt', asmBuilt); store.set('steps', stepsDone);
-      toast(built + 1 >= rep ? `All ${rep} ${unit.toLowerCase()}s built` : `${unit} ${built + 1} done`); renderAssemble();
+      toast(built + 1 >= rep ? `All ${rep} ${unit.toLowerCase()}s built` : `${unit} ${built + 1} done`); renderAssemble(); renderTabs();
     };
-    if ($('asmReset')) $('asmReset').onclick = () => { delete asmBuilt[g.id]; store.set('asmBuilt', asmBuilt); renderAssemble(); };
+    holdButton($('asmReset'), () => { delete asmBuilt[g.id]; store.set('asmBuilt', asmBuilt); renderAssemble(); renderTabs(); }, 'Hold it down to start the count again');
   }
 
   // ---------- tabs ----------
@@ -6088,12 +6131,18 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const units = towers.reduce((a, t) => a + t.levels.reduce((x, l) => x + l.length, 0), 0);
     const nx = extras.reduce((a, e) => a + e.qty, 0);
     $('countBuild').textContent = units + nx ? `(${units + nx})` : '';
+    $('countBuild').title = units + nx ? [units && plural(units, 'module'), nx && plural(nx, 'loose part')].filter(Boolean).join(' and ') : '';
     const b = computeBuild(true);
     const total = b.lines.reduce((a, l) => a + (l.fit.s === 'no' || l.fit.s === 'reorient' ? 0 : l.total), 0);
     const done = b.lines.reduce((a, l) => a + Math.min(l.total, printed[pkey(l)] || 0), 0);
     $('countPrint').textContent = total ? `${Math.round(done / total * 100)}%` : '';
+    $('countPrint').title = total ? `${done} of ${plural(total, 'part')} printed` : '';
     const hwLeft = b.empty ? 0 : b.hardware.filter(h => !hwBought[h.item]).length;
     $('countHw').textContent = hwLeft ? `(${hwLeft})` : '';
+    $('countHw').title = hwLeft ? `${plural(hwLeft, 'line')} still to buy` : '';
+    const ab = b.empty ? null : computeBuild(), ap = ab && !ab.empty ? asmPct(ab) : null;
+    $('countAsm').textContent = ap == null ? '' : `${ap}%`;
+    $('countAsm').title = ap == null ? '' : `${ap}% assembled`;
     store.set('view', view);
     renderHeader();
   }

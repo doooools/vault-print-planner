@@ -1,15 +1,15 @@
 // Battery 2 recipes (H2S): each builds one configuration through the page's controls, from a fresh start()
 window.B2 = (() => {
   const c = T.c, chk = T.check;
-  const noRails = () => chk('[data-ucheck=gearedRails]', false);
+  const noRails = () => c('[data-ubool="gearedRails=0"]');
   const roof = async r => { await T.stackPanel(); await c(`[data-roof="${r}"]`); };
-  const topHandle = async on => { await T.stackPanel(); if (document.querySelector('[data-tophandle]')) await chk('[data-tophandle]', on); };
-  const st = async (k, on) => { await T.stackPanel(); await chk(`[data-st="${k}"]`, on); };
+  const topHandle = async on => { await T.stackPanel(); if (document.querySelector('[data-sbool^="topHandle="]')) await c(`[data-sbool="topHandle=${on ? 1 : 0}"]`); };
+  const st = async (k, on) => { await T.stackPanel(); await c(`[data-sbool="${k}=${on ? 1 : 0}"]`); };
   const lv = async () => T.topLevel();
   const h = async n => { await lv(); await c(`[data-useg="h=${n}"]`); };
   const lay = async l => { await lv(); await c(`[data-lay="${l}"]`); };
   const type = async t => { await lv(); await c(`[data-useg="type=${t}"]`); };
-  const sel = async (k, v) => { await lv(); const e = document.querySelector(`[data-usel="${k}"]`); e.value = v; e.dispatchEvent(new Event('change', { bubbles: true })); await T.sleep(250); };
+  const sel = async (k, v) => { await lv(); await c(`[data-useg="${k}=${v}"]`); };
   const addTop = async () => { await T.tab(1); await c('[data-addtop]'); await lv(); };
   const step = async (k, n) => { await lv(); for (let i = 0; i < Math.abs(n); i++) await c(`[data-ustep="${k}"][data-d="${n > 0 ? 1 : -1}"]`); };
   const across = async v => { await lv(); await c(`[data-across="${v}"]`); };
@@ -40,9 +40,9 @@ window.B2 = (() => {
     D22: async () => { await T.footprint('S', 4); await lv(); await noRails(); await c('[data-useg="interior=grid"]'); const a = +T.txt(document.querySelector('[data-ustep="gridAcross"]').parentElement.querySelector('output')); await step('gridAcross', 2 - a);
       const b = +T.txt(document.querySelector('[data-ustep="gridAlong"]').parentElement.querySelector('output')); await step('gridAlong', 1 - b); await sel('gridHeight', '20'); await sel('gridEdge', 'straight'); await topHandle(false); },
     D23: async () => { await T.footprint('S', 4); await h(2); await noRails(); await c('[data-useg="interior=gridfinity"]'); await sel('baseplateHandles', '2'); await topHandle(false); },
-    D24: async () => { await T.footprint('M', 5); await lv(); await noRails(); await chk('[data-ucheck=wallMount]', true); await topHandle(false); },
+    D24: async () => { await T.footprint('M', 5); await lv(); await noRails(); await c('[data-ubool="wallMount=1"]'); await topHandle(false); },
     D25: async () => { await T.footprint('S', 3); await lv(); await noRails(); await sel('pegboard', 'ikea'); await topHandle(false); },
-    D26: async () => { await T.footprint('S', 3); await type('case'); await h(2); await chk('[data-ucheck=caseBaseplate]', true); await step('dv_plain', 3); await topHandle(false); },
+    D26: async () => { await T.footprint('S', 3); await type('case'); await h(2); await c('[data-cfloor="plate"]'); await step('dv_plain', 3); await topHandle(false); },
     D27: async () => { await T.footprint('S', 6); await h(2); await noRails(); await addTop(); await h(1); await st('base', true); await st('wheels', false); await st('stationaryHandle', true); await topHandle(false); },
     D28: async () => { await T.footprint('L', 6); await type('case'); await h(1); await sel('caseInterior', 'flat'); await topHandle(false); },
   };
