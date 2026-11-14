@@ -314,6 +314,15 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   paint (no flash). With nothing saved the page follows the system and its changes. What JS copies from the CSS tokens
   (the 3D background, highlight and level outline) is redone by `v3.retheme`.
 
+- Keyboard shortcuts (Dols, 2026-11-14, branch `claude/project-thread-ebiohf`): section "keyboard shortcuts" after the
+  tabs in `src/template.html`: one `keydown` listener on the window in the capture phase (it sees Esc before the
+  handlers that act on it), `keyDesign` for step 1, `KEYS` the list shown by `?` and the header's "Shortcuts" link
+  (`#keys`, `keysPop`), `MOD` (⌘ on a Mac, else Ctrl). Rules and the full list: `docs/ux-redesign.md`, "Keyboard
+  shortcuts". Bare keys never with Ctrl/Cmd/Alt (the browser's stay theirs; only Ctrl/Cmd + S / O are taken), never in a
+  field, a menu (`menuNow`), a dialog, `fpOpen` or the printer list. A new shortcut goes in `KEYS`, in the menu item's
+  `key` and in the button's `title` / `aria-keyshortcuts`; a removal by key is only "Remove level" (others are press
+  and hold: ask Dols).
+
 - Undo (UX audit 2026-11, session 1, branch `claude/undo`): section "undo" next to `store` in `src/template.html`.
   `save()`, `saveColors()`, `saveExtras()` and `saveSel()` call `undoNote()`; at the end of the task `undoCommit`
   compares `[towers, seq, colorPrefs, extras]` as JSON with the last state kept and, when it differs, pushes the state

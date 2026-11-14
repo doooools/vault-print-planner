@@ -116,12 +116,21 @@ header.appbar .tabs { flex: 1 1 auto; }
 .vmenu .mnote.ok { color: var(--ok); }
 .newsbtn { border: 0; background: none; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 .newsbtn:hover { color: var(--ink); }
-dialog#news, dialog#relink, dialog#report { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px 22px; width: min(620px, calc(100vw - 32px)); max-height: min(80vh, 720px); overflow-y: auto; overscroll-behavior: contain; position: fixed; }
-dialog#news::backdrop, dialog#relink::backdrop, dialog#report::backdrop { background: rgba(10, 12, 12, .45); }
+dialog#news, dialog#relink, dialog#report, dialog#keys { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px 22px; width: min(620px, calc(100vw - 32px)); max-height: min(80vh, 720px); overflow-y: auto; overscroll-behavior: contain; position: fixed; }
+dialog#news::backdrop, dialog#relink::backdrop, dialog#report::backdrop, dialog#keys::backdrop { background: rgba(10, 12, 12, .45); }
 dialog#relink { width: min(480px, calc(100vw - 32px)); }
 #relink p { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
 #relink .acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 18px; }
-dialog#news h2, dialog#relink h2, dialog#report h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
+dialog#news h2, dialog#relink h2, dialog#report h2, dialog#keys h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
+/* Keyboard shortcuts ("?", the header's Shortcuts link): groups of keys and what they do */
+dialog#keys { width: min(540px, calc(100vw - 32px)); }
+#keys .keyslist h3 { margin: 16px 0 4px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+#keys dl { margin: 0; }
+#keys dl > div { display: grid; grid-template-columns: minmax(150px, 40%) 1fr; gap: 12px; align-items: baseline; padding: 5px 0; border-top: 1px solid var(--line); }
+#keys dt { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; font-size: 12px; color: var(--muted); }
+#keys .kc { white-space: nowrap; }
+#keys dd { margin: 0; font-size: 14px; line-height: 1.45; }
+#keys kbd { display: inline-block; padding: 0 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 11.5px var(--f-mono); color: var(--ink); background: var(--sheet); }
 #report p { margin: 8px 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
 #report .acts { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 6px; }
 #report .acts a { text-decoration: none; }
@@ -986,12 +995,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 
 <header class="appbar">
   <div class="logo"><svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#222526"/><rect x="11" y="10" width="42" height="13" rx="3" fill="#d4d6d3"/><rect x="11" y="25.5" width="42" height="13" rx="3" fill="#d4d6d3"/><rect x="11" y="41" width="42" height="13" rx="3" fill="#d4d6d3"/><circle cx="32" cy="32" r="3.6" fill="#e8742f"/></svg>
-    <div class="brand"><h1>Vault Print Planner</h1><p class="hlinks"><button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog" title="What changed lately, and what this fork adds to Romy’s planner">What’s new</button><span aria-hidden="true"> · </span><button type="button" class="newsbtn" id="reportBtn" aria-haspopup="dialog" title="Report a bug or suggest an idea, on GitHub">Report a bug or an idea</button></p></div></div>
+    <div class="brand"><h1>Vault Print Planner</h1><p class="hlinks"><button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog" title="What changed lately, and what this fork adds to Romy’s planner">What’s new</button><span aria-hidden="true"> · </span><button type="button" class="newsbtn" id="reportBtn" aria-haspopup="dialog" title="Report a bug or suggest an idea, on GitHub">Report a bug or an idea</button><span aria-hidden="true"> · </span><button type="button" class="newsbtn" id="keysBtn" aria-haspopup="dialog" aria-keyshortcuts="?" title="Keyboard shortcuts (?)">Shortcuts</button></p></div></div>
   <nav class="tabs" role="tablist" aria-label="Steps">
-    <button role="tab" id="tab-build" data-tab="build">1 · Design</button>
-    <button role="tab" id="tab-print" data-tab="print">2 · Print <span class="count" id="countPrint"></span></button>
-    <button role="tab" id="tab-hardware" data-tab="hardware">3 · Hardware <span class="count" id="countHw"></span></button>
-    <button role="tab" id="tab-assemble" data-tab="assemble">4 · Assemble <span class="count" id="countAsm"></span></button>
+    <button role="tab" id="tab-build" data-tab="build" aria-keyshortcuts="1" title="Design (1)">1 · Design</button>
+    <button role="tab" id="tab-print" data-tab="print" aria-keyshortcuts="2" title="Print (2)">2 · Print <span class="count" id="countPrint"></span></button>
+    <button role="tab" id="tab-hardware" data-tab="hardware" aria-keyshortcuts="3" title="Hardware (3)">3 · Hardware <span class="count" id="countHw"></span></button>
+    <button role="tab" id="tab-assemble" data-tab="assemble" aria-keyshortcuts="4" title="Assemble (4)">4 · Assemble <span class="count" id="countAsm"></span></button>
   </nav>
   <div class="hbtns">
     <button type="button" class="hbtn" id="fileBtn" aria-haspopup="menu" aria-expanded="false" title="Save this design to a file, or open one"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>File<svg class="chev" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -1045,6 +1054,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><!--CHANGELOG--></div></dialog>
+<dialog id="keys" aria-labelledby="keysTitle"><button type="button" class="vclose" id="keysClose" aria-label="Close">&times;</button><h2 id="keysTitle">Keyboard shortcuts</h2><p class="pnote">Not while you type in a field. Press <kbd>?</kbd> to open or close this list.</p><div class="keyslist" id="keysList"></div></dialog>
 <dialog id="report" aria-labelledby="reportTitle"><button type="button" class="vclose" id="reportClose" aria-label="Close">&times;</button><h2 id="reportTitle">Report a bug or an idea</h2>
   <p>Something wrong, broken or confusing, or something you'd like the planner to do? Tell us on GitHub: the form opens in a new tab and asks a few short questions.</p>
   <div class="acts"><a class="btn primary" id="reportBug" target="_blank" rel="noopener" href="https://github.com/doooools/vault-print-planner/issues/new?template=bug.yml">Report a bug</a><a class="btn" id="reportIdea" target="_blank" rel="noopener" href="https://github.com/doooools/vault-print-planner/issues/new?template=idea.yml">Suggest an improvement</a></div>
@@ -2726,22 +2736,22 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const items = [];
     if (v && m) {
       const ok = v.canOpen(m), what = m.lid ? 'case' : 'drawer';
-      items.push({ icon: 'drawer', label: `${m.open ? 'Close' : 'Open'} ${what}`, key: 'double-click', dis: !ok, tip: ok ? '' : 'A case opens once its real parts are in', fn: () => v.toggle(m) });
+      items.push({ icon: 'drawer', label: `${m.open ? 'Close' : 'Open'} ${what}`, key: 'O', dis: !ok, tip: ok ? '' : 'A case opens once its real parts are in', fn: () => v.toggle(m) });
     }
     items.push(
-      { sep: items.length > 0, icon: 'plus', label: 'Add a level above', fn: () => levelOp(t, 'dup', i) },
-      { icon: 'plus', label: 'Add a level below', fn: () => levelOp(t, 'dupBelow', i) },
-      { icon: 'up', label: 'Move up', dis: i === L.length - 1, fn: () => levelOp(t, 'up', i) },
-      { icon: 'down', label: 'Move down', dis: !i, fn: () => levelOp(t, 'down', i) },
-      { sep: true, icon: 'del', label: 'Remove level', fn: () => levelOp(t, 'del', i) });
+      { sep: items.length > 0, icon: 'plus', label: 'Add a level above', key: 'D', fn: () => levelOp(t, 'dup', i) },
+      { icon: 'plus', label: 'Add a level below', key: 'Shift+D', fn: () => levelOp(t, 'dupBelow', i) },
+      { icon: 'up', label: 'Move up', key: ALT + '+↑', dis: i === L.length - 1, fn: () => levelOp(t, 'up', i) },
+      { icon: 'down', label: 'Move down', key: ALT + '+↓', dis: !i, fn: () => levelOp(t, 'down', i) },
+      { sep: true, icon: 'del', label: 'Remove level', key: 'Delete', fn: () => levelOp(t, 'del', i) });
     return { head: `Level ${i + 1} of ${L.length}`, sub: levelTitle(lv), items };
   }
   // The whole stack's: the one way to reframe the view, a level on top, its settings
   function stackMenu(t) {
     return { head: 'Whole stack', sub: t.name, items: [
-      { icon: 'fit', label: 'Fit the stack in the view', dis: !v3, fn: () => { if (v3) v3.aim(null); } },
-      { sep: true, icon: 'plus', label: 'Add a level on top', fn: () => levelOp(t, 'top') },
-      { icon: 'chev', label: 'Stack settings', fn: () => { leavePaint(); dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); } }] };
+      { icon: 'fit', label: 'Fit the stack in the view', key: 'F', dis: !v3, fn: () => { if (v3) v3.aim(null); } },
+      { sep: true, icon: 'plus', label: 'Add a level on top', key: 'A', fn: () => levelOp(t, 'top') },
+      { icon: 'chev', label: 'Stack settings', key: 'Esc', fn: () => { leavePaint(); dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); } }] };
   }
   const segBtns = (items, cur, attr) => items.map(it => `<button type="button" ${attr}="${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}"${it.dis ? ' disabled' : ''}>${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   const useg = (key, items, cur) => items.map(it => `<button type="button" data-useg="${key}=${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
@@ -2865,9 +2875,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const b = $('fileBtn'); if (menuFrom(b)) { menuClose(); return; }
     const f = fileState(), empty = !towers.length && !extras.length, where = saveWhere();
     menuOpen({ head: 'Design file', sub: f.name, note: f.note, noteOk: f.ok, opener: b, keys: e.detail === 0, left: true, items: [
-      { label: 'Save', icon: 'save', key: where, dis: empty, tip: empty ? 'Nothing to save yet' : where === 'in the Vault folder' ? 'Save these stacks, loose parts and colors into the Vault folder, next to the part files' : 'Save these stacks, loose parts and colors to a file', fn: () => saveDesign(false) },
+      { label: where ? `Save ${where}` : 'Save', icon: 'save', key: MOD + '+S', dis: empty, tip: empty ? 'Nothing to save yet' : where === 'in the Vault folder' ? 'Save these stacks, loose parts and colors into the Vault folder, next to the part files' : 'Save these stacks, loose parts and colors to a file', fn: () => saveDesign(false) },
       { label: 'Save as…', icon: 'file', dis: empty, tip: empty ? 'Nothing to save yet' : 'Save a copy somewhere else, or under another name', fn: () => saveDesign(true) },
-      { label: 'Open…', icon: 'open', tip: 'Open a design saved before: it replaces the stacks and loose parts here', fn: openDesign },
+      { label: 'Open…', icon: 'open', key: MOD + '+O', tip: 'Open a design saved before: it replaces the stacks and loose parts here', fn: openDesign },
     ] });
   };
   // First launch: printer, Vault folder, first stack
@@ -2974,8 +2984,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // the stack's name is renamed here, in place (dRename): the pencil turns the title into its field
     return `<section class="panel dcenter" aria-label="Stack">
       <div class="dhead"><div class="dtitle"><div class="dname"><h1>${esc(t.name)}</h1><button type="button" class="iconbtn dren" data-rename aria-label="Rename ${esc(t.name)}" title="Rename the stack">${icon('pen')}</button></div><span class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></span></div>
-        <div class="dacts"><button type="button" class="btn" data-dstack aria-pressed="${dsel.l == null && !painting()}">Stack settings</button>
-          <button type="button" class="btn primary" data-addtop title="Adds a level like the top one">${icon('plus')} Add a level on top</button></div></div>
+        <div class="dacts"><button type="button" class="btn" data-dstack aria-keyshortcuts="Escape" title="Stack settings (Esc)" aria-pressed="${dsel.l == null && !painting()}">Stack settings</button>
+          <button type="button" class="btn primary" data-addtop aria-keyshortcuts="A" title="Adds a level like the top one (A)">${icon('plus')} Add a level on top</button></div></div>
       ${t.levels.length ? '<div class="v3-slot"></div>' : `<div class="dempty"><p>This stack has no level yet.</p><button type="button" class="btn primary big" data-addtop>${icon('plus')} Add a level</button></div>`}
     </section>`;
   }
@@ -3112,7 +3122,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       back += `<div class="field"><div class="lbl">Backbone <span class="hint">the column reaches this level</span></div><div class="seg">${useg('backbone', [{ v: 'none', label: 'None' }, { v: 'family', label: 'This width' }, { v: 'universal', label: 'Universal' }], u.backbone || 'none')}</div></div>`;
     } else back += '<p class="pnote" style="margin:0">Pegboards and backbones are made for 1F and 2F modules only.</p>';
     box.innerHTML = `<div class="ihead"><div class="ipos"><span class="v3-sec">Level ${i + 1} of ${L.length}</span>
-        <div class="iacts"><button type="button" class="iconbtn sq" data-lgo="-1" aria-label="Level below" title="Level below" ${i ? '' : 'disabled'}>${icon('down')}</button><button type="button" class="iconbtn sq" data-lgo="1" aria-label="Level above" title="Level above" ${top ? 'disabled' : ''}>${icon('up')}</button><button type="button" class="iconbtn sq" data-lmenu aria-haspopup="menu" aria-expanded="false" aria-label="Actions for level ${i + 1}" title="Add, move or remove this level">${icon('more')}</button></div></div>
+        <div class="iacts"><button type="button" class="iconbtn sq" data-lgo="-1" aria-label="Level below" aria-keyshortcuts="ArrowDown" title="Level below (↓)" ${i ? '' : 'disabled'}>${icon('down')}</button><button type="button" class="iconbtn sq" data-lgo="1" aria-label="Level above" aria-keyshortcuts="ArrowUp" title="Level above (↑)" ${top ? 'disabled' : ''}>${icon('up')}</button><button type="button" class="iconbtn sq" data-lmenu aria-haspopup="menu" aria-expanded="false" aria-label="Actions for level ${i + 1}" title="Add, move or remove this level">${icon('more')}</button></div></div>
         <h2>${esc(title)}</h2><div class="mono">${Math.round(levelWidth(lv))} × ${Math.round(ext[1])} × ${Math.round(levelHeight(lv))} mm · ${s.prints} parts · ${aboutG(s.g)}</div></div>
       ${lv.length > 1 ? `<div class="seg ipair" role="group" aria-label="Module to set up">${lv.map((x, j) => `<button type="button" data-umod="${j}" aria-pressed="${j === ui}">${j ? 'Right' : 'Left'}<small>${esc(unitCode(x))}</small></button>`).join('')}</div>` : ''}
       ${nf.length ? `<div class="alert warn" role="alert"><strong>${plural(nf.length, 'part')} of this level no longer ${nf.length === 1 ? 'fits' : 'fit'} the ${esc(printerName())}</strong><span class="mono">${[...new Set(nf.map(l => esc(l.label) + ' · ' + dimStr(l.file.dims)))].join('<br>')}</span><span>${nf.length === 1 ? 'It is' : 'They are'} left out of the plates. Print ${nf.length === 1 ? 'it' : 'them'} on a bigger printer, or change this level.</span></div>` : ''}
@@ -5527,15 +5537,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // The Paint button carries the stack's filaments as swatches, so the tool says where colours are set (C7)
     const fil = stackFilaments(v.t), shown = fil.slice(0, 4);
     const paintLbl = `Paint<span class="v3-pdots" aria-hidden="true">${shown.map(p => `<span class="dot2" style="background:${p.hex}"></span>`).join('')}${fil.length > shown.length ? `<small>+${fil.length - shown.length}</small>` : ''}</span>`;
-    $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool"><button type="button" data-v3tool="turn" aria-pressed="${v.tool === 'turn'}">Select</button><button type="button" data-v3tool="paint" aria-pressed="${v.tool === 'paint'}" title="Paint: ${esc(fil.map(p => p.name).join(', '))}" aria-label="Paint, ${plural(fil.length, 'filament')} on this stack">${paintLbl}</button></div>
+    $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool"><button type="button" data-v3tool="turn" aria-pressed="${v.tool === 'turn'}" title="Select (Esc from Paint)">Select</button><button type="button" data-v3tool="paint" aria-pressed="${v.tool === 'paint'}" aria-keyshortcuts="P" title="Paint (P): ${esc(fil.map(p => p.name).join(', '))}" aria-label="Paint, ${plural(fil.length, 'filament')} on this stack">${paintLbl}</button></div>
       <div class="v3-right">
-        ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}">Spread levels</button>` : ''}
-        ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}">Hide roof</button>` : ''}
+        ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}" aria-keyshortcuts="E" title="Spread levels (E)">Spread levels</button>` : ''}
+        ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}" aria-keyshortcuts="H" title="Hide roof (H)">Hide roof</button>` : ''}
         ${v.units.some(u => u.place && u.place.bolts.length) ? `<div class="v3-seg v3-bolts" role="group" aria-label="Bolt finish, for the whole build (also in Hardware)"><span class="v3-seglbl" aria-hidden="true">Bolts</span>${HW_FINISHES.map(([id, hex, n]) => `<button type="button" data-v3fin="${id}" aria-pressed="${hwFinish() === id}" aria-label="${n} bolts" title="${n} bolts, for the whole build (also in Hardware)"><span class="dot2" style="background:${hex}"></span></button>`).join('')}</div>` : ''}
         <button type="button" class="v3-tog v3-helpbtn" data-v3help aria-expanded="${!!v3ui.help}" aria-controls="v3dHelp" aria-label="How to move the view" title="How to move the view">${icon('help')}</button>
         ${v3ui.help ? `<div class="v3-helppop" id="v3dHelp"><p><b>Drag</b> to turn · <b>scroll</b> to zoom · <b>right-drag</b> to move the view.</p>
           <p><b>Double-click</b> a drawer or a case, or <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click it, to open or close it.</p>
-          <p><b>Right-click</b> the background to fit the stack in the view, add a level on top or open the stack’s settings.</p></div>` : ''}</div>`;
+          <p><b>Right-click</b> the background to fit the stack in the view, add a level on top or open the stack’s settings.</p>
+          <p><kbd>?</kbd> lists the keyboard shortcuts: <kbd>↑</kbd> <kbd>↓</kbd> pick a level, <kbd>O</kbd> opens its drawer, <kbd>F</kbd> fits the stack in the view.</p></div>` : ''}</div>`;
     const B = $('v3dBrush');
     if (v.tool === 'paint') {
       B.hidden = false; B.className = 'v3-brush';
@@ -6494,6 +6505,98 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && v3ui.help && v3) { v3ui.help = false; v3tools(); } });
   checkFolderLink().catch(() => {});
   document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { view = b.dataset.tab; renderAll(); });
+
+  // ---------- keyboard shortcuts ----------
+  // One listener, on the window in the capture phase so it sees a key before the handlers that would act on the same
+  // press (Esc). Never while typing in a field, nor with a menu, a dialog, the filament picker or the printer list open:
+  // those keep their own keys. Bare keys take no Ctrl, Cmd or Alt, so the browser's own shortcuts stay theirs; only
+  // Ctrl/Cmd + S and Ctrl/Cmd + O are taken over, for the design file (as in any app that edits a document).
+  // Letters are read as typed (e.key: A is A on AZERTY too), the step numbers by their key (e.code: 1 to 4 with or
+  // without Shift). The list the "?" key and the header's "Shortcuts" link open is KEYS; menus show theirs on the right.
+  const MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent), MOD = MAC ? '⌘' : 'Ctrl', ALT = MAC ? 'Option' : 'Alt';
+  const KEYS = [
+    ['Everywhere', [
+      [['1 2 3 4'], 'Go to Design, Print, Hardware or Assemble'],
+      [[MOD + ' + S'], 'Save the design to its file'], [[MOD + ' + O'], 'Open a design file'],
+      [[MOD + ' + Z'], 'Undo'], [[MOD + ' + Y', MOD + ' + Shift + Z'], 'Redo'],
+      [['?'], 'Show these shortcuts']]],
+    ['Design', [
+      [['↑ ↓'], 'Level above, level below'], [['Esc'], 'Stack settings (or back to Select from Paint)'],
+      [['Shift + ↑ ↓'], 'Stack above, stack below in the list'],
+      [[ALT + ' + ↑ ↓'], 'Move the level up or down'],
+      [['D'], 'Add a copy of the level above it'], [['Shift + D'], 'Add a copy of the level below it'],
+      [['A'], 'Add a level on top'], [['Delete'], 'Remove the level (Undo takes it back)']]],
+    ['3D view', [
+      [['O'], 'Open or close the level’s drawer or case'], [['P'], 'Paint on or off'],
+      [['F'], 'Fit the stack in the view'], [['E'], 'Spread levels'], [['H'], 'Hide roof']]],
+  ];
+  // 'Shift + ↑ ↓': Shift with ↑ or ↓; several combinations in a row are alternatives (or)
+  const kbd = k => `<span class="kc">${k.split(' + ').map(x => x.split(' ').map(y => `<kbd>${esc(y)}</kbd>`).join(' ')).join(' + ')}</span>`;
+  $('keysList').innerHTML = KEYS.map(([g, rows]) => `<h3>${g}</h3><dl>${rows.map(([ks, what]) => `<div><dt>${ks.map(kbd).join('<span class="kor">or</span>')}</dt><dd>${what}</dd></div>`).join('')}</dl>`).join('');
+  const keysPop = () => { const d = $('keys'); if (d.open) d.close(); else d.showModal(); };
+  $('keysBtn').onclick = keysPop;
+  $('keysClose').onclick = () => $('keys').close();
+  $('keys').addEventListener('click', e => { const r = $('keys').getBoundingClientRect(); if (e.target === $('keys') && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) $('keys').close(); });
+  const typing = a => !!a && (a.isContentEditable || /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName));
+  // A level picked in Design's panel, as the "Level below / above" buttons do (Paint goes back to Select, like the rail)
+  function keyLevel(t, i) {
+    if (!t.levels.length) return;
+    leavePaint(); dsel.l = Math.max(0, Math.min(t.levels.length - 1, i)); dsel.u = 0; gpend = null;
+    saveSel(); renderInspector(); v3mark(); markLevels();
+  }
+  function keyDesign(e, k) {
+    const t = curTower(); if (!t) return false;
+    const L = t.levels, i = Number.isInteger(dsel.l) && L[dsel.l] ? dsel.l : null, v = v3 && v3.t === t ? v3 : null;
+    const B = s => document.querySelector('#view-build ' + s);
+    const press = s => { const b = B(s); if (b && !b.disabled) b.click(); return !!b; };
+    const need = () => { toast(L.length ? 'Select a level first: ↑ or ↓, or click it in the view' : 'This stack has no level yet: A adds one'); return true; };
+    const up = k === 'ArrowUp', down = k === 'ArrowDown';
+    if ((up || down) && e.shiftKey && !e.altKey) { // the stack above or below in the rail
+      const n = towers.indexOf(t) + (up ? -1 : 1); if (!towers[n]) return true;
+      dsel = { t: towers[n].id, l: null, u: 0 }; saveSel(); leavePaint(); renderAll(); return true;
+    }
+    if ((up || down) && e.altKey) { if (i == null) return need(); levelOp(t, up ? 'up' : 'down', i); return true; }
+    if ((up || down) && !e.shiftKey) { keyLevel(t, i == null ? (up ? 0 : L.length - 1) : i + (up ? 1 : -1)); return true; }
+    if (e.altKey) return false;
+    if (k === 'Escape') { if (painting()) return press('[data-v3tool="turn"]'); if (i == null) return false; return press('[data-dstack]'); }
+    if (e.repeat) return false; // held down, a key acts once: Delete must not empty the stack
+    switch (k.toLowerCase()) {
+      case 'd': if (i == null) return need(); levelOp(t, e.shiftKey ? 'dupBelow' : 'dup', i); return true;
+      case 'a': levelOp(t, 'top'); return true;
+      case 'delete': case 'backspace': if (i == null) return need(); levelOp(t, 'del', i); return true;
+      case 'o': {
+        if (!v) return false; if (i == null) return need();
+        const m = v.openable(L[i][Math.min(dsel.u || 0, L[i].length - 1)], dsel.d);
+        if (!m) toast(`Level ${i + 1} has no drawer or case to open`); else if (!v.canOpen(m)) toast('A case opens once its real parts are in'); else v.toggle(m);
+        return true;
+      }
+      case 'p': return press(`[data-v3tool="${painting() ? 'turn' : 'paint'}"]`);
+      case 'f': if (!v) return false; v.aim(null); return true; // the camera moves only when asked: this is "Fit the stack in the view"
+      case 'e': return press('[data-v3tog="explode"]');
+      case 'h': return press('[data-v3tog="hideRoof"]');
+    }
+    return false;
+  }
+  addEventListener('keydown', e => {
+    if (e.defaultPrevented || e.isComposing || typing(e.target) || typing(document.activeElement)) return;
+    if (menuNow || fpOpen || !$('printerBox').hidden) return;
+    if (e.key === 'Escape' && (gpend || v3ui.help)) return; // Esc drops a divider's start or closes the view's help first
+    const k = e.key, dlg = document.querySelector('dialog[open]');
+    if (k === '?' && !e.ctrlKey && !e.metaKey && !e.altKey && (!dlg || dlg === $('keys'))) { e.preventDefault(); keysPop(); return; }
+    if (dlg) return;
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (k === 's' || k === 'S' || k === 'o' || k === 'O')) {
+      e.preventDefault(); if (e.repeat) return;
+      if (k.toLowerCase() === 'o') { openDesign(); return; }
+      if (!towers.length && !extras.length) toast('Nothing to save yet'); else saveDesign(false);
+      return;
+    }
+    if (e.ctrlKey || e.metaKey) return;
+    // a tab list, a radio group… with arrow keys of its own keeps them
+    if (/^Arrow/.test(k) && e.target.closest && e.target.closest('[role=tablist], [role=radiogroup], [role=menu]')) return;
+    const step = !e.altKey && /^(Digit|Numpad)[1-4]$/.test(e.code) ? ['build', 'print', 'hardware', 'assemble'][+e.code.slice(-1) - 1] : null;
+    if (step) { if (!e.repeat && !$('tab-' + step).disabled && view !== step) { view = step; renderAll(); } if (!e.repeat) e.preventDefault(); return; }
+    if (view === 'build' && dsel && dsel.t !== 'loose' && keyDesign(e, k)) e.preventDefault();
+  }, true);
 
   function renderAll() {
     renderPrinter();

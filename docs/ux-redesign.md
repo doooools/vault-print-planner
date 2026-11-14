@@ -220,6 +220,20 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   camera stays where it is. A gesture that overwrites asks no question first: the colour presets apply, then offer
   "Undo" (the "USSA render" confirmation is gone). Print's "Reset all progress" and "Clear" keep press and hold and
   offer "Undo" too. Undo lives in memory only: a reload or a design file opened starts with nothing to undo.
+- **Keyboard shortcuts** (Dols, 2026-11-14): `?` or the header's "Shortcuts" link (beside What's new and Report a bug
+  or an idea) opens the list ("Keyboard shortcuts", `#keys`). Everywhere: 1 to 4 go to the steps (by the key's place,
+  so AZERTY works with or without Shift), Ctrl/Cmd + S saves the design (Save), Ctrl/Cmd + O opens one, Ctrl/Cmd + Z /
+  Y undo and redo. In Design: ↑ ↓ the level above or below (from Stack settings, ↓ picks the top level and ↑ the
+  bottom one), Esc back to Stack settings (or from Paint back to Select), Shift + ↑ ↓ the stack above or below in the
+  rail, Alt (Option on a Mac) + ↑ ↓ move the level, D a copy of the level above it, Shift + D below it, A a level on top, Delete (or
+  Backspace) removes the level, one press with "Undo" like the menu's "Remove level"; in the 3D view O opens or closes
+  the level's drawer or case, P Paint on or off, F fits the stack in the view (the one reframing, asked for), E Spread
+  levels, H Hide roof. Rules: never while typing in a field or with a menu, a dialog, the filament picker or the
+  printer list open; bare keys take no Ctrl, Cmd or Alt, so the browser's own shortcuts stay theirs (only Ctrl/Cmd + S
+  and O are taken, for the design file); a key held down acts once (but the arrows repeat); no shortcut removes
+  anything that is pressed and held with the mouse. Discoverable where the action is: the menus show the key on the
+  right ("Remove level · Delete", "Save · Ctrl+S"), the buttons say it in their tooltip ("Spread levels (E)") and
+  `aria-keyshortcuts`, the view's "?" names the main ones.
   "Remove level" is a plain click with "Undo" in the level's menu (right-click in the 3D view, or "⋯" in the level
   panel: UX audit session 3); every other removal keeps press and hold.
 - **Rails**: Design, Print and Hardware also have a right column (Design's inspector; Print's selected plate over the
