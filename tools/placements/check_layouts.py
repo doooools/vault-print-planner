@@ -21,7 +21,14 @@ def drawer_unit(entry, lay, d):
     def mine(p):
         x = p[4] if len(p) > 4 else {}
         return x.get("drawer") == d["drawer"] and x.get("side") == d.get("side")
-    parts = [p for p in entry["parts"] if p[2] != "drawer"]
+    parts = []
+    for p in entry["parts"]:
+        if p[2] == "drawer":
+            continue
+        x = p[4] if len(p) > 4 else {}
+        if "guide" in x and not (d["level"] <= x["guide"] < d["level"] + d["h"] and (not d.get("side") or x.get("side") == d["side"])):
+            p = p[:4] + [{k: v for k, v in x.items() if k not in ("guide", "side")}]   # another drawer's guides stay
+        parts.append(p)
     for p in lay["parts"]:
         if mine(p):
             parts.append(p)
@@ -30,7 +37,8 @@ def drawer_unit(entry, lay, d):
             parts.append([p[0], p[1], "module", p[3]] + ([x] if x else []))
     tag = [j for j in d["open"][0]["joints"]]
     joints = {j: lay["motion"]["joints"][j] for j in tag}
-    return {"bbox": entry["bbox"], "parts": parts, "motion": {"joints": joints, "open": d["open"]}}
+    runners = (entry.get("motion") or {}).get("runners")
+    return {"bbox": entry["bbox"], "parts": parts, "motion": {"joints": joints, "open": d["open"], **({"runners": runners} if runners else {})}}
 
 
 if __name__ == "__main__":

@@ -121,6 +121,11 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   `tools/placements/kinematics.py` (same pose, collision check on sections) and `blender_motion.py` (key frames).
   Measuring it moved every drawer part but the module and latches 1.2 mm up (`MODULE_UNDER_BOX` 9.8) and turned the
   case latch's link end for end.
+  Drawers run on telescopic runners (Dols, 2026-11-14, `tools/placements/measure_runners.py`, README "Runners"): the box
+  goes out `motion.runners.slide + .guide` (about the module's depth + 5 mm), its slides alone in the guides first,
+  then the guides with it to the stoppers; closing, the slides go home first. Guides carry `{"guide": level, side?}`
+  and ride in their drawer's `rail` group (`railOf`); `v3pose` keeps `u.slid` (the guides only move when a slide
+  drags them). Rerun `measure_runners.py … all --write` after every export.
   A case with a unit on it (not a roof) opens by `motion.release` instead (`measure_rods.py`): latches as usual, then
   the hinge rods (`rod_1`/`rod_2`, slides along x) leave the hinge tops, then the lid and the whole stack above rise
   by a 4F module (`V3_LIFT` 196 mm, joint `lift`, `u.lifted` summed by `liftOf` in `placeUnit`).

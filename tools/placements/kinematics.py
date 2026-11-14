@@ -1,15 +1,16 @@
 """Opening and closing a unit, from src/stl-placements.json ("motion", README "Motion"), as the page does it, and a
 check that no part goes through another on the way.
 
-  python -I kinematics.py check <placements.json> <vault download> <unit key> [...] [--steps 41] [--hidden]
+  python -I kinematics.py check <placements.json> <vault download> <unit key> [...] [--steps 41] [--hidden] [--closing]
   python -I kinematics.py pose <placements.json> <unit key> <t>        (prints each moving part's matrix at t)
 
 t runs from 0 (closed: a drawer locked, a case latched) to 1 (open), through the unit's steps. `check` poses the
 unit's parts (as a part list would draw them: one baseplate, the key lock or with --hidden the hidden key) at
 `steps` values of t, cuts them by planes across the motion (a drawer: planes z = const through the key and racks,
-whose motion is in those planes, and y = const through the drawer; a case: planes x = const through each latch),
+whose motion is in those planes, and y = const through the drawer and its runners; a case: planes x = const through each latch),
 and reports, for every pair of parts of which one moves, the largest overlap of their sections (mm^2) with where
-it happens, next to the overlap when closed (t = 0). An overlap that is there when closed and doesn't grow is how
+it happens, next to the overlap when closed (t = 0). --closing poses the runner guides as on the way back
+from open (the slide goes in first, the guides stay out until the box pushes them), the parts drawn the same. An overlap that is there when closed and doesn't grow is how
 the parts are placed (a preload, or a small error), not the motion.
 
 The pose maths (no Blender, no shapely) is shared with blender_motion.py; `check` needs numpy, scipy and shapely.
@@ -116,14 +117,28 @@ def _about(origin, axis, deg):
 
 
 def travel_of(unit):
-    """How far the page pulls a drawer out: 0.6 x its depth (the page uses the published depth; the bbox's is the
-    same within a few mm)."""
+    """How far the page pulls a drawer out: its runners' slide and guide travels (motion.runners, measure_runners.py),
+    else 0.6 x its depth (the page uses the published depth; the bbox's is the same within a few mm)."""
+    run = (unit.get("motion") or {}).get("runners")
+    if run:
+        return run["slide"] + run["guide"]
     lo, hi = unit["bbox"]
     return round((hi[2] - lo[2]) * 0.6)
 
 
-def part_matrix(unit, part, t, latches=None, travel=None):
-    """4x4 matrix: the file's coordinates -> the unit frame, with the unit opened to t."""
+def guide_at(unit, x, closing=False):
+    """Where the runner guides are when the box is x mm out (the page's v3pose): the slide moves first both ways, so
+    opening from closed the guides stay until x passes the slide's travel, and closing from open they stay out until
+    x is back under the guides' own travel."""
+    run = (unit.get("motion") or {}).get("runners")
+    if not run:
+        return 0.0
+    return min(run["guide"], x) if closing else max(0.0, x - run["slide"])
+
+
+def part_matrix(unit, part, t, latches=None, travel=None, closing=False):
+    """4x4 matrix: the file's coordinates -> the unit frame, with the unit opened to t (closing: on the way back from
+    open, which only changes where the runner guides are)."""
     m = np.array(part[3], float).reshape(3, 4)
     M = np.vstack([m, [0, 0, 0, 1]])
     motion = unit.get("motion") or {}
@@ -149,6 +164,9 @@ def part_matrix(unit, part, t, latches=None, travel=None):
                 M = _T([B0[0], B[1], B[0]]) @ _R(ax, theta) @ _T(-B0) @ M
     if part[2] == "drawer":
         M = _T([0, 0, (travel if travel is not None else travel_of(unit)) * val.get("drawer", 0.0)]) @ M
+    elif len(part) > 4 and part[4].get("guide") is not None:
+        x = (travel if travel is not None else travel_of(unit)) * val.get("drawer", 0.0)
+        M = _T([0, 0, guide_at(unit, x, closing)]) @ M
     elif part[2] == "lid" and unit.get("hinge"):
         h = unit["hinge"]
         M = _about(h["origin"], h["axis"], h["open_deg"] * val.get("lid", 0.0)) @ M
@@ -156,7 +174,7 @@ def part_matrix(unit, part, t, latches=None, travel=None):
 
 
 def moves(part):
-    return part[2] in ("drawer", "lid") or (len(part) > 4 and "joint" in part[4])
+    return part[2] in ("drawer", "lid") or (len(part) > 4 and ("joint" in part[4] or "guide" in part[4]))
 
 
 # ---------------------------------------------------------------- check
@@ -245,7 +263,7 @@ def planes(key, unit):
     return xs
 
 
-def check(pl, download, key, steps=41, hidden=False, quiet=False):
+def check(pl, download, key, steps=41, hidden=False, quiet=False, closing=False):
     unit = pl["units"][key]
     skip = SKIP_HIDDEN if hidden else SKIP_DEFAULT
     parts = [p for p in unit["parts"] if not re.search(skip, p[0])]
@@ -279,7 +297,7 @@ def check(pl, download, key, steps=41, hidden=False, quiet=False):
         posed, rel = {}, {}
         for k, (p, T) in enumerate(zip(parts, tris)):
             if mov[k]:
-                M = part_matrix(unit, p, t, latches, travel)
+                M = part_matrix(unit, p, t, latches, travel, closing)
                 posed[k] = T @ M[:3, :3].T + M[:3, 3]
                 rel[k] = M @ np.linalg.inv(part_matrix(unit, p, 0.0))   # how it moved since closed
         sig = {k: np.round(P[0, 0], 4).tobytes() for k, P in posed.items()}
@@ -331,7 +349,7 @@ if __name__ == "__main__":
         pl = json.load(open(a[1], encoding="utf-8"))
         sys.stdout.reconfigure(encoding="utf-8")
         for k in keys:
-            check(pl, a[2], k, st, hidden="--hidden" in a)
+            check(pl, a[2], k, st, hidden="--hidden" in a, closing="--closing" in a)
     elif a and a[0] == "pose":
         pl = json.load(open(a[1], encoding="utf-8"))
         u = pl["units"][a[2]]
