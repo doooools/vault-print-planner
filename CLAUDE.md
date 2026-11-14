@@ -265,6 +265,18 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   paint (no flash). With nothing saved the page follows the system and its changes. What JS copies from the CSS tokens
   (the 3D background, highlight and level outline) is redone by `v3.retheme`.
 
+- Undo (UX audit 2026-11, session 1, branch `claude/undo`): section "undo" next to `store` in `src/template.html`.
+  `save()`, `saveColors()`, `saveExtras()` and `saveSel()` call `undoNote()`; at the end of the task `undoCommit`
+  compares `[towers, seq, colorPrefs, extras]` as JSON with the last state kept and, when it differs, pushes the state
+  before (with `dsel`, `printSkip`, `hwSkip` as they were when the pointer went down or the key was pressed:
+  `undoSettle`) on `undo.past` (50 entries, memory only). A handler names a gesture that overwrites or removes with
+  `undoAs(label)` before changing anything: `toast(label, { label: 'Undo', fn })` shows it with a button for ~6 s
+  (`.toast.act`); `undoAs(label, true)` also keeps Print's `printed` and `plateState` (Reset all progress, Clear).
+  `undoApply` restores, writes through `store.set` and calls `renderAll()` with `undo.applying` set (renders that save
+  don't make entries). Ctrl/Cmd + Z / Y / Shift + Z, not in `input`, `select`, `textarea`. `undoReset()` after the
+  first render and in `loadDesign`. A new handler that saves through those four functions is undoable as it is; give it
+  `undoAs` when it overwrites or removes. The "USSA render" preset's `confirm()` went (the audit's C6).
+
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
   main checkout's root, which is not committed.
