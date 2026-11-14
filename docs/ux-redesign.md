@@ -113,13 +113,13 @@ Replaces `colorsPanel`, the brush bar of `v3tools` and the "Selected" card's col
 Today's "Extra parts" (`extrasPanel`), as an entry of the rail: search among the 733 parts, quantity steppers, "Print only these" (`printScope`), "Clear".
 
 ### 2 · Print
-- Top: progress (parts, plates left, grams), and one export button. On a Bambu printer "Download the Bambu Studio project" (`buildProject`); otherwise "Download the plate files" (`buildPlateFiles`). "STL folders (.zip)" (`buildFolders`) and "Plate options…" sit next to it.
+- Top: progress (parts, plates left, grams), and one export button. On a Bambu printer "Download the Bambu Studio project" (`buildProject`); otherwise "Download the plate files" (`buildPlateFiles`). "STL folders (.zip)" (`buildFolders`) sits under it.
 - Filament chips (all, one per filament, Printed) filter the sheet. Each shows its plate count and weight.
 - The plate sheet: one small card per plate with its nesting (`plateSvg` data: bed, no-print corner, parts, front edge), its number, part count, grams, a checkbox that ticks it for the download, and "Up next" on the first unprinted plate. Grouped by filament.
 - Ticked plates (Dols, 2026-11-13): a bar above the sheet counts them; the Bambu project and the STL folders hold only them (every plate left when none is ticked), and its "Mark as printed" / "Put back on the list" acts on them all. A tick never marks a plate printed.
 - Printed plates leave their filament group and move to a "Printed" group at the end, dimmed. "Printed. Undo" (or ticking it and "Put back on the list") puts it back. Plate numbers never change (`stablePlates`).
-- The selected plate, on the right: large nesting with numbered parts, the numbered part list with file name and settings (walls, supports), "Mark as printed" (then selects the next unprinted plate), previous and next.
-- "Plate options…": "Fewer plates" (`mixSupports`), "Labels on their own plate" (`labelsApart`), and the folded "How plates are laid out" text.
+- The selected plate, in the right column under the plate options: large nesting with numbered parts, the numbered part list with file name and settings (walls, supports), "Mark as printed" (then selects the next unprinted plate), previous and next.
+- Plate options, at the top of the right column (Dols, 2026-11-14, "double bandeau" like Design: a rail on the left, a column of settings on the right), always shown: "Parts with supports" (`mixSupports`), "Manual supports" (`printAids`), "Labels" (`labelsApart`), the folded "How plates are laid out" text, "Reset all progress" and "Clear all plates". It was a "Plate options…" popover before.
 - States in `PrintStates.dc.html`: printer without a Bambu preset, folder not chosen, parts missing from the folder (today's "not found in" errors, shown before the download starts), parts that no longer fit after a change of printer.
 
 ### 3 · Hardware
@@ -153,8 +153,10 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   *selected*: tabs, segmented buttons, toggles of the 3D toolbar. There is no dark action button (`.btn.ink` is gone).
 - **Controls**: a setting is a row of segmented buttons (`.seg`: `useg`/`ubool` for a module, `sbool` for the stack,
   `pbool` for plate options), with sublabels in `<small>`. A dropdown only where the choices don't fit (printers,
-  stores). A tick box marks an item of a list (plates, hardware bought, assembly steps, stacks to print), never a
-  setting (Dols, 2026-11-14: "on enlève tout ce qui se coche"). A case's floor is Empty / Dividers / Gridfinity
+  stores). A tick box marks an item of a list (plates, hardware bought, assembly steps), never a
+  setting (Dols, 2026-11-14: "on enlève tout ce qui se coche"). What to print is a choice, not a list to tick: each
+  stack (and the loose parts) is a button in Print's rail, dark when it is in the plates, plain when it is left out,
+  a click toggles it; the last one in stays in (a toast says so). A case's floor is Empty / Dividers / Gridfinity
   (`caseFloor`; Empty sets `caseEmpty`, which keeps the dividers placed but counts none); a drawer's grid dividers
   "At a wall": Divider alone / Closed (recommended).
 - **Headings**: each step's main title is 28 px display (`.dtitle`, `.ptop-prog`, `.hwtitle`, `.asm-title`, `.xtitle`);
@@ -167,7 +169,8 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
 - **Removing or clearing** is pressed and held for half a second (`holdButton`, `HOLD_MS`), the button filling in red;
   let go sooner and a toast says to hold it: a stack (its cross and "Remove stack"), a level, a filament, the loose
   parts, a divider plan, the plates, the print progress, an assembly count (Dols, 2026-11-14).
-- **Rails**: Design, Print and Assemble each have a left rail with an eyebrow naming its items (Stacks, What to
+- **Rails**: Design and Print also have a right column (Design's inspector; Print's plate options over the selected
+  plate, `.pside`). Design, Print and Assemble each have a left rail with an eyebrow naming its items (Stacks, What to
   print, Sections). Every tab past Design shows its progress (Print and Assemble in %, Hardware the lines to buy).
 - The 3D view has no Front / ¾ / Side buttons any more (Dols, 2026-11-14): a stack opens from three quarters, then
   one drags to turn it.

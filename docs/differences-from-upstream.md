@@ -93,7 +93,7 @@ Other visible changes:
 | Several drawers in a 2F/4F | 2F: 1+1. 4F: 2+2, 1+1+2, 1+1+1+1. Each half of an L² can have its own layout | 4F: also 2+1+1 and 1+2+1. Parts, bolts and geared rails counted per drawer. Mixed layouts are marked "Inferred". Both halves of an L² take the same layout |
 | Case dividers | A count across, along and for seals, whatever the case body | A top-view plan: a click fills or empties a slot measured in the file. A "Flat" body takes none; XL cases have their own side seal dividers |
 | Drawer grid dividers | Counts across and along, an "Edge pieces: Rounded" option | A plan of the floor's peg holes (10.5 mm pitch): a click adds or removes a divider. Rounded pieces go where a divider meets another; "Close against the walls" picks N − 1 + straight piece or N alone. The old option is gone |
-| Manual supports | An option on each unit, one support per drawer box | A Print option ("Plate options…"), one support per drawer roof, packed next to its roof on the plate |
+| Manual supports | An option on each unit, one support per drawer box | A Print option (Plate options, Print's right column), one support per drawer roof, packed next to its roof on the plate |
 | L² / XL² accessories | One set per L² module, none for XL² | One set (1st + 2nd) per F, for L² and XL² |
 | Universal handle lock | Not offered | An option for M, L and XL stacks with the pull-out handle: two small locks, one per rod, instead of the one-piece lock (up to 419 mm) |
 | Module connectors | Not offered | A "Module connectors" option: a small bar at each joint between drawer modules, at the back corners; a 2F one spans a 1F module. Skipped where a backbone, lock or wall plate covers the holes |
