@@ -559,6 +559,20 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .popts .ibody { gap: 14px; }
 .popts details.info p { font-size: 13px; color: var(--muted); }
 .popts .actions { margin: 0; }
+/* A plate option: one folded line with its value, which opens on its segmented buttons (UX audit D1) */
+.pside .popts .ibody { gap: 0; padding-top: 4px; }
+.pside .popts .ihead { border-bottom: 0; }
+.popt { border-top: 1px solid var(--line); }
+.popt > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 700; font-size: 14px; }
+.popt > summary::-webkit-details-marker { display: none; }
+.popt > summary::before { content: ""; flex: none; width: 7px; height: 7px; margin: 0 3px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(-45deg); transition: transform .15s; }
+.popt[open] > summary::before { transform: rotate(45deg); }
+.popt > summary .pval { margin-left: auto; font-weight: 400; font-size: 13px; color: var(--muted); text-align: right; }
+.popt > summary:hover .pval { color: var(--ink); }
+.popt > .pnote { margin: 0 0 8px; }
+.popt > .seg { margin-bottom: 12px; }
+.pfoot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+.pfoot details[open] { flex-basis: 100%; }
 .pnone { padding: 32px 24px; color: var(--muted); text-align: center; }
 .pnone p { margin: 0; } .pnone strong { color: var(--ink); }
 .prail .pchip { width: 100%; min-height: 60px; }
@@ -568,6 +582,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .pchip[aria-pressed=true] { border-color: var(--ink); background: var(--ink); color: var(--sheet); }
 .pchip[aria-pressed=true] small { color: inherit; opacity: .75; }
 .pchip b { font-size: 14px; } .pchip small { font-size: 11.5px; color: var(--muted); }
+.pchip .pstate { font-weight: 600; color: var(--ink); }
 .v3-hintbar kbd, .v3-helppop kbd { display: inline-block; padding: 0 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 11.5px var(--f-mono); color: var(--ink); background: var(--sheet); }
 .dempty { display: grid; justify-items: center; align-content: center; gap: 12px; min-height: 360px; padding: 24px; color: var(--muted); background: var(--sheet-2); }
 .dempty .btn { display: inline-flex; align-items: center; gap: 6px; }
@@ -691,26 +706,39 @@ button.prole:hover { background: var(--sheet-2); }
 .v3-bnow b { font-size: 14px; }
 .v3-brush kbd { display: inline-block; padding: 0 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 11px var(--f-mono); color: var(--ink); background: var(--sheet); }
 /* Step 2 · Print: progress and export, filament chips, the plate sheet and the selected plate */
-.ptop { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; padding: 18px 20px; }
-.ptop-prog { flex: 999 1 420px; min-width: 0; display: grid; gap: 8px; }
+.ptop { display: grid; gap: 14px; padding: 18px 20px; }
+.ptop-prog { min-width: 0; display: grid; gap: 10px; }
+.ptop-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+.ptop-h .mono { font-size: 13px; }
 .ptop-prog h1 { margin: 0; font-family: var(--f-display); font-size: 28px; font-weight: 800; font-stretch: 125%; line-height: 1.1; }
 .ptop-prog .mono, .pgroup .mono, .fchip .mono, .psel-head .mono { color: var(--muted); }
 .bar2 { height: 8px; border-radius: 4px; background: var(--ground); overflow: hidden; }
 .bar2 i { display: block; height: 100%; background: var(--accent); }
-.ptop-x { flex: 1 1 380px; min-width: 0; display: grid; gap: 8px; }
+/* The two exports side by side: the main one in orange, the STL folders beside it (UX audit D5) */
+.ptop-x { min-width: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.ptop-x > .xbtn { flex: 3 1 300px; min-width: 0; }
+.ptop-x > .xbtn.alt { flex: 1 1 180px; }
+.ptop-x > .pnote { margin: 0; }
+.ptop .gprog { margin: 0; }
 .xbtn { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; min-height: 60px; padding: 8px 18px; border: 0; border-radius: 10px; background: var(--accent-btn); color: var(--accent-ink); text-align: left; }
 .xbtn b { font-size: 16px; }
 .xbtn .mono { font-size: 12px; }
 .xbtn:disabled { opacity: .45; cursor: not-allowed; }
 .xbtn:hover:not(:disabled) { filter: brightness(1.06); }
+.xbtn.alt { border: 1px solid var(--line); background: var(--sheet); color: var(--ink); }
+.xbtn.alt .mono { color: var(--muted); }
+.xbtn.alt:hover:not(:disabled) { filter: none; border-color: var(--edge); }
 .xrow { display: flex; flex-wrap: wrap; gap: 8px; }
 .xrow > .btn { min-height: 44px; }
 .xrow > .btn { flex: 1 1 auto; }
-.fchips { display: flex; flex-wrap: wrap; gap: 8px; }
-.fchip { display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px 0 10px; border: 2px solid var(--line); border-radius: 10px; background: var(--sheet); text-align: left; }
-.fchip > span:last-child { display: grid; line-height: 1.2; }
+.fchips { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Filter pills, one line: dark = the filter shown (UX audit D2) */
+.fchip { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 20px; background: var(--sheet); font-size: 14px; white-space: nowrap; }
+.fchip b { font-weight: 600; }
 .fchip .mono { font-size: 12px; }
-.fchip[aria-pressed=true] { border-color: var(--ink); background: var(--raised); }
+.fchip:hover { border-color: var(--edge); }
+.fchip[aria-pressed=true] { border-color: var(--ink); background: var(--ink); color: var(--sheet); }
+.fchip[aria-pressed=true] .mono { color: inherit; opacity: .75; }
 .dot2 { display: inline-block; flex: none; width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--edge); }
 .dot2.big { width: 26px; height: 26px; }
 .psheet { min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
@@ -730,12 +758,13 @@ button.prole:hover { background: var(--sheet-2); }
 .ptick input { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); }
 .pcard.picked > button { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .pselbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet); }
+.pselbar .mono { color: var(--muted); }
 .pselbar.on { border-color: var(--accent); background: var(--accent-soft); }
 .pselbar > span { flex: 1 1 220px; min-width: 0; }
 .pselbar .pnote { margin: 0; }
 .pselbar .btn { min-height: 40px; }
 .psel { min-width: 0; display: grid; gap: 12px; padding: 16px; }
-.psel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.psel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .psel-head > div:first-child { display: grid; gap: 2px; min-width: 0; }
 .psel-head h2 { margin: 2px 0 0; font-family: var(--f-display); font-size: 22px; font-weight: 800; font-stretch: 112%; line-height: 1.15; }
 .pnav { display: flex; gap: 4px; }
@@ -3705,7 +3734,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 
   // Remember which info disclosures are open so re-renders keep them open
   const openInfo = new Set();
-  document.addEventListener('toggle', e => { const d = e.target; if (d.matches && d.matches('details.info[data-k]')) d.open ? openInfo.add(d.dataset.k) : openInfo.delete(d.dataset.k); }, true);
+  document.addEventListener('toggle', e => { const d = e.target; if (d.matches && d.matches('details.info[data-k], details.popt[data-k]')) d.open ? openInfo.add(d.dataset.k) : openInfo.delete(d.dataset.k); }, true);
 
   // Steps 3 and 4 with an empty build: say so, and offer to add the unit from step 1 only when asked
   function emptyStep(id, what) {
@@ -3721,6 +3750,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // printed" in the bar marks them all. Kept for the page's life, per print scope; a tick never marks a plate printed.
   let plateSel = { scope: null, ns: new Set() };
   const two = n => String(n).padStart(2, '0');
+  // A plate option on one folded line, its value on the right; it opens on its segmented buttons (UX audit D1)
+  const popt = (k, label, value, hint, seg) => `<details class="popt" data-k="opt-${k}" ${openInfo.has('opt-' + k) ? 'open' : ''}><summary><span>${label}</span><span class="pval">${value}</span></summary>${hint ? `<p class="pnote">${hint}</p>` : ''}<div class="seg">${seg}</div></details>`;
+  // Print's and Hardware's rails write each stack's state in words, not only by its fill (UX audit D6)
+  const railState = (on, inWord) => `<small class="pstate">${on ? inWord : 'Left out'}</small>`;
   const plateNote = (pl, next) => pl.done ? 'Printed' : next ? 'Up next' : pl.color === 'tpu' ? 'TPU settings' : pl.supports ? 'Supports on' : pl.someSup ? 'Supports on ' + (pl.someSup === pl.items.length ? 'all' : pl.someSup) : '';
   function renderPrint() {
     const b = computeBuild(true);
@@ -3767,9 +3800,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const card = pl => {
       const isNext = next && pl.n === next.n, note = plateNote(pl, isNext), on = sel && pl.n === sel.n, tick = plateSel.ns.has(pl.n);
       return `<div class="pcard${pl.done ? ' done' : ''}${on ? ' on' : ''}${tick ? ' picked' : ''}">
-        <button type="button" data-pick="${pl.n}" aria-pressed="${on}" aria-label="Plate ${pl.n}, show its layout"><span class="pn">Plate ${two(pl.n)}</span>
+        <button type="button" data-pick="${pl.n}" aria-pressed="${on}" title="Show this plate" aria-label="Plate ${pl.n}, show its layout"><span class="pn">Plate ${two(pl.n)}</span>
           ${plateSvg(pl, true)}<span class="mono pm">${plural(pl.items.length, 'part')} · ${aboutG(pl.grams)}</span><span class="pflag ${pl.done ? 'ok' : isNext ? 'next' : 'flag'}">${esc(note)}</span></button>
-        <label class="ptick" title="Select for the download"><input type="checkbox" data-tick="${pl.n}" ${tick ? 'checked' : ''} aria-label="Select plate ${pl.n} for the download"></label></div>`;
+        <label class="ptick" title="Tick it for the download"><input type="checkbox" data-tick="${pl.n}" ${tick ? 'checked' : ''} aria-label="Tick plate ${pl.n} for the download"></label></div>`;
     };
     const head = (name, hex, meta) => `<div class="pgroup"><h2><span class="dot2" style="background:${hex}"></span>${esc(name)}</h2><span class="mono">${meta}</span></div>`;
     let sheet = '';
@@ -3783,14 +3816,18 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (plateFilter === 'all' || plateFilter === 'printed')
         sheet += head('Printed', 'var(--ok)', printedPl.length ? `${plMeta(printedPl)} · tick one to print it again` : 'Nothing printed yet') + printedPl.map(card).join('');
     }
-    const chip = (key, label, hex, meta) => `<button type="button" class="fchip" data-filter="${esc(key)}" aria-pressed="${plateFilter === key}"><span class="dot2 big" style="background:${hex}"></span><span><b>${esc(label)}</b><span class="mono">${meta}</span></span></button>`;
-    const chips = chip('all', 'All plates', 'var(--sheet)', plMeta(allPlates)) + colors.map(k => chip(k, colorName(k), colorHex(k), plMeta(allPlates.filter(pl => pl.color === k)))).join('') + chip('printed', 'Printed', 'var(--ok)', plMeta(printedPl));
+    // One line of pills: All, one per filament, Printed, each with its plate count. The weight and "N left" are in
+    // each group's header below (UX audit D2).
+    // A pill names the colour without its line ("Cobalt Blue", not "Cobalt Blue · PLA Basic") unless two share a name
+    const short = k => colorName(k).split(' · ')[0], shortOk = k => colors.filter(c => short(c) === short(k)).length < 2;
+    const chip = (key, label, hex, n, full = label) => `<button type="button" class="fchip" data-filter="${esc(key)}" aria-pressed="${plateFilter === key}" title="${esc(full)}: ${plural(n, 'plate')}">${hex ? `<span class="dot2" style="background:${hex}"></span>` : ''}<b>${esc(label)}</b><span class="mono">${n}</span></button>`;
+    const chips = chip('all', 'All', '', allPlates.length, 'All plates') + colors.map(k => chip(k, shortOk(k) ? short(k) : colorName(k), colorHex(k), allPlates.filter(pl => pl.color === k).length, colorName(k))).join('') + chip('printed', 'Printed', 'var(--ok)', printedPl.length, 'Printed');
     // The ticked plates: what the downloads hold, and one button to mark them all printed
     const shown = plateFilter === 'missing' ? missingPlates : plateFilter === 'printed' ? printedPl : allPlates.filter(pl => !pl.done && (plateFilter === 'all' || pl.color === plateFilter));
     const pickedTodo = picked.filter(pl => !pl.done), pickedDone = picked.filter(pl => pl.done);
-    const selBar = !picked.length
-      ? `<div class="pselbar" role="group" aria-label="Plate selection"><span class="pnote">Tick plates to download only those, then mark them printed in one go. Nothing ticked: the downloads hold every plate left.</span>${shown.length ? `<button type="button" class="btn" id="pSelAll">Tick the ${plural(shown.length, 'plate')} shown</button>` : ''}</div>`
-      : `<div class="pselbar on" role="group" aria-label="Plate selection"><span><b>${plural(picked.length, 'plate')} ticked</b> <span class="mono">· ${aboutG(gramsOfPlates(picked))} · ${esc(picked.map(pl => two(pl.n)).join(', '))}</span><br><span class="pnote">The downloads hold only these.</span></span>
+    // The bar shows only while a plate is ticked; the card's tick says what it does in its title (UX audit D3, D4)
+    const selBar = !picked.length ? ''
+      : `<div class="pselbar on" role="group" aria-label="Plate selection"><span><b>${plural(picked.length, 'plate')} ticked</b> <span class="mono">${esc(picked.map(pl => two(pl.n)).join(', '))} · ${aboutG(gramsOfPlates(picked))}</span> Only ${picked.length === 1 ? 'this one goes' : 'these go'} in the downloads.</span>
         ${pickedTodo.length ? `<button type="button" class="btn primary" id="pSelDone">Mark ${pickedTodo.length === 1 ? 'it' : pickedTodo.length === picked.length ? 'them' : pickedTodo.length} as printed</button>` : ''}
         ${pickedDone.length ? `<button type="button" class="btn" id="pSelUndo">Put ${pickedDone.length === 1 && picked.length === 1 ? 'it' : pickedDone.length === picked.length ? 'them' : pickedDone.length + ' printed'} back on the list</button>` : ''}
         ${shown.some(pl => !plateSel.ns.has(pl.n)) ? `<button type="button" class="btn" id="pSelAll">Tick all shown</button>` : ''}
@@ -3801,11 +3838,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const detail = !sel ? '' : `<aside class="panel psel" aria-label="Selected plate">
       <div class="psel-head"><div><span class="v3-sec">Selected plate</span><h2>Plate ${two(sel.n)}</h2><span class="mono">${plural(sel.items.length, 'part')} · ${aboutG(sel.grams)} · ${Math.round(sel.tallest)} mm tall</span></div>
         <div class="pnav"><button type="button" class="iconbtn sq" data-step="-1" aria-label="Previous plate" ${idx > 0 ? '' : 'disabled'}><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button><button type="button" class="iconbtn sq" data-step="1" aria-label="Next plate" ${idx < allPlates.length - 1 ? '' : 'disabled'}><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button></div></div>
+      <button type="button" class="btn ${sel.done ? '' : 'primary'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button>
       <div class="ptags"><span class="ftag"><span class="dot2" style="background:${colorHex(sel.color)}"></span>${esc(colorName(sel.color))}</span>${selFlag && selFlag !== 'Printed' ? `<span class="ftag flag">${esc(selFlag)}</span>` : ''}</div>
       ${plateSvg(sel)}
       ${sel.care ? `<div class="alert ${sel.items[0].diag || sel.items[0].asis ? 'ok' : 'warn'}" style="font-size:13px">${sel.items[0].asis ? 'Kept at the angle USSA exported it, where it just fits this bed. Check it in the slicer before printing.' : sel.items[0].diag ? 'Too long to lie straight, so it’s placed diagonally, the way USSA exported it.' : 'Lay this part on a different face than exported to fit; check supports.'}</div>` : ''}
-      <div class="plist">${sel.lines.map((x, i) => `<div class="prow"><span class="pk" style="background:${colorHex(sel.color)};color:${LIGHT_FILL(sel.color) ? '#222' : '#fff'}">${i + 1}</span><span class="q num">${x.count}×</span><span class="lbl"><b>${esc(x.l.label)}</b><small class="mono">${esc(fileName(x.l.file.path))}</small></span>${x.l.walls ? `<span class="tag wall">${x.l.walls} walls${x.l.infill ? ' · ' + x.l.infill + '%' : ''}</span>` : ''}${x.l.supports ? '<span class="tag sup">supports</span>' : ''}</div>`).join('')}</div>
-      <button type="button" class="btn ${sel.done ? '' : 'primary'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button></aside>`;
+      <div class="plist">${sel.lines.map((x, i) => `<div class="prow"><span class="pk" style="background:${colorHex(sel.color)};color:${LIGHT_FILL(sel.color) ? '#222' : '#fff'}">${i + 1}</span><span class="q num">${x.count}×</span><span class="lbl"><b>${esc(x.l.label)}</b><small class="mono">${esc(fileName(x.l.file.path))}</small></span>${x.l.walls ? `<span class="tag wall">${x.l.walls} walls${x.l.infill ? ' · ' + x.l.infill + '%' : ''}</span>` : ''}${x.l.supports ? '<span class="tag sup">supports</span>' : ''}</div>`).join('')}</div></aside>`;
     const hasLabels = b.lines.some(isLabel);
     // Nothing picked in the rail: no plates, an empty state in the middle. Print removes nothing: stacks and loose parts
     // are removed in Design (Dols, 2026-11-14, UX audit D7).
@@ -3813,26 +3850,24 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const opts = `<section class="panel popts" aria-label="Plate options">
       <div class="ihead"><span class="v3-sec">Plate options</span><h2>${plural(allPlates.length, 'plate')}</h2><div class="mono">${esc(printerShort())} · ${printer.v[0]} × ${printer.v[1]} mm bed</div></div>
       <div class="ibody">
-        <p class="pnote" style="margin:0">Plates follow the colors chosen in Design.</p>
-        <div class="field"><div class="lbl">Parts with supports</div><div class="seg">${pbool('mixSupports', { label: 'Plates of their own' }, { label: 'Fewer plates', sub: 'shared, supports on just for them' }, mixSupports)}</div></div>
-        <div class="field"><div class="lbl">Manual supports <span class="hint">USSA’s prop for each drawer roof</span></div><div class="seg">${pbool('printAids', { label: 'None' }, { label: 'One per roof', sub: 'standing against it' }, printAids)}</div></div>
-        ${hasLabels ? `<div class="field"><div class="lbl">Labels <span class="hint">text and colors in the slicer</span></div><div class="seg">${pbool('labelsApart', { label: 'With the rest' }, { label: 'Own plate' }, labelsApart)}</div></div>` : ''}
-        <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Each shell keeps 15 mm clear beyond its top and bottom walls for them (dashed). Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
-        ${done ? '<div class="actions"><button type="button" class="btn" id="resetPrinted">Reset all progress</button></div>' : ''}
+        ${popt('mixSupports', 'Parts with supports', mixSupports ? 'fewer plates' : 'plates of their own', '', pbool('mixSupports', { label: 'Plates of their own' }, { label: 'Fewer plates', sub: 'shared, supports on just for them' }, mixSupports))}
+        ${popt('printAids', 'Manual supports', printAids ? 'one per roof' : 'none', 'USSA’s prop for each drawer roof', pbool('printAids', { label: 'None' }, { label: 'One per roof', sub: 'standing against it' }, printAids))}
+        ${hasLabels ? popt('labelsApart', 'Labels', labelsApart ? 'own plate' : 'with the rest', 'Text and colors are set in the slicer', pbool('labelsApart', { label: 'With the rest' }, { label: 'Own plate' }, labelsApart)) : ''}
+        <div class="pfoot"><details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plates follow the colors chosen in Design. Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Each shell keeps 15 mm clear beyond its top and bottom walls for them (dashed). Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
+        ${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}</div>
       </div></section>`;
     $('view-print').innerHTML = `<div class="prt">
       <aside class="drail prail" role="group" aria-label="What to print"><div class="v3-sec">What to print</div>
-        ${towers.map(t => `<button type="button" class="pchip" data-pskip="${esc(t.id)}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small></button>`).join('')}
-        ${extras.length ? `<button type="button" class="pchip" data-pskip="loose" aria-pressed="${b.extras > 0}"><b>Loose parts</b><small class="mono">${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button>` : ''}
-        <p class="pnote">${none ? 'Nothing is picked. Click a stack to print it.' : towers.length + (extras.length ? 1 : 0) < 2 ? 'Everything in Design is in these plates.' : b.whole ? 'Everything is in these plates. Click a stack to leave it out.' : 'Only what is highlighted is in these plates and in the file. Click to put a stack back.'}</p></aside>
+        ${towers.map(t => `<button type="button" class="pchip" data-pskip="${esc(t.id)}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small>${railState(b.list.includes(t), 'In the plates')}</button>`).join('')}
+        ${extras.length ? `<button type="button" class="pchip" data-pskip="loose" aria-pressed="${b.extras > 0}"><b>Loose parts</b><small class="mono">${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small>${railState(b.extras > 0, 'In the plates')}</button>` : ''}
+        <p class="pnote">${none ? 'Nothing is picked. Click a stack to print it.' : towers.length + (extras.length ? 1 : 0) < 2 ? 'Everything in Design is in these plates.' : 'Click a stack to put it in the plates or leave it out.'}</p></aside>
       <div class="pmain">
       ${none ? `<section class="panel pnone" aria-label="Plates"><p><strong>Nothing picked to print.</strong> Click a stack on the left to print it.</p></section>` : `
       <section class="panel ptop" aria-label="Progress and export">
-        <div class="ptop-prog"><h1>${pct}% printed</h1><div class="bar2" aria-hidden="true"><i style="width:${pct}%"></i></div>
-          <div class="mono">${done} of ${total} parts · ${plates.length} of ${plural(allPlates.length, 'plate')} left · ${aboutG(gDone)} of ${gramsStr(gTotal)}</div></div>
-        <div class="ptop-x">${exportBtn}
-          <div class="xrow">${canMake && target.length ? '<button type="button" class="btn" id="gFolders">STL folders (.zip)</button>' : ''}</div>
-          <div class="gprog" id="gProg" hidden><div class="bar"><i></i></div><span></span></div></div>
+        <div class="ptop-prog"><div class="ptop-h"><h1>${pct}% printed</h1><div class="mono">${done} of ${total} parts · ${plates.length} of ${plural(allPlates.length, 'plate')} left · ${aboutG(gDone)} of ${gramsStr(gTotal)}</div></div>
+          <div class="bar2" aria-hidden="true"><i style="width:${pct}%"></i></div></div>
+        <div class="ptop-x">${exportBtn}${canMake && target.length ? `<button type="button" class="xbtn alt" id="gFolders"><b>STL folders (.zip)</b><span class="mono">for any other slicer</span></button>` : ''}</div>
+        <div class="gprog" id="gProg" hidden><div class="bar"><i></i></div><span></span></div>
       </section>
       ${alerts}
       <div class="fchips" role="group" aria-label="Show plates for a filament">${chips}</div>
@@ -3843,7 +3878,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="actions" style="padding:0 18px 16px"><button class="btn" id="copyAll">Copy part list</button></div></details>
       `}
       </div>
-      <div class="pside">${opts}${detail}</div></div>`;
+      <div class="pside">${detail}${opts}</div></div>`;
     const V = $('view-print');
     const markPlate = (pl, on, quiet) => {
       if (on) { pl.lines.forEach(x => { printed[pkey(x.l)] = (printed[pkey(x.l)] || 0) + x.count; }); pst.done.push({ n: pl.n, sig: pl.sig }); }
@@ -5908,8 +5943,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // Left rail: which stacks the list is for (dark = in it, a click toggles, like Print's), then its groups
     const rail = `<aside class="drail prail hwrail" aria-label="Hardware for">
       <div class="v3-sec">Hardware for</div>
-      ${per.map(({ t, items }) => `<button type="button" class="pchip" data-hwskip="${esc(t.id)}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(items.size, 'line')}</small></button>`).join('')}
-      <p class="pnote">${!towers.length ? 'Loose parts need no bolts.' : none ? 'Nothing is picked. Click a stack to list its hardware.' : towers.length < 2 ? 'The list holds everything in Design.' : b.list.length === towers.length ? 'The list holds every stack. Click a stack to leave it out.' : 'Only what is highlighted is in the list, the copy and the CSV. Click to put a stack back.'}</p>
+      ${per.map(({ t, items }) => `<button type="button" class="pchip" data-hwskip="${esc(t.id)}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(items.size, 'line')}</small>${railState(b.list.includes(t), 'In the list')}</button>`).join('')}
+      <p class="pnote">${!towers.length ? 'Loose parts need no bolts.' : none ? 'Nothing is picked. Click a stack to list its hardware.' : towers.length < 2 ? 'The list holds everything in Design.' : 'Click a stack to put it in the list or leave it out. The copy and the CSV hold what the list shows.'}</p>
       <div class="v3-sec">In this list</div>
       ${!groups.length ? `<p class="pnote">${none ? 'Nothing: no stack is picked.' : 'Nothing to buy.'}</p>` : groups.map(g => { const gr = rows.filter(r => r.group === g), got = gr.filter(r => r.bought).length; return `<button type="button" class="hwjump${got === gr.length ? ' got' : ''}" data-hwjump="${gid(g)}"><b>${esc(g)}</b><small class="mono">${got} of ${plural(gr.length, 'line')} bought</small></button>`; }).join('')}
     </aside>`;
