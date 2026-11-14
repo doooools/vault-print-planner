@@ -94,10 +94,11 @@ Shown when there is no stack. Three rows: printer, Vault folder (same text and "
 
 ### 1 · Design
 - Left rail: one card per stack (width letter, name, footprint, level count), "New stack", "Start from a template…", then "Loose parts".
-- Centre: the 3D view of the selected stack, always shown. Tools "Select" and "Paint"; views Front, ¾, Side; "Add a level on top"; a "Stack settings" button; a "Footprint" button that opens a strip under the toolbar (width and depth as segmented controls, applied to all levels).
+- Centre: the 3D view of the selected stack, always shown. Toolbar: tools "Select" and "Paint", then "Spread levels", "Hide roof", "Bolts" (two swatches, raw steel or zinc / stainless, the same setting as Hardware's "Bolt finish") and "?" (how to move the view: drag, scroll, right-drag). Over the view's header: "Add a level on top" (`title` "Adds a level like the top one"); a "Stack settings" button; a "Footprint" button that opens a strip under the toolbar (width and depth as segmented controls, applied to all levels).
+- In the view (UX audit 2026-11, session 3): with Select, the level under the pointer is outlined and named beside it ("Level 3 · M5 · 1F drawer", "Click to set it up · right-click for actions"). A right-click on a level (let go less than 5 px from where it was pressed; a right-drag still pans) selects it and opens its menu: Open or Close drawer / case (the drawer under the pointer in a module holding several), Add a level above, Add a level below (copies of the level), Move up, Move down, Remove level (a plain click, then "Level 3 removed · Undo"). A right-click on the background, the roof or the base opens the stack's: Fit the stack in the view, Add a level on top, Stack settings. Both are `role="menu"` lists (arrow keys, Home, End, Enter, Esc) that close on a click outside, a scroll or the camera moving. The hint under the view is one line: "Click a level to set it up · right-click for its actions · double-click opens a drawer"; the first-visit tip about opening a drawer stays. Double-click and Ctrl / Shift + click keep opening drawers and cases.
 - Under the view: a colour summary of five chips (shell and roof, fronts, drawer boxes, mechanics, accents) that opens the Paint tool.
 - Right: the inspector.
-  - A level selected: position ("Level 3 of 4"), move up, move down, duplicate, remove; type; module height; "Across the width" on L and XL stacks; "Drawers in this module" for 2F and 4F drawers, as small diagrams; inside; lock; geared rails; "More options" (print aid, wall mount, pegboard); "Parts and bolts of this level" (the part list and hardware that `unitSum` folds today).
+  - A level selected: position ("Level 3 of 4"), then "Level below" and "Level above" (they move the selection) and "⋯", which opens the level's menu under itself, the same as the right-click (level actions are in that menu, not in the panel's header; "Duplicate" went, "Add a level above" does it); type; module height; "Across the width" on L and XL stacks; "Drawers in this module" for 2F and 4F drawers, as small diagrams; inside; lock; geared rails; "More options" (print aid, wall mount, pegboard); "Parts and bolts of this level" (the part list and hardware that `unitSum` folds today).
   - The stack selected: name, the stack's alerts (`stackAlerts`) or "Everything in this stack fits together" at the top, each alert that names a level with a "Show level N" link (UX audit B1), then footprint, roof (None, Grid, Table, Bowl, Under-table, Heavyweight where it exists), base with wheels and foot bar under it, the two handles. A new empty stack opens on its settings, like a template (B6).
 - With two modules side by side (S + S, S + M) each module is selected and set up on its own; with L² or XL² both drawers share the module's settings.
 
@@ -188,7 +189,7 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
 - **Type**: the mono font for figures (sizes, counts, grams), never for names or sentences.
 - **Words**: "Remove" (not "Delete") for stacks, levels and filaments.
 - **Removing or clearing** is pressed and held for half a second (`holdButton`, `HOLD_MS`), the button filling in red;
-  let go sooner and a toast says to hold it: a stack (its cross and "Remove stack"), a level, a filament, the loose
+  let go sooner and a toast says to hold it: a stack (its cross and "Remove stack"), a filament, the loose
   parts, a divider plan, the plates, the print progress, an assembly count (Dols, 2026-11-14). A click that comes from
   no pointer and no key (a screen reader, voice control: `detail` 0) can't be held, so it asks for a confirmation
   instead.
@@ -200,13 +201,15 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   camera stays where it is. A gesture that overwrites asks no question first: the colour presets apply, then offer
   "Undo" (the "USSA render" confirmation is gone). Print's "Reset all progress" and "Clear" keep press and hold and
   offer "Undo" too. Undo lives in memory only: a reload or a design file opened starts with nothing to undo.
-  "Remove level" becomes a plain click with "Undo" in the 3D view's right-click menu (session 3); every other removal
-  keeps press and hold.
+  "Remove level" is a plain click with "Undo" in the level's menu (right-click in the 3D view, or "⋯" in the level
+  panel: UX audit session 3); every other removal keeps press and hold.
 - **Rails**: Design, Print and Hardware also have a right column (Design's inspector; Print's selected plate over the
   plate options, `.pside`; Hardware's list options, `.hwside`). Design, Print, Hardware and Assemble each have a left
   rail with an eyebrow naming its items (Stacks, What to print, Hardware for, Sections). Every tab past Design shows its progress (Print and Assemble in %, Hardware the lines to buy).
 - The 3D view has no Front / ¾ / Side buttons any more (Dols, 2026-11-14): a stack opens from three quarters, then
-  one drags to turn it.
+  one drags to turn it. The camera never reframes by itself (a level added, the footprint changed, "Spread levels",
+  "Hide roof": it stays where it is); "Fit the stack in the view", on a right-click on the background, reframes it when
+  asked (UX audit 2026-11, decisions 1 and 3).
 
 ## Steps, each testable on its own
 

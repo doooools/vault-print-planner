@@ -259,6 +259,37 @@ dialog#v3d::backdrop { background: rgba(10, 12, 12, .45); }
 @keyframes v3tip { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent-btn) 35%, transparent), 0 6px 24px rgba(0,0,0,.25); } }
 @media (prefers-reduced-motion: reduce) { .v3-hintbar.tip { animation: none; } }
 .v3-hintbar { position: absolute; left: 12px; bottom: 12px; max-width: calc(100% - 24px); padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet); color: var(--muted); font-size: 12.5px; }
+.v3-hintbar b { color: var(--ink); font-weight: 650; }
+/* The toolbar's bolt finish (two swatches) and "?" with how to move the view */
+.v3-bolts { align-items: center; }
+.v3-bolts .v3-seglbl { padding: 0 6px 0 8px; font-size: 13px; color: var(--ink); }
+.v3-bolts button { padding: 5px 8px; display: inline-flex; align-items: center; }
+.v3-bolts .dot2 { width: 14px; height: 14px; }
+.v3-bolts button[aria-pressed=true] .dot2 { box-shadow: 0 0 0 2px var(--sheet); }
+.v3-helpbtn { display: inline-flex; align-items: center; justify-content: center; padding: 6px 8px; }
+.v3-helpbtn[aria-expanded=true] { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
+.v3-helppop { position: absolute; top: calc(100% + 8px); right: 0; width: min(330px, calc(100vw - 48px)); display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--sheet); color: var(--muted); font-size: 13px; box-shadow: 0 10px 30px rgba(0, 0, 0, .2); }
+.v3-helppop p { margin: 0; }
+.v3-helppop b { color: var(--ink); font-weight: 650; }
+.v3-tools { z-index: 2; }
+/* The level under the pointer, named beside it */
+.v3-hover { position: absolute; z-index: 1; display: grid; gap: 2px; max-width: 260px; padding: 8px 12px; border-radius: 8px; background: var(--ink); color: var(--sheet); font-size: 12px; line-height: 1.35; pointer-events: none; box-shadow: 0 6px 18px rgba(0, 0, 0, .22); }
+.v3-hover[hidden] { display: none; }
+.v3-hover b { font-size: 13px; font-weight: 650; }
+.v3-hover span { opacity: .8; }
+/* A level's or the stack's menu (right-click in the view, "⋯" in the level panel) */
+.vmenu { position: fixed; z-index: 60; min-width: 250px; max-width: calc(100vw - 16px); padding: 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--sheet); color: var(--ink); box-shadow: 0 12px 32px rgba(0, 0, 0, .24); }
+.vmenu:focus { outline: none; }
+.vmenu .mhead { display: grid; gap: 2px; padding: 8px 10px 6px; }
+.vmenu .mhead small { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.vmenu .mhead b { font-size: 14px; font-weight: 700; }
+.vmenu .msep { margin: 6px 4px; border-top: 1px solid var(--line); }
+.vmenu [role=menuitem] { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 38px; padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: inherit; font: inherit; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; }
+.vmenu [role=menuitem] svg { flex: none; width: 16px; height: 16px; }
+.vmenu [role=menuitem]:focus { outline: none; background: var(--sheet-2); }
+.vmenu [role=menuitem]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.vmenu [role=menuitem]:disabled { opacity: .4; cursor: default; }
+.vmenu .mkey { margin-left: auto; padding-left: 16px; font: 12px var(--f-mono); color: var(--muted); }
 .v3-morepop { position: absolute; left: 12px; z-index: 3; width: min(400px, calc(100% - 24px)); max-height: calc(100% - 200px); overflow-y: auto; box-sizing: border-box; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); box-shadow: 0 10px 30px rgba(0, 0, 0, .28); }
 /* The side column: the selected part, then the units */
 .v3-sec { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
@@ -552,7 +583,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .pchip[aria-pressed=true] small { color: inherit; opacity: .75; }
 .pchip b { font-size: 14px; } .pchip small { font-size: 11.5px; color: var(--muted); }
 .pchip .pstate { font-weight: 600; color: var(--ink); }
-.v3-hintbar kbd { display: inline-block; padding: 0 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 11.5px var(--f-mono); color: var(--ink); background: var(--sheet); }
+.v3-hintbar kbd, .v3-helppop kbd { display: inline-block; padding: 0 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 11.5px var(--f-mono); color: var(--ink); background: var(--sheet); }
 .dempty { display: grid; justify-items: center; align-content: center; gap: 12px; min-height: 360px; padding: 24px; color: var(--muted); background: var(--sheet-2); }
 .dempty .btn { display: inline-flex; align-items: center; gap: 6px; }
 .dinsp { flex: 1 1 clamp(320px, 20vw, 440px); min-width: 0; display: flex; flex-direction: column; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
@@ -1372,6 +1403,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // set on either one (it used to be read from the left one only, so a roof and handle set on the right one were lost).
   const roofOf = lv => lv.find(u => u.roof && u.roof !== 'none') || lv[0];
   const WNAME = { S: 'S', M: 'M', L: 'L', L2: 'L\u00b2', XL: 'XL', XL2: 'XL\u00b2' };
+  // A level's name: its module ("M5 · 1F drawer"), or its two modules side by side ("S + M · x5 · 2F")
+  const levelTitle = lv => lv.length > 1 ? `${lv.map(x => WNAME[x.w]).join(' + ')} \u00b7 x${lv[0].d} \u00b7 ${lv[0].h}F` : unitCode(lv[0]);
   const levelHeight = lv => Math.max(...lv.map(u => unitExt(u)[2]));
   function analyzeTower(t) { const was = colorStack; colorStack = t; try { return analyzeStack(t); } finally { colorStack = was; } }
   function analyzeStack(t) {
@@ -2470,15 +2503,96 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     towers.push(t); dsel = { t: t.id, l: null }; saveSel(); save();
     view = 'build'; renderAll(); toast('Added “' + p.name + '”');
   }
-  // Level operations, from the inspector
+  // Level operations: the 3D view's right-click menu, the level panel's "⋯", "Add a level on top"
   function levelOp(t, op, i) {
     const L = t.levels;
     if (op === 'up' && i < L.length - 1) { [L[i], L[i + 1]] = [L[i + 1], L[i]]; dsel.l = i + 1; }
     if (op === 'down' && i > 0) { [L[i], L[i - 1]] = [L[i - 1], L[i]]; dsel.l = i - 1; }
-    if (op === 'dup') { L.splice(i + 1, 0, L[i].map(u => { const k = JSON.parse(JSON.stringify(u)); k.roof = 'none'; return k; })); dsel.l = i + 1; }
+    // a copy of the level, above it ('dup') or below it ('dupBelow'); the roof stays on the top level (fixTower)
+    const copy = () => L[i].map(u => { const k = JSON.parse(JSON.stringify(u)); k.roof = 'none'; return k; });
+    if (op === 'dup') { L.splice(i + 1, 0, copy()); dsel.l = i + 1; }
+    if (op === 'dupBelow') { L.splice(i, 0, copy()); dsel.l = i; }
     if (op === 'del') { undoAs(`Level ${i + 1} removed`); L.splice(i, 1); dsel.l = L.length ? Math.min(i, L.length - 1) : null; dsel.u = 0; }
     if (op === 'top') { const top = L[L.length - 1]; L.push(top ? top.map(u => newUnit(t, u)) : [newUnit(t)]); dsel.l = L.length - 1; dsel.u = 0; }
     fixTower(t); saveSel(); save(); renderAll();
+  }
+  // ---------- level and stack menus ----------
+  // One menu at a time, a role="menu" list: at the pointer (a right-click in the 3D view) or under the button that
+  // opened it (the level panel's "⋯"); keys: opened from the keyboard. Arrow keys, Home, End, Enter; Esc closes it and gives the focus back to the
+  // button. A click outside, a scroll, the window resized, the camera moved or the view drawn again close it.
+  // Items: { label, icon, key (a shortcut shown on the right), fn, dis, tip, sep (a line before it) }.
+  let menuNow = null;
+  const menuFrom = b => !!menuNow && menuNow.opener === b;
+  function menuClose(refocus) {
+    const m = menuNow; if (!m) return;
+    menuNow = null; m.el.remove(); m.off.abort();
+    if (m.opener && m.opener.hasAttribute('aria-expanded')) m.opener.setAttribute('aria-expanded', 'false');
+    if (refocus && m.opener && m.opener.isConnected) m.opener.focus({ preventScroll: true });
+  }
+  function menuOpen({ head, sub, items, x, y, opener, keys }) {
+    menuClose();
+    const el = document.createElement('div'), id = 'menuHead' + (++menuOpen.n);
+    el.className = 'vmenu'; el.tabIndex = -1; el.setAttribute('role', 'menu'); el.setAttribute('aria-labelledby', id);
+    el.innerHTML = `<div class="mhead" id="${id}"><small>${esc(head)}</small><b>${esc(sub)}</b></div>` + items.map((it, k) =>
+      `${it.sep ? '<div class="msep" role="separator"></div>' : ''}<button type="button" role="menuitem" tabindex="-1" data-mi="${k}"${it.dis ? ' disabled aria-disabled="true"' : ''}${it.tip ? ` title="${esc(it.tip)}"` : ''}>${it.icon ? icon(it.icon) : ''}<span>${esc(it.label)}</span>${it.key ? `<span class="mkey">${esc(it.key)}</span>` : ''}</button>`).join('');
+    document.body.append(el);
+    const off = new AbortController(), sig = { signal: off.signal, capture: true };
+    menuNow = { el, opener, off };
+    if (opener && opener.hasAttribute('aria-expanded')) opener.setAttribute('aria-expanded', 'true');
+    // where: at the pointer, or under the button, its right edges lined up; kept inside the window
+    const r = el.getBoundingClientRect(), W = innerWidth, H = innerHeight;
+    if (x == null) { const b = opener.getBoundingClientRect(); x = b.right - r.width; y = b.bottom + 6; if (y + r.height > H - 8) y = b.top - 6 - r.height; }
+    else { if (x + r.width > W - 8) x -= r.width; if (y + r.height > H - 8) y -= r.height; }
+    el.style.left = Math.round(Math.max(8, Math.min(W - 8 - r.width, x))) + 'px';
+    el.style.top = Math.round(Math.max(8, Math.min(H - 8 - r.height, y))) + 'px';
+    const live = () => [...el.querySelectorAll('[role=menuitem]:not(:disabled)')];
+    // a button's menu gives the focus back to it, or to the panel's new "⋯" when the action drew the panel again
+    const btn = !!opener && opener.tagName === 'BUTTON';
+    el.querySelectorAll('[data-mi]').forEach(b => b.onclick = () => {
+      menuClose(btn); items[+b.dataset.mi].fn();
+      if (btn && !opener.isConnected) { const n = document.querySelector('#dInsp [data-lmenu]'); if (n) n.focus({ preventScroll: true }); }
+    });
+    el.addEventListener('pointerover', e => { const b = e.target.closest('[role=menuitem]:not(:disabled)'); if (b) b.focus({ preventScroll: true }); });
+    el.addEventListener('keydown', e => {
+      const L = live(), k = L.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); const n = L.length; if (n) L[(k + (e.key === 'ArrowDown' ? 1 : n - 1 + (k < 0 ? 1 : 0))) % n].focus(); }
+      else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); if (L.length) L[e.key === 'Home' ? 0 : L.length - 1].focus(); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); menuClose(true); }
+      else if (e.key === 'Tab') { e.preventDefault(); menuClose(true); }
+    });
+    // a press outside closes it (on the button that opened it, the button's own click does)
+    addEventListener('pointerdown', e => { if (!el.contains(e.target) && !(btn && opener.contains(e.target))) menuClose(); }, sig);
+    addEventListener('scroll', e => { if (!el.contains(e.target)) menuClose(); }, sig);
+    addEventListener('resize', () => menuClose(), { signal: off.signal });
+    addEventListener('blur', e => { if (e.target === window) menuClose(); }, { signal: off.signal });
+    // opened from the keyboard: on its first item; by the pointer: on the menu itself (the arrow keys still work)
+    const first = live()[0]; (keys && first ? first : el).focus({ preventScroll: true });
+  }
+  menuOpen.n = 0;
+  // A level's actions: open or close its drawer or case (the one given, or the one the panel shows), add a copy of it
+  // above or below, move it, remove it (one click: the undo message takes it back)
+  function levelMenu(t, i, ui, target) {
+    const L = t.levels, lv = L[i], v = v3 && v3.t === t ? v3 : null;
+    const m = target !== undefined ? target : v ? v.openable(lv[Math.min(ui || 0, lv.length - 1)], dsel.d) : null;
+    const items = [];
+    if (v && m) {
+      const ok = v.canOpen(m), what = m.lid ? 'case' : 'drawer';
+      items.push({ icon: 'drawer', label: `${m.open ? 'Close' : 'Open'} ${what}`, key: 'double-click', dis: !ok, tip: ok ? '' : 'A case opens once its real parts are in', fn: () => v.toggle(m) });
+    }
+    items.push(
+      { sep: items.length > 0, icon: 'plus', label: 'Add a level above', fn: () => levelOp(t, 'dup', i) },
+      { icon: 'plus', label: 'Add a level below', fn: () => levelOp(t, 'dupBelow', i) },
+      { icon: 'up', label: 'Move up', dis: i === L.length - 1, fn: () => levelOp(t, 'up', i) },
+      { icon: 'down', label: 'Move down', dis: !i, fn: () => levelOp(t, 'down', i) },
+      { sep: true, icon: 'del', label: 'Remove level', fn: () => levelOp(t, 'del', i) });
+    return { head: `Level ${i + 1} of ${L.length}`, sub: levelTitle(lv), items };
+  }
+  // The whole stack's: the one way to reframe the view, a level on top, its settings
+  function stackMenu(t) {
+    return { head: 'Whole stack', sub: t.name, items: [
+      { icon: 'fit', label: 'Fit the stack in the view', dis: !v3, fn: () => { if (v3) v3.aim(null); } },
+      { sep: true, icon: 'plus', label: 'Add a level on top', fn: () => levelOp(t, 'top') },
+      { icon: 'chev', label: 'Stack settings', fn: () => { inspPaint = false; dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); } }] };
   }
   const segBtns = (items, cur, attr) => items.map(it => `<button type="button" ${attr}="${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}"${it.dis ? ' disabled' : ''}>${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   const useg = (key, items, cur) => items.map(it => `<button type="button" data-useg="${key}=${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
@@ -2492,6 +2606,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const ICON = {
     up: '<path d="M12 19V5M6 11l6-6 6 6"/>', down: '<path d="M12 5v14M6 13l6 6 6-6"/>', dup: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
     del: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>', plus: '<path d="M12 5v14M5 12h14"/>',
+    more: '<circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="19" cy="12" r="1.2" fill="currentColor"/>',
+    fit: '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>', drawer: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 12h6"/>',
+    chev: '<path d="M9 6l6 6-6 6"/>', help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>',
   };
   const icon = k => `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
   // Width × depth × height of the whole stack as it stands, with its base, wheels, roof, handles… (stackSize)
@@ -2687,7 +2804,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <div class="dhead"><div class="dtitle"><h1>${esc(t.name)}</h1><span class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></span></div>
         <div class="dacts"><button type="button" class="btn" data-dstack aria-pressed="${dsel.l == null}">Stack settings</button>
           <button type="button" class="btn" data-fp aria-expanded="${fpStrip}">Footprint <span class="mono">${fpCode(fp)}</span></button>
-          <button type="button" class="btn primary" data-addtop>${icon('plus')} Add a level on top</button></div></div>
+          <button type="button" class="btn primary" data-addtop title="Adds a level like the top one">${icon('plus')} Add a level on top</button></div></div>
       ${fpStrip ? `<div class="fpstrip"><div class="field"><div class="lbl">Width</div><div class="seg">${segBtns(wOpts, fp.w, 'data-fpw')}</div></div>
         <div class="field"><div class="lbl">Depth <span class="hint">grid units of 42 mm</span></div><div class="seg">${segBtns(dOpts, fp.d, 'data-fpd')}</div></div>
         <p class="pnote">Applies to every level of ${esc(t.name)}. Sizes too big for the ${esc(printerName())} aren’t offered.</p></div>` : ''}
@@ -2727,6 +2844,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   function renderInspector() {
     const box = $('dInsp'); if (!box || !curTower()) return;
+    if (menuNow && box.contains(menuNow.opener)) menuClose(); // its "⋯" is drawn again
     inspSave();
     renderInspector0(box, curTower());
     if (painting() && !inspPaint) {
@@ -2749,7 +2867,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const hTrial = h => xl && h > 1 ? trial({ h, w: 'M' }) : trial({ h });
     const hOpts = [1, 2, 4].filter(h => hs.includes(h) && (h === u.h || hTrial(h))).map(h => ({ v: h, label: h + 'F', sub: Math.round(R.exterior(u.type, xl && h > 1 ? 'M' : u.w, u.d, h)[2]) + ' mm' }));
     const fw = fpOf(t).w, across = ACROSS[fw] ? ACROSS[fw].filter(([v]) => (u.type === 'drawer' || !v.endsWith('2')) && (v === acrossOf(lv) || acrossLevel(lv, v, { ...u, h: v === 'XL' || v === 'XL2' ? 1 : u.h }).every(x => !tooBig({ ...x, roof: 'none' })))) : null;
-    const title = lv.length > 1 ? `${lv.map(x => WNAME[x.w]).join(' + ')} \u00b7 x${u.d} \u00b7 ${u.h}F` : unitCode(u);
+    const title = levelTitle(lv);
     let o = '';
     // the drawer whose inside is shown, when the module holds several (dsel.d, its id)
     const dids = R.drawerIds(u), dv = u.type === 'drawer' ? drawerView(u, dsel.d) : u;
@@ -2792,7 +2910,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       back += `<div class="field"><div class="lbl">Backbone <span class="hint">the column reaches this level</span></div><div class="seg">${useg('backbone', [{ v: 'none', label: 'None' }, { v: 'family', label: 'This width' }, { v: 'universal', label: 'Universal' }], u.backbone || 'none')}</div></div>`;
     } else back += '<p class="pnote" style="margin:0">Pegboards and backbones are made for 1F and 2F modules only.</p>';
     box.innerHTML = `<div class="ihead"><div class="ipos"><span class="v3-sec">Level ${i + 1} of ${L.length}</span>
-        <div class="iacts"><button type="button" class="iconbtn sq" data-lop="up" aria-label="Move this level up" title="Move this level up" ${top ? 'disabled' : ''}>${icon('up')}</button><button type="button" class="iconbtn sq" data-lop="down" aria-label="Move this level down" title="Move this level down" ${i ? '' : 'disabled'}>${icon('down')}</button><button type="button" class="iconbtn sq" data-lop="dup" aria-label="Duplicate this level" title="Duplicate this level: a copy goes above it">${icon('dup')}</button><button type="button" class="iconbtn sq" data-lop="del" aria-label="Remove this level" title="Remove this level">${icon('del')}</button></div></div>
+        <div class="iacts"><button type="button" class="iconbtn sq" data-lgo="-1" aria-label="Level below" title="Level below" ${i ? '' : 'disabled'}>${icon('down')}</button><button type="button" class="iconbtn sq" data-lgo="1" aria-label="Level above" title="Level above" ${top ? 'disabled' : ''}>${icon('up')}</button><button type="button" class="iconbtn sq" data-lmenu aria-haspopup="menu" aria-expanded="false" aria-label="Actions for level ${i + 1}" title="Add, move or remove this level">${icon('more')}</button></div></div>
         <h2>${esc(title)}</h2><div class="mono">${Math.round(levelWidth(lv))} × ${Math.round(ext[1])} × ${Math.round(levelHeight(lv))} mm · ${s.prints} parts · ${aboutG(s.g)}</div></div>
       ${lv.length > 1 ? `<div class="seg ipair" role="group" aria-label="Module to set up">${lv.map((x, j) => `<button type="button" data-umod="${j}" aria-pressed="${j === ui}">${j ? 'Right' : 'Left'}<small>${esc(unitCode(x))}</small></button>`).join('')}</div>` : ''}
       ${nf.length ? `<div class="alert warn" role="alert"><strong>${plural(nf.length, 'part')} of this level no longer ${nf.length === 1 ? 'fits' : 'fit'} the ${esc(printerName())}</strong><span class="mono">${[...new Set(nf.map(l => esc(l.label) + ' · ' + dimStr(l.file.dims)))].join('<br>')}</span><span>${nf.length === 1 ? 'It is' : 'They are'} left out of the plates. Print ${nf.length === 1 ? 'it' : 'them'} on a bigger printer, or change this level.</span></div>` : ''}
@@ -2837,8 +2955,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       L[i] = acrossLevel(lv, v, { ...u, h: one ? 1 : u.h }); dsel.u = 0;
       fixTower(t); saveSel(); save(); renderAll();
     });
-    box.querySelectorAll('[data-lop]').forEach(b => b.onclick = () => levelOp(t, b.dataset.lop, i));
-    holdButton(box.querySelector('[data-lop="del"]'), () => levelOp(t, 'del', i), 'Hold the bin down to remove this level');
+    // The level below or above: the selection moves, so a level can be reached without the mouse
+    box.querySelectorAll('[data-lgo]').forEach(b => b.onclick = () => {
+      dsel.l = i + +b.dataset.lgo; dsel.u = 0; saveSel(); renderInspector(); v3mark(); markLevels();
+      const n = $('dInsp').querySelector(`[data-lgo="${b.dataset.lgo}"]`); (n && !n.disabled ? n : $('dInsp').querySelector('[data-lmenu]')).focus();
+    });
+    // "⋯": the same menu as a right-click on the level in the view, under the button
+    const mb = box.querySelector('[data-lmenu]');
+    mb.onclick = e => { if (menuFrom(mb)) menuClose(); else menuOpen({ ...levelMenu(t, i, ui), opener: mb, keys: e.detail === 0 }); };
     box.querySelectorAll('[data-umod]').forEach(b => b.onclick = () => { dsel.u = +b.dataset.umod; saveSel(); renderInspector(); v3mark(); });
     bindUnitSeg(box, u, set);
     box.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { view = b.dataset.go; renderAll(); window.scrollTo(0, 0); });
@@ -3314,6 +3438,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   // The 3D view tells the inspector which level was clicked; the inspector's level is outlined in the view
   let v3markObj = null;
+  // A module's outline in the view (the selected level's, the level under the pointer's)
+  function v3unitBox(v, u) {
+    if (u.parts) u.g.updateWorldMatrix(true, true);
+    const y = u.g.position.y, solid = u.parts && u.parts.children.length ? new v.T.Box3().setFromObject(u.parts, true) : null;
+    return solid && !solid.isEmpty() ? solid.expandByScalar(1) : new v.T.Box3(new v.T.Vector3(u.x - u.w / 2 - 1, y - 1, -u.d - 1), new v.T.Vector3(u.x + u.w / 2 + 1, y + u.h + 1, 1));
+  }
   function v3mark() {
     const v = v3; if (!v) return;
     if (v3markObj) { v3markObj.forEach(o => { if (o.parent) o.parent.remove(o); o.geometry.dispose(); }); v3markObj = null; }
@@ -3324,10 +3454,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       // stand over it), else its box. Bounds from the parts' vertices: some are exported on edge at 45° (L 1F modules),
       // and their file's box turned upright is far taller and deeper than the part.
       v3markObj = v.units.filter(u => u.cfg === u0 && !u.roof && !u.stack && u.g.visible).map(u => {
-        if (u.parts) u.g.updateWorldMatrix(true, true);
-        const y = u.g.position.y, solid = u.parts && u.parts.children.length ? new v.T.Box3().setFromObject(u.parts, true) : null;
-        const box = solid && !solid.isEmpty() ? solid.expandByScalar(1) : new v.T.Box3(new v.T.Vector3(u.x - u.w / 2 - 1, y - 1, -u.d - 1), new v.T.Vector3(u.x + u.w / 2 + 1, y + u.h + 1, 1));
-        const h = new v.T.Box3Helper(box, col); v.scene.add(h); return h;
+        const h = new v.T.Box3Helper(v3unitBox(v, u), col); v.scene.add(h); return h;
       });
       // in a module holding several drawers, the one the inspector shows: its place in the shell, drawn in
       const dv = u0.inside && drawerView(u0, dsel.d);
@@ -4796,6 +4923,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (v3 === v) v3mark();
     };
     controls.addEventListener('change', render);
+    controls.addEventListener('change', () => placeTip());
+    controls.addEventListener('start', () => { if (menuNow && !menuNow.el.contains(document.activeElement)) menuClose(); });
     // Aim at the whole stack (taller when spread) from a direction, far enough back for it to fit the view
     const hasBase = lay.extra.length > 0 || lay.units.some(u => u.stack && !u.column), spreadOf = u => v.explode ? (u.level + (hasBase ? 1 : 0)) * V3_SPREAD : 0;
     v.aim = dir => {
@@ -4894,11 +5023,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       else u.g.position.y = u.y + spreadOf(u) + liftOf(u);
       u.g.visible = !(u.roof && v.hideRoof) && !(u.column && v.explode); // the column runs up the whole stack: not when spread
     };
-    // Spread levels apart (each level lifted a little more) and hide the roofs
+    // Spread levels apart (each level lifted a little more) and hide the roofs. The camera stays where it is (it never
+    // reframes by itself): "Fit the stack in the view", on a right-click on the background, does it when asked.
     v.arrange = () => {
+      hoverOff();
       v.units.forEach(placeUnit);
       if (v.sel && v.sel.u && !v.sel.u.g.visible) v.sel = null;
-      v.aim(null);
+      render();
     };
     v.units.forEach(placeUnit);
     const el = renderer.domElement, ray = new T.Raycaster(), ndc = new T.Vector2();
@@ -4957,16 +5088,85 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     };
     const setHot = f => { if (v.hot === f || (!v.hot && !f)) return; v.hot = f; v.recolor(); };
     let down = null, hoverQueued = false, hotKey = '';
+    // The level under the pointer with Select: outlined (unless it is the one selected, outlined already) and named
+    // by a label beside it, placed from its box as the camera sees it
+    const levelOfHit = h => {
+      const t = curTower(), u = h && h.u;
+      if (!u || u.roof || u.stack || u.column || t !== v.t) return -1;
+      return t.levels.findIndex(lv => lv.includes(u.cfg));
+    };
+    const tip = document.createElement('div'); tip.className = 'v3-hover'; tip.hidden = true; tip.setAttribute('aria-hidden', 'true');
+    box.parentNode.append(tip); v.tip = tip;
+    let hov = null;
+    function hoverOff() {
+      if (!hov) return;
+      hov.objs.forEach(o => { scene.remove(o); o.geometry.dispose(); o.material.dispose(); });
+      hov = null; tip.hidden = true; render();
+    }
+    v.hoverOff = hoverOff;
+    function placeTip() {
+      if (!hov) return;
+      const W = el.clientWidth, H = el.clientHeight, b = hov.box, p = new T.Vector3();
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      for (let k = 0; k < 8; k++) {
+        p.set(k & 1 ? b.max.x : b.min.x, k & 2 ? b.max.y : b.min.y, k & 4 ? b.max.z : b.min.z).project(camera);
+        const sx = (p.x + 1) / 2 * W, sy = (1 - p.y) / 2 * H;
+        x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy);
+      }
+      const w = tip.offsetWidth, h = tip.offsetHeight;
+      let x = x1 + 12; if (x + w > W - 8) x = x0 - 12 - w; if (x < 8) x = W - 8 - w;
+      tip.style.left = Math.round(Math.max(8, x)) + 'px';
+      tip.style.top = Math.round(Math.max(8, Math.min(H - h - 8, (y0 + y1) / 2 - h / 2))) + 'px';
+    }
+    function hoverOn(h) {
+      const i = levelOfHit(h);
+      if (i < 0) { hoverOff(); return; }
+      if (hov && hov.i === i) return;
+      hoverOff();
+      const lv = v.t.levels[i], us = v.units.filter(x => lv.includes(x.cfg) && !x.roof && !x.stack && !x.column && x.g.visible);
+      const boxes = us.map(u => v3unitBox(v, u)), all = boxes.reduce((a, b) => a.union(b), new T.Box3());
+      const ink = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#1d1f1e';
+      const objs = dsel && dsel.l === i ? [] : boxes.map(b => { const o = new T.Box3Helper(b, ink); scene.add(o); return o; });
+      hov = { i, objs, box: all };
+      tip.innerHTML = `<b>Level ${i + 1} \u00b7 ${esc(levelTitle(lv))}</b><span>Click to set it up \u00b7 right-click for actions</span>`;
+      tip.hidden = false; placeTip(); render();
+    }
+    // A right-click (let go where it was pressed): on a level, it selects it as a click would, then opens its menu;
+    // on the background, the roof, the base or the column, the whole stack's
+    const rightAt = ev => {
+      const t = curTower(); if (t !== v.t) return;
+      const h = hitAt(ev), i = levelOfHit(h);
+      if (i < 0) { menuOpen({ ...stackMenu(t), x: ev.clientX, y: ev.clientY, opener: el }); return; }
+      const mv = h.u.movers ? moverAt(h) : null, ui = t.levels[i].indexOf(h.u.cfg);
+      if (h.mesh.userData.role) v3lastPick = v.sel = { role: h.mesh.userData.role, cfg: h.mesh.userData.cfg, u: h.u, name: h.mesh.userData.name, mv: mv ? mv.id : null };
+      dsel.l = i; dsel.u = ui; if (mv) { dsel.d = mv.id; gpend = null; }
+      saveSel(); renderInspector(); v3side(); markLevels();
+      menuOpen({ ...levelMenu(t, i, ui, h.u.movers ? mv : canOpen(h.u) || h.u.lid ? h.u : null), x: ev.clientX, y: ev.clientY, opener: el });
+    };
     // Open or close what was clicked (the drawer of a module holding several, a case)
-    const toggleAt = h => {
-      const m = moverAt(h); if (!canOpen(m)) return;
+    const toggle = m => {
+      if (!canOpen(m)) return;
       m.open = !m.open; glide();
       if (!store.get('openTip', false)) { store.set('openTip', true); v3tools(); }
     };
-    el.addEventListener('pointerdown', ev => { down = { x: ev.clientX, y: ev.clientY, t: performance.now() }; }, sig);
+    const toggleAt = h => toggle(moverAt(h));
+    // For the level menus: what opens in a module (the drawer the panel shows when it holds several), and opening it
+    v.openable = (cfg, id) => {
+      const u = v.units.find(x => x.cfg === cfg && !x.roof && !x.stack && !x.column); if (!u) return null;
+      return u.movers ? u.movers.find(m => m.id === id) || u.movers[0] : u.travel || u.lid ? u : null;
+    };
+    v.canOpen = canOpen; v.toggle = toggle;
+    el.addEventListener('pointerdown', ev => {
+      down = { x: ev.clientX, y: ev.clientY, t: performance.now(), b: ev.button }; hoverOff();
+      if (v3ui.help) { v3ui.help = false; v3tools(); }
+    }, sig);
+    // The browser's own menu: not on the view (a right-click opens the level's or the stack's menu, a right-drag pans)
+    el.addEventListener('contextmenu', ev => ev.preventDefault(), sig);
     el.addEventListener('pointerup', ev => {
-      if (!down || ev.button !== 0 || Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 5 || performance.now() - down.t > 500) { down = null; return; }
-      down = null;
+      const d = down; down = null;
+      if (!d || ev.button !== d.b || Math.hypot(ev.clientX - d.x, ev.clientY - d.y) > 5) return;
+      if (ev.button === 2) { rightAt(ev); return; }
+      if (ev.button !== 0 || performance.now() - d.t > 500) return;
       const h = hitAt(ev);
       if (v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey) { toggleAt(h); return; }
       if (!h || !h.mesh.userData.role) { if (v.tool === 'turn') { v.sel = null; v3side(); } return; }
@@ -4988,12 +5188,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         hoverQueued = false; if (v3 !== v) return;
         const h = hitAt(ev);
         el.style.cursor = !h ? '' : v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey ? (canOpen(moverAt(h)) ? 'pointer' : '') : h.mesh.userData.role ? 'pointer' : '';
+        if (v.tool === 'turn' && !menuNow) hoverOn(h); else hoverOff();
         if (v.tool !== 'paint' || !h) { hotKey = ''; setHot(null); return; }
         const { role, cfg } = h.mesh.userData, key = role + '|' + (v.pscope === 'unit' ? v.units.indexOf(v.units.find(u => u.cfg === cfg)) : '');
         if (key !== hotKey) { hotKey = key; setHot(paintsWith(h.mesh)); }
       });
     }, sig);
-    el.addEventListener('pointerleave', () => { hotKey = ''; setHot(null); }, sig);
+    el.addEventListener('pointerleave', () => { hotKey = ''; setHot(null); hoverOff(); }, sig);
     resize();
     if (v.units.flatMap(x => x.movers || [x]).some(u => u.t !== (u.open ? 1 : 0))) glide(); // one caught on its way
     v3tools(); v3side();
@@ -5038,7 +5239,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <div class="v3-right">
         ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}">Spread levels</button>` : ''}
         ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}">Hide roof</button>` : ''}
-        ${v.units.some(u => u.place && u.place.bolts.length) ? `<button type="button" class="v3-tog" data-v3fin title="Bolt finish, for the whole build (also in Hardware): click for ${hwFinish() === 'black' ? 'zinc-plated or stainless' : 'raw steel'}"><span class="dot2" style="background:${hwColor()};vertical-align:-2px;margin-right:6px"></span>${hwFin()[2]}</button>` : ''}</div>`;
+        ${v.units.some(u => u.place && u.place.bolts.length) ? `<div class="v3-seg v3-bolts" role="group" aria-label="Bolt finish, for the whole build (also in Hardware)"><span class="v3-seglbl" aria-hidden="true">Bolts</span>${HW_FINISHES.map(([id, hex, n]) => `<button type="button" data-v3fin="${id}" aria-pressed="${hwFinish() === id}" aria-label="${n} bolts" title="${n} bolts, for the whole build (also in Hardware)"><span class="dot2" style="background:${hex}"></span></button>`).join('')}</div>` : ''}
+        <button type="button" class="v3-tog v3-helpbtn" data-v3help aria-expanded="${!!v3ui.help}" aria-controls="v3dHelp" aria-label="How to move the view" title="How to move the view">${icon('help')}</button>
+        ${v3ui.help ? `<div class="v3-helppop" id="v3dHelp"><p><b>Drag</b> to turn · <b>scroll</b> to zoom · <b>right-drag</b> to move the view.</p>
+          <p><b>Double-click</b> a drawer or a case, or <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click it, to open or close it.</p>
+          <p><b>Right-click</b> the background to fit the stack in the view, add a level on top or open the stack’s settings.</p></div>` : ''}</div>`;
     const B = $('v3dBrush');
     if (v.tool === 'paint') {
       B.hidden = false; B.className = 'v3-brush';
@@ -5050,14 +5255,15 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const tip = !store.get('openTip', false) && v.units.some(u => u.travel || u.movers || u.lid);
       B.hidden = false; B.className = 'v3-hintbar' + (tip ? ' tip' : '');
       B.innerHTML = tip ? '<span><b>Open a drawer:</b> double-click it, or hold <kbd>Ctrl</kbd> or <kbd>Shift</kbd> and click it. Cases open the same way.</span><button type="button" class="btn" data-v3tipok>Got it</button>'
-        : 'A double-click, or <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click, opens or closes a drawer or a case. A click selects a level, and in a module holding several drawers the drawer. Drag to turn, scroll to zoom, right-drag to move.';
+        : '<b>Click</b> a level to set it up \u00b7 <b>right-click</b> for its actions \u00b7 <b>double-click</b> opens a drawer';
     }
     const on = (sel, f) => document.querySelectorAll(sel).forEach(b => b.onclick = () => f(b));
-    on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; if (v.tool === 'paint') inspPaint = true; v.hot = null; v.recolor(); v3tools(); v3side(); });
+    on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; if (v.tool === 'paint') inspPaint = true; v.hot = null; v.hoverOff(); v.recolor(); v3tools(); v3side(); });
+    on('[data-v3help]', () => { v3ui.help = !v3ui.help; v3tools(); const b = $('v3dTools').querySelector('[data-v3help]'); if (b) b.focus({ preventScroll: true }); });
     on('[data-v3tipok]', () => { store.set('openTip', true); v3tools(); });
     on('[data-v3tog]', b => { v[b.dataset.v3tog] = !v[b.dataset.v3tog]; v.arrange(); v3tools(); v3side(); });
     on('[data-v3scope]', b => { v.pscope = b.dataset.v3scope; v3tools(); });
-    on('[data-v3fin]', () => { setHwFinish(hwFinish() === 'black' ? 'zinc' : 'black'); v.recolor(); v3tools(); v3side(); });
+    on('[data-v3fin]', b => { setHwFinish(b.dataset.v3fin); v.recolor(); v3tools(); v3side(); });
   }
   // The side column: what is selected, then the units top to bottom, then the project's colours
   function v3side() { v3sel(); v3list(); v3colors(); v3picked(); }
@@ -5339,6 +5545,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const v = v3; if (!v) return;
     Object.assign(v3ui, { tool: v.tool, pscope: v.pscope, brush: v.brush, explode: v.explode, hideRoof: v.hideRoof });
     v3keep(v);
+    menuClose(); v.hoverOff(); v.tip.remove();
     v3 = null; v.token = null; v.ac.abort();
     v.ro.disconnect(); v.controls.dispose();
     v.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.userData.own) { o.material.map.dispose(); o.material.dispose(); } });
@@ -5396,7 +5603,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     maybeRelink();
   }
   // Before steps 1 and 2 redraw, the view steps out of the way, so the redraw doesn't take it with the old page
-  function v3park() { if (!$('v3d').open) $('v3home').append($('v3view')); }
+  function v3park() { menuClose(); if (!$('v3d').open) $('v3home').append($('v3view')); }
   $('v3d').addEventListener('close', () => v3sync());
   $('v3dClose').onclick = () => $('v3d').close();
   $('v3dPick').onclick = async () => {
@@ -5984,6 +6191,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('printerBox').hidden) { printerPop(false); $('printerBtn').focus(); } });
   // Esc drops a grid divider's start (the plan's first click)
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && gpend) { gpend = null; renderInspector(); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && v3ui.help && v3) { v3ui.help = false; v3tools(); } });
   checkFolderLink().catch(() => {});
   document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { view = b.dataset.tab; renderAll(); });
 
