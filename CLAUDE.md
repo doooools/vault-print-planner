@@ -19,7 +19,7 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
 - UX audit of 2026-11-14: `docs/ux-audit-2026-11.md` (decisions, eight sessions, open points, findings A1…X4) and its
   mockups in `docs/ux-audit-mockups/`. Where it disagrees with `docs/ux-redesign.md`, the audit wins. Its four open
   points were answered by Dols on 2026-11-14 (written in the brief). Session 2 (fixes without a mockup: A4, A6, B1,
-  B6, C2, D7, D8, E1, E4, E5) is done on its branch.
+  B6, C2, D7, D8, E1, E4, E5) is done on its branch. Session 6 (Print: D1 to D6) on `claude/print`.
 - What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file
   `3d/stl-absents-de-la-3d.md`.
 
@@ -239,6 +239,10 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   the page's life per print scope, not saved); the downloads (Bambu project, plate files, STL folders) hold the ticked
   plates (`target`), or every plate left when none is ticked. Marking printed is a button: the selected plate's "Mark as
   printed", or the bar above the sheet for every ticked plate. `printed` and `plateState` are unchanged.
+  Since UX audit session 6 (branch `claude/print`): the right column shows the selected plate first, "Mark as printed"
+  under its title, then the plate options as folded lines with their value (`popt`, open state kept in `openInfo`);
+  the filter is one line of pills with plate counts; the selection bar shows only while a plate is ticked; the two
+  exports sit side by side; Print's and Hardware's rails say "In the plates" / "In the list" / "Left out" (`railState`).
 
 - Module shells' supports (Dols, 2026-11-13): rules.js gives them `supports: 'shell'`, a named set in the page's
   `SUPPORT_SETS` (tree(auto), default style, threshold 80°, on build plate only, critical regions only, remove small

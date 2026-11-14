@@ -114,13 +114,18 @@ Replaces `colorsPanel`, the brush bar of `v3tools` and the "Selected" card's col
 Today's "Extra parts" (`extrasPanel`), as an entry of the rail: search among the 733 parts, quantity steppers, "Print only these" (`printScope`), "Clear".
 
 ### 2 · Print
-- Top: progress (parts, plates left, grams) of the stacks picked in the rail, and one export button. Parts that no longer fit the printer are on no plate and in none of these figures; the warning about them counts pieces (UX audit D8). On a Bambu printer "Download the Bambu Studio project" (`buildProject`); otherwise "Download the plate files" (`buildPlateFiles`). "STL folders (.zip)" (`buildFolders`) sits under it.
-- Filament chips (all, one per filament, Printed) filter the sheet. Each shows its plate count and weight.
+- Top: progress (parts, plates left, grams) of the stacks picked in the rail, and one export button. Parts that no longer fit the printer are on no plate and in none of these figures; the warning about them counts pieces (UX audit D8). On a Bambu printer "Download the Bambu Studio project" (`buildProject`); otherwise "Download the plate files" (`buildPlateFiles`). "STL folders (.zip)" (`buildFolders`) sits beside it, "for any other slicer" under its name (UX audit D5).
+- Filter pills on one line (All, one per filament, Printed) filter the sheet. Each shows its plate count only; the
+  weight and "N left" are in each group's header (UX audit D2). A pill names the colour without its line ("Cobalt
+  Blue") unless two colours share that name.
 - The plate sheet: one small card per plate with its nesting (`plateSvg` data: bed, no-print corner, parts, front edge), its number, part count, grams, a checkbox that ticks it for the download, and "Up next" on the first unprinted plate. Grouped by filament.
-- Ticked plates (Dols, 2026-11-13): a bar above the sheet counts them; the Bambu project and the STL folders hold only them (every plate left when none is ticked), and its "Mark as printed" / "Put back on the list" acts on them all. A tick never marks a plate printed.
+- Ticked plates (Dols, 2026-11-13): a bar above the sheet counts them, shown only while a plate is ticked (UX audit D3,
+  D4: the card's two targets say what they do in their `title`, "Show this plate" and "Tick it for the download"); the Bambu project and the STL folders hold only them (every plate left when none is ticked), and its "Mark as printed" / "Put back on the list" acts on them all. A tick never marks a plate printed.
 - Printed plates leave their filament group and move to a "Printed" group at the end, dimmed. "Printed. Undo" (or ticking it and "Put back on the list") puts it back. Plate numbers never change (`stablePlates`).
-- The selected plate, in the right column under the plate options: large nesting with numbered parts, the numbered part list with file name and settings (walls, supports), "Mark as printed" (then selects the next unprinted plate), previous and next.
-- Plate options, at the top of the right column (Dols, 2026-11-14, "double bandeau" like Design: a rail on the left, a column of settings on the right), always shown: "Parts with supports" (`mixSupports`), "Manual supports" (`printAids`), "Labels" (`labelsApart`), the folded "How plates are laid out" text and "Reset all progress" (no clear button since UX audit D7). It was a "Plate options…" popover before.
+- The selected plate, at the top of the right column (UX audit D1): its title with previous and next, "Mark as printed"
+  right under it (then selects the next unprinted plate), its tags, the large nesting with numbered parts, the numbered
+  part list with file name and settings (walls, supports).
+- Plate options, under the selected plate in the right column (Dols, 2026-11-14, "double bandeau" like Design: a rail on the left, a column of settings on the right), always shown: one folded line per setting with its value (`popt`: "Parts with supports · plates of their own"), which opens on its segmented buttons: "Parts with supports" (`mixSupports`), "Manual supports" (`printAids`), "Labels" (`labelsApart`); then the folded "How plates are laid out" text and "Reset all progress" on one row (no clear button since UX audit D7). It was a "Plate options…" popover before.
 - States in `PrintStates.dc.html`: printer without a Bambu preset, folder not chosen, parts missing from the folder (today's "not found in" errors, shown before the download starts), parts that no longer fit after a change of printer.
 
 ### 3 · Hardware
@@ -169,7 +174,8 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   stores). A tick box marks an item of a list (plates, hardware bought, assembly steps), never a
   setting (Dols, 2026-11-14: "on enlève tout ce qui se coche"). What to print is a choice, not a list to tick: each
   stack (and the loose parts) is a button in Print's rail, dark when it is in the plates, plain when it is left out,
-  a click toggles it. Nothing picked is allowed: no plates, "Nothing picked to print" in the middle (Dols,
+  a click toggles it, and the button says its state in words: "In the plates" / "Left out" (Hardware's: "In the list"
+  / "Left out"; UX audit D6, `railState`). Nothing picked is allowed: no plates, "Nothing picked to print" in the middle (Dols,
   2026-11-14). Print removes nothing: stacks and loose parts are removed in Design (UX audit D7, 2026-11-14; the
   plate options' "Remove <stack>" and "Clear loose parts" went). A case's floor is Empty / Dividers / Gridfinity
   (`caseFloor`; Empty sets `caseEmpty`, which keeps the dividers placed but counts none); a drawer's grid dividers
@@ -196,8 +202,8 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   offer "Undo" too. Undo lives in memory only: a reload or a design file opened starts with nothing to undo.
   "Remove level" becomes a plain click with "Undo" in the 3D view's right-click menu (session 3); every other removal
   keeps press and hold.
-- **Rails**: Design, Print and Hardware also have a right column (Design's inspector; Print's plate options over the
-  selected plate, `.pside`; Hardware's list options, `.hwside`). Design, Print, Hardware and Assemble each have a left
+- **Rails**: Design, Print and Hardware also have a right column (Design's inspector; Print's selected plate over the
+  plate options, `.pside`; Hardware's list options, `.hwside`). Design, Print, Hardware and Assemble each have a left
   rail with an eyebrow naming its items (Stacks, What to print, Hardware for, Sections). Every tab past Design shows its progress (Print and Assemble in %, Hardware the lines to buy).
 - The 3D view has no Front / ¾ / Side buttons any more (Dols, 2026-11-14): a stack opens from three quarters, then
   one drags to turn it.
