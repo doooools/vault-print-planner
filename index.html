@@ -4738,7 +4738,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       if (/Rails\.stl$/i.test(p)) return !!d.gearedRails;
       return /Hidden Key/i.test(p) === (d.lock === 'hidden');
     };
-    const parts = pl.parts.filter(([p, , , , o]) => has.has(R.norm(p)) && !NOT_DRAWN.test(p) && mine(p, o)).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, piece: o && o.piece, joint: o && o.joint, mv: mvOf(o), role: l.role, cfg: l.cfg }; });
+    const parts = pl.parts.filter(([p, , , , o]) => has.has(R.norm(p)) && !NOT_DRAWN.test(p) && mine(p, o)).map(([path, , group, m, o]) => { const l = has.get(R.norm(path)); return { path, group, m, piece: o && o.piece, joint: o && o.joint, guide: o && o.guide, mv: mvOf(o), role: l.role, cfg: l.cfg }; });
     const placed = new Set(pl.parts.map(([p]) => R.norm(p)));
     const unplaced = unit.lines.filter(l => !placed.has(R.norm(l.file.path))).map(l => l.label + (l.qty > 1 ? ' ×' + l.qty : ''));
     // Its bolts (tools/placements/hardware.py): each is held by a part (`part`, an index in `parts`) and is drawn with
@@ -5154,16 +5154,22 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       const under = !!hinge && all.some(o => o.level === u.level + 1 && !o.roof && !o.stack && !o.column && Math.abs(o.x - u.x) < (o.w + u.w) / 2 - 1);
       const steps = (under && motion && (motion.release || [...motion.open.filter(s => !s.joints.includes('lid')), { joints: ['lift'], from: 0, to: 1, s: 0.6 }]))
         || (motion && motion.open) || [{ joints: [u.drawer ? 'drawer' : under ? 'lift' : 'lid'], from: 0, to: 1, s: 1 }];
-      const dur = st => Math.min(1, Math.max(0.6, st.reduce((a, s) => a + (s.s || 0.5), 0)));
+      // A drawer runs out on telescopic runners (motion.runners, tools/placements/measure_runners.py): its box goes the
+      // slide's travel in the guides plus the guides' own in the module, about its whole depth. Its steps take a little
+      // longer than a lid's, so that the two stages show.
+      const dur = st => Math.min(st.some(s => s.joints.includes('drawer')) ? 1.6 : 1, Math.max(0.6, st.reduce((a, s) => a + (s.s || 0.5), 0)));
+      const run = u.drawer && motion && motion.runners || null, travel = run ? run.slide + run.guide : Math.round(u.d * 0.6);
+      const rail = () => { const r = new T.Group(); g.add(r); return r; };
       // Several drawers in the module: each its own group, front, steps (its key and racks, then its slide) and joints
       const movers = lay ? lay.drawers.map(dr => {
         const dg = new T.Group(), sp = lay.split || 0, [x0, x1] = !dr.side ? [-u.w / 2, u.w / 2] : dr.side === 'left' ? [-u.w / 2, sp] : [sp, u.w / 2], fh = 48 * dr.h;
         const f = painted(new T.BoxGeometry(x1 - x0 - 8, fh - 6, 4), 'facade', u.cfg);
         f.position.set((x0 + x1) / 2, 2 + 48 * dr.level + fh / 2, 2); dg.add(f); g.add(dg);
-        return { id: (dr.side || '') + dr.drawer, side: dr.side || null, tag: dr.tag, level: dr.level, h: dr.h, drawer: dg, front: f, travel: Math.round(u.d * 0.6),
-          open: false, t: 0, jn: new Map(), motion: lay.motion, steps: dr.open, dur: dur(dr.open) };
+        return { id: (dr.side || '') + dr.drawer, side: dr.side || null, tag: dr.tag, level: dr.level, h: dr.h, drawer: dg, front: f, travel,
+          run, rail: run ? rail() : null, slid: 0, open: false, t: 0, jn: new Map(), motion: lay.motion, steps: dr.open, dur: dur(dr.open) };
       }) : null;
-      v.units.push({ ...u, g, drawer, boxes, front, lid, place, movers, split: lay ? lay.split || 0 : 0, sorted: !!(lay && lay.sorted), travel: u.drawer && !movers ? Math.round(u.d * 0.6) : 0, open: false,
+      v.units.push({ ...u, g, drawer, boxes, front, lid, place, movers, split: lay ? lay.split || 0 : 0, sorted: !!(lay && lay.sorted), travel: u.drawer && !movers ? travel : 0,
+        run: movers ? null : run, rail: run && !movers ? rail() : null, slid: 0, open: false,
         lift: under ? V3_LIFT : 0, lifted: 0, motion, steps, t: 0, jn: new Map(), dur: dur(steps) });
     }
     // The same stack built again after a change: its drawers and cases stay as they were (open, closed or on their way)
@@ -5452,6 +5458,14 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const c = g.boundingBox.getCenter(new (v3.T.Vector3)()).applyMatrix4(mesh.matrix);
     return ms.find(x => (x.side === 'left') === (c.x < u.split));
   }
+  // The rail a runner guide rides in: its drawer's (the one on its level and side, in a module holding several)
+  function railOf(u, level, mesh) {
+    if (!u.movers) return u.rail;
+    const g = mesh.geometry; if (!g.boundingBox) g.computeBoundingBox();
+    const x = g.boundingBox.getCenter(new (v3.T.Vector3)()).applyMatrix4(mesh.matrix).x;
+    const m = u.movers.find(m => (!m.side || (m.side === 'left') === (x < u.split)) && level >= m.level && level < m.level + m.h);
+    return m ? m.rail : null;
+  }
   async function loadParts(v) {
     v.folder = vaultFolder;
     const todo = v.units.filter(u => u.place && u.place.parts.length), token = v.token = {};
@@ -5466,6 +5480,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       if (u.parts) u.g.remove(u.parts); // parts from a folder chosen before
       u.parts = new T.Group(); u.g.add(u.parts);
       u.drawer.clear(); if (u.front) u.drawer.add(u.front); u.boxes.visible = true;
+      if (u.rail) u.rail.clear();
+      (u.movers || []).forEach(m => { if (m.rail) m.rail.clear(); });
       if (u.lid) u.lid.userData.inner.clear();
       u.jn = new Map(); // the joints' groups went with the drawer and parts groups
       (u.movers || []).forEach(m => { m.drawer.clear(); m.drawer.add(m.front); m.jn = new Map(); });
@@ -5495,7 +5511,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         mesh.matrix.set(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], 0, 0, 0, 1);
         const own = p.mv != null && u.movers && u.movers.find(x => x.id === p.mv) || (u.sorted && p.group === 'drawer' && sideOf(u, p.joint, mesh)) || u;
         const at = p.group === 'drawer' ? own.drawer : p.group === 'lid' && u.lid ? u.lid.userData.inner : u.parts;
-        (p.joint && v3joint(T, own, p.joint, at) || at).add(mesh);
+        const rl = p.guide != null && railOf(u, p.guide, mesh);
+        (rl || p.joint && v3joint(T, own, p.joint, at) || at).add(mesh);
         u.loaded++;
       }
       // The bolts this file's parts hold, in the same group (they slide out with a drawer front, turn with a lid) and
@@ -5563,7 +5580,15 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   }
   function v3pose(u) {
     const val = jointValues(u);
-    if (u.travel) u.drawer.position.z = u.travel * (val.drawer || 0);
+    if (u.travel) {
+      const x = u.travel * (val.drawer || 0);
+      u.drawer.position.z = x;
+      // Telescopic runners: the slide (on the box) runs in the guide more easily than the guide in the module, so it
+      // moves first both ways. Opening, the box goes alone until the slide meets the guide's front lip, then takes the
+      // guide with it to the stopper; closing, it goes back alone until the slide's tab is home, then pushes the guide
+      // in. The guide only moves when the slide drags it: it stays within [x - slide, x], and within its own travel.
+      if (u.rail) { const r = u.run; u.slid = Math.min(r.guide, x, Math.max(0, x - r.slide, u.slid)); u.rail.position.z = u.slid; }
+    }
     if (u.lift) { u.lifted = u.lift * (val.lift || 0); u.lid.position.y = u.lid.userData.y0 + u.lifted; } // a case under a unit: its lid and the stack above rise
     if (u.lid) { const L = u.lid.userData; L.deg = L.max * (val.lid || 0); u.lid.quaternion.setFromAxisAngle(L.axis, L.deg * Math.PI / 180); }
     for (const [name, n] of u.jn) {

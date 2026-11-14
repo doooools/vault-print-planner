@@ -116,14 +116,28 @@ def _about(origin, axis, deg):
 
 
 def travel_of(unit):
-    """How far the page pulls a drawer out: 0.6 x its depth (the page uses the published depth; the bbox's is the
-    same within a few mm)."""
+    """How far the page pulls a drawer out: its runners' slide and guide travels (motion.runners, measure_runners.py),
+    else 0.6 x its depth (the page uses the published depth; the bbox's is the same within a few mm)."""
+    run = (unit.get("motion") or {}).get("runners")
+    if run:
+        return run["slide"] + run["guide"]
     lo, hi = unit["bbox"]
     return round((hi[2] - lo[2]) * 0.6)
 
 
-def part_matrix(unit, part, t, latches=None, travel=None):
-    """4x4 matrix: the file's coordinates -> the unit frame, with the unit opened to t."""
+def guide_at(unit, x, closing=False):
+    """Where the runner guides are when the box is x mm out (the page's v3pose): the slide moves first both ways, so
+    opening from closed the guides stay until x passes the slide's travel, and closing from open they stay out until
+    x is back under the guides' own travel."""
+    run = (unit.get("motion") or {}).get("runners")
+    if not run:
+        return 0.0
+    return min(run["guide"], x) if closing else max(0.0, x - run["slide"])
+
+
+def part_matrix(unit, part, t, latches=None, travel=None, closing=False):
+    """4x4 matrix: the file's coordinates -> the unit frame, with the unit opened to t (closing: on the way back from
+    open, which only changes where the runner guides are)."""
     m = np.array(part[3], float).reshape(3, 4)
     M = np.vstack([m, [0, 0, 0, 1]])
     motion = unit.get("motion") or {}
@@ -149,6 +163,9 @@ def part_matrix(unit, part, t, latches=None, travel=None):
                 M = _T([B0[0], B[1], B[0]]) @ _R(ax, theta) @ _T(-B0) @ M
     if part[2] == "drawer":
         M = _T([0, 0, (travel if travel is not None else travel_of(unit)) * val.get("drawer", 0.0)]) @ M
+    elif len(part) > 4 and part[4].get("guide") is not None:
+        x = (travel if travel is not None else travel_of(unit)) * val.get("drawer", 0.0)
+        M = _T([0, 0, guide_at(unit, x, closing)]) @ M
     elif part[2] == "lid" and unit.get("hinge"):
         h = unit["hinge"]
         M = _about(h["origin"], h["axis"], h["open_deg"] * val.get("lid", 0.0)) @ M
@@ -156,7 +173,7 @@ def part_matrix(unit, part, t, latches=None, travel=None):
 
 
 def moves(part):
-    return part[2] in ("drawer", "lid") or (len(part) > 4 and "joint" in part[4])
+    return part[2] in ("drawer", "lid") or (len(part) > 4 and ("joint" in part[4] or "guide" in part[4]))
 
 
 # ---------------------------------------------------------------- check
