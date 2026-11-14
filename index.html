@@ -460,6 +460,7 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 /* Press and hold (holdButton): the button fills in red from the left while it is held */
 .hold:not(.dsdel) { position: relative; overflow: hidden; isolation: isolate; }
 .hold:not(.dsdel)::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--bad-soft); transform: scaleX(0); transform-origin: left; }
+.hold.pdel { position: absolute; } /* the filament's cross keeps its place at the row's end (.pdel) */
 .hold.holding:not(.dsdel) { color: var(--bad); border-color: var(--bad); }
 .hold.holding:not(.dsdel)::before { animation: holdfill var(--hold-ms, .5s) linear forwards; }
 @keyframes holdfill { to { transform: scaleX(1); } }
@@ -1488,7 +1489,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   const gramsOf = f => { const s = Math.min(1, f.vol / (f.dims[0] * f.dims[1] * f.dims[2] || 1)); return f.vol / 1000 * 1.24 * Math.max(0.2, Math.min(0.68, 0.68 - 0.55 * s)) * 0.85; };
   const SPOOL_G = 1000;
   const $ = id => document.getElementById(id);
-  const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const fileName = p => p.split('/').pop();
   const folder = p => p.split('/').slice(0, -1).join(' / ');
   const plural = (n, one, many) => n + ' ' + (n === 1 ? one : (many || one + 's'));
@@ -1567,6 +1568,72 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     wallMount: false, pegboard: 'none', backbone: 'none' };
   const STACK_DEFAULT = { base: false, wheels: false, feet: true, casters: false, stationaryHandle: false, pullHandle: false, handleLock: 'family', connectors: false };
   const clean = cfg => { const k = Object.assign({}, DEFAULT, JSON.parse(JSON.stringify(cfg))); k.dividers = Object.assign({}, DEFAULT.dividers, k.dividers); return k; };
+  // ---------- data that comes from outside the page's code: a design file, or what an earlier visit saved ----------
+  // A design file is anyone's JSON, and a value that reached the page's HTML could run script there (and stay in
+  // localStorage). So stacks, loose parts and colours are rebuilt from what the planner itself writes, never kept as
+  // they came: stack ids are whole numbers, option values and colour ids plain words, colours #rrggbb, sizes the ones
+  // there are. Names stay free text (escaped wherever they are shown). Run on every load, so a browser that opened such
+  // a file before this check is cleaned too.
+  const SAFE_STR = /^[\w .,:#+\-/()²]{0,200}$/, SAFE_KEY = /^[\w#.+-]{1,60}$/, NO_KEY = new Set(['__proto__', 'constructor', 'prototype']);
+  const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+  const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
+  function plainData(v, depth = 0) {
+    if (typeof v === 'boolean' || v === null) return v;
+    if (typeof v === 'number') return Number.isFinite(v) ? v : undefined;
+    if (typeof v === 'string') return SAFE_STR.test(v) ? v : undefined;
+    if (depth > 8 || typeof v !== 'object') return undefined;
+    if (Array.isArray(v)) return v.slice(0, 2000).map(x => plainData(x, depth + 1)).filter(x => x !== undefined);
+    const out = {};
+    for (const [k, x] of Object.entries(v)) { if (!SAFE_KEY.test(k) || NO_KEY.has(k)) continue; const y = plainData(x, depth + 1); if (y !== undefined) out[k] = y; }
+    return out;
+  }
+  const freeText = (v, max = 80) => typeof v === 'string' || typeof v === 'number' ? String(v).slice(0, max) : '';
+  const SAFE_ID = /^[\w-]{1,40}$/, HEX = /^#[0-9a-f]{6}$/i;
+  function plainUnit(u) {
+    const k = plainData(isObj(u) ? u : {});
+    if (typeof k.type !== 'string' || !hasOwn(R.HEIGHTS, k.type)) k.type = 'drawer';
+    if (typeof k.w !== 'string' || !hasOwn(R.HEIGHTS[k.type], k.w)) delete k.w;
+    if (!R.DEPTHS.includes(k.d)) delete k.d;
+    if (typeof k.h !== 'number') delete k.h;
+    if (k.roof !== 'none' && !R.ROOFS.some(r => r.id === k.roof)) delete k.roof;
+    if (!isObj(k.dividers)) delete k.dividers;
+    if (k.colors !== undefined && !isObj(k.colors)) delete k.colors;
+    return clean(k);
+  }
+  const plainRoles = r => Object.fromEntries(Object.entries(plainData(isObj(r) ? r : {})).filter(([, id]) => typeof id === 'string' && SAFE_ID.test(id)));
+  // Stacks: levels of one or two modules, ids whole numbers and each its own
+  function plainTowers(list) {
+    const ids = new Set(), out = [];
+    for (const t of Array.isArray(list) ? list : []) {
+      if (!isObj(t) || !Array.isArray(t.levels)) continue;
+      const x = { id: Number.isInteger(t.id) && t.id >= 0 && t.id < 1e9 && !ids.has(t.id) ? t.id : null, name: freeText(t.name) || 'Stack',
+        levels: t.levels.filter(lv => Array.isArray(lv) && lv.length).map(lv => lv.slice(0, 2).map(plainUnit)),
+        stack: { ...STACK_DEFAULT, ...plainData(isObj(t.stack) ? t.stack : {}) } };
+      if (isObj(t.roles)) x.roles = plainRoles(t.roles);
+      if (isObj(t.fp) && ['S', 'M', 'L', 'XL'].includes(t.fp.w) && R.DEPTHS.includes(t.fp.d)) x.fp = { w: t.fp.w, d: t.fp.d };
+      if (x.id != null) ids.add(x.id);
+      out.push(x);
+    }
+    let next = Math.max(0, ...ids) + 1;
+    out.forEach(x => { if (x.id == null) x.id = next++; });
+    return out;
+  }
+  // Colours: the tray (an id, a #rrggbb, a name, Bambu's line and code), the part colours, the bolt finish
+  function plainColors(c) {
+    if (!isObj(c) || !Array.isArray(c.palette)) return null;
+    const ids = new Set(), palette = [];
+    for (const p of c.palette) {
+      if (!isObj(p) || typeof p.id !== 'string' || !SAFE_ID.test(p.id) || ids.has(p.id) || typeof p.hex !== 'string' || !HEX.test(p.hex)) continue;
+      const e = { ...plainData(p), id: p.id, name: freeText(p.name) || p.hex, hex: p.hex };
+      ids.add(p.id); palette.push(e);
+    }
+    if (!palette.length) return null;
+    const out = { palette, roles: plainRoles(c.roles) };
+    if (typeof c.hardware === 'string' && SAFE_ID.test(c.hardware)) out.hardware = c.hardware;
+    return out;
+  }
+  const plainExtras = list => (Array.isArray(list) ? list : []).filter(e => isObj(e) && typeof e.path === 'string' && FILE_BY_PATH.has(e.path))
+    .map(e => ({ path: e.path, qty: Math.max(1, Math.min(999, Math.round(+e.qty) || 1)) }));
 
   let printer = store.get('printer', { id: 'p1s', v: [256, 256, 250] });
   { const pp = PRINTERS.find(p => p.id === printer.id); if (!pp) printer = { id: 'p1s', v: PRINTERS[0].v }; else if (pp.id !== 'custom') printer = { id: pp.id, v: pp.v }; }
@@ -1575,7 +1642,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   // per-unit choices kept in the unit's own settings (cfg.colors, so they travel with duplicates and edits). A part
   // with no choice keeps its role's default, which is what colorOf has always given it.
   const PALETTE_DEFAULT = [{ id: 'body', name: 'Light grey', hex: '#d4d6d3' }, { id: 'inner', name: 'Charcoal', hex: '#3a3d3f' }, { id: 'accent', name: 'Orange', hex: '#e8742f' }];
-  let colorPrefs = store.get('colors', null) || { palette: PALETTE_DEFAULT.map(p => ({ ...p })), roles: {} };
+  let colorPrefs = plainColors(store.get('colors', null)) || { palette: PALETTE_DEFAULT.map(p => ({ ...p })), roles: {} };
+  if (store.get('colors', null)) store.set('colors', colorPrefs);
   const saveColors = () => store.set('colors', colorPrefs);
   const ROLE_BY_ID = new Map(R.ROLES.map(r => [r.id, r]));
   const paletteOf = id => colorPrefs.palette.find(p => p.id === id);
@@ -1611,7 +1679,9 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   let view = store.get('view', 'build');
   if (view === 'unit') view = 'build'; // designing a unit and building stacks are one step now
   let towers = store.get('towers', null);
+  if (towers) { towers = plainTowers(towers); store.set('towers', towers); }
   let seq = store.get('seq', 1);
+  if (!Number.isInteger(seq) || seq < 1 || seq > 1e9) seq = 1;
   if (!towers) { // migrate the old flat build list: each unit becomes its own tower
     towers = (store.get('build', []) || []).map(b => ({ id: seq++, name: 'Stack ' + (seq - 1), levels: [[clean(b.cfg)]], stack: { ...STACK_DEFAULT } }));
   }
@@ -1724,7 +1794,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   function analyzeTower(t) { const was = colorStack; colorStack = t; try { return analyzeStack(t); } finally { colorStack = was; } }
   function analyzeStack(t) {
     const issues = [], parts = [], L = t.levels;
-    if (!L.length) return { issues: [{ k: 'info', m: 'This stack is empty. Press + Add a unit to start it.' }], parts };
+    if (!L.length) return { issues: [{ k: 'info', m: 'This stack is empty. Press + Add a level to start it.' }], parts };
     L.forEach((lv, i) => {
       const top = i === L.length - 1;
       const pair = lv.length > 1;
@@ -1847,6 +1917,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
 
   // ---------- extra parts: any single STL, printed on its own ----------
   const FILE_BY_PATH = new Map(FILES.map(f => [f.path, f]));
+  extras = plainExtras(extras); store.set('extras', extras);
   // What each file is, taken from the rules (label, colour, walls, supports). Built once, on first use.
   let META = null;
   function partMeta(path) {
@@ -2634,7 +2705,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <div class="cstart" role="group" aria-label="Start from"><span>Start from</span>${COLOR_PRESETS.map(([id, t, why]) => `<button type="button" class="btn" data-cpreset="${id}" title="${esc(why)}">${t}</button>`).join('')}</div></div>
       <div class="ibody">
         <div class="field"><div class="lbl">Your filaments · pick the brush <span class="hint">${inUse} in use</span></div>
-          <div class="ptray">${P.map(p => `<div class="pfil"><button type="button" class="pbrush" data-brush="${p.id}" aria-pressed="${p.id === brush}"><span class="dot2 big" style="background:${p.hex}"></span><span><b>${esc(p.name)}</b><small>${esc(usedTxt(p))}</small></span></button>${P.length > 1 ? `<button type="button" class="pdel" data-pal-del="${p.id}" aria-label="Remove ${esc(p.name)}" title="Remove this filament"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</div>`).join('')}
+          <div class="ptray">${P.map(p => `<div class="pfil"><button type="button" class="pbrush" data-brush="${esc(p.id)}" aria-pressed="${p.id === brush}"><span class="dot2 big" style="background:${p.hex}"></span><span><b>${esc(p.name)}</b><small>${esc(usedTxt(p))}</small></span></button>${P.length > 1 ? `<button type="button" class="pdel" data-pal-del="${esc(p.id)}" aria-label="Remove ${esc(p.name)}" title="Remove this filament"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</div>`).join('')}
             <div class="pfil fixed"><span class="dot2 big" style="background:${colorHex('tpu')}"></span><span><b>TPU</b><small>tires only, fixed</small></span></div>
             <button type="button" class="btn padd" data-padd aria-expanded="${fpAdding}">${icon('plus')} Add a filament</button></div></div>
         ${ROLE_GROUPS.map(([title, ids]) => `<div class="pgrp"><div class="pgrp-h"><h3>${esc(title)}</h3><button type="button" class="linkbtn" data-pall="${ids.join(',')}">Paint all</button></div>
@@ -2682,6 +2753,10 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
   const fpOf = t => t.fp || (t.levels.length ? { w: R.familyForWidth(levelWidth(t.levels[0])) || t.levels[0][0].w.replace('2', ''), d: t.levels[0][0].d } : { w: 'S', d: 3 });
   const fpCode = fp => fp.w + fp.d;
   let dsel = store.get('dsel', null);   // { t: stack id, l: level index or null for the stack's settings, u: module in the level } or { t: 'loose' }
+  { const d = isObj(dsel) ? plainData(dsel) : null; // what plainTowers does for the stacks (a drawer id: d)
+    dsel = !d || !(Number.isInteger(d.t) || d.t === 'loose') ? null : d.t === 'loose' ? { t: 'loose' }
+      : { t: d.t, l: Number.isInteger(d.l) && d.l >= 0 ? d.l : null, u: Number.isInteger(d.u) && d.u >= 0 ? d.u : 0, ...(typeof d.d === 'string' && SAFE_ID.test(d.d) ? { d: d.d } : {}) };
+    if (d) store.set('dsel', dsel); }
   let fpStrip = false;                  // the footprint strip under the toolbar
   const saveSel = () => store.set('dsel', dsel);
   const curTower = () => dsel && towers.find(t => t.id === dsel.t);
@@ -2878,11 +2953,12 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     let d = null; try { d = JSON.parse(text); } catch (e) { /* not JSON */ }
     if (!d || d.app !== 'vault-print-planner' || !Array.isArray(d.towers)) { toast(`${name} isn’t a design saved by this planner`); return false; }
     if ((towers.length || extras.length) && !confirm(`Open “${name}”? It replaces the stacks and loose parts here. What you marked printed stays.`)) return false;
-    if (d.colors && Array.isArray(d.colors.palette) && d.colors.palette.length) { colorPrefs = { ...d.colors, roles: d.colors.roles || {} }; saveColors(); }
-    towers = d.towers.filter(t => t && Array.isArray(t.levels)).map(t => ({ ...t, levels: t.levels.map(lv => lv.map(u => clean(u))), stack: { ...STACK_DEFAULT, ...(t.stack || {}) } }));
+    // Rebuilt from what the planner writes (plainTowers, plainColors, plainExtras): never kept as the file has it
+    const cp = plainColors(d.colors); if (cp) { colorPrefs = cp; saveColors(); }
+    towers = plainTowers(d.towers);
     towers.forEach(t => { t.fp = fpOf(t); if (!t.roles) t.roles = { ...colorPrefs.roles }; if (!(d.version >= 2)) dropAutoBackbones(t); t.levels.flat().forEach(fixUnit); fixTower(t); });
-    extras = Array.isArray(d.extras) ? d.extras.filter(e => e && FILE_BY_PATH.has(e.path)) : [];
-    seq = Math.max(+d.seq || 1, ...towers.map(t => t.id + 1));
+    extras = plainExtras(d.extras);
+    seq = Math.max(Number.isInteger(d.seq) && d.seq > 0 && d.seq < 1e9 ? d.seq : 1, ...towers.map(t => t.id + 1));
     printSkip = []; savePrintSkip();
     dsel = towers[0] ? { t: towers[0].id, l: null, u: 0 } : extras.length ? { t: 'loose' } : null;
     saveSel(); save(); saveExtras(); view = 'build'; renderAll(); toast(`Opened ${name}`);
@@ -2928,8 +3004,8 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     if (t && dsel.l != null && !t.levels[dsel.l][dsel.u || 0]) dsel.u = 0;
     const info = towers.map(x => ({ t: x, a: analyzeTower(x) }));
     const rail = info.map(({ t: x, a }) => { const fp = fpOf(x), bad = stackAlerts(x, a).some(m => m.k !== 'info');
-      return `<div class="dstackw"><button type="button" class="dstack" data-stack="${x.id}" aria-pressed="${!!t && x.id === t.id}"><span class="dbadge" aria-hidden="true">${fp.w}</span><span class="dst"><b>${esc(x.name)}</b><small>${fpCode(fp)} · ${plural(x.levels.length, 'level')}</small></span>${bad ? '<i class="dot" aria-label="needs attention"></i>' : ''}</button>
-        <button type="button" class="dsdel" data-sdel="${x.id}" aria-label="Remove ${esc(x.name)}: press and hold" title="Press and hold to remove"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('');
+      return `<div class="dstackw"><button type="button" class="dstack" data-stack="${esc(x.id)}" aria-pressed="${!!t && x.id === t.id}"><span class="dbadge" aria-hidden="true">${esc(fp.w)}</span><span class="dst"><b>${esc(x.name)}</b><small>${fpCode(fp)} · ${plural(x.levels.length, 'level')}</small></span>${bad ? '<i class="dot" aria-label="needs attention"></i>' : ''}</button>
+        <button type="button" class="dsdel" data-sdel="${esc(x.id)}" aria-label="Remove ${esc(x.name)}: press and hold" title="Press and hold to remove"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('');
     const nx = extras.reduce((a, e) => a + e.qty, 0);
     const loose = dsel.t === 'loose';
     $('view-build').innerHTML = `<div class="design">
@@ -2979,8 +3055,16 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const stop = e => { if (!timer) return; clearTimeout(timer); timer = null; b.classList.remove('holding'); if (e && (e.type === 'pointerup' || e.type === 'keyup')) toast(hint); };
     b.addEventListener('pointerdown', start); b.addEventListener('keydown', start);
     b.addEventListener('pointerup', stop); b.addEventListener('pointerleave', stop); b.addEventListener('pointercancel', stop); b.addEventListener('keyup', stop);
-    b.onclick = e => e.preventDefault();
+    // A click with no pointer and no key behind it (detail 0: a screen reader, voice control, switch access) can't be
+    // held: it asks instead. A mouse click or a tap (detail 1 or more) still has to be held.
+    b.onclick = e => { e.preventDefault(); if (e.detail === 0 && !timer && !keyHeld && !b.disabled && confirm(confirmText(b))) act(); };
   }
+  // Enter or Space held on the button also clicks it when let go: that click is the key's, not a screen reader's
+  let keyHeld = false;
+  addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') keyHeld = true; }, true);
+  addEventListener('keyup', e => { if (e.key === 'Enter' || e.key === ' ') setTimeout(() => { keyHeld = false; }); }, true);
+  // What the question names: the button's own words (its aria-label without "press and hold", else its text)
+  const confirmText = b => { const w = (b.getAttribute('aria-label') || b.textContent || '').replace(/:?\s*\(?press and hold\)?/i, '').trim(); return (w || 'Remove') + '?'; };
   const holdToDelete = b => holdButton(b, () => { const t = towers.find(x => x.id === +b.dataset.sdel); if (t) removeStack(t); }, 'Hold the cross down to remove the stack');
   function designCenter(t, a) {
     const fp = fpOf(t);
@@ -2998,9 +3082,14 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       ${fpAdding && painting() ? '<div class="dcat" id="dCat"></div>' : ''}
     </section>`;
   }
+  // "Stack settings" after the selection changed without a redraw of step 1
+  function markLevels() {
+    const V = $('view-build'); if (!V) return;
+    const sb = V.querySelector('[data-dstack]'); if (sb) sb.setAttribute('aria-pressed', String(!!dsel && dsel.l == null));
+  }
   function bindCenter(t) {
     const V = $('view-build');
-    V.querySelectorAll('[data-dstack]').forEach(b => b.onclick = () => { if (painting() && inspPaint) { inspPaint = false; dsel.l = null; } else dsel.l = dsel.l == null && t.levels.length ? t.levels.length - 1 : null; saveSel(); renderInspector(); v3mark(); V.querySelector('[data-dstack]').setAttribute('aria-pressed', String(dsel.l == null)); });
+    V.querySelectorAll('[data-dstack]').forEach(b => b.onclick = () => { if (painting() && inspPaint) { inspPaint = false; dsel.l = null; } else dsel.l = dsel.l == null && t.levels.length ? t.levels.length - 1 : null; saveSel(); renderInspector(); v3mark(); markLevels(); });
     V.querySelectorAll('[data-fp]').forEach(b => b.onclick = () => { fpStrip = !fpStrip; renderAll(); });
     V.querySelectorAll('[data-fpw]').forEach(b => b.onclick = () => { const fp = fpOf(t); let d = fp.d; if (!sizeFits(b.dataset.fpw, d)) d = R.DEPTHS.find(x => sizeFits(b.dataset.fpw, x)) || d; setFootprint(t, b.dataset.fpw, d); renderAll(); });
     V.querySelectorAll('[data-fpd]').forEach(b => b.onclick = () => { setFootprint(t, fpOf(t).w, +b.dataset.fpd); renderAll(); });
@@ -3642,8 +3731,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     const cfg = v.sel.u.cfg, i = t.levels.findIndex(lv => lv.includes(cfg));
     if (i < 0) { v3mark(); return; }
     if (v.sel.u.roof || v.sel.u.stack) dsel.l = null; else { dsel.l = i; dsel.u = t.levels[i].indexOf(cfg); if (v.sel.mv != null) { dsel.d = v.sel.mv; gpend = null; } }
-    saveSel(); renderInspector(); v3mark();
-    const sb = document.querySelector('[data-dstack]'); if (sb) sb.setAttribute('aria-pressed', String(dsel.l == null));
+    saveSel(); renderInspector(); v3mark(); markLevels();
   }
 
   // ---------- 3 · print view: plate planner ----------
@@ -4000,9 +4088,10 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       <div class="plist">${sel.lines.map((x, i) => `<div class="prow"><span class="pk" style="background:${colorHex(sel.color)};color:${LIGHT_FILL(sel.color) ? '#222' : '#fff'}">${i + 1}</span><span class="q num">${x.count}×</span><span class="lbl"><b>${esc(x.l.label)}</b><small class="mono">${esc(fileName(x.l.file.path))}</small></span>${x.l.walls ? `<span class="tag wall">${x.l.walls} walls${x.l.infill ? ' · ' + x.l.infill + '%' : ''}</span>` : ''}${x.l.supports ? '<span class="tag sup">supports</span>' : ''}</div>`).join('')}</div>
       <button type="button" class="btn ${sel.done ? '' : 'primary'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button></aside>`;
     const hasLabels = b.lines.some(isLabel);
-    // Nothing picked in the rail: no plates, an empty state in the middle. "Clear" takes only what is picked.
-    const none = !b.list.length && !b.extras;
-    const clearWhat = b.whole ? 'Clear all plates' : b.onlyExtras ? 'Clear loose parts'
+    // Nothing picked in the rail: no plates, an empty state in the middle. "Clear" takes only what is picked, and isn't
+    // offered when everything is (Dols, 2026-11-14): every stack is then removed in Design, one by one.
+    const none = !b.list.length && !b.extras, noClear = none || b.whole;
+    const clearWhat = b.onlyExtras ? 'Clear loose parts'
       : `Remove ${b.list.length === 1 ? b.list[0].name : plural(b.list.length, 'stack')}${b.extras ? ' and the loose parts' : ''}`;
     const opts = `<section class="panel popts" aria-label="Plate options">
       <div class="ihead"><span class="v3-sec">Plate options</span><h2>${plural(allPlates.length, 'plate')}</h2><div class="mono">${esc(printerShort())} · ${printer.v[0]} × ${printer.v[1]} mm bed</div></div>
@@ -4012,11 +4101,11 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
         <div class="field"><div class="lbl">Manual supports <span class="hint">USSA’s prop for each drawer roof</span></div><div class="seg">${pbool('printAids', { label: 'None' }, { label: 'One per roof', sub: 'standing against it' }, printAids)}</div></div>
         ${hasLabels ? `<div class="field"><div class="lbl">Labels <span class="hint">text and colors in the slicer</span></div><div class="seg">${pbool('labelsApart', { label: 'With the rest' }, { label: 'Own plate' }, labelsApart)}</div></div>` : ''}
         <details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Each shell keeps 15 mm clear beyond its top and bottom walls for them (dashed). Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
-        <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}${none ? '' : `<button type="button" class="btn" id="clearPlates">${esc(clearWhat)}</button>`}</div>
+        <div class="actions">${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}${noClear ? '' : `<button type="button" class="btn" id="clearPlates">${esc(clearWhat)}</button>`}</div>
       </div></section>`;
     $('view-print').innerHTML = `<div class="prt">
       <aside class="drail prail" role="group" aria-label="What to print"><div class="v3-sec">What to print</div>
-        ${towers.map(t => `<button type="button" class="pchip" data-pskip="${t.id}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small></button>`).join('')}
+        ${towers.map(t => `<button type="button" class="pchip" data-pskip="${esc(t.id)}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(t.levels.length, 'level')}</small></button>`).join('')}
         ${extras.length ? `<button type="button" class="pchip" data-pskip="loose" aria-pressed="${b.extras > 0}"><b>Loose parts</b><small class="mono">${plural(extras.reduce((a, e) => a + e.qty, 0), 'part')}</small></button>` : ''}
         <p class="pnote">${none ? 'Nothing is picked. Click a stack to print it.' : towers.length + (extras.length ? 1 : 0) < 2 ? 'Everything in Design is in these plates.' : b.whole ? 'Everything is in these plates. Click a stack to leave it out.' : 'Only what is highlighted is in these plates and in the file. Click to put a stack back.'}</p></aside>
       <div class="pmain">
@@ -4085,17 +4174,14 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     });
     holdButton($('resetPrinted'), () => { printed = {}; store.set('printed', printed); renderPrint(); renderTabs(); toast('Progress reset'); }, 'Hold the button down to reset all progress');
     holdButton($('clearPlates'), () => {
-      // Everything picked: wipe the whole build. Otherwise only what is picked: those stacks leave Design (as "Remove
-      // stack" does, progress kept), the loose parts and their progress if they are picked.
-      if (b.whole) { towers = []; save(); printed = {}; extras = []; }
-      else {
-        const gone = new Set(b.list.map(t => t.id));
-        if (gone.size) { towers = towers.filter(t => !gone.has(t.id)); save(); if (dsel && gone.has(dsel.t)) { dsel = null; saveSel(); } }
-        if (b.extras) { extras = []; for (const k of Object.keys(printed)) if (k.startsWith('extra:')) delete printed[k]; }
-      }
+      // Only what is picked (never everything: no button then): those stacks leave Design (as "Remove stack" does,
+      // progress kept), the loose parts and their progress if they are picked.
+      const gone = new Set(b.list.map(t => t.id));
+      if (gone.size) { towers = towers.filter(t => !gone.has(t.id)); save(); if (dsel && gone.has(dsel.t)) { dsel = null; saveSel(); } }
+      if (b.extras) { extras = []; for (const k of Object.keys(printed)) if (k.startsWith('extra:')) delete printed[k]; }
       saveExtras(); store.set('printed', printed);
       printSkip = []; savePrintSkip();
-      renderAll(); toast(b.whole ? 'All plates cleared' : b.onlyExtras ? 'Loose parts cleared' : clearWhat.replace(/^Remove /, '') + ' removed');
+      renderAll(); toast(b.onlyExtras ? 'Loose parts cleared' : clearWhat.replace(/^Remove /, '') + ' removed');
     }, 'Hold the button down to clear');
     if ($('copyAll')) $('copyAll').onclick = () => copy(listText(b.lines, 'Vault build'), 'Part list copied');
     if ($('gMake')) $('gMake').onclick = () => hasFolder ? makeDownload(target, false, 'project') : openFolder(false);
@@ -6008,7 +6094,7 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
     // Left rail: which stacks the list is for (dark = in it, a click toggles, like Print's), then its groups
     const rail = `<aside class="drail prail hwrail" aria-label="Hardware for">
       <div class="v3-sec">Hardware for</div>
-      ${per.map(({ t, items }) => `<button type="button" class="pchip" data-hwskip="${t.id}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(items.size, 'line')}</small></button>`).join('')}
+      ${per.map(({ t, items }) => `<button type="button" class="pchip" data-hwskip="${esc(t.id)}" aria-pressed="${b.list.includes(t)}"><b>${esc(t.name)}</b><small class="mono">${fpCode(fpOf(t))} · ${plural(items.size, 'line')}</small></button>`).join('')}
       <p class="pnote">${!towers.length ? 'Loose parts need no bolts.' : towers.length < 2 ? 'The list holds everything in Design.' : b.list.length === towers.length ? 'The list holds every stack. Click a stack to leave it out.' : 'Only what is highlighted is in the list, the copy and the CSV. Click to put a stack back.'}</p>
       ${groups.length > 1 ? `<div class="v3-sec">In this list</div>
       ${groups.map(g => { const gr = rows.filter(r => r.group === g), got = gr.filter(r => r.bought).length; return `<button type="button" class="hwjump${got === gr.length ? ' got' : ''}" data-hwjump="${gid(g)}"><b>${esc(g)}</b><small class="mono">${got} of ${plural(gr.length, 'line')} bought</small></button>`; }).join('')}` : ''}

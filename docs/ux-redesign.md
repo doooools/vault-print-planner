@@ -120,7 +120,7 @@ Today's "Extra parts" (`extrasPanel`), as an entry of the rail: search among the
 - Ticked plates (Dols, 2026-11-13): a bar above the sheet counts them; the Bambu project and the STL folders hold only them (every plate left when none is ticked), and its "Mark as printed" / "Put back on the list" acts on them all. A tick never marks a plate printed.
 - Printed plates leave their filament group and move to a "Printed" group at the end, dimmed. "Printed. Undo" (or ticking it and "Put back on the list") puts it back. Plate numbers never change (`stablePlates`).
 - The selected plate, in the right column under the plate options: large nesting with numbered parts, the numbered part list with file name and settings (walls, supports), "Mark as printed" (then selects the next unprinted plate), previous and next.
-- Plate options, at the top of the right column (Dols, 2026-11-14, "double bandeau" like Design: a rail on the left, a column of settings on the right), always shown: "Parts with supports" (`mixSupports`), "Manual supports" (`printAids`), "Labels" (`labelsApart`), the folded "How plates are laid out" text, "Reset all progress" and "Clear all plates". It was a "Plate options…" popover before.
+- Plate options, at the top of the right column (Dols, 2026-11-14, "double bandeau" like Design: a rail on the left, a column of settings on the right), always shown: "Parts with supports" (`mixSupports`), "Manual supports" (`printAids`), "Labels" (`labelsApart`), the folded "How plates are laid out" text, "Reset all progress" and the clear button (none when everything is picked). It was a "Plate options…" popover before.
 - States in `PrintStates.dc.html`: printer without a Bambu preset, folder not chosen, parts missing from the folder (today's "not found in" errors, shown before the download starts), parts that no longer fit after a change of printer.
 
 ### 3 · Hardware
@@ -163,7 +163,7 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   setting (Dols, 2026-11-14: "on enlève tout ce qui se coche"). What to print is a choice, not a list to tick: each
   stack (and the loose parts) is a button in Print's rail, dark when it is in the plates, plain when it is left out,
   a click toggles it. Nothing picked is allowed: no plates, "Nothing picked to print" in the middle (Dols,
-  2026-11-14). The plate options' clear button takes only what is picked: "Clear all plates" when everything is,
+  2026-11-14). The plate options' clear button takes only what is picked: nothing when everything is (it said "Clear all plates" and removed every stack: Dols, 2026-11-14, stacks are then removed in Design),
   else "Remove <stack>" / "Remove N stacks" (they leave Design), "Clear loose parts"; none when nothing is picked. A case's floor is Empty / Dividers / Gridfinity
   (`caseFloor`; Empty sets `caseEmpty`, which keeps the dividers placed but counts none); a drawer's grid dividers
   "At a wall": Divider alone / Closed (recommended).
@@ -176,7 +176,9 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
 - **Words**: "Remove" (not "Delete") for stacks, levels and filaments.
 - **Removing or clearing** is pressed and held for half a second (`holdButton`, `HOLD_MS`), the button filling in red;
   let go sooner and a toast says to hold it: a stack (its cross and "Remove stack"), a level, a filament, the loose
-  parts, a divider plan, the plates, the print progress, an assembly count (Dols, 2026-11-14).
+  parts, a divider plan, the plates, the print progress, an assembly count (Dols, 2026-11-14). A click that comes from
+  no pointer and no key (a screen reader, voice control: `detail` 0) can't be held, so it asks for a confirmation
+  instead.
 - **Rails**: Design, Print and Hardware also have a right column (Design's inspector; Print's plate options over the
   selected plate, `.pside`; Hardware's list options, `.hwside`). Design, Print, Hardware and Assemble each have a left
   rail with an eyebrow naming its items (Stacks, What to print, Hardware for, Sections). Every tab past Design shows its progress (Print and Assemble in %, Hardware the lines to buy).
