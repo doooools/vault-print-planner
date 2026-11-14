@@ -321,7 +321,9 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   shortcuts". Bare keys never with Ctrl/Cmd/Alt (the browser's stay theirs; only Ctrl/Cmd + S / O are taken), never in a
   field, a menu (`menuNow`), a dialog, `fpOpen` or the printer list. A new shortcut goes in `KEYS`, in the menu item's
   `key` and in the button's `title` / `aria-keyshortcuts`; a removal by key is only "Remove level" (others are press
-  and hold: ask Dols).
+  and hold: ask Dols). Copy and paste (Ctrl/Cmd + C / V in Design, Dols 2026-11-14): `clip` (a level or a stack, deep
+  copies, page's life), `copySel(t, i)` / `pasteClip(t, i)` (also in the level and stack menus); a pasted level goes
+  through `levelTo` (the footprint per level, shared with `setFootprint`).
 
 - Undo (UX audit 2026-11, session 1, branch `claude/undo`): section "undo" next to `store` in `src/template.html`.
   `save()`, `saveColors()`, `saveExtras()` and `saveSel()` call `undoNote()`; at the end of the task `undoCommit`
