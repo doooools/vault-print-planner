@@ -3424,6 +3424,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       back += field('backbone', 'Backbone', 'the column reaches these levels', [{ v: 'none', label: 'None' }, { v: 'family', label: 'This width' }, { v: 'universal', label: 'Universal' }], same(us.map(u => u.backbone || 'none')));
     } else back += '<p class="pnote" style="margin:0">Pegboards and backbones are made for 1F and 2F modules only: not every level selected is.</p>';
     const backSum = [word(same(us.map(u => !!u.wallMount)), x => x ? 'wall mount' : '', 'some wall mounts'), us.every(u => u.h <= 2) ? word(same(us.map(u => u.pegboard || 'none')), x => ({ ikea: 'IKEA pegboard', ussa: 'USSA pegboard' })[x] || '', 'some pegboards') : ''].filter(Boolean).join(' \u00b7 ') || 'nothing on the back';
+    // Labels (Dols, 2026-11-15): one text for every front of the levels selected (each drawer of a module holding
+    // several, each module of a pair); shown when they all read the same, else the field is empty and says "Mixed"
+    const fronts = us.flatMap(u => (u.type === 'drawer' && R.drawerIds(u).length > 1 ? R.drawerIds(u).map(d => d.id) : ['0']).map(id => ({ u, id })));
+    const texts = fronts.map(f => labelOf(f.u, f.id)), lab = same(texts), named = texts.filter(Boolean).length;
+    const mLabSum = lab === MIX ? `${named} of ${fronts.length} named, mixed` : lab ? esc(quoted(lab)) : 'None';
+    const mLabBody = `<div class="field"><label class="lbl" for="mlabel">Text <span class="hint">on all ${fronts.length} fronts</span>${lab === MIX ? ' <span class="mixed">Mixed</span>' : ''}</label>
+      <input type="text" class="tfield" id="mlabel" data-mlabel value="${lab === MIX ? '' : esc(lab)}" maxlength="${LABEL_MAX}" placeholder="${lab === MIX ? 'Mixed: type to give them all one text' : 'e.g. M6 bolts'}" autocomplete="off" spellcheck="false"></div>
+      ${fronts.length > us.length ? '<p class="pnote" style="margin:0">A module holding several drawers gets the text on each of them. To name them apart, set them up one level at a time.</p>' : ''}${labelLook()}`;
     // what they make, all together
     let prints = 0, g = 0;
     s.forEach(i => L[i].forEach(u => { const k = clean(u); if (i !== top) k.roof = 'none'; const x = summary(computeUnit(k).lines); prints += x.prints; g += x.g; }));
@@ -3431,10 +3439,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="iacts"><button type="button" class="iconbtn sq" data-lmenu aria-haspopup="menu" aria-expanded="false" aria-label="Actions for ${esc(levelsName(s).toLowerCase())}" title="Add, move or remove these levels">${icon('more')}</button></div></div>
         <h2>${esc(levelsName(s))}</h2><div class="mono">${plural(us.length, 'module')} \u00b7 ${prints} parts \u00b7 ${aboutG(g)}</div></div>
       <div class="mlevels" role="group" aria-label="Levels selected: click one to set it up alone">${[...s].reverse().map(i => `<button type="button" class="mlevel" data-mone="${i}" title="Set up level ${i + 1} alone"><b>${i + 1}</b><span>${esc(levelTitle(L[i]))}</span></button>`).join('')}</div>
-      <p class="pnote mnote">The settings these levels share. A change goes to every module of the ${n}; labels and divider plans stay one level at a time. ${esc(MOD)}+click a level in the view adds it or takes it out, Shift+click selects the ones in between.</p>
+      <p class="pnote mnote">The settings these levels share. A change goes to every module of the ${n}; divider plans stay one level at a time. ${esc(MOD)}+click a level in the view adds it or takes it out, Shift+click selects the ones in between.</p>
       <div class="ibody folds">
         ${mod ? fold('m-module', 'Module', [acr !== MIX && across.length > 1 ? (ACROSS[fw].find(x => x[0] === acr) || [])[1] : '', word(type, x => x === 'drawer' ? 'Drawer' : 'Case', 'drawers and cases'), word(hh, x => x + 'F', 'mixed heights')].filter(Boolean).join(' \u00b7 '), true, mod) : ''}
         ${fold('m-inside', insName, insSum, true, ins)}
+        ${fold('m-label', 'Labels', mLabSum, false, mLabBody)}
         ${fold('m-back', 'Back of these modules', backSum, false, back)}
       </div>`;
     bindFolds(box);
@@ -3461,6 +3470,32 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       });
       dsel.u = 0; fixTower(t); saveSel(); save(); renderAll();
     });
+    // The text: drawn on every front as it is typed, saved (one undo step, named) when the field is left or Enter pressed;
+    // Esc puts each front's own text back
+    box.querySelectorAll('[data-labset]').forEach(b => b.onclick = () => { labelSet(b); renderInspector(); if (v3 && v3.relabel) v3.relabel(); });
+    { const lf = box.querySelector('[data-mlabel]'); if (lf) {
+      const was = fronts.map(f => labelOf(f.u, f.id)), all = x => { fronts.forEach(f => setLabel(f.u, f.id, x)); if (v3 && v3.relabel) v3.relabel(); };
+      const back = () => { fronts.forEach((f, k) => setLabel(f.u, f.id, was[k])); if (v3 && v3.relabel) v3.relabel(); };
+      lf.oninput = () => all(lf.value);
+      // on leaving the field (not on "change": typed then wiped out, a mixed field reads as it began but its fronts don't)
+      lf.onblur = () => {
+        const x = lf.value.trim();
+        if (lf.value === '' && lab === MIX && fronts.every((f, k) => labelOf(f.u, f.id) === was[k])) return;
+        all(x);
+        if (fronts.every((f, k) => labelOf(f.u, f.id) === was[k])) return;
+        undoAs(x ? `Label ${quoted(x)} on ${plural(fronts.length, 'front')}, ${levelsName(s).toLowerCase()}` : `Labels cleared, ${levelsName(s).toLowerCase()}`);
+        fronts.forEach((f, k) => { was[k] = labelOf(f.u, f.id); });
+        save();
+        // the panel isn't drawn again (a click elsewhere goes through): its summary and "Mixed" follow
+        const sm = box.querySelector('[data-fold="m-label"] .fsum'); if (sm) sm.innerHTML = x ? esc(quoted(x)) : 'None';
+        const mx = lf.parentNode.querySelector('.mixed'); if (mx) mx.remove();
+        lf.placeholder = 'e.g. M6 bolts';
+      };
+      lf.onkeydown = e => {
+        if (e.key === 'Enter') { e.preventDefault(); lf.blur(); }
+        else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); back(); lf.value = fronts.every((f, k) => !k || was[k] === was[0]) ? was[0] : ''; lf.blur(); }
+      };
+    } }
     box.querySelectorAll('[data-mone]').forEach(b => b.onclick = () => { setLevels(t, [+b.dataset.mone], +b.dataset.mone); gpend = null; saveSel(); renderInspector(); v3mark(); markLevels(); });
     const mb = box.querySelector('[data-lmenu]');
     mb.onclick = e => { if (menuFrom(mb)) menuClose(); else menuOpen({ ...levelsMenu(t, s), opener: mb, keys: e.detail === 0 }); };
