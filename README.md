@@ -4,6 +4,10 @@ An unofficial, fan-made planner for [Vault by USSA](https://www.ussadesign.com/p
 
 Open it at **https://doooools.github.io/vault-print-planner/** (nothing to install).
 
+**Video walkthrough, in French:** a tour of the whole planner, from Design to Assemble, [on YouTube](https://www.youtube.com/watch?v=bfZt8lSKntk).
+
+<a href="https://www.youtube.com/watch?v=bfZt8lSKntk"><img src="https://img.youtube.com/vi/bfZt8lSKntk/hqdefault.jpg" width="480" alt="Video walkthrough of the Vault Print Planner, in French, on YouTube"></a>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/design-dark.png">
   <img src="docs/images/design.png" alt="The Design step: a stack of drawers with coloured fronts in the 3D view, one drawer open, the selected level's settings on the right">
