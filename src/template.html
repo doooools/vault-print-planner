@@ -116,12 +116,12 @@ header.appbar .tabs { flex: 1 1 auto; }
 .vmenu .mnote.ok { color: var(--ok); }
 .newsbtn { border: 0; background: none; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 .newsbtn:hover { color: var(--ink); }
-dialog#news, dialog#relink, dialog#report, dialog#keys { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px 22px; width: min(620px, calc(100vw - 32px)); max-height: min(80vh, 720px); overflow-y: auto; overscroll-behavior: contain; position: fixed; }
-dialog#news::backdrop, dialog#relink::backdrop, dialog#report::backdrop, dialog#keys::backdrop { background: rgba(10, 12, 12, .45); }
+dialog#news, dialog#about, dialog#relink, dialog#report, dialog#keys { border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); padding: 20px 22px; width: min(620px, calc(100vw - 32px)); max-height: min(80vh, 720px); overflow-y: auto; overscroll-behavior: contain; position: fixed; }
+dialog#news::backdrop, dialog#about::backdrop, dialog#relink::backdrop, dialog#report::backdrop, dialog#keys::backdrop { background: rgba(10, 12, 12, .45); }
 dialog#relink { width: min(480px, calc(100vw - 32px)); }
 #relink p { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
 #relink .acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 18px; }
-dialog#news h2, dialog#relink h2, dialog#report h2, dialog#keys h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
+dialog#news h2, dialog#about h2, dialog#relink h2, dialog#report h2, dialog#keys h2 { margin: 0 32px 4px 0; font-family: var(--f-display); font-stretch: 112%; font-size: 20px; }
 /* Keyboard shortcuts ("?", the header's Shortcuts link): groups of keys and what they do */
 dialog#keys { width: min(540px, calc(100vw - 32px)); }
 #keys .keyslist h3 { margin: 16px 0 4px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
@@ -136,12 +136,14 @@ dialog#keys { width: min(540px, calc(100vw - 32px)); }
 #report .acts a { text-decoration: none; }
 #report .acts a:not(.primary), #report p a { color: var(--ink); }
 #report p a { text-decoration: underline; text-underline-offset: 2px; }
-#news .changes h3 { margin: 16px 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
-#news .changes ul { margin: 0; padding-left: 18px; }
-#news .changes li { margin: 5px 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
-#news .changes b { color: var(--ink); font-weight: 600; }
-#news .changes p { margin: 6px 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
-#news .changes a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+.changes h3 { margin: 16px 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+.changes ul { margin: 0; padding-left: 18px; }
+.changes li { margin: 5px 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
+.changes b { color: var(--ink); font-weight: 600; }
+.changes p { margin: 6px 0; font-size: 14px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
+.changes a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+/* About (the link under the page's name): the notices that were the page's footer, Dols 2026-11-15 */
+.changes .linkbtn { display: inline; margin: 0; padding: 0; font: inherit; color: var(--ink); }
 /* About this fork: the credit to Romy's planner, first and framed */
 #news .changes .about { margin-top: 14px; padding: 2px 16px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet-2); }
 #news .changes .about h3 { color: var(--ink); }
@@ -533,13 +535,6 @@ pre.code { margin: 0; background: var(--sheet-2); border-radius: 8px; padding: 1
 .toast .tact:hover { background: color-mix(in srgb, var(--sheet) 14%, transparent); }
 .toast .tact:focus-visible { outline: 2px solid var(--sheet); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
-footer.site { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr); gap: 18px 40px; border-top: 1px solid var(--line); margin-top: 24px; padding: 22px 0 8px; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
-footer.site h2 { margin: 0 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 600; color: var(--ink); }
-footer.site p { margin: 0; max-width: 75ch; text-wrap: pretty; }
-footer.site h2.h2next { margin-top: 14px; }
-footer.site .linkbtn { display: inline; margin: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; }
-footer.site a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
-@media (max-width: 760px) { footer.site { grid-template-columns: minmax(0, 1fr); } }
 /* ---- v3: tabs as top-level navigation, towers, plates, guide ---- */
 .appbar .tabs button { min-height: 44px; padding: 0 16px; font-size: 14px; border-radius: 22px; }
 .tabs button:disabled { color: var(--muted); background: transparent; cursor: not-allowed; }
@@ -1007,7 +1002,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 
 <header class="appbar">
   <div class="logo"><svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#222526"/><rect x="11" y="10" width="42" height="13" rx="3" fill="#d4d6d3"/><rect x="11" y="25.5" width="42" height="13" rx="3" fill="#d4d6d3"/><rect x="11" y="41" width="42" height="13" rx="3" fill="#d4d6d3"/><circle cx="32" cy="32" r="3.6" fill="#e8742f"/></svg>
-    <div class="brand"><h1>Vault Print Planner</h1><p class="hlinks"><button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog" title="What changed lately, and what this fork adds to Romy’s planner">What’s new</button><span aria-hidden="true"> · </span><button type="button" class="newsbtn" id="reportBtn" aria-haspopup="dialog" title="Report a bug or suggest an idea, on GitHub">Report a bug or an idea</button><span aria-hidden="true"> · </span><button type="button" class="newsbtn" id="keysBtn" aria-haspopup="dialog" aria-keyshortcuts="?" title="Keyboard shortcuts (?)">Shortcuts</button></p></div></div>
+    <div class="brand"><h1>Vault Print Planner</h1><p class="hlinks"><button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog" title="What changed lately, and what this fork adds to Romy’s planner">What’s new</button><span aria-hidden="true"> · </span><button type="button" class="newsbtn" id="reportBtn" aria-haspopup="dialog" title="Report a bug or suggest an idea, on GitHub">Report a bug or an idea</button><span aria-hidden="true"> · </span><button type="button" class="newsbtn" id="keysBtn" aria-haspopup="dialog" aria-keyshortcuts="?" title="Keyboard shortcuts (?)">Shortcuts</button><span aria-hidden="true"> · </span><button type="button" class="newsbtn" id="aboutBtn" aria-haspopup="dialog" title="Not affiliated with USSA, store links, visit count, where the numbers come from">About</button></p></div></div>
   <nav class="tabs" role="tablist" aria-label="Steps">
     <button role="tab" id="tab-build" data-tab="build" aria-keyshortcuts="1" title="Design (1)">1 · Design</button>
     <button role="tab" id="tab-print" data-tab="print" aria-keyshortcuts="2" title="Print (2)">2 · Print <span class="count" id="countPrint"></span></button>
@@ -1047,25 +1042,19 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     </section>
   </div>
 
-  <footer class="site">
-    <section>
-      <h2>Not affiliated with USSA</h2>
-      <p>An unofficial, fan-made planner. <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault</a>, its designs and its files belong to USSA; you need your own copy of the files to print anything.</p>
-      <h2 class="h2next">Visit count</h2>
-      <p id="footCount"></p>
-    </section>
-    <section>
-      <h2>Store links</h2>
-      <p id="footShop"></p>
-    </section>
-    <section>
-      <h2>Where the numbers come from</h2>
-      <p class="fnotes" id="footnote"></p>
-    </section>
-  </footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog id="news" aria-labelledby="newsTitle"><button type="button" class="vclose" id="newsClose" aria-label="Close">&times;</button><h2 id="newsTitle">What’s new</h2><div class="changes"><!--CHANGELOG--></div></dialog>
+<dialog id="about" aria-labelledby="aboutTitle"><button type="button" class="vclose" id="aboutClose" aria-label="Close">&times;</button><h2 id="aboutTitle">About this page</h2><div class="changes">
+  <h3>Not affiliated with USSA</h3>
+  <p>An unofficial, fan-made planner. <a href="https://www.ussadesign.com/products/vault" target="_blank" rel="noopener">Vault</a>, its designs and its files belong to USSA; you need your own copy of the files to print anything.</p>
+  <h3>Store links</h3>
+  <p id="aboutShop"></p>
+  <h3>Visit count</h3>
+  <p id="aboutCount"></p>
+  <h3>Where the numbers come from</h3>
+  <p id="aboutNotes"></p>
+</div></dialog>
 <dialog id="keys" aria-labelledby="keysTitle"><button type="button" class="vclose" id="keysClose" aria-label="Close">&times;</button><h2 id="keysTitle">Keyboard shortcuts</h2><p class="pnote">Not while you type in a field. Press <kbd>?</kbd> to open or close this list.</p><div class="keyslist" id="keysList"></div></dialog>
 <dialog id="report" aria-labelledby="reportTitle"><button type="button" class="vclose" id="reportClose" aria-label="Close">&times;</button><h2 id="reportTitle">Report a bug or an idea</h2>
   <p>Something wrong, broken or confusing, or something you'd like the planner to do? Tell us on GitHub: the form opens in a new tab and asks a few short questions.</p>
@@ -2015,6 +2004,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // What's new: the link under the page's name opens the changelog (CHANGELOG.md, with the fork's credit to Romy first); close with ×, Esc or a click outside
   $('newsBtn').onclick = () => $('news').showModal();
   $('newsClose').onclick = () => $('news').close();
+  // About (under the page's name): not affiliated with USSA, the store links' disclosure, the visit count and its opt-out,
+  // where the numbers come from. They were the page's footer until Dols found it in the way (2026-11-15).
+  $('aboutBtn').onclick = () => $('about').showModal();
+  $('aboutClose').onclick = () => $('about').close();
   // Report a bug or an idea (under the page's name): GitHub issue forms (.github/ISSUE_TEMPLATE). The bug form's "context" field is filled in here.
   $('reportBtn').onclick = () => {
     const ctx = [`Page: ${location.href.split(/[?#]/)[0]}`, `Browser: ${navigator.userAgent}`,
@@ -2024,6 +2017,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   };
   $('reportClose').onclick = () => $('report').close();
   $('news').addEventListener('click', e => { const r = $('news').getBoundingClientRect(); if (e.target === $('news') && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) $('news').close(); });
+  $('about').addEventListener('click', e => { const r = $('about').getBoundingClientRect(); if (e.target === $('about') && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) $('about').close(); });
   $('report').addEventListener('click', e => { const r = $('report').getBoundingClientRect(); if (e.target === $('report') && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) $('report').close(); });
 
   function tagsFor(l) {
@@ -2207,9 +2201,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // Amazon asks for a disclosure wherever its affiliate links are: who earns from the chosen store's links, or '' if nobody
   const shopDisclosure = id => id === 'com' ? 'Amazon.com product links are the affiliate links of Romy’s original planner: buying through them supports that project, at no cost to you.'
     : shopTag(id) ? `Links to ${SHOP_BY_ID.get(id).name} are this fork’s affiliate links. As an Amazon Associate I earn from qualifying purchases, at no cost to you.` : '';
-  function footShop() {
+  function aboutShop() {
     const tagged = SHOP_STORES.flatMap(([, list]) => list).filter(([id]) => shopTag(id)).map(([, name]) => name);
-    $('footShop').innerHTML = 'Amazon.com product links in Hardware are the affiliate links of <a href="https://vault.romy.io" target="_blank" rel="noopener">Romy’s original planner</a>: US purchases support that project, at no cost to you. ' +
+    $('aboutShop').innerHTML = 'Amazon.com product links in Hardware are the affiliate links of <a href="https://vault.romy.io" target="_blank" rel="noopener">Romy’s original planner</a>: US purchases support that project, at no cost to you. ' +
       (tagged.length ? `Links to ${esc(tagged.length > 2 ? tagged.slice(0, -1).join(', ') + ' and ' + tagged.at(-1) : tagged.join(' and '))} are this fork’s affiliate links: as an Amazon Associate I earn from qualifying purchases, at no cost to you. Other stores’ links carry no affiliate tag.`
         : 'Links to the other Amazon stores carry no affiliate tag.');
   }
@@ -2218,18 +2212,18 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // One request per visit, and one per store link opened in Hardware, to Dols's GoatCounter (the same requests its count.js
   // makes): the page, the site the visitor came from, the screen width; GoatCounter works the country and browser out of
   // the request itself, sets no cookie and keeps no IP address. Only from the published site: never from a local copy or
-  // a test browser (navigator.webdriver: Playwright, the video recordings), nor from a browser that opted out in the footer.
+  // a test browser (navigator.webdriver: Playwright, the video recordings), nor from a browser that opted out in About.
   const COUNT_HOST = 'doooools.github.io', COUNT_URL = 'https://dols.goatcounter.com/count';
   const counting = () => location.hostname === COUNT_HOST && !navigator.webdriver && !store.get('noCount', false);
   function count(p, extra) {
     if (!counting()) return;
     try { new Image().src = COUNT_URL + '?' + new URLSearchParams(Object.assign({ p }, extra, { rnd: Math.random().toString(36).slice(2) })); } catch (e) {}
   }
-  function footCount() {
+  function aboutCount() {
     const off = store.get('noCount', false);
-    $('footCount').innerHTML = 'Visits are counted with <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>: the page, the site you came from, your country, browser and screen width, which store a Hardware link opens, and a click on Support me. No cookie, no IP address kept, nothing about your build. ' +
+    $('aboutCount').innerHTML = 'Visits are counted with <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>: the page, the site you came from, your country, browser and screen width, which store a Hardware link opens, and a click on Support me. No cookie, no IP address kept, nothing about your build. ' +
       `<button type="button" class="linkbtn" id="countOff">${off ? 'Count this browser again' : 'Don’t count this browser'}</button>${off ? ' (not counted now)' : ''}`;
-    $('countOff').onclick = () => { store.set('noCount', !off); footCount(); toast(off ? 'Visits from this browser are counted again' : 'Visits from this browser are no longer counted'); };
+    $('countOff').onclick = () => { store.set('noCount', !off); aboutCount(); toast(off ? 'Visits from this browser are counted again' : 'Visits from this browser are no longer counted'); };
   }
   // Which stores people open: what tells which Amazon stores are worth an Associates tag (SHOP_TAGS). The store is in
   // data-store: Hardware's buttons say "Product page" or "Search" (UX audit E3).
@@ -7394,9 +7388,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (view !== 'build') v3sync(); // step 1 puts the view back itself
   }
 
-  $('footnote').innerHTML = `Part rules come from the four PDF manuals in the Vault download and USSA\u2019s published component counts; anything worked out beyond them is marked <span class="badge inf">Inferred</span>. Sizes are measured from each STL (${FILES.length} files)${HAS_PREVIEWS ? ' and pictures are rendered from them' : ''}. Filament is a rough figure from part volume at standard settings, calibrated against USSA\u2019s own gram estimates. Progress and stacks are saved in this browser only.${window.VAULT_PUBLIC ? ' Free and open source, provided as is, with no support.' : ''}`;
-  footShop();
-  footCount();
+  $('aboutNotes').innerHTML = `Part rules come from the four PDF manuals in the Vault download and USSA\u2019s published component counts; anything worked out beyond them is marked <span class="badge inf">Inferred</span>. Sizes are measured from each STL (${FILES.length} files)${HAS_PREVIEWS ? ' and pictures are rendered from them' : ''}. Filament is a rough figure from part volume at standard settings, calibrated against USSA\u2019s own gram estimates. Progress and stacks are saved in this browser only.${window.VAULT_PUBLIC ? ' Free and open source, provided as is, with no support.' : ''}`;
+  aboutShop();
+  aboutCount();
   if (document.visibilityState !== 'prerender') count(location.pathname, { t: document.title, r: document.referrer, s: screen.width, q: location.search });
 
   migrateTowers();
