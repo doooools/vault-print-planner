@@ -691,6 +691,14 @@ footer.site a { color: inherit; text-decoration: underline; text-underline-offse
 .iacts { display: flex; gap: 4px; }
 .iacts .iconbtn.sq { width: 40px; height: 40px; }
 .ipair { margin: 12px 16px 0; }
+/* Several levels selected (multiInspector): the levels as small buttons (one picks it alone), "Mixed" beside a setting whose value differs */
+.mlevels { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 16px 0; }
+.mlevel { display: inline-flex; align-items: baseline; gap: 6px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--sheet); font-size: 12.5px; }
+.mlevel b { font-weight: 750; }
+.mlevel span { color: var(--muted); }
+.mlevel:hover { border-color: var(--ink); }
+.mnote { margin: 10px 16px 0; }
+.field > .lbl .mixed { margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--sheet-2); color: var(--muted); font-size: 11px; font-weight: 600; text-transform: none; letter-spacing: 0; }
 .seg.lays { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .seg.lays button { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; min-width: 0; }
 .seg.lays button small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 0; }
@@ -2574,6 +2582,42 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (d) store.set('dsel', dsel); }
   const saveSel = () => { store.set('dsel', dsel); undoNote(); };
   const curTower = () => dsel && towers.find(t => t.id === dsel.t);
+  // Several levels selected (Dols, 2026-11-14): Ctrl/Cmd + click a level in the 3D view adds it to the selection or
+  // takes it out, Shift + click selects the levels from the anchor to it (Ctrl/Cmd + Shift adds them). dsel.m =
+  // { l, a, s }: the level clicked last (the selection holds while it is still dsel.l: selecting another level, the
+  // stack's settings or another stack drops it), the anchor Shift counts from, and the levels. Levels of one stack, the
+  // one the view shows. Not kept over a reload (the load keeps dsel's t, l, u, d); undo puts it back.
+  function multiSel(t = curTower()) {
+    const m = dsel && dsel.m; if (!m) return null;
+    const s = t && dsel.t === t.id && m.l === dsel.l && Array.isArray(m.s) ? [...new Set(m.s)].filter(i => Number.isInteger(i) && t.levels[i]).sort((a, b) => a - b) : [];
+    if (s.length > 1 && s.includes(dsel.l)) return s;
+    if (t && dsel.t === t.id) delete dsel.m; // stale: one level, or none, is selected
+    return null;
+  }
+  // The levels selected in a stack, bottom to top: several, one or none
+  const selLevels = t => multiSel(t) || (t && dsel && dsel.t === t.id && Number.isInteger(dsel.l) && t.levels[dsel.l] ? [dsel.l] : []);
+  // Those levels selected, l the one the panel and the keys start from (the last clicked), a the anchor for Shift
+  function setLevels(t, s, l, a = l) {
+    s = [...new Set(s)].filter(i => t.levels[i]).sort((x, y) => x - y);
+    if (!s.includes(l)) l = s[s.length - 1];
+    dsel = { t: t.id, l: l == null ? null : l, u: 0 };
+    if (s.length > 1) dsel.m = { l, a: s.includes(a) ? a : l, s };
+  }
+  // A Ctrl/Cmd or Shift click on level i: how = 'add' (in or out), 'range' (anchor to i), 'addRange' (the range added)
+  function selectLevels(t, i, how) {
+    const cur = selLevels(t), ms = multiSel(t), a = ms && Number.isInteger(dsel.m.a) ? dsel.m.a : cur.length ? dsel.l : i;
+    const range = []; for (let k = Math.min(a, i); k <= Math.max(a, i); k++) range.push(k);
+    if (how === 'add' && cur.includes(i)) {
+      const rest = cur.filter(x => x !== i);
+      // the level the panel starts from: the nearest one left
+      const l = rest.length ? rest.reduce((b, x) => Math.abs(x - i) < Math.abs(b - i) ? x : b) : i;
+      setLevels(t, rest.length ? rest : [i], l);
+    } else if (how === 'add') setLevels(t, [...cur, i], i);
+    else setLevels(t, how === 'addRange' ? [...cur, ...range] : range, i, a);
+    gpend = null; saveSel(); renderInspector(); v3mark(); markLevels();
+  }
+  // "Levels 1, 2 and 4"
+  const levelsName = s => s.length === 1 ? `Level ${s[0] + 1}` : `Levels ${s.slice(0, -1).map(i => i + 1).join(', ')} and ${s[s.length - 1] + 1}`;
   // Does a unit have a part too big for the printer? (wall mount, pegboard and backbone parts are judged on their own)
   const tooBig = k => computeUnit(clean({ ...k, wallMount: false, pegboard: 'none', backbone: 'none' })).lines.some(l => l.fit.s === 'no' || l.fit.s === 'reorient');
   const unitNoFit = (u, top) => { const k = clean(u); if (!top) k.roof = 'none'; return computeUnit(k).lines.filter(l => l.fit.s === 'no' || l.fit.s === 'reorient'); };
@@ -2680,6 +2724,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // Level operations: the 3D view's right-click menu, the level panel's "⋯", "Add a level on top"
   function levelOp(t, op, i) {
     const L = t.levels;
+    delete dsel.m; // one level: several selected go through levelsOp
     if (op === 'up' && i < L.length - 1) { [L[i], L[i + 1]] = [L[i + 1], L[i]]; dsel.l = i + 1; }
     if (op === 'down' && i > 0) { [L[i], L[i - 1]] = [L[i - 1], L[i]]; dsel.l = i - 1; }
     // a copy of the level, above it ('dup') or below it ('dupBelow'); the roof stays on the top level (fixTower)
@@ -2770,7 +2815,48 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       { sep: true, icon: 'plus', label: 'Add a level on top', key: 'A', fn: () => levelOp(t, 'top') },
       { icon: 'dup', label: 'Copy stack', key: MOD + '+C', fn: () => copySel(t, null) },
       { icon: 'paste', label: clip && clip.kind === 'level' ? 'Paste the level on top' : 'Paste the stack after this one', key: MOD + '+V', dis: !clip, tip: clip ? '' : 'Copy a level or a stack first', fn: () => pasteClip(t, null) },
-      { icon: 'chev', label: 'Stack settings', key: 'Esc', fn: () => { leavePaint(); dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); } }] };
+      { icon: 'chev', label: 'Stack settings', key: 'Esc', fn: () => { leavePaint(); dsel.l = null; delete dsel.m; saveSel(); renderInspector(); v3mark(); markLevels(); } }] };
+  }
+  // Several levels at once (s: their indices, bottom to top): moved up or down one step each, copied above the top one
+  // or below the bottom one (the copies are then selected), removed in one click (one Undo puts them all back)
+  function levelsOp(t, op, s) {
+    const L = t.levels, n = s.length, lo = s[0], hi = s[n - 1], m = dsel.m || {};
+    let ns = s, l = dsel.l, a = Number.isInteger(m.a) ? m.a : l;
+    const copy = i => L[i].map(u => { const k = JSON.parse(JSON.stringify(u)); k.roof = 'none'; return k; });
+    if (op === 'up') { if (hi >= L.length - 1) return; [...s].reverse().forEach(i => { [L[i], L[i + 1]] = [L[i + 1], L[i]]; }); ns = s.map(i => i + 1); l++; a++; }
+    if (op === 'down') { if (!lo) return; s.forEach(i => { [L[i], L[i - 1]] = [L[i - 1], L[i]]; }); ns = s.map(i => i - 1); l--; a--; }
+    if (op === 'dup') { L.splice(hi + 1, 0, ...s.map(copy)); ns = s.map((_, k) => hi + 1 + k); l = ns[n - 1]; a = ns[0]; }
+    if (op === 'dupBelow') { L.splice(lo, 0, ...s.map(copy)); ns = s.map((_, k) => lo + k); l = ns[n - 1]; a = ns[0]; }
+    if (op === 'del') {
+      undoAs(`${levelsName(s)} removed`);
+      [...s].reverse().forEach(i => L.splice(i, 1));
+      dsel = { t: t.id, l: L.length ? Math.min(lo, L.length - 1) : null, u: 0 };
+    } else setLevels(t, ns, l, a);
+    fixTower(t); saveSel(); save(); renderAll();
+  }
+  // Open or close the drawers and cases of several levels: all open unless all are open already (O, the menu)
+  function openLevels(t, s) {
+    const v = v3 && v3.t === t ? v3 : null; if (!v) return;
+    const ms = s.flatMap(i => t.levels[i].map(u => v.openable(u, null))).filter(m => m && v.canOpen(m));
+    if (!ms.length) { toast(`${levelsName(s)} have no drawer or case to open yet`); return; }
+    const open = ms.some(m => !m.open);
+    ms.forEach(m => { if (!!m.open !== open) v.toggle(m); });
+  }
+  // The menu of several levels selected: a right-click on one of them, the panel's "⋯"
+  function levelsMenu(t, s) {
+    const L = t.levels, v = v3 && v3.t === t ? v3 : null, n = s.length;
+    const ms = v ? s.flatMap(i => L[i].map(u => v.openable(u, null))).filter(m => m && v.canOpen(m)) : [];
+    const items = [];
+    if (ms.length) items.push({ icon: 'drawer', label: ms.some(m => !m.open) ? 'Open their drawers and cases' : 'Close their drawers and cases', key: 'O', fn: () => openLevels(t, s) });
+    items.push(
+      { sep: items.length > 0, icon: 'plus', label: `Add copies of the ${n} above`, key: 'D', fn: () => levelsOp(t, 'dup', s) },
+      { icon: 'plus', label: `Add copies of the ${n} below`, key: 'Shift+D', fn: () => levelsOp(t, 'dupBelow', s) },
+      { icon: 'dup', label: `Copy ${n} levels`, key: MOD + '+C', fn: () => copySel(t, dsel.l) },
+      { icon: 'paste', label: clip && clip.kind === 'stack' ? 'Paste the stack after this one' : 'Paste above the top one', key: MOD + '+V', dis: !clip, tip: clip ? '' : 'Copy a level or a stack first', fn: () => pasteClip(t, s[n - 1]) },
+      { icon: 'up', label: 'Move up', key: ALT + '+↑', dis: s[n - 1] === L.length - 1, fn: () => levelsOp(t, 'up', s) },
+      { icon: 'down', label: 'Move down', key: ALT + '+↓', dis: !s[0], fn: () => levelsOp(t, 'down', s) },
+      { sep: true, icon: 'del', label: `Remove ${n} levels`, key: 'Delete', fn: () => levelsOp(t, 'del', s) });
+    return { head: `${n} levels of ${L.length} selected`, sub: levelsName(s), items };
   }
   const segBtns = (items, cur, attr) => items.map(it => `<button type="button" ${attr}="${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}"${it.dis ? ' disabled' : ''}>${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   const useg = (key, items, cur) => items.map(it => `<button type="button" data-useg="${key}=${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
@@ -2935,8 +3021,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     let t = curTower();
     // Loose parts open even with none yet: that is where they are added.
     if (!(dsel && dsel.t === 'loose') && !t) { t = towers[0]; dsel = t ? { t: t.id, l: t.levels.length ? t.levels.length - 1 : null, u: 0 } : { t: 'loose' }; saveSel(); }
-    if (t && dsel.l != null && !t.levels[dsel.l]) { dsel.l = t.levels.length ? t.levels.length - 1 : null; dsel.u = 0; }
+    if (t && dsel.l != null && !t.levels[dsel.l]) { dsel.l = t.levels.length ? t.levels.length - 1 : null; dsel.u = 0; delete dsel.m; }
     if (t && dsel.l != null && !t.levels[dsel.l][dsel.u || 0]) dsel.u = 0;
+    if (t) multiSel(t); // drops a stale multiple selection
     const info = towers.map(x => ({ t: x, a: analyzeTower(x) }));
     const rail = info.map(({ t: x, a }) => { const fp = fpOf(x), bad = stackAlerts(x, a).some(m => m.k !== 'info');
       return `<div class="dstackw"><button type="button" class="dstack" data-stack="${esc(x.id)}" aria-pressed="${!!t && x.id === t.id}"><span class="dbadge" aria-hidden="true">${esc(fp.w)}${bad ? '<i class="dot"></i>' : ''}</span><span class="dst"><b>${esc(x.name)}</b><small>${fpCode(fp)} · ${plural(x.levels.length, 'level')}</small></span>${bad ? '<span class="vh">Needs attention</span>' : ''}</button>
@@ -3040,7 +3127,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function bindCenter(t) {
     const V = $('view-build');
     // "Stack settings" opens them; a second click leaves them open (the levels are picked in the view or the panel)
-    V.querySelectorAll('[data-dstack]').forEach(b => b.onclick = () => { leavePaint(); dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); });
+    V.querySelectorAll('[data-dstack]').forEach(b => b.onclick = () => { leavePaint(); dsel.l = null; delete dsel.m; saveSel(); renderInspector(); v3mark(); markLevels(); });
     V.querySelectorAll('[data-rename]').forEach(b => b.onclick = () => dRename(t, b));
     V.querySelectorAll('[data-addtop]').forEach(b => b.onclick = () => levelOp(t, 'top'));
   }
@@ -3048,7 +3135,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // A change made in the selection panel redraws it (and step 1): keep its scroll and its folded sections as they were,
   // while it shows the same level, so the option just changed stays under the pointer
   let inspKeep = null;
-  const inspSel = () => dsel ? `${dsel.t}|${dsel.l}|${dsel.u}|${painting() && (fpAdding ? 'cat' : 'paint')}` : ''; // no selection: a stack was just removed
+  const inspSel = () => dsel ? `${dsel.t}|${dsel.l}|${dsel.u}|${dsel.m ? dsel.m.s.join() : ''}|${painting() && (fpAdding ? 'cat' : 'paint')}` : ''; // no selection: a stack was just removed
   const inspDetails = b => [...b.querySelectorAll('details')].map(d => { const sm = d.querySelector('summary'); return [sm && sm.firstChild ? sm.firstChild.textContent.trim() : '', d]; });
   // The panel's foldable sections: the name, what is set in a few words, and the settings. Open or folded as the user
   // left them, per section, for the page's life (else as `open` says); inspSave / inspRestore keep them over a redraw.
@@ -3089,6 +3176,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     box.classList.remove('istack'); // only the stack's settings wear the stack colour (stackInspector)
     if (painting()) return fpAdding ? catalogPanel(box) : paintPanel(box); // the Paint tool shows Colors (C1)
     if (dsel.l == null || !t.levels[dsel.l]) return stackInspector(box, t);
+    { const ms = multiSel(t); if (ms) return multiInspector(box, t, ms); }
     const i = dsel.l, L = t.levels, lv = L[i], ui = Math.min(dsel.u || 0, lv.length - 1), u = lv[ui], top = i === L.length - 1;
     const k = clean(u); if (!top) k.roof = 'none';
     const res = computeUnit(k), s = summary(res.lines), ext = unitExt(u), nf = unitNoFit(u, top);
@@ -3193,7 +3281,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     });
     // The level below or above: the selection moves, so a level can be reached without the mouse
     box.querySelectorAll('[data-lgo]').forEach(b => b.onclick = () => {
-      dsel.l = i + +b.dataset.lgo; dsel.u = 0; saveSel(); renderInspector(); v3mark(); markLevels();
+      dsel.l = i + +b.dataset.lgo; dsel.u = 0; delete dsel.m; saveSel(); renderInspector(); v3mark(); markLevels();
       const n = $('dInsp').querySelector(`[data-lgo="${b.dataset.lgo}"]`); (n && !n.disabled ? n : $('dInsp').querySelector('[data-lmenu]')).focus();
     });
     // "⋯": the same menu as a right-click on the level in the view, under the button
@@ -3255,6 +3343,108 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       svg.onpointerleave = () => gridHover(dv, svg.dataset.gplan, svg, null);
     });
     box.querySelectorAll('[data-gclear]').forEach(b => holdButton(b, () => { gpend = null; undoAs('Divider plan cleared'); set({ gridPlans: { ...(dv.gridPlans || {}), [b.dataset.gclear]: [] } }); }, 'Hold the button down to clear the plan'));
+  }
+  // Several levels selected (Dols, 2026-11-14): only the settings every module of them has, offered with the options
+  // each of them can take, and a change goes to every module of every level at once (one Undo, named). A setting whose
+  // value differs between them has no button pressed and says "Mixed". What is set per module or per drawer box (the
+  // divider plans, the fronts' labels, the drawer to set up, one side of a pair) stays in the one-level panel.
+  function multiInspector(box, t, s) {
+    const L = t.levels, lvs = s.map(i => L[i]), us = lvs.flat(), n = s.length, top = L.length - 1;
+    const MIX = {}, same = vals => vals.every(x => x === vals[0]) ? vals[0] : MIX;
+    const trial = (u, patch) => { const x = clean({ ...u, ...patch, roof: 'none' }); fixUnit(x); return !tooBig(x); };
+    const plain = h => String(h).replace(/<[^>]*>/g, '');
+    const segM = (key, items, cur) => items.map(it => `<button type="button" data-mseg="${key}=${esc(String(it.v))}" data-mname="${esc(plain(it.name || it.label))}" aria-pressed="${cur !== MIX && String(it.v) === String(cur)}">${it.icon || ''}${it.icon ? (it.label ? `<span>${it.label}</span>` : '') : it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
+    const field = (key, label, hint, items, cur, cls = '') => `<div class="field" data-mfield="${esc(plain(label))}"><div class="lbl">${label}${hint ? ` <span class="hint">${hint}</span>` : ''}${cur === MIX ? ' <span class="mixed">Mixed</span>' : ''}</div><div class="seg${cls}" role="group" aria-label="${esc(plain(label))}${cur === MIX ? ', mixed' : ''}">${segM(key, items, cur)}</div></div>`;
+    const word = (v, f, mixed = 'mixed') => v === MIX ? mixed : f(v);
+    // Module: across the width, type, height
+    const fw = fpOf(t).w;
+    const across = ACROSS[fw] ? ACROSS[fw].filter(([v]) => lvs.every(lv => (lv.every(u => u.type === 'drawer') || !v.endsWith('2')) && (v === acrossOf(lv) || acrossLevel(lv, v, { ...lv[0], h: v === 'XL' || v === 'XL2' ? 1 : lv[0].h }).every(x => !tooBig({ ...x, roof: 'none' }))))) : [];
+    const acr = same(lvs.map(acrossOf));
+    const types = [{ v: 'drawer', label: 'Drawer', sub: 'pulls out' }, { v: 'case', label: 'Case', sub: 'opens on top' }].filter(o => us.every(u => u.type === o.v || trial(u, { type: o.v })));
+    const type = same(us.map(u => u.type));
+    const hsOf = lv => { const u = lv[0], xl = u.w === 'XL' || u.w === 'XL2';
+      return [1, 2, 4].filter(h => h === u.h || (xl ? h === 1 || trial(u, { h, w: 'M' }) : lv.every(x => (R.HEIGHTS[x.type][x.w] || [1]).includes(h) && trial(x, { h })))); };
+    const hs = [1, 2, 4].filter(h => lvs.every(lv => hsOf(lv).includes(h))), hh = same(lvs.map(lv => lv[0].h));
+    const ht = type === MIX ? 'drawer' : type;
+    let mod = '';
+    if (across.length > 1) mod += field('across', 'Across the width', '', across.map(([v, label, sub]) => ({ v, label, sub, icon: acrossIcon(v) })), acr, ' across');
+    if (types.length) mod += field('type', 'Type', '', types, type);
+    if (hs.length) mod += field('h', 'Module height', '', hs.map(h => ({ v: h, label: h + 'F', sub: Math.round(R.exterior(ht, 'S', 3, h)[2]) + ' mm' })), hh);
+    // Inside: the drawers' (every drawer of each module, a module holding several included), or the cases'
+    let ins = '', insName = 'Inside', insSum = '';
+    if (type === 'drawer') {
+      const dvs = us.flatMap(u => { const ids = R.drawerIds(u); return u.inside && ids.length > 1 ? ids.map(dr => drawerView(u, dr.id)) : [u]; });
+      if (hh !== MIX && us.every(layoutsReady)) {
+        const lays = R.LAYOUTS[hh] || [], cur = same(us.map(u => R.drawersOf(u).join()));
+        if (lays.length > 1) { insName = 'Drawers'; ins += field('lay', 'Drawers in each module', 'top to bottom', lays.map(l => ({ v: l.join(), label: '', name: l.length === 1 ? l[0] + 'F' : l.join('+') + 'F', icon: layIcon(l, hh), sub: l.length === 1 ? l[0] + 'F' : new Set(l).size === 1 ? l.length + '\u00d7' + l[0] + 'F' : l.join('+') + 'F' })), cur, ' lays'); }
+      }
+      const inn = same(dvs.map(d => d.interior));
+      ins += field('interior', 'Inside', dvs.length > us.length ? 'every drawer' : '', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], inn);
+      if (inn === 'gridfinity' && dvs.every(d => ['S', 'M', 'L2', 'XL2'].includes(d.w)))
+        ins += field('baseplateHandles', 'Baseplate cut-outs', 'for lifting it out', [{ v: '0', label: 'None' }, ...(dvs.some(d => d.w === 'M') ? [] : [{ v: '1', label: '1 handle' }]), { v: '2', label: '2 handles' }], same(dvs.map(d => String(d.baseplateHandles))));
+      if (inn === 'grid') {
+        const one = dvs.every(d => d.h === 1), tall = dvs.every(d => d.h > 1);
+        ins += field('gridHeight', 'Divider height', '', [{ v: '20', label: 'Low', sub: '20 mm' }, { v: 'full', label: one ? 'Full height' : tall ? 'Tall' : 'Full height', sub: one ? '34.5 mm' : tall ? '82.5 mm' : 'the drawer\u2019s' }], same(dvs.map(d => d.gridHeight)));
+        ins += field('gridSeal', 'At a wall', 'where a divider ends against one', [{ v: 0, label: 'Divider alone', sub: 'a few mm short' }, { v: 1, label: 'Closed', sub: 'recommended \u00b7 straight edge piece' }], same(dvs.map(d => d.gridSeal !== false ? 1 : 0)));
+        ins += '<p class="pnote" style="margin:0">Each drawer keeps its own divider plan: set it up one level at a time.</p>';
+      }
+      ins += field('lock', 'Lock', '', [{ v: 'std', label: 'Key lock' }, { v: 'hidden', label: 'Hidden key' }], same(dvs.map(d => d.lock)));
+      ins += field('gearedRails', 'Geared rails', '', [{ v: 0, label: 'Without', sub: 'optional in the manual' }, { v: 1, label: 'With', sub: 'for 2F, 4F, more locking' }], same(dvs.map(d => d.gearedRails ? 1 : 0)));
+      insSum = [word(inn, x => insideWord({ interior: x }).replace(/^0 dividers$/, 'dividers'), 'mixed insides'), word(same(dvs.map(d => d.lock)), x => x === 'hidden' ? 'hidden key' : 'key lock', 'mixed locks')].join(' \u00b7 ');
+    } else if (type === 'case') {
+      if (us.every(u => u.w === 'L' || u.w === 'XL')) ins += field('caseInterior', 'Case body style', '', [{ v: 'flat', label: 'Flat', sub: 'open box' }, { v: 'dividers', label: 'Dividers', sub: 'slotted walls' }, { v: 'sealed', label: 'Sealed', sub: 'seal dividers' }], same(us.map(u => u.caseInterior || 'flat')));
+      const floor = same(us.map(caseFloor));
+      ins += field('floor', 'Floor', '', [{ v: 'empty', label: 'Empty', sub: 'nothing inside' }, ...(us.some(u => caseStyle(u) === 'flat') ? [] : [{ v: 'dividers', label: 'Dividers', sub: 'in the floor slots' }]), ...(us.some(u => caseStyle(u) === 'sealed') ? [] : [{ v: 'plate', label: 'Gridfinity', sub: 'baseplate' }])], floor);
+      if (floor === 'dividers' || floor === MIX) ins += '<p class="pnote" style="margin:0">Each case keeps the dividers placed in its slots: place them one level at a time.</p>';
+      insSum = word(floor, x => ({ plate: 'Gridfinity', dividers: 'dividers', empty: 'empty' })[x], 'mixed floors');
+    } else ins = '<p class="pnote" style="margin:0">Drawers and cases don\u2019t share what is inside: make them one type above, or select levels of one type.</p>';
+    // Back of the modules
+    let back = field('wallMount', 'Wall mount', 'plate on each module\u2019s back', [{ v: 0, label: 'None', sub: 'stands free' }, { v: 1, label: 'Plate and cleats', sub: 'two wall cleats' }], same(us.map(u => u.wallMount ? 1 : 0)));
+    if (us.every(u => u.h <= 2)) {
+      back += field('pegboard', 'Pegboard attachment', 'hangs on a backbone', [{ v: 'none', label: 'None', sub: 'no board' }, { v: 'ikea', label: 'IKEA', sub: 'Sk\u00e5dis' }, { v: 'ussa', label: 'USSA', sub: 'pegboard' }], same(us.map(u => u.pegboard || 'none')));
+      back += field('backbone', 'Backbone', 'the column reaches these levels', [{ v: 'none', label: 'None' }, { v: 'family', label: 'This width' }, { v: 'universal', label: 'Universal' }], same(us.map(u => u.backbone || 'none')));
+    } else back += '<p class="pnote" style="margin:0">Pegboards and backbones are made for 1F and 2F modules only: not every level selected is.</p>';
+    const backSum = [word(same(us.map(u => !!u.wallMount)), x => x ? 'wall mount' : '', 'some wall mounts'), us.every(u => u.h <= 2) ? word(same(us.map(u => u.pegboard || 'none')), x => ({ ikea: 'IKEA pegboard', ussa: 'USSA pegboard' })[x] || '', 'some pegboards') : ''].filter(Boolean).join(' \u00b7 ') || 'nothing on the back';
+    // what they make, all together
+    let prints = 0, g = 0;
+    s.forEach(i => L[i].forEach(u => { const k = clean(u); if (i !== top) k.roof = 'none'; const x = summary(computeUnit(k).lines); prints += x.prints; g += x.g; }));
+    box.innerHTML = `<div class="ihead"><div class="ipos"><span class="v3-sec">${n} levels of ${L.length} selected</span>
+        <div class="iacts"><button type="button" class="iconbtn sq" data-lmenu aria-haspopup="menu" aria-expanded="false" aria-label="Actions for ${esc(levelsName(s).toLowerCase())}" title="Add, move or remove these levels">${icon('more')}</button></div></div>
+        <h2>${esc(levelsName(s))}</h2><div class="mono">${plural(us.length, 'module')} \u00b7 ${prints} parts \u00b7 ${aboutG(g)}</div></div>
+      <div class="mlevels" role="group" aria-label="Levels selected: click one to set it up alone">${[...s].reverse().map(i => `<button type="button" class="mlevel" data-mone="${i}" title="Set up level ${i + 1} alone"><b>${i + 1}</b><span>${esc(levelTitle(L[i]))}</span></button>`).join('')}</div>
+      <p class="pnote mnote">The settings these levels share. A change goes to every module of the ${n}; labels and divider plans stay one level at a time. ${esc(MOD)}+click a level in the view adds it or takes it out, Shift+click selects the ones in between.</p>
+      <div class="ibody folds">
+        ${mod ? fold('m-module', 'Module', [acr !== MIX && across.length > 1 ? (ACROSS[fw].find(x => x[0] === acr) || [])[1] : '', word(type, x => x === 'drawer' ? 'Drawer' : 'Case', 'drawers and cases'), word(hh, x => x + 'F', 'mixed heights')].filter(Boolean).join(' \u00b7 '), true, mod) : ''}
+        ${fold('m-inside', insName, insSum, true, ins)}
+        ${fold('m-back', 'Back of these modules', backSum, false, back)}
+      </div>`;
+    bindFolds(box);
+    const name = { across: 'Across the width', type: 'Type', h: 'Height', lay: 'Drawers', interior: 'Inside', baseplateHandles: 'Baseplate cut-outs', gridHeight: 'Divider height', gridSeal: 'At a wall', lock: 'Lock', gearedRails: 'Geared rails', caseInterior: 'Case body style', floor: 'Floor', wallMount: 'Wall mount', pegboard: 'Pegboard', backbone: 'Backbone' };
+    const BOOL = ['gridSeal', 'gearedRails', 'wallMount'];
+    box.querySelectorAll('[data-mseg]').forEach(b => b.onclick = () => {
+      const [key, val] = b.dataset.mseg.split('=');
+      undoAs(`${name[key]}: ${b.dataset.mname}, ${levelsName(s).toLowerCase()}`);
+      s.forEach(i => {
+        const lv = L[i], u0 = lv[0];
+        if (key === 'across') { const one = val === 'XL' || val === 'XL2'; L[i] = acrossLevel(lv, val, { ...u0, h: one ? 1 : u0.h }); return; }
+        if (key === 'h' && (u0.w === 'XL' || u0.w === 'XL2') && +val > 1) { L[i] = acrossLevel(lv, 'SM', { ...u0, h: +val }); return; }
+        const patch = key === 'h' ? { h: +val } : BOOL.includes(key) ? { [key]: val === '1' } : key === 'floor' ? { caseEmpty: val === 'empty', caseBaseplate: val === 'plate' }
+          : key === 'lay' ? (val.includes(',') ? { drawers: val.split(',').map(Number), gearedRails: true } : { drawers: undefined }) : { [key]: val };
+        const inside = Object.keys(patch).every(k => R.INSIDE.includes(k));
+        lv.forEach(u => {
+          const was = u.type;
+          Object.assign(u, patch);
+          if (inside && u.inside) Object.values(u.inside).forEach(o => Object.assign(o, patch)); // every drawer of a module holding several
+          // a new case starts with nothing on its floor (Dols, 2026-11-14), as in the one-level panel
+          if (u.type === 'case' && was !== 'case' && u.caseEmpty === undefined && !u.caseBaseplate && !u.divSlots) u.caseEmpty = true;
+          fixUnit(u);
+        });
+      });
+      dsel.u = 0; fixTower(t); saveSel(); save(); renderAll();
+    });
+    box.querySelectorAll('[data-mone]').forEach(b => b.onclick = () => { setLevels(t, [+b.dataset.mone], +b.dataset.mone); gpend = null; saveSel(); renderInspector(); v3mark(); markLevels(); });
+    const mb = box.querySelector('[data-lmenu]');
+    mb.onclick = e => { if (menuFrom(mb)) menuClose(); else menuOpen({ ...levelsMenu(t, s), opener: mb, keys: e.detail === 0 }); };
   }
   // The measured placements a shell's drawer layouts need before the inspector offers them
   const layoutsReady = u => !!((PLACE.units[`drawer|${u.w}|${u.d}|${u.h}`] || {}).layouts);
@@ -3727,7 +3917,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const v = v3; if (!v) return;
     if (v3markObj) { v3markObj.forEach(o => { if (o.parent) o.parent.remove(o); o.geometry.dispose(); }); v3markObj = null; }
     const t = curTower();
-    if (view === 'build' && t && dsel && dsel.l != null && t.levels[dsel.l]) {
+    const ms = view === 'build' && multiSel(t);
+    if (ms) { // several levels: every module of each
+      const col = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#d9622b', cs = new Set(ms.flatMap(i => t.levels[i]));
+      v3markObj = v.units.filter(u => cs.has(u.cfg) && !u.roof && !u.stack && !u.column && u.g.visible).map(u => {
+        const h = new v.T.Box3Helper(v3unitBox(v, u), col); v.scene.add(h); return h;
+      });
+    } else if (view === 'build' && t && dsel && dsel.l != null && t.levels[dsel.l]) {
       const u0 = t.levels[dsel.l][dsel.u || 0], col = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#d9622b';
       // the module's own parts once they are in (shell, guides, latches: not its drawers, lid or roof, which move or
       // stand over it), else its box. Bounds from the parts' vertices: some are exported on edge at 45° (L 1F modules),
@@ -3758,6 +3954,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const t = curTower(); if (!t || !v.sel.u) { v3mark(); return; }
     const cfg = v.sel.u.cfg, i = t.levels.findIndex(lv => lv.includes(cfg));
     if (i < 0) { v3mark(); return; }
+    delete dsel.m; // a plain click selects one level
     if (v.sel.u.roof || v.sel.u.stack) dsel.l = null; else { dsel.l = i; dsel.u = t.levels[i].indexOf(cfg); if (v.sel.mv != null) { dsel.d = v.sel.mv; gpend = null; } }
     saveSel(); renderInspector(); v3mark(); markLevels();
   }
@@ -5492,10 +5689,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const lv = v.t.levels[i], us = v.units.filter(x => lv.includes(x.cfg) && !x.roof && !x.stack && !x.column && x.g.visible);
       const boxes = us.map(u => v3unitBox(v, u)), all = boxes.reduce((a, b) => a.union(b), new T.Box3());
       const ink = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#1d1f1e';
-      const objs = dsel && dsel.l === i ? [] : boxes.map(b => { const o = new T.Box3Helper(b, ink); scene.add(o); return o; });
+      const objs = selLevels(v.t).includes(i) ? [] : boxes.map(b => { const o = new T.Box3Helper(b, ink); scene.add(o); return o; });
       hov = { i, objs, box: all };
       const labs = lv.flatMap(labelsOf);
-      tip.innerHTML = `<b>Level ${i + 1} \u00b7 ${esc(levelTitle(lv))}</b>${labs.length ? `<span>${esc(labs.map(quoted).join(' \u00b7 '))}</span>` : ''}<span>Click to set it up \u00b7 right-click for actions</span>`;
+      tip.innerHTML = `<b>Level ${i + 1} \u00b7 ${esc(levelTitle(lv))}</b>${labs.length ? `<span>${esc(labs.map(quoted).join(' \u00b7 '))}</span>` : ''}<span>Click to set it up \u00b7 ${MOD}+click to select several \u00b7 right-click for actions</span>`;
       tip.hidden = false; placeTip(); render();
     }
     // A right-click (let go where it was pressed): on a level, it selects it as a click would, then opens its menu;
@@ -5504,9 +5701,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const t = curTower(); if (t !== v.t) return;
       const h = hitAt(ev), i = levelOfHit(h);
       if (i < 0) { menuOpen({ ...stackMenu(t), x: ev.clientX, y: ev.clientY, opener: el }); return; }
+      // on one of several levels selected: their menu, the selection kept
+      const ms = multiSel(t);
+      if (ms && ms.includes(i)) { menuOpen({ ...levelsMenu(t, ms), x: ev.clientX, y: ev.clientY, opener: el }); return; }
       const mv = h.u.movers ? moverAt(h) : null, ui = t.levels[i].indexOf(h.u.cfg);
       if (h.mesh.userData.role) v3lastPick = v.sel = { role: h.mesh.userData.role, cfg: h.mesh.userData.cfg, u: h.u, name: h.mesh.userData.name, mv: mv ? mv.id : null };
-      dsel.l = i; dsel.u = ui; if (mv) { dsel.d = mv.id; gpend = null; }
+      dsel.l = i; dsel.u = ui; delete dsel.m; if (mv) { dsel.d = mv.id; gpend = null; }
       saveSel(); renderInspector(); v3side(); markLevels();
       menuOpen({ ...levelMenu(t, i, ui, h.u.movers ? mv : canOpen(h.u) || h.u.lid ? h.u : null), x: ev.clientX, y: ev.clientY, opener: el });
     };
@@ -5535,15 +5735,25 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (ev.button === 2) { rightAt(ev); return; }
       if (ev.button !== 0 || performance.now() - d.t > 500) return;
       const h = hitAt(ev);
-      if (v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey) { toggleAt(h); return; }
+      if (v.tool === 'drawers') { toggleAt(h); return; }
+      // With Select, Ctrl/Cmd + click adds the level to the selection or takes it out, Shift + click selects the levels
+      // from the last one clicked to it (Dols, 2026-11-14: they no longer open drawers, a double-click or O does)
+      const add = ev.ctrlKey || ev.metaKey, range = ev.shiftKey;
+      if ((add || range) && v.tool === 'turn') {
+        const i = levelOfHit(h); if (i < 0) return;
+        const mv = h.u.movers ? moverAt(h) : null;
+        if (h.mesh.userData.role) v3lastPick = v.sel = { role: h.mesh.userData.role, cfg: h.mesh.userData.cfg, u: h.u, name: h.mesh.userData.name, mv: mv ? mv.id : null };
+        selectLevels(v.t, i, range ? (add ? 'addRange' : 'range') : 'add'); v3side();
+        return;
+      }
       if (!h || !h.mesh.userData.role) { if (v.tool === 'turn') { v.sel = null; v3side(); } return; }
       const mv = h.u && h.u.movers ? moverAt(h) : null;
       v.sel = { role: h.mesh.userData.role, cfg: h.mesh.userData.cfg, u: h.u || null, name: h.mesh.userData.name, mv: mv ? mv.id : null };
       if (v.tool === 'paint') v3paint(v, h.mesh);
       else v3side();
     }, sig);
-    // A double click opens or closes too (its two clicks select, as one would; with Ctrl or Shift, or the Open tool,
-    // each click already toggles)
+    // A double click opens or closes (its two clicks select, as one would; with Ctrl, Cmd or Shift they pick levels,
+    // so it doesn't; with the old Open tool each click already toggles)
     el.addEventListener('dblclick', ev => {
       if (v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey) return;
       ev.preventDefault(); toggleAt(hitAt(ev));
@@ -5554,7 +5764,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       requestAnimationFrame(() => {
         hoverQueued = false; if (v3 !== v) return;
         const h = hitAt(ev);
-        el.style.cursor = !h ? '' : v.tool === 'drawers' || ev.ctrlKey || ev.shiftKey || ev.metaKey ? (canOpen(moverAt(h)) ? 'pointer' : '') : h.mesh.userData.role ? 'pointer' : '';
+        el.style.cursor = !h ? '' : v.tool === 'drawers' ? (canOpen(moverAt(h)) ? 'pointer' : '') : h.mesh.userData.role ? 'pointer' : '';
         if (v.tool === 'turn' && !menuNow) hoverOn(h); else hoverOff();
         if (v.tool !== 'paint' || !h) { hotKey = ''; setHot(null); return; }
         const { role, cfg } = h.mesh.userData, key = role + '|' + (v.pscope === 'unit' ? v.units.indexOf(v.units.find(u => u.cfg === cfg)) : '');
@@ -5612,7 +5822,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         ${v.units.some(u => u.place && u.place.bolts.length) ? `<div class="v3-seg v3-bolts" role="group" aria-label="Bolt finish, for the whole build (also in Hardware)"><span class="v3-seglbl" aria-hidden="true">Bolts</span>${HW_FINISHES.map(([id, hex, n]) => `<button type="button" data-v3fin="${id}" aria-pressed="${hwFinish() === id}" aria-label="${n} bolts" title="${n} bolts, for the whole build (also in Hardware)"><span class="dot2" style="background:${hex}"></span></button>`).join('')}</div>` : ''}
         <button type="button" class="v3-tog v3-helpbtn" data-v3help aria-expanded="${!!v3ui.help}" aria-controls="v3dHelp" aria-label="How to move the view" title="How to move the view">${icon('help')}</button>
         ${v3ui.help ? `<div class="v3-helppop" id="v3dHelp"><p><b>Drag</b> to turn · <b>scroll</b> to zoom · <b>right-drag</b> to move the view.</p>
-          <p><b>Double-click</b> a drawer or a case, or <kbd>Ctrl</kbd> or <kbd>Shift</kbd> + click it, to open or close it.</p>
+          <p><b>Double-click</b> a drawer or a case to open or close it.</p>
+          <p><kbd>${MOD}</kbd> + <b>click</b> a level to add it to the selection or take it out, <kbd>Shift</kbd> + <b>click</b> to select the levels in between: the panel then sets them all at once.</p>
           <p><b>Right-click</b> the background to fit the stack in the view, add a level on top or open the stack’s settings.</p>
           <p><kbd>?</kbd> lists the keyboard shortcuts: <kbd>↑</kbd> <kbd>↓</kbd> pick a level, <kbd>O</kbd> opens its drawer, <kbd>F</kbd> fits the stack in the view.</p></div>` : ''}</div>`;
     const B = $('v3dBrush');
@@ -5627,8 +5838,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     } else {
       const tip = !store.get('openTip', false) && v.units.some(u => u.travel || u.movers || u.lid);
       B.hidden = false; B.className = 'v3-hintbar' + (tip ? ' tip' : '');
-      B.innerHTML = tip ? '<span><b>Open a drawer:</b> double-click it, or hold <kbd>Ctrl</kbd> or <kbd>Shift</kbd> and click it. Cases open the same way.</span><button type="button" class="btn" data-v3tipok>Got it</button>'
-        : '<b>Click</b> a level to set it up \u00b7 <b>right-click</b> for its actions \u00b7 <b>double-click</b> opens a drawer';
+      B.innerHTML = tip ? '<span><b>Open a drawer:</b> double-click it, or select its level and press <kbd>O</kbd>. Cases open the same way.</span><button type="button" class="btn" data-v3tipok>Got it</button>'
+        : `<b>Click</b> a level to set it up \u00b7 <b>${MOD}+click</b> for several \u00b7 <b>right-click</b> for actions \u00b7 <b>double-click</b> opens a drawer`;
     }
     const on = (sel, f) => document.querySelectorAll(sel).forEach(b => b.onclick = () => f(b));
     on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; fpAdding = false; v.hot = null; v.hoverOff(); v.recolor(); v3tools(); v3side(); });
@@ -6621,17 +6832,19 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     ['Design', [
       [['↑ ↓'], 'Level above, level below'], [['Esc'], 'Stack settings (or back to Select from Paint)'],
       [['Shift + ↑ ↓'], 'Stack above, stack below in the list'],
-      [[ALT + ' + ↑ ↓'], 'Move the level up or down'],
+      [[ALT + ' + ↑ ↓'], 'Move the level (or the levels selected) up or down'],
       [['D'], 'Add a copy of the level above it'], [['Shift + D'], 'Add a copy of the level below it'],
       [['A'], 'Add a level on top'],
-      [[MOD + ' + C'], 'Copy the selected level, or the stack when its settings are shown'],
-      [[MOD + ' + V'], 'Paste: a level above the selected level (on top from Stack settings), a stack after the selected one'], [['Delete'], 'Remove the level (Undo takes it back)']]],
+      [[MOD + ' + C'], 'Copy the selected level (or levels), or the stack when its settings are shown'],
+      [[MOD + ' + V'], 'Paste: levels above the selected level (on top from Stack settings), a stack after the selected one'], [['Delete'], 'Remove the level, or the levels selected (Undo takes them back)']]],
     ['3D view', [
+      [[MOD + ' + click'], 'Add a level to the selection, or take it out: the panel then sets them all at once'],
+      [['Shift + click'], 'Select the levels from the last one clicked to this one'],
       [['O'], 'Open or close the level’s drawer or case'], [['P'], 'Paint on or off'],
       [['F'], 'Fit the stack in the view'], [['E'], 'Spread levels'], [['H'], 'Hide roof']]],
   ];
   // 'Shift + ↑ ↓': Shift with ↑ or ↓; several combinations in a row are alternatives (or)
-  const kbd = k => `<span class="kc">${k.split(' + ').map(x => x.split(' ').map(y => `<kbd>${esc(y)}</kbd>`).join(' ')).join(' + ')}</span>`;
+  const kbd = k => `<span class="kc">${k.split(' + ').map(x => x.split(' ').map(y => y === 'click' ? 'click' : `<kbd>${esc(y)}</kbd>`).join(' ')).join(' + ')}</span>`; // a click is no key
   $('keysList').innerHTML = KEYS.map(([g, rows]) => `<h3>${g}</h3><dl>${rows.map(([ks, what]) => `<div><dt>${ks.map(kbd).join('<span class="kor">or</span>')}</dt><dd>${what}</dd></div>`).join('')}</dl>`).join('');
   const keysPop = () => { const d = $('keys'); if (d.open) d.close(); else d.showModal(); };
   $('keysBtn').onclick = keysPop;
@@ -6641,12 +6854,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // A level picked in Design's panel, as the "Level below / above" buttons do (Paint goes back to Select, like the rail)
   function keyLevel(t, i) {
     if (!t.levels.length) return;
-    leavePaint(); dsel.l = Math.max(0, Math.min(t.levels.length - 1, i)); dsel.u = 0; gpend = null;
+    leavePaint(); dsel.l = Math.max(0, Math.min(t.levels.length - 1, i)); dsel.u = 0; delete dsel.m; gpend = null;
     saveSel(); renderInspector(); v3mark(); markLevels();
   }
   function keyDesign(e, k) {
     const t = curTower(); if (!t) return false;
-    const L = t.levels, i = Number.isInteger(dsel.l) && L[dsel.l] ? dsel.l : null, v = v3 && v3.t === t ? v3 : null;
+    const L = t.levels, i = Number.isInteger(dsel.l) && L[dsel.l] ? dsel.l : null, v = v3 && v3.t === t ? v3 : null, ms = multiSel(t);
     const B = s => document.querySelector('#view-build ' + s);
     const press = s => { const b = B(s); if (b && !b.disabled) b.click(); return !!b; };
     const need = () => { toast(L.length ? 'Select a level first: ↑ or ↓, or click it in the view' : 'This stack has no level yet: A adds one'); return true; };
@@ -6655,17 +6868,18 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const n = towers.indexOf(t) + (up ? -1 : 1); if (!towers[n]) return true;
       dsel = { t: towers[n].id, l: null, u: 0 }; saveSel(); leavePaint(); renderAll(); return true;
     }
-    if ((up || down) && e.altKey) { if (i == null) return need(); levelOp(t, up ? 'up' : 'down', i); return true; }
+    if ((up || down) && e.altKey) { if (i == null) return need(); if (ms) levelsOp(t, up ? 'up' : 'down', ms); else levelOp(t, up ? 'up' : 'down', i); return true; }
     if ((up || down) && !e.shiftKey) { keyLevel(t, i == null ? (up ? 0 : L.length - 1) : i + (up ? 1 : -1)); return true; }
     if (e.altKey) return false;
     if (k === 'Escape') { if (painting()) return press('[data-v3tool="turn"]'); if (i == null) return false; return press('[data-dstack]'); }
     if (e.repeat) return false; // held down, a key acts once: Delete must not empty the stack
     switch (k.toLowerCase()) {
-      case 'd': if (i == null) return need(); levelOp(t, e.shiftKey ? 'dupBelow' : 'dup', i); return true;
+      case 'd': if (i == null) return need(); if (ms) levelsOp(t, e.shiftKey ? 'dupBelow' : 'dup', ms); else levelOp(t, e.shiftKey ? 'dupBelow' : 'dup', i); return true;
       case 'a': levelOp(t, 'top'); return true;
-      case 'delete': case 'backspace': if (i == null) return need(); levelOp(t, 'del', i); return true;
+      case 'delete': case 'backspace': if (i == null) return need(); if (ms) levelsOp(t, 'del', ms); else levelOp(t, 'del', i); return true;
       case 'o': {
         if (!v) return false; if (i == null) return need();
+        if (ms) { openLevels(t, ms); return true; }
         const m = v.openable(L[i][Math.min(dsel.u || 0, L[i].length - 1)], dsel.d);
         if (!m) toast(`Level ${i + 1} has no drawer or case to open`); else if (!v.canOpen(m)) toast('A case opens once its real parts are in'); else v.toggle(m);
         return true;
@@ -6682,13 +6896,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // selected), a stack right after the selected one in the rail. The copy is taken when copied (later changes don't
   // follow) and kept for the page's life, in this page only (not the system clipboard). A level pasted into a stack of
   // another footprint is made to it, as a new footprint would (levelTo).
-  let clip = null; // { kind: 'level', lv, from } or { kind: 'stack', t }
+  let clip = null; // { kind: 'level', lvs: [levels, bottom to top], from } or { kind: 'stack', t }
   const clipCopy = x => JSON.parse(JSON.stringify(x));
   const selLevel = t => t && dsel && dsel.t === t.id && Number.isInteger(dsel.l) && t.levels[dsel.l] ? dsel.l : null;
   // t, i: the stack and the level (null: the whole stack); the keys take the selection, the menus the level or stack they are about
   function copySel(t = curTower(), i = selLevel(t)) {
     if (!t) return false;
-    if (i != null) { clip = { kind: 'level', lv: clipCopy(t.levels[i]), from: levelTitle(t.levels[i]) }; toast(`Level ${i + 1} copied (${clip.from}): ${MOD}+V pastes it above the selected level`); }
+    // several levels selected, i one of them: all of them
+    const ms = i != null && multiSel(t), s = ms && ms.includes(i) ? ms : [i];
+    if (s.length > 1) { clip = { kind: 'level', lvs: s.map(k => clipCopy(t.levels[k])), from: levelsName(s) }; toast(`${clip.from} copied: ${MOD}+V pastes them above the selected level`); }
+    else if (i != null) { clip = { kind: 'level', lvs: [clipCopy(t.levels[i])], from: levelTitle(t.levels[i]) }; toast(`Level ${i + 1} copied (${clip.from}): ${MOD}+V pastes it above the selected level`); }
     else { clip = { kind: 'stack', t: clipCopy(t) }; toast(`“${t.name}” copied: ${MOD}+V pastes a copy of the stack after the selected one`); }
     return true;
   }
@@ -6701,12 +6918,19 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       return;
     }
     if (!t) { toast('Select a stack to paste the level into'); return; }
-    const L = t.levels, fp = fpOf(t);
-    let lv = clipCopy(clip.lv).map(u => { u.roof = 'none'; return u; }); // the roof stays on the top level (fixTower)
-    const was = levelTitle(lv), r = levelTo(lv, fp.w, fp.d); lv = r.lv;
-    const at = i == null ? L.length : i + 1, made = levelTitle(lv) !== was ? `, made ${levelTitle(lv)} to fit` : '';
-    undoAs(i == null ? `Level pasted on top${made}` : `Level pasted above level ${i + 1}${made}`);
-    L.splice(at, 0, lv); dsel = { t: t.id, l: at, u: 0 }; leavePaint();
+    const L = t.levels, fp = fpOf(t), ms = i != null && multiSel(t);
+    if (ms && ms.includes(i)) i = ms[ms.length - 1]; // several selected: above the top one
+    let changed = 0;
+    const lvs = clip.lvs.map(x => {
+      const lv = clipCopy(x).map(u => { u.roof = 'none'; return u; }); // the roof stays on the top level (fixTower)
+      const was = levelTitle(lv), r = levelTo(lv, fp.w, fp.d); if (levelTitle(r.lv) !== was) changed++;
+      return r.lv;
+    });
+    const at = i == null ? L.length : i + 1, n = lvs.length;
+    const made = !changed ? '' : n === 1 ? `, made ${levelTitle(lvs[0])} to fit` : `, ${plural(changed, 'level')} made to fit`;
+    const what = n === 1 ? 'Level' : `${n} levels`;
+    undoAs(i == null ? `${what} pasted on top${made}` : `${what} pasted above level ${i + 1}${made}`);
+    L.splice(at, 0, ...lvs); setLevels(t, lvs.map((_, k) => at + k), at + n - 1, at); leavePaint();
     fixTower(t); saveSel(); save(); renderAll();
   }
   addEventListener('keydown', e => {
