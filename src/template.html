@@ -3148,17 +3148,16 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const foldOpen = new Map();
   const fold = (id, name, sum, open, body) => `<details class="ifold" data-fold="${id}"${(foldOpen.has(id) ? foldOpen.get(id) : open) ? ' open' : ''}><summary><span class="fname">${name}</span><span class="fsum">${sum}</span></summary><div class="fbody">${body}</div></details>`;
   const bindFolds = box => box.querySelectorAll('[data-fold]').forEach(d => d.addEventListener('toggle', () => foldOpen.set(d.dataset.fold, d.open)));
-  // What a level's sections hold, in a line (HTML: the label is escaped): its label, its drawers or its inside, and its back
+  // What a level's sections hold, in a line: its drawers or its inside, and its back
   function insideLine(u, ids) {
-    const lab = ids.length > 1 ? '' : (labelsOf(u)[0] ? esc(quoted(labelsOf(u)[0])) : '');
     if (u.type === 'case') {
       const f = caseFloor(u), n = Object.values(u.dividers || {}).reduce((a, x) => a + (+x || 0), 0);
-      return [lab, f === 'plate' ? 'Gridfinity' : f === 'dividers' ? plural(n, 'divider') : 'Empty', u.w === 'L' || u.w === 'XL' ? { flat: 'flat', dividers: 'slotted', sealed: 'sealed' }[caseStyle(u)] + ' body' : ''].filter(Boolean).join(' \u00b7 ');
+      return [f === 'plate' ? 'Gridfinity' : f === 'dividers' ? plural(n, 'divider') : 'Empty', u.w === 'L' || u.w === 'XL' ? { flat: 'flat', dividers: 'slotted', sealed: 'sealed' }[caseStyle(u)] + ' body' : ''].filter(Boolean).join(' \u00b7 ');
     }
     const lay = R.drawersOf(u).map(h => h + 'F').join(' + ');
     if (ids.length > 1) return ids.some(d => d.side) ? (R.drawersOf(u).length > 1 ? `${lay} on each side` : 'two drawers side by side') : lay;
     const w = insideWord(u);
-    return [lab, w.charAt(0).toUpperCase() + w.slice(1), u.lock === 'hidden' ? 'hidden key' : 'key lock', u.gearedRails ? 'geared rails' : ''].filter(Boolean).join(' \u00b7 ');
+    return [w.charAt(0).toUpperCase() + w.slice(1), u.lock === 'hidden' ? 'hidden key' : 'key lock', u.gearedRails ? 'geared rails' : ''].filter(Boolean).join(' \u00b7 ');
   }
   const backLine = u => [u.wallMount ? 'wall mount' : '', { ikea: 'IKEA pegboard', ussa: 'USSA pegboard' }[u.pegboard] || '', { family: 'backbone', universal: 'universal backbone' }[u.backbone] || ''].filter(Boolean).join(' \u00b7 ') || 'nothing on the back';
   function inspSave() {
@@ -3198,17 +3197,18 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // the drawer whose inside is shown, when the module holds several (dsel.d, its id)
     const dids = R.drawerIds(u), dv = u.type === 'drawer' ? drawerView(u, dsel.d) : u;
     if (dv !== u && dsel.d !== dv.dr.id) { dsel.d = dv.dr.id; saveSel(); }
-    // The front's label: this drawer's (in the drawer's frame) or the module's
-    const lid = labelId(dv), labelField = `<div class="field"><label class="lbl" for="ulabel">Label <span class="hint">${dv !== u ? 'on this drawer\u2019s front' : u.type === 'case' ? 'on the case front' : 'on the drawer front'}</span></label>
-      <input type="text" class="tfield" id="ulabel" data-ulabel="${lid}" value="${esc(labelOf(u, lid))}" maxlength="${LABEL_MAX}" placeholder="e.g. M6 bolts" autocomplete="off" spellcheck="false"></div>`;
+    // The fronts' labels, in a section of their own, folded at first (Dols, 2026-11-15): one field per front
+    const fronts = u.type === 'drawer' && dids.length > 1 ? dids : [null];
+    const labelBody = fronts.map(dr => { const id = dr ? dr.id : '0', fid = dr ? 'ulabel-' + id : 'ulabel';
+      return `<div class="field"><label class="lbl" for="${fid}">${dr ? esc(drawerName(u, dr)) + ' <span class="hint">drawer front</span>' : `Text <span class="hint">${u.type === 'case' ? 'on the case front' : 'on the drawer front'}</span>`}</label>
+      <input type="text" class="tfield" id="${fid}" data-ulabel="${id}" value="${esc(labelOf(u, id))}" maxlength="${LABEL_MAX}" placeholder="e.g. M6 bolts" autocomplete="off" spellcheck="false"></div>`; }).join('');
     if (u.type === 'drawer') {
       const lay = R.drawersOf(u), layOpts = layoutsReady(u) ? R.LAYOUTS[u.h] || [] : [];
       if (layOpts.length > 1) o += `<div class="field"><div class="lbl">Drawers in this module <span class="hint">${lay.map(x => x + 'F').join(' + ')}${lay.length > 1 ? ', top to bottom' : ''}</span></div>
         <div class="seg lays" role="group" aria-label="Drawers in this module, top to bottom">${layOpts.map(l => `<button type="button" data-lay="${l.join(',')}" aria-pressed="${l.join() === lay.join()}" aria-label="${l.length === 1 ? `One ${l[0]}F drawer` : l.map(x => x + 'F').join(', ') + ', top to bottom'}">${layIcon(l, u.h)}<small>${l.length === 1 ? l[0] + 'F' : new Set(l).size === 1 ? l.length + '\u00d7' + l[0] + 'F' : l.join('+') + 'F'}</small></button>`).join('')}</div>
         ${new Set(lay).size > 1 ? '<span class="badge inf" title="USSA\u2019s manuals don\u2019t show a 2F with two 1F in one 4F module">Inferred</span>' : ''}</div>`;
       // Several drawers: each has its own inside, in a frame under one tab per drawer (or a click on it in the view)
-      let f = labelField;
-      f += `<div class="field"><div class="lbl">Inside</div><div class="seg">${useg('interior', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], dv.interior)}</div></div>`;
+      let f = `<div class="field"><div class="lbl">Inside</div><div class="seg">${useg('interior', [{ v: 'empty', label: 'Empty' }, { v: 'gridfinity', label: 'Gridfinity' }, { v: 'grid', label: 'Dividers' }], dv.interior)}</div></div>`;
       if (dv.interior === 'gridfinity' && ['S', 'M', 'L2', 'XL2'].includes(dv.w))
         f += `<div class="field"><div class="lbl">Baseplate cut-outs <span class="hint">for lifting it out</span></div><div class="seg">${useg('baseplateHandles', [{ v: '0', label: 'None' }, ...(dv.w === 'M' ? [] : [{ v: '1', label: '1 handle' }]), { v: '2', label: '2 handles' }], dv.baseplateHandles)}</div></div>`;
       if (dv.interior === 'grid') {
@@ -3223,7 +3223,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="dframe" id="dframe" role="tabpanel" aria-labelledby="dtab-${dv.dr.id}">${f}<button type="button" class="btn" data-dcopy>Same settings in every drawer</button></div>
         <p class="pnote dfnote">In the frame: this drawer only. Outside it: the whole module.</p>`;
     } else {
-      o += labelField;
       if (u.w === 'L' || u.w === 'XL') o += `<div class="field"><div class="lbl">Case body style</div><div class="seg">${useg('caseInterior', [{ v: 'flat', label: 'Flat', sub: 'open box' }, { v: 'dividers', label: 'Dividers', sub: 'slotted walls' }, { v: 'sealed', label: 'Sealed', sub: 'seal dividers' }], u.caseInterior || 'flat')}</div></div>`;
       // What is on the case's floor: nothing, dividers in its slots, or a Gridfinity baseplate over the grooves
       const st = caseStyle(u), floor = caseFloor(u), kept = Object.values(divSel(u) || {}).flat(2).length;
@@ -3250,6 +3249,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           <div class="field"><div class="lbl">Type</div><div class="seg">${useg('type', typeOpts, u.type)}</div></div>
           <div class="field"><div class="lbl">Module height</div><div class="seg">${useg('h', hOpts, u.h)}</div></div>`)}
         ${fold('l-inside', dids.length > 1 || (u.type === 'drawer' && layoutsReady(u) && (R.LAYOUTS[u.h] || []).length > 1) ? 'Drawers' : 'Inside', insideLine(u, dids), true, o)}
+        ${fold('l-label', fronts.length > 1 ? 'Labels' : 'Label', labelSum(u, fronts), false, labelBody)}
         ${fold('l-back', 'Back of this module', backLine(u), false, back)}
         ${fold('l-parts', 'Parts and bolts', `${plural(s.prints, 'part')} \u00b7 ${aboutG(s.g)}`, false, levelParts(res.lines, res.hardware))}
         ${lv.length > 1 ? '<p class="pnote" style="margin:12px 0 0">With two modules side by side, each is set up on its own (pick it above or click it in the view). Their height stays the same.</p>' : ''}
@@ -3316,12 +3316,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       toast(`Every drawer of this module now has the ${drawerName(u, dv.dr, false)} drawer\u2019s inside, lock and rails${new Set(dids.map(x => x.w)).size > 1 ? ' (the other box size keeps its own divider plan)' : ''}.`);
     }; }
     // The label: drawn in the view as it is typed, saved (one undo step) when the field is left or Enter pressed
-    { const lf = box.querySelector('[data-ulabel]'); if (lf) {
+    box.querySelectorAll('[data-ulabel]').forEach(lf => {
       const id = lf.dataset.ulabel, was = labelOf(u, id);
       const show = () => {
         if (v3 && v3.relabel) v3.relabel();
         const tb = box.querySelector(`.dtabs [data-dpick="${id}"] small`); if (tb) tb.innerHTML = dtabSub(u, R.drawerIds(u).find(d => d.id === id));
-        const sm = box.querySelector('[data-fold="l-inside"] .fsum'); if (sm) sm.innerHTML = insideLine(u, dids);
+        const sm = box.querySelector('[data-fold="l-label"] .fsum'); if (sm) sm.innerHTML = labelSum(u, fronts);
       };
       lf.oninput = () => { setLabel(u, id, lf.value); show(); };
       lf.onchange = () => { setLabel(u, id, lf.value.trim()); show(); if (labelOf(u, id) !== was) save(); };
@@ -3329,7 +3329,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         if (e.key === 'Enter') { e.preventDefault(); lf.blur(); }
         else if (e.key === 'Escape') { e.preventDefault(); lf.value = was; setLabel(u, id, was); show(); lf.blur(); }
       };
-    } }
+    });
     box.querySelectorAll('[data-cfloor]').forEach(b => b.onclick = () => { const f = b.dataset.cfloor; set({ caseEmpty: f === 'empty', caseBaseplate: f === 'plate' }); });
     box.querySelectorAll('[data-ubool]').forEach(b => b.onclick = () => { const [key, val] = b.dataset.ubool.split('='); set({ [key]: val === '1' }); });
     box.querySelectorAll('[data-ustep]').forEach(b => b.onclick = () => {
@@ -3712,6 +3712,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const labelOf = (u, id) => u && u.labels && typeof u.labels[id] === 'string' ? u.labels[id] : '';
   const labelsOf = u => !u.labels ? [] : (u.type === 'drawer' && R.drawerIds(u).length ? R.drawerIds(u).map(d => d.id) : ['0']).map(id => labelOf(u, id)).filter(Boolean);
   const quoted = s => '\u201c' + s + '\u201d';
+  // The Label section's summary (HTML, escaped): the text of a single front, else how many fronts have one
+  const labelSum = (u, fronts) => {
+    if (fronts.length === 1) return labelOf(u, '0') ? esc(quoted(labelOf(u, '0'))) : 'None';
+    const n = fronts.filter(dr => labelOf(u, dr.id)).length;
+    return n ? `${n} of ${fronts.length} named` : 'None';
+  };
   function setLabel(u, id, text) {
     const L = { ...(u.labels || {}) }, s = String(text).slice(0, LABEL_MAX);
     if (s.trim()) L[id] = s; else delete L[id];

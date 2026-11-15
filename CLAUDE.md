@@ -244,8 +244,8 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
 
 - Labels (Dols, 2026-11-14, branch `claude/project-thread-760e4t`): each drawer and case front's text in `cfg.labels`
   (key = the drawer's id from `R.drawerIds`, `'0'` for a module holding one drawer and for a case; section "labels" in
-  `src/template.html`: `labelOf`, `labelsOf`, `setLabel`, `LABEL_MAX` 24). The level panel's "Label" field
-  (`data-ulabel`, first field of Inside, in the drawer's frame when there are several) redraws the 3D on `input` and
+  `src/template.html`: `labelOf`, `labelsOf`, `setLabel`, `LABEL_MAX` 24). The level panel's "Label" section
+  (`l-label`, folded at first, Dols 2026-11-15; summary `labelSum`; one `data-ulabel` field per drawer front) redraws the 3D on `input` and
   saves on `change` (one undo step). In 3D, `loadParts` collects each Label part (`LABEL_PART`, with the drawer it rides
   in) in `v.labelParts`; `v.relabel` lays a canvas text (`labelText`) on its face towards the viewer, in the part's group.
   `noColors` leaves `labels` out of the view's key, so typing never rebuilds the model. Free text: `plainUnit` keeps it
