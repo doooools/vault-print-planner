@@ -5618,12 +5618,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // A stack is first framed from three quarters (the Front / ¾ / Side buttons went, Dols 2026-11-13: drag to turn)
   const V3_DIR = [0.55, 0.42, 1];
   const V3_SPREAD = 60; // mm between units when spread
+  const V3_SPIN = 24; // seconds for one turn of "Rotate": slow enough to film (Dols, 2026-11-15)
   const V3_LIFT = 52 + 48 * 3; // mm the stack above an open case rises (with the case's lid): a 4F module's height
   // The view lives in the page (steps 1 and 2, see v3sync) or, enlarged, in the #v3d dialog. One WebGL renderer is
   // kept for the page's life; each model (a unit, a stack) gets its own scene, and the tools and the camera's
   // direction carry over from one to the next (v3ui).
   let v3gl = null, v3want = null;
-  const v3ui = { tool: null, pscope: 'project', brush: null, explode: false, hideRoof: false, dir: null };
+  const v3ui = { tool: null, pscope: 'project', brush: null, explode: false, hideRoof: false, dir: null, spin: false };
   async function open3d(t, mode = {}) {
     const want = v3want = {};
     if (!v3gl) v3status('Loading the 3D viewer…');
@@ -5726,6 +5727,24 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     controls.addEventListener('change', render);
     controls.addEventListener('change', () => placeTip());
     controls.addEventListener('start', () => { if (menuNow && !menuNow.el.contains(document.activeElement)) menuClose(); });
+    // "Rotate" (Dols, 2026-11-15): the camera goes round the stack's vertical axis, one turn in V3_SPIN s, until the
+    // button is pressed again. Only the direction changes: never the distance nor the point looked at. OrbitControls
+    // turns only while nothing is dragged, so a drag (or a right-drag) holds it and it goes on from there when let go.
+    // Off at every page load (v3ui is the page's life); kept across a rebuild of the stack and onto another stack.
+    controls.autoRotateSpeed = 60 / V3_SPIN;
+    v.spin = () => {
+      controls.autoRotate = !!v3ui.spin;
+      if (!v3ui.spin || v.spinning) return;
+      v.spinning = true;
+      let last = performance.now();
+      const step = now => {
+        if (v3 !== v || !v3ui.spin) { v.spinning = false; return; }
+        const dt = Math.min(0.05, Math.max(0, now - last) / 1000); last = now;
+        if (v.framed && box.clientWidth) controls.update(dt); // parked out of the page: nothing drawn, nothing turned
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
     // Aim at the whole stack (taller when spread) from a direction, far enough back for it to fit the view
     const hasBase = lay.extra.length > 0 || lay.units.some(u => u.stack && !u.column), spreadOf = u => v.explode ? (u.level + (hasBase ? 1 : 0)) * V3_SPREAD : 0;
     v.aim = dir => {
@@ -6013,6 +6032,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     resize();
     if (v.units.flatMap(x => x.movers || [x]).some(u => u.t !== (u.open ? 1 : 0))) glide(); // one caught on its way
     v3tools(); v3side();
+    v.spin(); // still turning if Rotate was on for the model before
     if (vaultFolder) loadParts(v); else v3status(v.units.some(u => u.place) ? 'Boxes for now. Choose your Vault folder to see the real parts.' : 'Boxes from the published sizes.');
   }
   // The colour settings a part's own colour goes in, as the picker wants it: the unit the part belongs to (a roof's
@@ -6055,11 +6075,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const paintLbl = `Paint<span class="v3-pdots" aria-hidden="true">${shown.map(p => `<span class="dot2" style="background:${p.hex}"></span>`).join('')}${fil.length > shown.length ? `<small>+${fil.length - shown.length}</small>` : ''}</span>`;
     $('v3dTools').innerHTML = `<div class="v3-seg" role="group" aria-label="Tool"><button type="button" data-v3tool="turn" aria-pressed="${v.tool === 'turn'}" title="Select (Esc from Paint)">Select</button><button type="button" data-v3tool="paint" aria-pressed="${v.tool === 'paint'}" aria-keyshortcuts="P" title="Paint (P): ${esc(fil.map(p => p.name).join(', '))}" aria-label="Paint, ${plural(fil.length, 'filament')} on this stack">${paintLbl}</button></div>
       <div class="v3-right">
+        <button type="button" class="v3-tog" data-v3spin aria-pressed="${!!v3ui.spin}" aria-keyshortcuts="R" title="Rotate: the stack turns slowly until you press it again (R)">Rotate</button>
         ${v.units.length > 1 ? `<button type="button" class="v3-tog" data-v3tog="explode" aria-pressed="${v.explode}" aria-keyshortcuts="E" title="Spread levels (E)">Spread levels</button>` : ''}
         ${roof ? `<button type="button" class="v3-tog" data-v3tog="hideRoof" aria-pressed="${v.hideRoof}" aria-keyshortcuts="H" title="Hide roof (H)">Hide roof</button>` : ''}
         ${v.units.some(u => u.place && u.place.bolts.length) ? `<div class="v3-seg v3-bolts" role="group" aria-label="Bolt finish, for the whole build (also in Hardware)"><span class="v3-seglbl" aria-hidden="true">Bolts</span>${HW_FINISHES.map(([id, hex, n]) => `<button type="button" data-v3fin="${id}" aria-pressed="${hwFinish() === id}" aria-label="${n} bolts" title="${n} bolts, for the whole build (also in Hardware)"><span class="dot2" style="background:${hex}"></span></button>`).join('')}</div>` : ''}
         <button type="button" class="v3-tog v3-helpbtn" data-v3help aria-expanded="${!!v3ui.help}" aria-controls="v3dHelp" aria-label="How to move the view" title="How to move the view">${icon('help')}</button>
         ${v3ui.help ? `<div class="v3-helppop" id="v3dHelp"><p><b>Drag</b> to turn · <b>scroll</b> to zoom · <b>right-drag</b> to move the view.</p>
+          <p><b>Rotate</b> turns the stack slowly until you press it again; a drag holds it while you turn the view.</p>
           <p><b>Double-click</b> a drawer or a case to open or close it.</p>
           <p><kbd>${MOD}</kbd> + <b>click</b> a level to add it to the selection or take it out, <kbd>Shift</kbd> + <b>click</b> to select the levels in between: the panel then sets them all at once.</p>
           <p><b>Right-click</b> the background to fit the stack in the view, add a level on top or open the stack’s settings.</p>
@@ -6083,6 +6105,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     on('[data-v3tool]', b => { v.tool = b.dataset.v3tool; fpAdding = false; v.hot = null; v.hoverOff(); v.recolor(); v3tools(); v3side(); });
     on('[data-v3help]', () => { v3ui.help = !v3ui.help; v3tools(); const b = $('v3dTools').querySelector('[data-v3help]'); if (b) b.focus({ preventScroll: true }); });
     on('[data-v3tipok]', () => { store.set('openTip', true); v3tools(); });
+    on('[data-v3spin]', () => { v3ui.spin = !v3ui.spin; v.spin(); v3tools(); });
     on('[data-v3tog]', b => { v[b.dataset.v3tog] = !v[b.dataset.v3tog]; v.arrange(); v3tools(); v3side(); });
     on('[data-v3scope]', b => { v.pscope = b.dataset.v3scope; v3tools(); });
     on('[data-v3brush]', b => { setBrush(b.dataset.v3brush); const n = $('v3dBrush').querySelector(`[data-v3brush="${CSS.escape(b.dataset.v3brush)}"]`); if (n) n.focus({ preventScroll: true }); });
@@ -7262,7 +7285,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       [[MOD + ' + click'], 'Add a level to the selection, or take it out: the panel then sets them all at once'],
       [['Shift + click'], 'Select the levels from the last one clicked to this one'],
       [['O'], 'Open or close the level’s drawer or case'], [['P'], 'Paint on or off'],
-      [['F'], 'Fit the stack in the view'], [['E'], 'Spread levels'], [['H'], 'Hide roof']]],
+      [['F'], 'Fit the stack in the view'], [['E'], 'Spread levels'], [['H'], 'Hide roof'],
+      [['R'], 'Rotate: the stack turns slowly, on or off']]],
   ];
   // 'Shift + ↑ ↓': Shift with ↑ or ↓; several combinations in a row are alternatives (or)
   const kbd = k => `<span class="kc">${k.split(' + ').map(x => x.split(' ').map(y => y === 'click' ? 'click' : `<kbd>${esc(y)}</kbd>`).join(' ')).join(' + ')}</span>`; // a click is no key
@@ -7309,6 +7333,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       case 'f': if (!v) return false; v.aim(null); return true; // the camera moves only when asked: this is "Fit the stack in the view"
       case 'e': return press('[data-v3tog="explode"]');
       case 'h': return press('[data-v3tog="hideRoof"]');
+      case 'r': return press('[data-v3spin]');
     }
     return false;
   }
