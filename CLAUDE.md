@@ -249,20 +249,25 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   saves on `change` (one undo step). In 3D, `loadParts` collects each Label part (`LABEL_PART`, with the drawer it rides
   in) in `v.labelParts`; `v.relabel` lays a canvas text (`labelText`) on its face towards the viewer, in the part's group.
   `noColors` leaves `labels` out of the view's key, so typing never rebuilds the model. Free text: `plainUnit` keeps it
-  apart (`freeText`), escaped where shown. Not shown: boxes before the folder is picked, and 2F/4F cases, whose
-  "Case label" (Label.stl) has no placement (only the Sustainers label is placed, on every case height). `rules.js` doesn't
-  read labels: the Label line is the same.
+  apart (`freeText`), escaped where shown. Not shown: boxes before the folder is picked. Every case has its label
+  placed (Dols, 2026-11-15): Label for Sustainers in a 1F front's recess, the drawers' Label.stl in a 2F/4F front's edge
+  slot (`make_recipes.py`, pushed to the slot's closed end; the JSON was patched from the Sustainers' placement, same
+  rotation). `rules.js` doesn't read labels: the Label line is the same. The canvas text is a part for the brush and
+  Select (`userData.role` 'labelText', the label's `cfg`; `v.recolor` only tints it, `v.relabel` draws it).
   Raised text in Print's exports (Dols, 2026-11-15, section "label text"): `labelAssign` (run by `renderPrint` over the
   plates left) gives each Label part on the plates its text (`labelTexts`: plate item → `{s, color, hex}`), in the order
   of the stacks' fronts per kind (drawers' Label also on 2F/4F case fronts, 1F cases' Label for Sustainers) and colour,
   the first `have()` ones taken as already printed. `planFor` puts it on the piece (`text`) with `label: {relief,
-  letter}`. `textKit` loads three.js, opentype.js 1.3.4 and Inter Bold (`@fontsource/inter@5.0.18`, latin, woff) from
-  jsDelivr at the first export that needs them; `textSolid` extrudes the glyphs (ShapePath.toShapes, ExtrudeGeometry,
+  letter, font}`. `textKit(font)` loads three.js, opentype.js 1.3.4 and the label font (`LABEL_FONTS`: Fontsource
+  latin 700 woff, Inter by default, pinned) from jsDelivr at the first export that needs them; `labelFace` loads the
+  same woff as a `FontFace` for the 3D view's canvas text; `textSolid` extrudes the glyphs (ShapePath.toShapes, ExtrudeGeometry,
   welded: closed meshes), `labelSolid` centres it on the label's flat top face (measured on the files: 44.7 × 19.2 and
   37.7 × 19.9 mm), 80 % of its length at most, turned half a turn (the placements turn the file half a turn on the front).
   Bambu project: a second `<component>` / `<part>` of the label's object with its `extruder` (the `labelText` colour's
   slot, added to the filaments when no plate prints in it). Plate files: a second PrusaSlicer volume in the same mesh.
-  Settings `labelRelief` (0 = none) and `labelLetter`, localStorage, recommended `LABEL_REC` (0.6, 6). Colour role
+  Settings `labelRelief` (0 = none), `labelLetter` and `labelFont`, one for every label, localStorage, recommended
+  `LABEL_REC` (0.6, 6, inter), set in Design's Label section (`labelLook`, `labelSet`; they left Print's plate options,
+  Dols 2026-11-15). Colour role
   `labelText` ("Label text", default charcoal) in `R.ROLES`, painted like any other, no part of its own; the 3D view's
   canvas text takes it and the letter height. Not in the STL folders.
 

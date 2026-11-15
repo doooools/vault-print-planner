@@ -1403,10 +1403,22 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const paintLines = (res, cfg) => ({ ...res, lines: res.lines.map(l => { const c = colorFor(l.role, cfg); return c === l.color ? l : { ...l, color: c, key: l.file.path + '#' + c }; }) });
   let labelsApart = store.get('labelsApart', true); // labels on a plate of their own
   let mixSupports = store.get('mixSupports', false); // parts that need supports share plates with the rest
-  // The labels' raised text in Print's exports (section "label text"): its relief in mm (0: none) and its letter height
-  // (capitals, mm; smaller when the text is too long for the label). LABEL_REC: the recommended values.
-  const LABEL_REC = { relief: 0.6, letter: 6 };
+  // The labels' text, for every label (set in Design, a level's Label section; Dols, 2026-11-15): its relief in Print's
+  // exports in mm (0: none, section "label text"), its letter height (capitals, mm; smaller when the text is too long
+  // for the label) and its font (LABEL_FONTS: free fonts from Fontsource, loaded when first drawn or exported).
+  // LABEL_REC: the recommended values.
+  const LABEL_REC = { relief: 0.6, letter: 6, font: 'inter' };
+  const LABEL_FONTS = [
+    { id: 'inter', name: 'Sans', sub: 'Inter', pkg: 'inter@5.0.18', file: 'inter' },
+    { id: 'narrow', name: 'Narrow', sub: 'Roboto Cond.', pkg: 'roboto-condensed@5.0.18', file: 'roboto-condensed' },
+    { id: 'rounded', name: 'Rounded', sub: 'Nunito', pkg: 'nunito@5.0.20', file: 'nunito' },
+    { id: 'mono', name: 'Mono', sub: 'Roboto Mono', pkg: 'roboto-mono@5.0.20', file: 'roboto-mono' },
+    { id: 'slab', name: 'Slab', sub: 'Roboto Slab', pkg: 'roboto-slab@5.0.22', file: 'roboto-slab' },
+    { id: 'stencil', name: 'Stencil', sub: 'Stardos', pkg: 'stardos-stencil@5.0.14', file: 'stardos-stencil' }];
+  const labelFontOf = id => LABEL_FONTS.find(f => f.id === id) || LABEL_FONTS[0];
+  const labelFontUrl = f => `https://cdn.jsdelivr.net/npm/@fontsource/${f.pkg}/files/${f.file}-latin-700-normal.woff`;
   let labelRelief = store.get('labelRelief', LABEL_REC.relief), labelLetter = store.get('labelLetter', LABEL_REC.letter);
+  let labelFont = labelFontOf(store.get('labelFont', LABEL_REC.font)).id;
   let printed = store.get('printed', {});   // path -> pieces already printed
   // Parts printed before, declared by hand in Print's "Already printed" list (Dols, 2026-11-14): progress key -> pieces.
   // They count as printed (have) and come off the plates, like plates marked printed, but are kept apart from `printed`
@@ -3201,7 +3213,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const fronts = u.type === 'drawer' && dids.length > 1 ? dids : [null];
     const labelBody = fronts.map(dr => { const id = dr ? dr.id : '0', fid = dr ? 'ulabel-' + id : 'ulabel';
       return `<div class="field"><label class="lbl" for="${fid}">${dr ? esc(drawerName(u, dr)) + ' <span class="hint">drawer front</span>' : `Text <span class="hint">${u.type === 'case' ? 'on the case front' : 'on the drawer front'}</span>`}</label>
-      <input type="text" class="tfield" id="${fid}" data-ulabel="${id}" value="${esc(labelOf(u, id))}" maxlength="${LABEL_MAX}" placeholder="e.g. M6 bolts" autocomplete="off" spellcheck="false"></div>`; }).join('');
+      <input type="text" class="tfield" id="${fid}" data-ulabel="${id}" value="${esc(labelOf(u, id))}" maxlength="${LABEL_MAX}" placeholder="e.g. M6 bolts" autocomplete="off" spellcheck="false"></div>`; }).join('') + labelLook();
     if (u.type === 'drawer') {
       const lay = R.drawersOf(u), layOpts = layoutsReady(u) ? R.LAYOUTS[u.h] || [] : [];
       if (layOpts.length > 1) o += `<div class="field"><div class="lbl">Drawers in this module <span class="hint">${lay.map(x => x + 'F').join(' + ')}${lay.length > 1 ? ', top to bottom' : ''}</span></div>
@@ -3316,6 +3328,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       toast(`Every drawer of this module now has the ${drawerName(u, dv.dr, false)} drawer\u2019s inside, lock and rails${new Set(dids.map(x => x.w)).size > 1 ? ' (the other box size keeps its own divider plan)' : ''}.`);
     }; }
     // The label: drawn in the view as it is typed, saved (one undo step) when the field is left or Enter pressed
+    box.querySelectorAll('[data-labset]').forEach(b => b.onclick = () => { labelSet(b); renderInspector(); if (v3 && v3.relabel) v3.relabel(); });
     box.querySelectorAll('[data-ulabel]').forEach(lf => {
       const id = lf.dataset.ulabel, was = labelOf(u, id);
       const show = () => {
@@ -3712,6 +3725,22 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const labelOf = (u, id) => u && u.labels && typeof u.labels[id] === 'string' ? u.labels[id] : '';
   const labelsOf = u => !u.labels ? [] : (u.type === 'drawer' && R.drawerIds(u).length ? R.drawerIds(u).map(d => d.id) : ['0']).map(id => labelOf(u, id)).filter(Boolean);
   const quoted = s => '\u201c' + s + '\u201d';
+  // The text's look, the same on every label: font, letter height, and how far Print's exports raise it
+  function labelLook() {
+    const seg = (key, vals, cur, rec, word) => vals.map(v => `<button type="button" data-labset="${key}=${v}" aria-pressed="${cur === v}" aria-label="${v ? v + ' mm' : 'None'}">${v || 'None'}${v === rec ? '<small>recommended</small>' : !v ? `<small>${word}</small>` : ''}</button>`).join('');
+    return `<p class="pnote" style="margin:0">For every label in the project:</p>
+      <div class="field"><div class="lbl">Font</div><div class="seg lays" role="group" aria-label="Font of the labels">${LABEL_FONTS.map(f => `<button type="button" data-labset="font=${f.id}" aria-pressed="${labelFont === f.id}">${f.name}<small>${f.sub}</small></button>`).join('')}</div></div>
+      <div class="field"><div class="lbl">Letter height, mm <span class="hint">a long text gets smaller ones</span></div><div class="seg" role="group" aria-label="Letter height">${seg('letter', [4, 5, 6, 7, 8], labelLetter, LABEL_REC.letter)}</div></div>
+      <div class="field"><div class="lbl">Raised text, mm <span class="hint">in Print\u2019s exports</span></div><div class="seg" role="group" aria-label="Raised text">${seg('relief', [0, 0.4, 0.6, 0.8, 1], labelRelief, LABEL_REC.relief, 'blank')}</div></div>
+      <p class="pnote" style="margin:0">The text prints in its own filament, Label text: paint it like any part (with Paint, click a text in the view). ${LABEL_REC.relief} mm is three 0.2 mm layers.</p>`;
+  }
+  // A click on one of labelLook's buttons: the setting for every label, saved in this browser
+  function labelSet(b) {
+    const [key, val] = b.dataset.labset.split('=');
+    if (key === 'font') { labelFont = labelFontOf(val).id; store.set('labelFont', labelFont); }
+    if (key === 'letter') { labelLetter = +val; store.set('labelLetter', labelLetter); }
+    if (key === 'relief') { labelRelief = +val; store.set('labelRelief', labelRelief); }
+  }
   // The Label section's summary (HTML, escaped): the text of a single front, else how many fronts have one
   const labelSum = (u, fronts) => {
     if (fronts.length === 1) return labelOf(u, '0') ? esc(quoted(labelOf(u, '0'))) : 'None';
@@ -4389,8 +4418,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <div class="ibody">
         ${popt('mixSupports', 'Parts with supports', mixSupports ? 'fewer plates' : 'plates of their own', '', pbool('mixSupports', { label: 'Plates of their own' }, { label: 'Fewer plates', sub: 'shared, supports on just for them' }, mixSupports))}
         ${popt('printAids', 'Manual supports', printAids ? 'one per roof' : 'none', 'USSA’s prop for each drawer roof', pbool('printAids', { label: 'None' }, { label: 'One per roof', sub: 'standing against it' }, printAids))}
-        ${hasLabels ? popt('labelsApart', 'Labels', labelsApart ? 'own plate' : 'with the rest', 'On a plate of their own, they print in one go with their text', pbool('labelsApart', { label: 'With the rest' }, { label: 'Own plate' }, labelsApart)) : ''}
-        ${hasLabels ? labelOpts(plates) : ''}
+        ${hasLabels ? popt('labelsApart', 'Labels', labelsApart ? 'own plate' : 'with the rest', `On a plate of their own, they print in one go with their text${labelRelief ? '' : ' (none: Raised text is None)'}. Their text, its font, size and relief: a level\u2019s Label section in Design.`, pbool('labelsApart', { label: 'With the rest' }, { label: 'Own plate' }, labelsApart)) : ''}
         <div class="pfoot"><details class="info" data-k="plates" ${openInfo.has('plates') ? 'open' : ''}><summary>How plates are laid out</summary><p>Plates follow the colors chosen in Design. Plate numbers stay the same when you mark plates printed, so they keep matching your slicer project. Each plate stays under one 1 kg spool, on a ${printer.v[0]} × ${printer.v[1]} mm bed with 5 mm edges. ${mixSupports ? 'TPU parts get their own plates. Parts that need supports share plates with the rest: the Bambu Studio project turns supports on for just those parts. If you drag STLs in by hand, turn supports on for those parts yourself.' : 'Parts that need supports or TPU get their own plates, so you never change slicer settings in the middle of a plate.'} Module shells stay with the rest: their supports are light (tree, from the build plate only, critical regions only, 80° threshold) and the Bambu Studio project turns them on for the shells alone. Each shell keeps 15 mm clear beyond its top and bottom walls for them (dashed). Parts with supports keep as much room from their neighbours as Bambu’s supports for them spread. Tall parts printed on an edge get straight supports instead of tree supports. Plates are drawn like the slicer’s top view: front at the bottom, the printer’s no-print corner hatched in red.</p></details>
         ${done ? '<button type="button" class="btn" id="resetPrinted">Reset all progress</button>' : ''}</div>
       </div></section>`;
@@ -4463,13 +4491,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (key === 'printAids') { printAids = on; store.set('manualSupports', on); }
       renderPrint();
     });
-    // The labels' raised text: its relief (0: none) and its letter height
-    V.querySelectorAll('[data-plab]').forEach(b => b.onclick = () => {
-      const [key, val] = b.dataset.plab.split('=');
-      if (key === 'relief') { labelRelief = +val; store.set('labelRelief', labelRelief); }
-      if (key === 'letter') { labelLetter = +val; store.set('labelLetter', labelLetter); }
-      renderPrint();
-    });
     // Already printed: the rail's button shows the list in place of the sheet; Add, All N and the steppers change it
     V.querySelectorAll('[data-phave]').forEach(btn => btn.onclick = () => { printHave = !printHave; renderPrint(); });
     if ($('hBack')) $('hBack').onclick = () => { printHave = false; renderPrint(); };
@@ -4535,21 +4556,29 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     }
     return out;
   }
-  // Plate options: the text's relief (None: blank labels) and its letter height, each with the one recommended
-  function labelOpts(plates) {
-    const all = plates.reduce((a, pl) => a + pl.items.filter(it => isLabel(it.p.l) && !isExtra(it.p.l)).length, 0), named = labelTexts.size;
-    const seg = (key, vals, cur, rec, word) => vals.map(v => `<button type="button" data-plab="${key}=${v}" aria-pressed="${cur === v}">${v ? v + ' mm' : 'None'}${v === rec ? '<small>recommended</small>' : !v ? `<small>${word}</small>` : ''}</button>`).join('');
-    const hint = !named ? 'No label on these plates has a text yet: give drawers and cases one in Design (the Label field of a level).'
-      : `${named} of the ${plural(all, 'label')} on these plates ${named === 1 ? 'has' : 'have'} a text, from Design. It is raised on the label as a part of its own, in the Label text color (Paint), in the Bambu Studio project and the plate files. ${LABEL_REC.relief} mm is three 0.2 mm layers.`;
-    return popt('labelRelief', 'Label text', !labelRelief ? 'none' : named ? `${labelRelief} mm raised` : 'no text yet', hint, seg('relief', [0, 0.4, 0.6, 0.8, 1], labelRelief, LABEL_REC.relief, 'blank labels'))
-      + (labelRelief ? popt('labelLetter', 'Letter height', `${labelLetter} mm`, 'The capitals’ height. A text too long for its label gets smaller letters, to fit.', seg('letter', [4, 5, 6, 7, 8], labelLetter, LABEL_REC.letter)) : '');
-  }
   const CDN_OPENTYPE = 'https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.module.js';
-  const CDN_LABEL_FONT = 'https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.18/files/inter-latin-700-normal.woff';
-  let textKitP = null;
-  const textKit = () => textKitP || (textKitP = Promise.all([loadThree(), import(CDN_OPENTYPE), fetch(CDN_LABEL_FONT).then(r => { if (!r.ok) throw new Error('font ' + r.status); return r.arrayBuffer(); })])
-    .then(([{ T }, ot, buf]) => ({ T, font: (ot.parse || ot.default.parse)(buf) }))
-    .catch(() => { textKitP = null; throw new Error('Couldn’t load the font for the labels’ text (from cdn.jsdelivr.net). Check your connection and try again, or pick None under Label text in the plate options.'); }));
+  // three.js, opentype.js and one label font (labelFont's, by default), each loaded once
+  const textKits = new Map();
+  const textKit = (id = labelFont) => {
+    const f = labelFontOf(id);
+    if (!textKits.has(f.id)) textKits.set(f.id, Promise.all([loadThree(), import(CDN_OPENTYPE), fetch(labelFontUrl(f)).then(r => { if (!r.ok) throw new Error('font ' + r.status); return r.arrayBuffer(); })])
+      .then(([{ T }, ot, buf]) => ({ T, font: (ot.parse || ot.default.parse)(buf) }))
+      .catch(() => { textKits.delete(f.id); throw new Error(`Couldn\u2019t load the labels\u2019 font (${f.sub}, from cdn.jsdelivr.net). Check your connection and try again, or set Raised text to None in a level\u2019s Label section in Design.`); }));
+    return textKits.get(f.id);
+  };
+  // The same font for the 3D view's canvas text, as a web font: drawn with it once it is in, with the page's until then
+  const labelFaces = new Map();
+  function labelFace(id = labelFont) {
+    const f = labelFontOf(id), fam = 'vpp-label-' + f.id;
+    if (labelFaces.get(f.id) === true) return `"${fam}"`;
+    if (!labelFaces.has(f.id) && typeof FontFace === 'function') {
+      labelFaces.set(f.id, false);
+      new FontFace(fam, `url(${labelFontUrl(f)})`, { weight: '700' }).load()
+        .then(face => { document.fonts.add(face); labelFaces.set(f.id, true); if (v3 && v3.relabel) v3.relabel(); })
+        .catch(() => {}); // the page's own font stays
+    }
+    return null;
+  }
   // A text as a closed solid: capitals `capH` mm tall (smaller if wider than maxW), centred on 0,0 (the capitals' middle),
   // from z = 0 up `relief` mm, turned `angle` radians. Glyph outlines (holes found by containment) extruded by three.js,
   // corners welded so each letter is a closed mesh.
@@ -4593,7 +4622,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     return s;
   }
   function planFor(plates) {
-    return { bed: [printer.v[0], printer.v[1]], ...(preset().plate ? { plate: preset().plate } : {}), bambu: preset().bambu || null, label: { relief: labelRelief, letter: labelLetter }, plates: plates.map(pl => ({ name: plateFolder(pl), color: pl.color, hex: colorHex(pl.color),
+    return { bed: [printer.v[0], printer.v[1]], ...(preset().plate ? { plate: preset().plate } : {}), bambu: preset().bambu || null, label: { relief: labelRelief, letter: labelLetter, font: labelFont }, plates: plates.map(pl => ({ name: plateFolder(pl), color: pl.color, hex: colorHex(pl.color),
       pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, ...(labelRelief && labelTexts.get(it) ? { text: labelTexts.get(it) } : {}), spin: it.asis ? 0 : +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + insetOf(it)[0]).toFixed(2), y: +(it.y + insetOf(it)[1]).toFixed(2), w: +(it.w - 2 * insetOf(it)[0]).toFixed(2), h: +(it.h - 2 * insetOf(it)[1]).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: it.diag === 45 ? true : it.diag } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: it.p.l.supports, ...(it.p.l.supports === true && needsBrim(it.p.l.file) ? { standing: true } : {}) } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
   }
   // ---------- Bambu Studio project, built right here in the browser ----------
@@ -5566,16 +5595,17 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const sig = { signal: v.ac.signal };
     const render = () => renderer.render(scene, camera);
     v.render = render;
-    v.recolor = () => { scene.traverse(o => { if (o.isMesh && o.userData.role) o.material = mat(o.userData.role, o.userData.cfg, !!(v.hot && v.hot(o))); }); render(); };
+    v.recolor = () => { scene.traverse(o => { if (!o.isMesh || !o.userData.role) return; if (o.userData.labelText) o.material.color.copy(v.hot && v.hot(o) ? hiCol : white); else o.material = mat(o.userData.role, o.userData.cfg, !!(v.hot && v.hot(o))); }); render(); };
+    const white = new T.Color(1, 1, 1);
     // The fronts' labels: each Label part read from the folder (loadParts) gets its text, drawn again only when the
     // text, its colour or the letter height changed
     v.labelParts = [];
     v.relabel = (draw = true) => {
       for (const e of v.labelParts) {
-        const text = labelOf(e.u.cfg, e.id).trim(), ink = colorHex(colorFor('labelText', e.u.cfg)), k = [text, ink, labelLetter].join('\n');
+        const text = labelOf(e.u.cfg, e.id).trim(), ink = colorHex(colorFor('labelText', e.u.cfg)), fam = text ? labelFace() : null, k = [text, ink, labelLetter, fam].join('\n');
         if (e.k === k && (!e.text || e.text.parent)) continue;
         e.k = k; labelDrop(e);
-        if (text && e.mesh.parent) { e.text = labelText(T, e.mesh, text, ink); e.mesh.parent.add(e.text); }
+        if (text && e.mesh.parent) { e.text = labelText(T, e.mesh, text, ink, fam); e.mesh.parent.add(e.text); }
       }
       if (draw) render();
     };
@@ -6068,21 +6098,25 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // A front's label in the view: its text, in the Label text colour, on a canvas laid on the Label part's face towards the viewer (the part's own
   // bounds, placed; the front faces +z), in the part's group, so that it slides out with its drawer. Never picked.
   const LABEL_PART = /\/Label( for Sustainers)?\.stl$/i;
-  function labelText(T, mesh, text, ink) {
+  function labelText(T, mesh, text, ink, face) {
     const g = mesh.geometry; if (!g.boundingBox) g.computeBoundingBox();
     const b = g.boundingBox.clone().applyMatrix4(mesh.matrix), w = b.max.x - b.min.x, h = b.max.y - b.min.y;
     const W = 512, H = Math.max(64, Math.round(W * h / w)), c = document.createElement('canvas');
     c.width = W; c.height = H;
-    const x = c.getContext('2d'), fam = getComputedStyle(document.body).fontFamily || 'sans-serif';
-    // capitals as tall as Print's "Letter height" (about 0.72 of the font size), smaller to fit 80 % of the label
-    let px = Math.round(Math.min(labelLetter, h * 0.6) / h * H / 0.72);
+    const x = c.getContext('2d'), fam = face || getComputedStyle(document.body).fontFamily || 'sans-serif';
+    // capitals as tall as the Letter height (measured on an H: about 0.72 of the font size), smaller to fit 80 % of the label
+    x.font = `700 100px ${fam}`;
+    const capR = (x.measureText('H').actualBoundingBoxAscent || 72) / 100;
+    let px = Math.round(Math.min(labelLetter, h * 0.6) / h * H / capR);
     do x.font = `700 ${px}px ${fam}`; while (x.measureText(text).width > W * 0.8 && --px > 10);
     x.fillStyle = ink; x.textAlign = 'center'; x.textBaseline = 'middle';
     x.fillText(text, W / 2, H / 2 + px * 0.05);
     const tex = new T.CanvasTexture(c); tex.colorSpace = T.SRGBColorSpace; tex.anisotropy = 4;
     const m = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
     m.position.set((b.min.x + b.max.x) / 2, (b.min.y + b.max.y) / 2, b.max.z + 0.05);
-    m.raycast = () => {}; m.renderOrder = 1; m.userData.own = true; m.userData.labelText = true;
+    // painted like a part (role labelText, the label's unit), but drawn by relabel, not recolor
+    m.renderOrder = 1; m.userData.own = true; m.userData.labelText = true;
+    Object.assign(m.userData, { role: 'labelText', cfg: mesh.userData.cfg, name: 'Label text' });
     return m;
   }
   function labelDrop(e) {
@@ -6513,7 +6547,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const tpuSlot = ps && ps.filament_settings_id.length > 1 ? 2 : 1;
     const pla = [...new Map(plan.plates.filter(pl => pl.color !== 'tpu').map(pl => [pl.color, pl.hex])).entries()];
     // The labels' raised text: a filament of its own colour, unless a plate already prints in it
-    const kit = plan.label && plan.label.relief > 0 && plan.plates.some(pl => pl.pieces.some(p => p.text)) ? await textKit() : null;
+    const kit = plan.label && plan.label.relief > 0 && plan.plates.some(pl => pl.pieces.some(p => p.text)) ? await textKit(plan.label.font) : null;
     if (kit) plan.plates.forEach(pl => pl.pieces.forEach(p => { if (p.text && !pla.some(([c]) => c === p.text.color)) pla.push([p.text.color, p.text.hex]); }));
     const slotOf = new Map(pla.map(([c], i) => [c, i === 0 ? 1 : i + tpuSlot]));
     if (ps && pla.length) {
@@ -6674,7 +6708,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const missing = [...new Set(plan.plates.flatMap(p => p.pieces.map(x => x.path)))].filter(p => !findFile(folder.files, p));
     if (missing.length) throw new Error(`${plural(missing.length, 'part')} not found in \u201c${folder.name}\u201d: ${missingList(missing)}. Pick the Vault download folder (${SRC_DEFAULT.split('/').pop()}).`);
     const outer = zipWriter(), total = plan.plates.reduce((a, p) => a + p.pieces.length, 0);
-    const kit = plan.label && plan.label.relief > 0 && plan.plates.some(pl => pl.pieces.some(p => p.text)) ? await textKit() : null;
+    const kit = plan.label && plan.label.relief > 0 && plan.plates.some(pl => pl.pieces.some(p => p.text)) ? await textKit(plan.label.font) : null;
     let done = 0;
     for (const [pi, plate] of plan.plates.entries()) {
       const z = zipWriter(), items = [], conf = [], orca = [], cache = new Map();

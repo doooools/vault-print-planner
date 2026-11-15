@@ -668,8 +668,10 @@ Do not commit the decimated STLs, the `.blend` files or the renders: they are US
   In the CAD file holder and lever sit at the same depth and across position but the lever is turned end for end
   (hook down): the side sections show the closed lever clearing the recess floor and the hook in the lid's
   groove. The two pins (one file) are not placed.
-  Case label: on 1F panels in a closed recess 10 mm under the top; on 2F/4F in a slot open on the panel's left
-  edge, 43.6 mm under the top, pushed to its end.
+  Case label: on 1F panels the Sustainers' label in a closed recess 10 mm under the top; on 2F/4F the drawers'
+  Label.stl (47.9 mm, Sustainers Naming, manual 01 p.12) in a slot open on the panel's left edge, 43.6 mm under the
+  top, closed 50.1 mm in, pushed to its end (2.2 mm short of the edge). The JSON's 2F/4F entries were moved from
+  the Sustainers' label by hand (same rotation, inner end, height centre and depth) on 2026-11-15.
   Hinges (manual p. 17), each piece of a file on its own (`piece`):
   - the hinge file (`S-M 1F`, `S-M 2-4F`, `L-XL 1F`, `L 2-4F Hinge`) holds the two body leaves, mirror images
     printed face to face. Each leaf bolts inside the back wall, on the 2 mm pad under a notch in the wall's top,
