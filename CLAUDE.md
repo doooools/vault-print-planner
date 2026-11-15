@@ -82,7 +82,8 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   toolbar `v3tools` (Turn: a click selects; Paint, whose button carries the stack's filaments as swatches
   (`stackFilaments`): brush bar `#v3dBrush` with one swatch per filament (`data-v3brush`), "+" for the catalogue
   (`data-v3add`), "A click paints" "Whole stack" / "This module only", hover tints what a click would paint via `v.hot`;
-  Drawers: a click opens or closes a drawer), the first framing from three quarters (`V3_DIR`, `v.aim`; the Front / ¾ / Side buttons went on 2026-11-14), "Spread levels" and "Hide roof" (`v.arrange`, which no longer reframes: the camera never moves by itself), "Bolts" (two swatches) and "?" (`v3ui.help`: drag, scroll, right-drag).
+  Drawers: a click opens or closes a drawer), the first framing from three quarters (`V3_DIR`, `v.aim`; the Front / ¾ / Side buttons went on 2026-11-14), "Rotate" (Dols, 2026-11-15: `data-v3spin`, key R, `v3ui.spin`, off at each page load; `v.spin` runs OrbitControls'
+  `autoRotate` one turn in `V3_SPIN` 24 s, round the target, which a drag holds; started again by `open3d`), "Spread levels" and "Hide roof" (`v.arrange`, which no longer reframes: the camera never moves by itself but on Rotate), "Bolts" (two swatches) and "?" (`v3ui.help`: drag, scroll, right-drag).
   UX audit session 3: with Select, `hoverOn` outlines the level under the pointer and names it in `.v3-hover` (placed
   from its projected box, `placeTip`, again on every camera change); a right-click (button 2 let go within 5 px,
   `rightAt`) on a level selects it and opens `levelMenu` (open or close via `v.openable` / `v.toggle`, add a copy
