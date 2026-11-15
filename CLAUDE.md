@@ -128,7 +128,7 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   2 to 4 are disabled while there is nothing to make; counters: none on Design, Print and Assemble in %, Hardware
   "N to buy"). The header's "File" menu (`fileBtn`, `menuOpen` with a `note`) saves and opens design files on every
   step (`saveDesign`, `openDesign`); `designMark` (localStorage `vpp.designMark`: name, hash of `undoSnap()`, changes
-  since, counted in `undoCommit` / `undoBack` / `undoForth`) says how the file stands. "What's new" (`newsBtn`) and
+  since, counted in `undoCommit` / `undoBack` / `undoForth`) says how the file stands. Save as… (`saveDesign(true)`): the save window (`showSaveFilePicker`, started in the Vault folder, asked again without it if refused); any other failure than a cancel downloads with the reason in a long toast (`toast(m, { long: true })`), never silently; with no save window, `prompt()` for the name, then the download. "What's new" (`newsBtn`) and
   "Report a bug or an idea" (`reportBtn`) are small links under the page's name (`.logo .hlinks`, Dols 2026-11-14); the
   fork's credit to Romy is What's new's first section, "About this fork", written in `CHANGELOG.md` (`build.py`
   `changelog_html`: `## ` a section, `- ` a list line, other lines paragraphs; a section named "About…" is framed).

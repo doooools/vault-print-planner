@@ -2249,10 +2249,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   // A short message at the bottom. With `act` ({ label, fn }) it carries a button ("Undo", "Redo") and stays about 6 s,
   // longer while the pointer is on it.
+  // act: { label, fn } adds a button (Undo…); { long: true } only keeps a longer message up as long (~6 s)
   let tt; function toast(m, act) {
     const t = $('toast'); clearTimeout(tt);
-    t.classList.toggle('act', !!act);
-    if (act) {
+    t.classList.toggle('act', !!(act && act.fn));
+    if (act && act.fn) {
       t.innerHTML = `<span>${esc(m)}</span><button type="button" class="tact"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${act.redo ? '<path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>' : '<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>'}</svg>${esc(act.label)}</button>`;
       t.querySelector('.tact').onclick = () => { t.classList.remove('show'); act.fn(); };
     } else t.textContent = m;
@@ -2936,16 +2937,37 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         setDesignName(name); markFile(name); toast(`Saved to ${dir.name}/${name}`); return;
       } catch (e) { /* write refused or failed: ask where, as below */ }
     }
+    // Save as… (or Save without the folder): the browser's save window. Never a silent download: when it can't open
+    // (refused by the browser or a policy, a start folder it won't take) or the file can't be written, the download
+    // that follows says why. Asked once more without the start folder before giving up.
+    let why = '';
     if (window.showSaveFilePicker) {
-      try {
-        const h = await window.showSaveFilePicker({ id: 'vault-design', startIn: dir || 'downloads', suggestedName: designName || designFileName(), types: DESIGN_TYPES });
-        const w = await h.createWritable(); await w.write(text); await w.close();
-        setDesignName(await inVault(dir, h) ? h.name : null); markFile(h.name); toast(`Saved ${h.name}`); return;
-      } catch (e) { if (e.name === 'AbortError') return; }
+      const ask = startIn => window.showSaveFilePicker({ id: 'vault-design', startIn, suggestedName: designName || designFileName(), types: DESIGN_TYPES });
+      let h = null;
+      try { h = await ask(dir || 'downloads'); } catch (e) {
+        if (e.name === 'AbortError') return;
+        console.warn('Save as: the save window did not open', e);
+        if (dir) try { h = await ask('downloads'); } catch (e2) { if (e2.name === 'AbortError') return; console.warn('Save as: the save window did not open', e2); e = e2; }
+        if (!h) why = `the browser didn’t open its save window (${e.message || e.name})`;
+      }
+      if (h) {
+        try {
+          const w = await h.createWritable(); await w.write(text); await w.close();
+          setDesignName(await inVault(dir, h) ? h.name : null); markFile(h.name); toast(`Saved ${h.name}`); return;
+        } catch (e) { console.warn('Save as: writing the file failed', e); why = `${h.name} couldn’t be written (${e.message || e.name})`; }
+      }
     }
-    const name = designFileName(), a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([text], { type: 'application/json' })), download: name });
+    // No save window in this browser (Firefox, Safari, Brave…): Save as… at least asks the name
+    let name = designFileName();
+    if (as && !window.showSaveFilePicker) {
+      const n = prompt('Save the design as (it goes to your downloads: this browser can’t ask where):', designName || name);
+      if (n === null) return;
+      const clean = n.replace(/[\\/:*?"<>|]+/g, '-').trim().replace(/(\.vault)?\.json$/i, '');
+      if (clean) name = clean + '.vault.json';
+    }
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([text], { type: 'application/json' })), download: name });
     document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-    markFile(name); toast(`Saved ${name} to your downloads`);
+    markFile(name); toast(why ? `Saved ${name} to your downloads: ${why}` : `Saved ${name} to your downloads`, why ? { long: true } : undefined);
   }
   async function openDesign() {
     if (window.showOpenFilePicker) {
@@ -2998,7 +3020,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const f = fileState(), empty = !towers.length && !extras.length, where = saveWhere();
     menuOpen({ head: 'Design file', sub: f.name, note: f.note, noteOk: f.ok, opener: b, keys: e.detail === 0, left: true, items: [
       { label: where ? `Save ${where}` : 'Save', icon: 'save', key: MOD + '+S', dis: empty, tip: empty ? 'Nothing to save yet' : where === 'in the Vault folder' ? 'Save these stacks, loose parts and colors into the Vault folder, next to the part files' : 'Save these stacks, loose parts and colors to a file', fn: () => saveDesign(false) },
-      { label: 'Save as…', icon: 'file', dis: empty, tip: empty ? 'Nothing to save yet' : 'Save a copy somewhere else, or under another name', fn: () => saveDesign(true) },
+      { label: 'Save as…', icon: 'file', dis: empty, tip: empty ? 'Nothing to save yet' : window.showSaveFilePicker ? 'Save a copy somewhere else, or under another name' : 'Save a copy under another name, to your downloads: this browser can’t ask where', fn: () => saveDesign(true) },
       { label: 'Open…', icon: 'open', key: MOD + '+O', tip: 'Open a design saved before: it replaces the stacks and loose parts here', fn: openDesign },
       ...exportItemsMenu(true, true),
     ] });
