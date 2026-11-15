@@ -18,7 +18,7 @@ Design your stacks and the planner tells you exactly which STL files to print an
 ## What it does
 
 1. **Design:** build stacks level by level: drawers or top-opening cases, S to XL, L² and two modules side by side, 1F to 4F, several drawers in one 2F or 4F module, locks, interiors, roofs, a base with wheels, a foot bar or casters, handles. Start from a template or a blank stack.
-   - **3D view** of the stack, made from your own Vault files: every part where the assembled unit puts it, with its bolts. Turn it, spread the units apart, hide the roof. A **double-click** (or **Ctrl** / **Shift** + click) opens a drawer (its key turns, the racks slide) or a case (latches, then the lid, with the roof on it). Press **?** for the keyboard shortcuts: arrows to pick a level, **O** to open its drawer, **D** to copy it, and more.
+   - **3D view** of the stack, made from your own Vault files: every part where the assembled unit puts it, with its bolts. Turn it, spread the units apart, hide the roof. A **double-click** opens a drawer (its key turns, the racks slide) or a case (latches, then the lid, with the roof on it). **Ctrl** + click (Cmd on a Mac) and **Shift** + click select several levels, and the panel then sets what they share all at once. Press **?** for the keyboard shortcuts: arrows to pick a level, **O** to open its drawer, **D** to copy it, and more.
    - **Colors:** the Paint tool gives each kind of part (shells, fronts, boxes, latches, labels…) a filament, for the whole stack or for one module, from your filaments or Bambu Lab's PLA and PETG colours.
 
    ![The Paint tool: a brush bar with the stack's filaments under the 3D view, and the colors by kind of part on the right](docs/images/paint.png)
