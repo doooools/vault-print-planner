@@ -364,7 +364,9 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   differs: no button pressed and a "Mixed" pill; a change goes to every module (every drawer of a module holding
   several, for `R.INSIDE` keys) with `undoAs`, one Undo. `levelsOp` (up, down, dup, dupBelow, del), `openLevels`,
   `levelsMenu`; `keyDesign`, `copySel` and `pasteClip` (clip `lvs`: several levels) take the selection.
-  `v3mark` outlines every selected level. Rules: `docs/ux-redesign.md`, "Several levels selected".
+  `v3mark` outlines every selected level. Rules: `docs/ux-redesign.md`, "Several levels selected". Labels too (Dols, 2026-11-15):
+  `multiInspector`'s "Labels" fold (`data-mlabel`): one text for every front of the selection (`fronts`: each drawer
+  id of a module holding several, `'0'` else), drawn on `input`, saved on `blur` with `undoAs`, Esc restores `was`.
 
 - Stack export (Dols, 2026-11-15, branch `claude/project-thread-cmlav7`): section "the stack in 3D, to a file" in
   `src/template.html` (before "opening and closing"). `exportItemsMenu` puts "Export as STL" / "Export as GLB, with

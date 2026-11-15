@@ -11,6 +11,7 @@ This page is a fork of [Romy's Vault Print Planner](https://vault.romy.io), made
 Every difference is listed on [GitHub](https://github.com/doooools/vault-print-planner/blob/main/docs/differences-from-upstream.md). Amazon.com links in Hardware are still Romy's affiliate links, so US purchases keep supporting the original project. Romy's own changes are the ones marked "Romy's planner", from 2026-11-10 back.
 
 ## 2026-11-15
+- **Labels on several levels at once:** with several levels selected (Ctrl+click, Shift+click), the Labels section gives every front of them the text you type, with one Undo. When their texts differ it says "Mixed"; Esc puts each one's own text back. In a module holding several drawers, each drawer gets it: name them apart one level at a time.
 - **Label look:** pick the labels' font (six of them, from sans to stencil), their letter height and how far the text is raised, under the label's text in Design (the Label section of a level). They left Print's plate options. The text's color paints like any part: with Paint, click a text in the 3D view.
 - **Labels on every case:** 2F and 4F cases now show their label, the drawers' one, in the slot of their front, with its text, in the 3D view.
 - **Labels folded away:** the labels now have their own section in a level's settings, after Inside, folded until you open it. Its line says the label's text, or how many drawers have one.
