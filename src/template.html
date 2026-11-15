@@ -2910,7 +2910,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // when that folder was opened with its handle (Chrome, Edge: they ask once to let the page write there); the design
   // open (opened or saved there before) is written over, another name never is. Save as… and Open… ask, starting in the
   // Vault folder. Without a folder handle (other browsers, or write refused) Save asks too, or downloads the file.
-  // Opening one replaces the stacks and loose parts here; what was marked printed stays.
+  // The file is the whole project (Dols, 2026-11-15; version 4): with the design go the printer, Print's plate options,
+  // stacks left out and progress (printed, onHand, plateState), the label look, Hardware's ticks and stacks left out,
+  // Assemble's steps, and the step and selection shown. Opening it brings all of that back. A file from before
+  // (version under 4) replaces the stacks and loose parts only; what was marked printed here stays. Left out on purpose:
+  // the person's own settings, not the project's (theme, store, the Vault folder, the visit count), and what lasts
+  // only the page's life (ticked plates, open folds, the camera).
   const DESIGN_TYPES = [{ description: 'Vault Print Planner design', accept: { 'application/json': ['.json'] } }];
   let designName = store.get('designName', null); // the design file open in the Vault folder (opened or saved there)
   const setDesignName = n => { designName = n; store.set('designName', n); };
@@ -2920,7 +2925,49 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (!('showDirectoryPicker' in window)) return null;
     try { return (await idb('readonly', st => st.get('folder'))) || null; } catch (e) { return null; }
   }
-  const designText = () => JSON.stringify({ app: 'vault-print-planner', kind: 'design', version: 3, saved: new Date().toISOString(), towers, extras, seq, colors: colorPrefs }, null, 1);
+  const VIEWS = ['build', 'print', 'hardware', 'assemble'];
+  const projectState = () => ({ towers, extras, seq, colors: colorPrefs, printer,
+    print: { skip: printSkip, supports: printAids, labelsApart, mixSupports, printed, onHand, plates: plateState },
+    labels: { relief: labelRelief, letter: labelLetter, font: labelFont },
+    hardware: { bought: hwBought, skip: hwSkip }, assemble: { steps: stepsDone, built: asmBuilt, section: asmSec } });
+  const designText = () => JSON.stringify({ app: 'vault-print-planner', kind: 'design', version: 4, saved: new Date().toISOString(), ...projectState(), view, sel: dsel }, null, 1);
+  // What a version 4 file's project parts may hold, rebuilt like plainTowers does (a file is anyone's JSON)
+  const counts = (o, max = 1e5) => { const r = {}; if (isObj(o)) for (const [k, v] of Object.entries(o)) if (k.length < 600 && !NO_KEY.has(k) && Number.isInteger(v) && v > 0 && v < max) r[k] = v; return r; };
+  const ids = a => Array.isArray(a) ? [...new Set(a.filter(x => Number.isInteger(x) || x === 'loose'))] : [];
+  const plainPrinter = p => {
+    const pp = isObj(p) && PRINTERS.find(x => x.id === p.id); if (!pp) return null;
+    if (pp.id !== 'custom') return { id: pp.id, v: pp.v };
+    if (!Array.isArray(p.v) || p.v.length !== 3 || !p.v.every(n => Number.isFinite(n) && n >= 100 && n <= 2000)) return null;
+    return { id: 'custom', v: [...p.v], ...(typeof p.from === 'string' && SAFE_STR.test(p.from) ? { from: p.from } : {}) };
+  };
+  const plainPlates = o => { const r = {}; if (isObj(o)) for (const [k, st] of Object.entries(o)) if (k.length < 4000 && !NO_KEY.has(k) && isObj(st))
+    r[k] = { base: counts(st.base), done: Array.isArray(st.done) ? st.done.filter(d => isObj(d) && Number.isInteger(d.n) && d.n > 0 && typeof d.sig === 'string' && d.sig.length < 2e5).map(d => ({ n: d.n, sig: d.sig })) : [] };
+    return r; };
+  const num = (v, lo, hi, d) => Number.isFinite(v) && v >= lo && v <= hi ? v : d;
+  // Puts a version 4 file's printer, Print, labels, Hardware and Assemble back, and saves them here
+  function loadProject(d) {
+    const pr = plainPrinter(d.printer); if (pr) { printer = pr; store.set('printer', printer); }
+    const P = isObj(d.print) ? d.print : {};
+    printSkip = ids(P.skip); savePrintSkip();
+    printAids = P.supports === true; store.set('manualSupports', printAids);
+    labelsApart = P.labelsApart !== false; store.set('labelsApart', labelsApart);
+    mixSupports = P.mixSupports === true; store.set('mixSupports', mixSupports);
+    printed = counts(P.printed); store.set('printed', printed);
+    onHand = counts(P.onHand); saveHave();
+    plateState = plainPlates(P.plates); store.set('plateState', plateState);
+    plateSel = { scope: null, ns: new Set() };
+    const L = isObj(d.labels) ? d.labels : {};
+    labelRelief = num(L.relief, 0, 5, LABEL_REC.relief); store.set('labelRelief', labelRelief);
+    labelLetter = num(L.letter, 1, 30, LABEL_REC.letter); store.set('labelLetter', labelLetter);
+    labelFont = labelFontOf(L.font).id; store.set('labelFont', labelFont);
+    const H = isObj(d.hardware) ? d.hardware : {};
+    hwBought = counts(H.bought, 2); store.set('hwBought', hwBought);
+    hwSkip = ids(H.skip).filter(Number.isInteger); store.set('hwSkip', hwSkip);
+    const A = isObj(d.assemble) ? d.assemble : {};
+    stepsDone = counts(A.steps, 2); store.set('steps', stepsDone);
+    asmBuilt = counts(A.built); store.set('asmBuilt', asmBuilt);
+    asmSec = typeof A.section === 'string' && SAFE_KEY.test(A.section) ? A.section : null; store.set('asmSec', asmSec);
+  }
   const designFileName = () => (towers.length === 1 ? towers[0].name : 'Vault design').replace(/[\\/:*?"<>|]+/g, '-').trim() + '.vault.json';
   const fileIn = async (dir, name) => { try { await dir.getFileHandle(name); return true; } catch (e) { return false; } };
   // Whether a file the user picked sits right in the Vault folder (then it is the design open there)
@@ -2986,17 +3033,24 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   function loadDesign(text, name) {
     let d = null; try { d = JSON.parse(text); } catch (e) { /* not JSON */ }
     if (!d || d.app !== 'vault-print-planner' || !Array.isArray(d.towers)) { toast(`${name} isn’t a design saved by this planner`); return false; }
-    if ((towers.length || extras.length) && !confirm(`Open “${name}”? It replaces the stacks and loose parts here. What you marked printed stays.`)) return false;
+    const whole = d.version >= 4; // the whole project: Print, Hardware and Assemble too
+    if ((towers.length || extras.length || (whole && (Object.keys(printed).length || Object.keys(onHand).length || Object.keys(hwBought).length || Object.keys(stepsDone).length)))
+      && !confirm(whole ? `Open “${name}”? It replaces this project: stacks, loose parts, colors, and what is printed, bought and assembled.` : `Open “${name}”? It replaces the stacks and loose parts here. What you marked printed stays.`)) return false;
     // Rebuilt from what the planner writes (plainTowers, plainColors, plainExtras): never kept as the file has it
     const cp = plainColors(d.colors); if (cp) { colorPrefs = cp; saveColors(); }
+    if (whole) loadProject(d); // before the stacks: fixTower reads the printer
     towers = plainTowers(d.towers);
     towers.forEach(t => { t.fp = fpOf(t); if (!t.roles) t.roles = { ...colorPrefs.roles }; if (!(d.version >= 2)) dropAutoBackbones(t); t.levels.flat().forEach(fixUnit); fixTower(t); });
     if (!(d.version >= 3)) splitRoles(); // saved before the latches, stoppers and rods had colours of their own
     extras = plainExtras(d.extras);
     seq = Math.max(Number.isInteger(d.seq) && d.seq > 0 && d.seq < 1e9 ? d.seq : 1, ...towers.map(t => t.id + 1));
-    printSkip = []; savePrintSkip();
+    if (!whole) { printSkip = []; savePrintSkip(); }
     dsel = towers[0] ? { t: towers[0].id, l: null, u: 0 } : extras.length ? { t: 'loose' } : null;
-    saveSel(); save(); saveExtras(); view = 'build'; renderAll(); undoReset(); markFile(name); toast(`Opened ${name}`);
+    const ds = whole && isObj(d.sel) ? plainData(d.sel) : null; // the selection saved, if its stack and level are still there
+    if (ds && ds.t === 'loose' && extras.length) dsel = { t: 'loose' };
+    else if (ds) { const t = towers.find(x => x.id === ds.t);
+      if (t) dsel = { t: t.id, l: Number.isInteger(ds.l) && ds.l >= 0 && ds.l < t.levels.length ? ds.l : null, u: Number.isInteger(ds.u) && ds.u >= 0 ? ds.u : 0, ...(typeof ds.d === 'string' && SAFE_ID.test(ds.d) ? { d: ds.d } : {}) }; }
+    saveSel(); save(); saveExtras(); view = whole && VIEWS.includes(d.view) ? d.view : 'build'; renderAll(); undoReset(); markFile(name); toast(`Opened ${name}`);
     return true;
   }
   // ---------- the File menu ----------
@@ -3005,7 +3059,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // JSON undo compares) and the changes made since (undoCommit adds one, Undo takes one back). Kept in this browser.
   let designMark = store.get('designMark', null);
   if (!designMark || typeof designMark.name !== 'string' || typeof designMark.h !== 'string' || !Number.isInteger(designMark.n)) designMark = null;
-  function designHash() { const s = undoSnap(); let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + '.' + s.length; }
+  function designHash() { const s = JSON.stringify(projectState()); let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + '.' + s.length; }
   function markFile(name) { designMark = { name, h: designHash(), n: 0 }; store.set('designMark', designMark); }
   function fileChanged(by) { if (!designMark) return; designMark.n = Math.max(0, designMark.n + by); store.set('designMark', designMark); }
   function fileState() {
@@ -3021,7 +3075,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     menuOpen({ head: 'Design file', sub: f.name, note: f.note, noteOk: f.ok, opener: b, keys: e.detail === 0, left: true, items: [
       { label: where ? `Save ${where}` : 'Save', icon: 'save', key: MOD + '+S', dis: empty, tip: empty ? 'Nothing to save yet' : where === 'in the Vault folder' ? 'Save these stacks, loose parts and colors into the Vault folder, next to the part files' : 'Save these stacks, loose parts and colors to a file', fn: () => saveDesign(false) },
       { label: 'Save as…', icon: 'file', dis: empty, tip: empty ? 'Nothing to save yet' : window.showSaveFilePicker ? 'Save a copy somewhere else, or under another name' : 'Save a copy under another name, to your downloads: this browser can’t ask where', fn: () => saveDesign(true) },
-      { label: 'Open…', icon: 'open', key: MOD + '+O', tip: 'Open a design saved before: it replaces the stacks and loose parts here', fn: openDesign },
+      { label: 'Open…', icon: 'open', key: MOD + '+O', tip: 'Open a design file saved before: it replaces this project, with what was printed, bought and assembled when it was saved', fn: openDesign },
       ...exportItemsMenu(true, true),
     ] });
   };

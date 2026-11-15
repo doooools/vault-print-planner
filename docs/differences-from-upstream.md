@@ -82,7 +82,7 @@ Other visible changes:
 - **Base and roof per stack**, in the stack's settings. A roof can sit on a top-opening case. A base without wheels stands on its own (no more feet option).
 - **Start screen** "Start your build": printer, Vault folder, templates. Tabs 2 to 4 stay greyed out while there is nothing to make.
 - **Lost folder, said plainly:** when the page can no longer read the folder (a reload, a moved folder, Firefox or Safari not keeping it), a popup offers to reconnect it. Chrome and Edge reconnect on their own when "Allow on every visit" was chosen. "Later" or "Not now" keeps it away for the rest of the visit.
-- **Save and open a design:** "Save" writes the file into your Vault folder (Chrome, Edge), "Save as…" and "Open…" work everywhere; other browsers download the file.
+- **Save and open a design:** "Save" writes the file into your Vault folder (Chrome, Edge), "Save as…" and "Open…" work everywhere; other browsers download the file. The file holds the whole project: stacks, colors, printer, Print's options and progress, hardware bought, assembly steps.
 - **Small comforts:** the inspector keeps its scroll position and open sections when an option changes; a tip shows how to open a drawer until the first try; a stack is deleted by holding its cross.
 - **Linux, macOS, Windows:** file names are compared without regard to case or folder separators, and the files macOS adds (`__MACOSX`, `._name`) are ignored.
 
