@@ -886,14 +886,15 @@ def case(w, d, h):
                {"x": ["center", x], "y": ["min", 1852.14 - 1854.838 + 1.0], "z": ["min", lug_y - 15.0 - 10.29]},
                joint=f"latch_{i+1}.lever")
     r.steps = [{"joints": list(r.joints), "from": 0, "to": 1, "s": 0.45}, {"joints": ["lid"], "from": 0, "to": 1, "s": 0.6}]
-    # case label: 1F panels have a closed recess, its centre 10 mm under the panel's top (x from CASE_SEATS);
-    # 2F/4F panels a slot open on the left edge, 43.6 mm under the top, closed 50.1 mm in: the label
-    # (38.1 mm long) is pushed to its end
+    # case label: 1F panels have a closed recess, its centre 10 mm under the panel's top (x from CASE_SEATS), for
+    # the sustainers' label (38.1 mm long); 2F/4F panels a slot open on the left edge, 43.6 mm under the top, closed
+    # 50.1 mm in, for the drawers' label (47.9 mm long, Sustainers Naming, manual 01 p.12), pushed to its end
     if h == 1:
-        label_y = T - 10.0
+        label_y, label_file = T - 10.0, SUU + "Label for Sustainers.stl"
     else:
-        label_y, label_u = T - 43.63, -{"S": 82.4, "M": 127.0, "L": 164.8}[w] + 50.1 - 19.07
-    r.part("CaseLabel", SUU + "Label for Sustainers.stl", "insert", "module", [-90, 0, 0],
+        label_y, label_u = T - 43.63, -{"S": 82.4, "M": 127.0, "L": 164.8}[w] + 50.1 - 23.93
+        label_file = U + "Label.stl"
+    r.part("CaseLabel", label_file, "insert", "module", [-90, 0, 0],
            {"x": ["center", -label_u], "y": ["min", 7.91], "z": ["center", label_y]})
     r.notes.append("%d lock(s) (lock seats in the front panel; the planner counts 2 for every case)" % (1 if not lock_x else 2))
     hinges(r, w, d, h, T, depth)
