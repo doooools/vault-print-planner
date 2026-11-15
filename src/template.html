@@ -2770,7 +2770,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       { sep: true, icon: 'plus', label: 'Add a level on top', key: 'A', fn: () => levelOp(t, 'top') },
       { icon: 'dup', label: 'Copy stack', key: MOD + '+C', fn: () => copySel(t, null) },
       { icon: 'paste', label: clip && clip.kind === 'level' ? 'Paste the level on top' : 'Paste the stack after this one', key: MOD + '+V', dis: !clip, tip: clip ? '' : 'Copy a level or a stack first', fn: () => pasteClip(t, null) },
-      { icon: 'chev', label: 'Stack settings', key: 'Esc', fn: () => { leavePaint(); dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); } }] };
+      { icon: 'chev', label: 'Stack settings', key: 'Esc', fn: () => { leavePaint(); dsel.l = null; saveSel(); renderInspector(); v3mark(); markLevels(); } },
+      ...exportItemsMenu(true, false)] };
   }
   const segBtns = (items, cur, attr) => items.map(it => `<button type="button" ${attr}="${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}"${it.dis ? ' disabled' : ''}>${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   const useg = (key, items, cur) => items.map(it => `<button type="button" data-useg="${key}=${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
@@ -2897,6 +2898,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       { label: where ? `Save ${where}` : 'Save', icon: 'save', key: MOD + '+S', dis: empty, tip: empty ? 'Nothing to save yet' : where === 'in the Vault folder' ? 'Save these stacks, loose parts and colors into the Vault folder, next to the part files' : 'Save these stacks, loose parts and colors to a file', fn: () => saveDesign(false) },
       { label: 'Save as…', icon: 'file', dis: empty, tip: empty ? 'Nothing to save yet' : 'Save a copy somewhere else, or under another name', fn: () => saveDesign(true) },
       { label: 'Open…', icon: 'open', key: MOD + '+O', tip: 'Open a design saved before: it replaces the stacks and loose parts here', fn: openDesign },
+      ...exportItemsMenu(true, true),
     ] });
   };
   // First launch: printer, Vault folder, first stack
@@ -5819,6 +5821,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         if (p.path !== path) continue;
         if (!u.loaded) { u.boxes.visible = false; if (u.front) u.drawer.remove(u.front); (u.movers || []).forEach(m => m.drawer.remove(m.front)); }
         const mesh = v.painted(geomFor(p.piece), p.role, p.cfg), m = p.m;
+        mesh.userData.file = path; // named after it in an export (export3d)
         mesh.matrixAutoUpdate = false;
         mesh.matrix.set(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], 0, 0, 0, 1);
         const own = p.mv != null && u.movers && u.movers.find(x => x.id === p.mv) || (u.sorted && p.group === 'drawer' && sideOf(u, p.joint, mesh)) || u;
@@ -5860,6 +5863,160 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (failed.length) msg += ` Couldn’t simplify ${missingList(failed.map(x => x[0]))} (${failed[0][1]}).`;
     v3status(msg);
   }
+  // ---------- the stack in 3D, to a file (for renders in Blender and the like) ----------
+  // What the view shows, as it stands: the parts read from the user's own folder (simplified, as drawn), each where it is
+  // now (drawers and cases open or closed, levels spread, the roof hidden), the bolts, the casters. Never the view's own
+  // helpers (shadow, outlines). STL: one solid, mm, Z up (slicers' and Blender's importer's axes), the fronts towards -Y,
+  // the footprint centred on the origin, the floor at z = 0; no colour, no labels. GLB: the same, one object per part
+  // (named after its file, its origin at its middle) in one group per unit, one material per colour named after the
+  // filament, the fronts' labels as textured planes, in metres (glTF's unit; Blender turns it Z up as it imports).
+  // Made in the browser and downloaded: nothing leaves the computer. The parts are USSA's: the toast says the file is
+  // for one's own renders.
+  function exportWhy(v) {
+    if (!v || v.t !== curTower()) return 'Open the stack in Design first: the export takes the 3D view as it stands';
+    if (!vaultFolder || v.folder !== vaultFolder) return 'Choose your Vault folder first: until then the view shows boxes, not the parts';
+    if (v.units.some(u => u.loading)) return 'Wait until every part is in the view';
+    if (!v.units.some(u => u.loaded)) return 'No part of this stack is placed in 3D yet';
+    return '';
+  }
+  // Each shown mesh: its triangles in the stack's frame (mm, the view's axes, the footprint's middle at x = z = 0),
+  // wound outwards even where its placement mirrors it
+  function exportItems(v) {
+    const T = v.T, out = [], dz = stackLayout(v.t).depth / 2, m4 = new T.Matrix4().makeTranslation(0, 0, dz);
+    const shown = o => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
+    const unitOf = o => { for (; o; o = o.parent) { const u = v.units.find(x => x.g === o); if (u) return u; } return null; };
+    v.scene.updateMatrixWorld(true);
+    v.scene.traverse(o => {
+      if (!o.isMesh || !shown(o) || !o.geometry.attributes.position) return;
+      const label = !!o.userData.labelText;
+      if (!label && (o.userData.own || !o.userData.role)) return;
+      const g = (o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone()).applyMatrix4(new T.Matrix4().multiplyMatrices(m4, o.matrixWorld));
+      if (label) g.translate(0, 0, 0.1); // a little further off its face than in the view, for renderers that would mix them
+      const P = g.attributes.position.array, N = g.attributes.normal ? g.attributes.normal.array : null, UV = g.attributes.uv ? g.attributes.uv.array : null;
+      if (o.matrixWorld.determinant() < 0) for (let i = 0; i < P.length; i += 9) for (const A of [P, N]) if (A) for (let k = 0; k < 3; k++) { const x = A[i + 3 + k]; A[i + 3 + k] = A[i + 6 + k]; A[i + 6 + k] = x; }
+      if (UV && o.matrixWorld.determinant() < 0) for (let i = 0; i < UV.length; i += 6) for (let k = 0; k < 2; k++) { const x = UV[i + 2 + k]; UV[i + 2 + k] = UV[i + 4 + k]; UV[i + 4 + k] = x; }
+      // without the triangles of no area (a bolt's tip, a few in the files), and with a normal on every corner
+      let n = 0;
+      for (let i = 0; i < P.length; i += 9) {
+        const ux = P[i + 3] - P[i], uy = P[i + 4] - P[i + 1], uz = P[i + 5] - P[i + 2], vx = P[i + 6] - P[i], vy = P[i + 7] - P[i + 1], vz = P[i + 8] - P[i + 2];
+        const fx = uy * vz - uz * vy, fy = uz * vx - ux * vz, fz = ux * vy - uy * vx, fl = Math.hypot(fx, fy, fz);
+        if (!(fl > 1e-9)) continue;
+        for (let k = 0; k < 9; k++) P[n * 9 + k] = P[i + k];
+        if (N) for (let c = 0; c < 9; c += 3) {
+          const x = N[i + c], y = N[i + c + 1], z = N[i + c + 2], l = Math.hypot(x, y, z), ok = l > 1e-6;
+          N[n * 9 + c] = ok ? x / l : fx / fl; N[n * 9 + c + 1] = ok ? y / l : fy / fl; N[n * 9 + c + 2] = ok ? z / l : fz / fl;
+        }
+        if (UV) for (let k = 0; k < 6; k++) UV[n * 6 + k] = UV[i / 9 * 6 + k];
+        n++;
+      }
+      if (!n) { g.dispose(); return; }
+      const file = o.userData.file ? o.userData.file.split('/').pop().replace(/\.stl$/i, '') : '';
+      out.push({ P: P.slice(0, n * 9), N: N && N.slice(0, n * 9), UV: UV && UV.slice(0, n * 6), label, mesh: o, u: unitOf(o), name: label ? 'Label text' : file || o.userData.name || (ROLE_BY_ID.get(o.userData.role) || {}).label || 'Part' });
+      g.dispose();
+    });
+    return out;
+  }
+  function stlOf(items, title) {
+    const n = items.reduce((a, it) => a + (it.label ? 0 : it.P.length / 9), 0), buf = new ArrayBuffer(84 + 50 * n), dv = new DataView(buf);
+    const head = `Vault Print Planner: ${title}, mm, Z up. USSA's parts, for your own use.`.replace(/[^\x20-\x7e]/g, '?').slice(0, 80);
+    for (let i = 0; i < head.length; i++) dv.setUint8(i, head.charCodeAt(i));
+    dv.setUint32(80, n, true);
+    let o = 84;
+    const f = x => { dv.setFloat32(o, x, true); o += 4; };
+    for (const it of items) {
+      if (it.label) continue;
+      const P = it.P;
+      for (let i = 0; i < P.length; i += 9) {
+        // the view's (x, y up, z towards the viewer) to Z up: (x, -z, y)
+        const a = [P[i], -P[i + 2], P[i + 1]], b = [P[i + 3], -P[i + 5], P[i + 4]], c = [P[i + 6], -P[i + 8], P[i + 7]];
+        const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+        let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const l = Math.hypot(nx, ny, nz) || 1;
+        f(nx / l); f(ny / l); f(nz / l); a.forEach(f); b.forEach(f); c.forEach(f);
+        dv.setUint16(o, 0, true); o += 2;
+      }
+    }
+    return new Blob([buf], { type: 'model/stl' });
+  }
+  async function glbOf(v, items, title) {
+    const T = v.T, chunks = [], views = [], acc = [], meshes = [], nodes = [], mats = [], matIx = new Map(), images = [], textures = [];
+    let off = 0;
+    const view = (bytes, target) => {
+      const pad = (4 - off % 4) % 4; if (pad) { chunks.push(new Uint8Array(pad)); off += pad; }
+      views.push({ buffer: 0, byteOffset: off, byteLength: bytes.byteLength, ...(target ? { target } : {}) });
+      chunks.push(bytes); off += bytes.byteLength;
+      return views.length - 1;
+    };
+    const accessor = (arr, size, minmax) => {
+      const a = { bufferView: view(new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength), 34962), componentType: 5126, count: arr.length / size, type: size === 3 ? 'VEC3' : 'VEC2' };
+      if (minmax) { a.min = [0, 1, 2].map(k => { let m = Infinity; for (let i = k; i < arr.length; i += 3) m = Math.min(m, arr[i]); return m; }); a.max = [0, 1, 2].map(k => { let m = -Infinity; for (let i = k; i < arr.length; i += 3) m = Math.max(m, arr[i]); return m; }); }
+      acc.push(a); return acc.length - 1;
+    };
+    const fin = { black: 'black (raw steel)', zinc: 'grey (zinc-plated or stainless)' };
+    const material = async it => {
+      const { role, cfg } = it.mesh.userData, hw = role === 'hardware';
+      if (it.label) {
+        const png = new Uint8Array(await new Promise(ok => it.mesh.material.map.image.toBlob(b => ok(b.arrayBuffer()), 'image/png')));
+        images.push({ bufferView: view(png), mimeType: 'image/png', name: 'Label' });
+        textures.push({ source: images.length - 1, sampler: 0 });
+        mats.push({ name: 'Label text', pbrMetallicRoughness: { baseColorTexture: { index: textures.length - 1 }, metallicFactor: 0, roughnessFactor: 0.8 }, alphaMode: 'BLEND' });
+        return mats.length - 1;
+      }
+      const m = v.mat(role, cfg, false), k = m.uuid;
+      if (!matIx.has(k)) {
+        const c = m.color, name = hw ? `Bolts, ${fin[hwFinish()]}` : role === 'caster' ? 'Caster wheels (rubber)' : `${colorName(colorFor(role, cfg))} ${colorHex(colorFor(role, cfg))}`;
+        mats.push({ name, pbrMetallicRoughness: { baseColorFactor: [c.r, c.g, c.b, 1], metallicFactor: m.metalness, roughnessFactor: m.roughness } });
+        matIx.set(k, mats.length - 1);
+      }
+      return matIx.get(k);
+    };
+    const groups = new Map(), root = { name: title, children: [] };
+    nodes.push(root);
+    const groupOf = u => {
+      const name = !u ? 'Base' : u.column || u.stack || u.roof ? u.name : `Level ${u.level + 1} · ${u.name}`;
+      if (!groups.has(name)) { nodes.push({ name, children: [] }); groups.set(name, nodes.length - 1); root.children.push(nodes.length - 1); }
+      return nodes[groups.get(name)];
+    };
+    for (const it of items) {
+      const n = it.P.length / 3, P = new Float32Array(n * 3), lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+      for (let i = 0; i < it.P.length; i++) { const k = i % 3; lo[k] = Math.min(lo[k], it.P[i]); hi[k] = Math.max(hi[k], it.P[i]); }
+      const mid = lo.map((x, k) => (x + hi[k]) / 2);
+      for (let i = 0; i < it.P.length; i++) P[i] = (it.P[i] - mid[i % 3]) / 1000;
+      const attributes = { POSITION: accessor(P, 3, true) };
+      if (it.N) attributes.NORMAL = accessor(it.N, 3);
+      if (it.UV) { const U = it.UV; for (let i = 1; i < U.length; i += 2) U[i] = 1 - U[i]; attributes.TEXCOORD_0 = accessor(U, 2); }
+      meshes.push({ name: it.name, primitives: [{ attributes, material: await material(it) }] });
+      const at = nodes.push({ name: it.name, mesh: meshes.length - 1, translation: mid.map(x => x / 1000) }) - 1;
+      groupOf(it.u).children.push(at);
+    }
+    const json = { asset: { version: '2.0', generator: 'Vault Print Planner', copyright: 'Vault parts by USSA: from your own download, for your own renders. Don’t share this file.' },
+      scene: 0, scenes: [{ name: title, nodes: [0] }], nodes, meshes, materials: mats, accessors: acc, bufferViews: views, buffers: [{ byteLength: off }] };
+    if (images.length) Object.assign(json, { images, textures, samplers: [{ magFilter: 9729, minFilter: 9987 }] });
+    const enc = new TextEncoder().encode(JSON.stringify(json)), jl = Math.ceil(enc.length / 4) * 4, bl = Math.ceil(off / 4) * 4;
+    const head = new DataView(new ArrayBuffer(20));
+    head.setUint32(0, 0x46546c67, true); head.setUint32(4, 2, true); head.setUint32(8, 12 + 8 + jl + 8 + bl, true);
+    head.setUint32(12, jl, true); head.setUint32(16, 0x4e4f534a, true);
+    const jpad = new Uint8Array(jl - enc.length).fill(0x20), bhead = new DataView(new ArrayBuffer(8));
+    bhead.setUint32(0, bl, true); bhead.setUint32(4, 0x004e4942, true);
+    return new Blob([head, enc, jpad, bhead, ...chunks, new Uint8Array(bl - off)], { type: 'model/gltf-binary' });
+  }
+  async function export3d(fmt) {
+    const v = v3, why = exportWhy(v);
+    if (why) { toast(why); return; }
+    const items = exportItems(v), title = v.t.name;
+    const blob = fmt === 'stl' ? stlOf(items, title) : await glbOf(v, items, title);
+    const name = title.replace(/[\\/:*?"<>|]+/g, '-').trim() + '.' + fmt;
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: name });
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    toast(`Saved ${name} to your downloads (${(blob.size / 1e6).toFixed(1)} MB). USSA’s parts: for your own renders, not to share.`);
+  }
+  // The two exports, as menu items (the stack's right-click menu and the File menu)
+  const exportItemsMenu = (sep, long) => {
+    const why = exportWhy(v3);
+    return [
+      { sep, icon: 'save', label: long ? 'Export the stack as STL' : 'Export as STL', dis: !!why, tip: why || 'One STL of the stack as the view shows it (drawers, spread levels, roof), in mm, Z up: for renders in Blender and the like', fn: () => export3d('stl') },
+      { icon: 'save', label: long ? 'Export the stack as GLB, with colors' : 'Export as GLB, with colors', dis: !!why, tip: why || 'The same with its colors, one object per part, grouped by level, labels included, in metres: in Blender, File › Import › glTF', fn: () => export3d('glb') },
+    ];
+  };
   // ---------- opening and closing (stl-placements.json "motion", tools/placements/README.md "Motion") ----------
   // A unit's joints each go from 0 (as placed) to 1: a key turns about its axis, a rack slides, a case latch moves
   // its link and lever as a linkage. "drawer" (the drawer's slide), "lid" (the hinge) and "lift" (a case under a unit:

@@ -10,6 +10,9 @@ This page is a fork of [Romy's Vault Print Planner](https://vault.romy.io), made
 - **A new layout** in four steps, Design, Print, Hardware and Assemble, with Undo, design files, a dark theme and store links for where you live.
 Every difference is listed on [GitHub](https://github.com/doooools/vault-print-planner/blob/main/docs/differences-from-upstream.md). Amazon.com links in Hardware are still Romy's affiliate links, so US purchases keep supporting the original project. Romy's own changes are the ones marked "Romy's planner", from 2026-11-10 back.
 
+## 2026-11-15
+- **Export a stack for renders:** right-click the background of the 3D view, or open "File", for "Export as STL" and "Export as GLB, with colors". The file holds the stack as the view shows it, made from your own Vault files: drawers open or closed, levels spread, the roof hidden or not, every bolt. The STL is one piece in mm, Z up. The GLB keeps your colours (one material per filament), one object per part grouped by level, and the labels, in metres: in Blender, File › Import › glTF. Both are made in your browser and saved to your downloads. They are USSA's parts: keep the files for your own renders, don't share them.
+
 ## 2026-11-14
 - **Labels:** give each drawer and case a label, such as "M6 bolts", in the first field of its settings. In a module holding several drawers, each drawer has its own. The 3D view writes it on the front's label as you type, and the level's settings and the view's tip show it. Undo takes it back, and a copied level keeps its labels.
 - **Copy and paste:** in Design, Ctrl+C copies the selected level, or the whole stack when its settings are shown. Ctrl+V pastes the level above the selected one (on top from the stack's settings), or the stack right after the selected one. A level pasted into a stack of another size takes that stack's size. The level and stack menus have Copy and Paste too.
