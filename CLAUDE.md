@@ -132,7 +132,9 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   "Report a bug or an idea" (`reportBtn`) are small links under the page's name (`.logo .hlinks`, Dols 2026-11-14); the
   fork's credit to Romy is What's new's first section, "About this fork", written in `CHANGELOG.md` (`build.py`
   `changelog_html`: `## ` a section, `- ` a list line, other lines paragraphs; a section named "About…" is framed).
-  The footer has no credit line; `template.html` opens with the upstream MIT notice in a comment.
+  The page has no footer (Dols, 2026-11-15): its notices (not affiliated with USSA, store links, visit count, where the numbers
+  come from) are in the "About" window (`#about`, `aboutBtn`, the last link under the name; `aboutShop`, `aboutCount`, `aboutNotes`).
+  `template.html` opens with the upstream MIT notice in a comment.
   Design (`renderBuild`) = the stacks' rail (stacks, "New stack", templates, loose parts as an entry like
   the stacks, `.dloose`), the selected stack's card (`designCenter`: name with its pencil, `dRename`;
   Stack settings, which opens and does not toggle; "Add a level on top"; the 3D view) and the inspector (`#dInsp`,
@@ -283,7 +285,7 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   `SHOP_PAGES` (Dols, 2026-11-13): product pages for one store and one bolt finish instead of the search (Amazon.fr's M4
   button-head bolts: B0DCY82LTF black carbon steel, B0FQBX529T stainless), with that store's tag; the row says which
   length to pick on the page. Disclosure: under the store picker (`shopDisclosure`)
-  and in the footer's "Store links" (`footShop`). Affiliate links get `rel="sponsored"`.
+  and in About's "Store links" (`aboutShop`). Affiliate links get `rel="sponsored"`.
   First visit: `guessShop` takes the time zone's country first (`SHOP_TZ`: Europe/Paris → fr even with an en-US
   browser), then the browser's region unless it is on another continent than the time zone, then the continent. No IP
   lookup (it would send every visitor's IP to a third party).
@@ -292,7 +294,7 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   (the "no external scripts" rule holds): `count()` in `src/template.html` requests `/count` as an image, once per visit
   (page, referrer, screen width; GoatCounter works out the country) and once per store link opened in Hardware (event
   `buy/<store>`, title = the item: which Amazon stores deserve an Associates tag). Only on `doooools.github.io`, never
-  with `navigator.webdriver` (Playwright, the video), nor after "Don't count this browser" in the footer (`noCount`).
+  with `navigator.webdriver` (Playwright, the video), nor after "Don't count this browser" in About (`noCount`).
 
 - Print: plate ticks select (Dols, 2026-11-13). A plate card's checkbox ticks it for the download (`plateSel`, kept for
   the page's life per print scope, not saved); the downloads (Bambu project, plate files, STL folders) hold the ticked
