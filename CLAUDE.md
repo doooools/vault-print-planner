@@ -348,6 +348,16 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   `levelsMenu`; `keyDesign`, `copySel` and `pasteClip` (clip `lvs`: several levels) take the selection.
   `v3mark` outlines every selected level. Rules: `docs/ux-redesign.md`, "Several levels selected".
 
+- Stack export (Dols, 2026-11-15, branch `claude/project-thread-cmlav7`): section "the stack in 3D, to a file" in
+  `src/template.html` (before "opening and closing"). `exportItemsMenu` puts "Export as STL" / "Export as GLB, with
+  colors" at the end of `stackMenu` and the File menu, greyed with `exportWhy`'s reason until the parts are in (no
+  folder: never boxes). `exportItems` walks the scene: shown meshes with a `role` (not `own` helpers) and the labels'
+  text planes, baked to the stack's frame (footprint centred), mirrored placements rewound, triangles of no area
+  dropped. `stlOf`: binary, mm, Z up (x, -z, y), no labels. `glbOf`: hand-written glTF 2.0 (no exporter loaded), a
+  node per part (`userData.file`, set in `loadParts`) under a node per unit, materials per colour (`v.mat` without the
+  highlight), label PNGs, metres; checked with gltf-validator (0 errors) and imported in Blender 5.3 (bpy). The toast,
+  the STL header and `asset.copyright` say the parts are USSA's, for one's own renders.
+
 - Undo (UX audit 2026-11, session 1, branch `claude/undo`): section "undo" next to `store` in `src/template.html`.
   `save()`, `saveColors()`, `saveExtras()` and `saveSel()` call `undoNote()`; at the end of the task `undoCommit`
   compares `[towers, seq, colorPrefs, extras]` as JSON with the last state kept and, when it differs, pushes the state
