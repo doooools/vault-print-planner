@@ -63,6 +63,8 @@
     { id: 'interior', label: 'Gridfinity baseplates and grid dividers', def: 'body' },
     { id: 'dividers', label: 'Dividers', def: 'inner' },
     { id: 'label', label: 'Labels', def: 'body' },
+    // The raised text on a label (no part of its own: the page makes it from the label's text, in Print's exports)
+    { id: 'labelText', label: 'Label text', def: 'inner' },
     { id: 'base', label: 'Base, wheels, handles, mounts', def: 'body' },
     { id: 'fittings', label: 'Backbones, connectors, feet, knobs, handle locks', def: 'inner' },
     { id: 'aids', label: 'Print aids (manual supports, jigs)', def: 'body' },
@@ -179,7 +181,7 @@
     // One latch per latch frame under the module, whatever the drawers in it: S and M have one, in the middle; L and XL
     // two (measured on the modules). Drawer Assembly 8/8 pushes it into the module's underside.
     add('Lock', 'Latch' + t, U + 'Latch.stl', w === 'L' || w === 'XL' ? 2 : 1, x);
-    add('Lock', 'Label' + t, U + 'Label.stl', n, { note: 'Add your own text with the slicer’s text tool.', ...x });
+    add('Lock', 'Label' + t, U + 'Label.stl', n, { note: 'Name it in Design (the Label field): Print’s exports raise its text on it.', ...x });
     // One cap per counterbore of a front: every bolt hole but the one the label covers (Drawer Assembly 6/8 shows
     // the one cap of an S 1F; the others are counted on the fronts)
     add('Lock', 'Facade cap' + t, U + 'Facade Cap.stl', lay.reduce((a, dh) => a + frontBolts(w, dh) - 1, 0), x);

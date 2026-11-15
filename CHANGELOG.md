@@ -11,6 +11,7 @@ This page is a fork of [Romy's Vault Print Planner](https://vault.romy.io), made
 Every difference is listed on [GitHub](https://github.com/doooools/vault-print-planner/blob/main/docs/differences-from-upstream.md). Amazon.com links in Hardware are still Romy's affiliate links, so US purchases keep supporting the original project. Romy's own changes are the ones marked "Romy's planner", from 2026-11-10 back.
 
 ## 2026-11-15
+- **Label text you can print:** the text you give a drawer or case label in Design now comes raised on that label in the Bambu Studio project and the plate files, centred on it, as a part of its own in its own filament. Pick its color under "Label text" in Paint, and its relief (0.6 mm recommended) and letter height (6 mm recommended) in Print's plate options. A text too long for its label gets smaller letters. The 3D view writes it the same size and color.
 - **Export a stack for renders:** right-click the background of the 3D view, or open "File", for "Export as STL" and "Export as GLB, with colors". The file holds the stack as the view shows it, made from your own Vault files: drawers open or closed, levels spread, the roof hidden or not, every bolt. The STL is one piece in mm, Z up. The GLB keeps your colours (one material per filament), one object per part grouped by level, and the labels, in metres: in Blender, File › Import › glTF. Both are made in your browser and saved to your downloads. They are USSA's parts: keep the files for your own renders, don't share them.
 
 ## 2026-11-14
