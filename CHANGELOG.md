@@ -10,6 +10,9 @@ This page is a fork of [Romy's Vault Print Planner](https://vault.romy.io), made
 - **A new layout** in four steps, Design, Print, Hardware and Assemble, with Undo, design files, a dark theme and store links for where you live.
 Every difference is listed on [GitHub](https://github.com/doooools/vault-print-planner/blob/main/docs/differences-from-upstream.md). Amazon.com links in Hardware are still Romy's affiliate links, so US purchases keep supporting the original project. Romy's own changes are the ones marked "Romy's planner", from 2026-11-10 back.
 
+## 2026-11-16
+- **What is counted, said in full:** to learn which steps, tools and settings serve and which don't, the visit count now also notes, once per visit, the steps opened, the tools, settings, menu items and shortcuts used, the downloads, the theme, language and window width, and the page's errors. Still no cookie, no IP address kept, no id that follows you, and nothing you name or type (no stack, file or folder names, no label text). "About" lists it all, and "Don't count this browser" there turns all of it off.
+
 ## 2026-11-15
 - **Rotate:** a new button over the 3D view makes the stack turn slowly on itself, one turn in 24 seconds, until you press it again (or press R). Drag the view while it turns and it waits, then goes on from where you let go. The zoom and the point you look at stay as they are.
 - **No more footer:** the notes that sat at the bottom of every page (not affiliated with USSA, the store links, the visit count, where the numbers come from) are now in "About", the last link under the page's name. "Don't count this browser" is there too. Hardware still says who earns from its store links, under the store picker.

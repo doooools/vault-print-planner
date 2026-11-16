@@ -255,6 +255,51 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   a drag holds it and it goes on from where it was let go; off at every page load, kept while the stack changes and
   onto another stack.
 
+## What is counted (Dols, 2026-11-16)
+
+Dols wants to know what serves, what doesn't and what to improve, with no cookie, nothing in the way of the person and
+nothing that tells a person apart. The page sends GoatCounter (account `dols`) its own requests, with no script
+loaded: one per visit (the page, the site the visitor came from, the screen width, the address's query, so
+`?utm_source=youtube&utm_campaign=video` or `?ref=reddit` on a shared link shows under Campaigns), then events, each
+**at most once per visit** (`use()` in `src/template.html`, section "what is used"). Never from a local copy, a test
+browser (`navigator.webdriver`, a headless user agent) or after "Don't count this browser" in About, which says what
+is counted. Never a stack, file, folder or design name, a label's text, the person's part counts, nor any id.
+
+In the dashboard, events are the paths without a leading "/"; type the prefix in the filter to see a group.
+
+- `tab/…`: the step shown (design, print, hardware, assemble), also the one a visit opens on.
+- `design/…`: start screen, templates window, `design/template/<name>`, new stack, rail stack, loose parts, rename,
+  stack settings, add a level on top, duplicate stack, level below / above, "⋯", drawer tab, "Same settings in every
+  drawer", copy (level, stack), paste, part preview, print a part on its own.
+- `module/<setting>=<value>`, `stack/<setting>=<value>` (width, depth, roof, handle lock…), `levels/…` (several levels
+  selected: how they were selected, the settings changed, up / down / dup / del), `level/<op>` (top, dup, up, del…),
+  `label/…` (text typed, relief, letter, font), `dividers/…` (case slot, all, grid click, grid clear).
+- `3d/…`: tool (select, paint), rotate, spread levels, hide roof, help, bolts finish, right-click on a level or the
+  background, a drawer or case opened, the real parts shown, parts not in the folder or not simplified, the viewer
+  not loaded.
+- `paint/…`: a click in 3D, brush, "A click paints", add a filament, part type or group painted, module exception,
+  the presets ("Start from"), the filament picker (opened, scope, Bambu colour, line filter, tray colour, "Use it"),
+  the Selected card's buttons.
+- `menu/<item>`: any menu item used (level, levels, stack, File menus), digits as N.
+- `key/<key>`: a shortcut that did something (`key/mod+z`, `key/step-number`, `key/r`…).
+- `file/…`: menu, save, save as, open, opened (or opened an older file), export STL / GLB.
+- `folder/…`: the Vault folder open during the visit, "later" on the start screen, the header button.
+- `print/…`: stacks to print, filter, plate select / tick / previous-next, tick all, mark (un)printed, the downloads
+  (Bambu project, plate files, STL folders), choose a folder, already printed (opened, add, stepper), plate options
+  (`print/<option>=<value>`), copy the part list, reset all progress; `printer/<id>` once Print is shown.
+- `hardware/…`: stacks in the list, jump to, bolt finish, ticked bought, copy, CSV; `store/<id>` once Hardware is
+  shown or a store is picked; `buy/<store>` (each store link opened, as before).
+- `assemble/…`: a step ticked, a unit done.
+- `link/…`: What's new, Report (bug, idea), Shortcuts, About, the steps' "Go to …" buttons; `kofi` as before.
+- What the visit comes with: `theme/dark` or `light` (`-system` when not chosen), `lang/<language>`,
+  `window/<width range>` (the page's breakpoints: under 860, 860–1239, 1240–1599, 1600 up), `device/touch`,
+  `device/no-folder-window` (a browser without the folder window).
+- `error/line-<n>`: an error in the page, the line in `index.html`, its message with quoted names taken out (five per
+  visit at most).
+
+A new button gets its rule in `USES` (a selector and a name, or a function of the element), a gesture with no button
+a `use('group/name')` where it acts.
+
 ## Steps, each testable on its own
 
 1. **Hardware**: new tab, list moved out of step 2, bought ticks, copy and CSV. Branding changes in the header.
