@@ -1233,12 +1233,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   function undoBack() {
     if (undo.timer) undoCommit();
+    use('edit/undo');
     const e = undo.past.pop(); if (!e) { toast('Nothing to undo'); return; }
     undoApply(e.before); undo.next.push(e); if (e.before.d !== e.after.d) fileChanged(-1);
     toast(e.label ? `Undone: ${e.label}` : 'Change undone', { label: 'Redo', redo: true, fn: undoForth });
   }
   function undoForth() {
     if (undo.timer) undoCommit();
+    use('edit/redo');
     const e = undo.next.pop(); if (!e) { toast('Nothing to redo'); return; }
     undoApply(e.after); undo.past.push(e); if (e.before.d !== e.after.d) fileChanged(1);
     toast(e.label ? `Redone: ${e.label}` : 'Change redone', { label: 'Undo', fn: undoBack });
@@ -1251,6 +1253,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (k !== 'z' && k !== 'y') return;
     if (a && (a.isContentEditable || /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName))) return; // the field's own undo
     e.preventDefault();
+    useKey(e);
     if (k === 'y' || e.shiftKey) undoForth(); else undoBack();
   });
 
@@ -2214,14 +2217,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // the request itself, sets no cookie and keeps no IP address. Only from the published site: never from a local copy or
   // a test browser (navigator.webdriver: Playwright, the video recordings), nor from a browser that opted out in About.
   const COUNT_HOST = 'doooools.github.io', COUNT_URL = 'https://dols.goatcounter.com/count';
-  const counting = () => location.hostname === COUNT_HOST && !navigator.webdriver && !store.get('noCount', false);
+  const counting = () => location.hostname === COUNT_HOST && !navigator.webdriver && !/HeadlessChrome|Lighthouse|PageSpeed|bot\b|crawl|spider/i.test(navigator.userAgent) && !store.get('noCount', false);
   function count(p, extra) {
     if (!counting()) return;
     try { new Image().src = COUNT_URL + '?' + new URLSearchParams(Object.assign({ p }, extra, { rnd: Math.random().toString(36).slice(2) })); } catch (e) {}
   }
   function aboutCount() {
     const off = store.get('noCount', false);
-    $('aboutCount').innerHTML = 'Visits are counted with <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>: the page, the site you came from, your country, browser and screen width, which store a Hardware link opens, and a click on Support me. No cookie, no IP address kept, nothing about your build. ' +
+    $('aboutCount').innerHTML = 'Visits are counted with <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>, to learn what serves and what to improve: the page, the site you came from, your country, browser, language, screen and window width, light or dark theme, then which steps, tools, settings, menu items and shortcuts are used (each once per visit: “the Print tab”, “Rotate”, “a hidden key lock”), which store a Hardware link opens, a click on Support me, and the page’s errors. No cookie, no IP address kept, no id that follows you, and nothing you name or type: no stack, file or folder names, no label text. ' +
       `<button type="button" class="linkbtn" id="countOff">${off ? 'Count this browser again' : 'Don’t count this browser'}</button>${off ? ' (not counted now)' : ''}`;
     $('countOff').onclick = () => { store.set('noCount', !off); aboutCount(); toast(off ? 'Visits from this browser are counted again' : 'Visits from this browser are no longer counted'); };
   }
@@ -2231,6 +2234,94 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   document.addEventListener('click', countBuy);
   document.addEventListener('auxclick', countBuy);
   ['click', 'auxclick'].forEach(ev => $('kofi').addEventListener(ev, e => { if (e.type === 'click' || e.button === 1) count('kofi', { e: true, t: 'Ko-fi' }); }));
+
+  // ---------- what is used (GoatCounter events, once per visit) ----------
+  // Dols, 2026-11-16: which steps, tools and settings people use, to know what serves, what doesn't and what to
+  // improve. Each event is a fixed name made of the page's own words (`tab/print`, `3d/rotate`, `module/lock=hidden`,
+  // `menu/copy-level`), sent at most once per visit (one page load): GoatCounter counts a path once per session anyway,
+  // and it keeps the requests few. Never what is the person's or tells them apart: no stack, file, folder or design
+  // name, no label text, no counts of their parts, no id. Same rules as count(): the published site only, no test
+  // browser, nothing after "Don't count this browser". In the dashboard they are the paths without a leading "/"; the
+  // list is docs/ux-redesign.md, "What is counted". A new feature adds its rule to USES or a use() where it acts.
+  const used = new Set();
+  function use(name, title) {
+    if (!name || used.has(name)) return;
+    used.add(name);
+    count(name, { e: true, t: title || name });
+  }
+  // A menu label or a setting's value as a path word: lower case, digits as N in labels ("Remove 3 levels")
+  const useWord = (s, digits) => String(s).toLowerCase().replace(/[“”"'’]/g, '').replace(digits ? /$^/ : /\d+/g, 'N').replace(/[^a-z0-9=+.²N-]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+  const useKv = (p, a) => el => { const [k, v = ''] = (el.getAttribute(a) || '').split('='); return `${p}/${useWord(k, true)}${v !== '' ? '=' + useWord(v, true) : ''}`; };
+  const useVal = (p, a) => el => `${p}=${useWord(el.getAttribute(a), true)}`;
+  // Buttons, by selector: the first rule that matches the clicked element (or what holds it) names the event. On the
+  // capture phase, before the handler redraws the panel. A key that presses a button (press() in keyDesign) counts too.
+  const USES = [
+    ['a[data-buy]', null], // a store link: countBuy's event
+    // header
+    ['#newsBtn', 'link/whats-new'], ['#reportBtn', 'link/report'], ['#reportBug', 'link/report-a-bug'], ['#reportIdea', 'link/suggest-an-idea'],
+    ['#keysBtn', 'link/shortcuts'], ['#aboutBtn', 'link/about'], ['#fileBtn', 'file/menu'], ['#folderBtn', 'folder/header-button'],
+    ['#printerBtn', 'printer/header-button'], ['[data-themeset]', useVal('theme/set', 'data-themeset')],
+    // Design: start, rail, stack card, level panel
+    ['#startOpen', 'file/open-from-start'], ['#dTpl', 'design/templates-window'], ['#dNew', 'design/new-stack'], ['[data-stack]', 'design/rail-stack'],
+    ['[data-loose], .dloose:not([data-phave])', 'design/loose-parts'], ['[data-rename]', 'design/rename-stack'], ['[data-dstack]', 'design/stack-settings'],
+    ['[data-addtop]', 'design/add-level-on-top'], ['[data-tdup]', 'design/duplicate-stack'], ['[data-ltop]', 'design/set-up-top-level'],
+    ['[data-showlv]', 'design/level-from-stack-settings'], ['[data-lgo]', 'design/level-below-above'], ['[data-lmenu]', 'design/level-menu-button'],
+    ['[data-umod]', 'design/module-side-tab'], ['[data-dpick]', 'design/drawer-tab'], ['[data-dcopy]', 'design/same-settings-every-drawer'],
+    ['[data-mone]', 'levels/pick-one'], ['[data-addextra]', 'design/print-part-on-its-own'], ['[data-view]', 'design/part-preview'], ['[data-xstep]', 'design/loose-part-count'],
+    // settings: of the module, the stack, several levels, the labels
+    ['[data-useg]', useKv('module', 'data-useg')], ['[data-ubool]', useKv('module', 'data-ubool')], ['[data-ustep]', useVal('module/count', 'data-ustep')],
+    ['[data-cfloor]', useVal('module/floor', 'data-cfloor')], ['[data-lay]', useVal('module/drawers', 'data-lay')],
+    ['[data-dvall]', useVal('dividers/case-all', 'data-dvall')], ['[data-gclear]', 'dividers/grid-clear'],
+    ['[data-fpw]', useVal('stack/width', 'data-fpw')], ['[data-fpd]', useVal('stack/depth', 'data-fpd')], ['[data-roof]', useVal('stack/roof', 'data-roof')],
+    ['[data-sbool]', useKv('stack', 'data-sbool')], ['[data-hlock]', useVal('stack/handle-lock', 'data-hlock')],
+    ['[data-mseg]', useKv('levels', 'data-mseg')], ['[data-labset]', useKv('label', 'data-labset')],
+    // the 3D view
+    ['[data-v3tool]', useVal('3d/tool', 'data-v3tool')], ['[data-v3tog="explode"]', '3d/spread-levels'], ['[data-v3tog="hideRoof"]', '3d/hide-roof'],
+    ['[data-v3spin]', '3d/rotate'], ['[data-v3help]', '3d/help'], ['[data-v3fin]', useVal('3d/bolts', 'data-v3fin')], ['[data-v3hwc]', useVal('3d/selected-bolts', 'data-v3hwc')],
+    ['[data-v3pick]', '3d/units-list'], ['[data-v3tipok]', '3d/tip-ok'],
+    // Paint and the filament picker
+    ['[data-v3scope]', useVal('paint/a-click-paints', 'data-v3scope')], ['[data-v3brush], [data-brush]', 'paint/brush'], ['[data-v3add], [data-padd]', 'paint/add-a-filament'],
+    ['[data-v3change]', 'paint/selected-change-color'], ['[data-v3back]', 'paint/selected-back-to-stack-color'], ['[data-cpreset]', useVal('paint/start-from', 'data-cpreset')],
+    ['[data-prole]', 'paint/part-type'], ['[data-pall]', 'paint/part-group'], ['[data-pown]', 'paint/module-exception'],
+    ['[data-fp-role]', 'paint/picker-open'], ['[data-fp-scope]', useVal('paint/picker-scope', 'data-fp-scope')], ['[data-fp-bbl]', 'paint/picker-bambu-color'],
+    ['[data-fp-line]', 'paint/picker-line-filter'], ['[data-fp-pal]', 'paint/picker-tray-color'], ['[data-fp-use]', 'paint/picker-use-it'],
+    // Print
+    ['[data-pskip]', 'print/stacks-to-print'], ['[data-filter]', 'print/filter'], ['[data-pick]', 'print/plate-select'], ['.pnav [data-step]', 'print/plate-previous-next'],
+    ['[data-tick]', 'print/plate-tick'], ['#pSelAll', 'print/tick-all-shown'], ['#pSelDone', 'print/mark-ticked-printed'],
+    ['#pToggle', el => /Undo/.test(el.textContent) ? 'print/unmark-printed' : 'print/mark-printed'],
+    ['#gMake', el => /Bambu/.test(el.textContent) ? 'print/download-bambu-project' : /plate files/.test(el.textContent) ? 'print/download-plate-files' : 'print/choose-folder'],
+    ['#gFolders', 'print/download-stl-folders'], ['#gPick', 'print/choose-another-folder'], ['#gShowMissing', 'print/show-missing-parts'],
+    ['[data-phave]', 'print/already-printed'], ['[data-hadd]', 'print/already-printed-add'], ['[data-hstep]', 'print/already-printed-stepper'],
+    ['[data-pbool]', useKv('print', 'data-pbool')], ['#copyAll', 'print/copy-part-list'], ['#resetPrinted', 'print/reset-all-progress'],
+    // Hardware
+    ['[data-hwskip]', 'hardware/stacks-in-list'], ['[data-hwjump]', 'hardware/jump-to'], ['[data-hwfin]', useVal('hardware/bolts', 'data-hwfin')],
+    ['[data-hw-bought], .hwrow', 'hardware/tick-bought'], ['#hwCopy', 'hardware/copy-list'], ['#hwCsv', 'hardware/export-csv'],
+    // Assemble
+    ['[data-stepkey]', 'assemble/step-ticked'], ['#asmNext', 'assemble/unit-done'],
+    // steps' "go to" links (Design's "Go to Print"…)
+    ['[data-go], [data-empty-go]', el => 'link/go-to-' + useWord(el.dataset.go || 'design', true)],
+  ];
+  document.addEventListener('click', e => {
+    const el = e.target; if (!el || !el.closest) return;
+    for (const [sel, name] of USES) { const b = el.closest(sel); if (b) { if (!b.disabled) use(typeof name === 'function' ? name(b) : name); return; } }
+  }, true);
+  $('view-hardware').addEventListener('change', e => { if (e.target.id === 'hwShop') use('store/' + useWord(e.target.value, true)); });
+  // A key that did something (keyDesign, the steps, the file): its name, never what was typed in a field
+  const useKey = e => e.key === '?' ? use('key/question-mark') : use('key/' + (e.ctrlKey || e.metaKey ? 'mod+' : '') + (e.shiftKey ? 'shift+' : '') + (e.altKey ? 'alt+' : '') + useWord(/^(Digit|Numpad)[1-4]$/.test(e.code) ? 'step-number' : e.key, true));
+  // What the visit has (once): the step shown, the Vault folder open, the start screen, the printer once Print is
+  // shown, the store once Hardware is (renderTabs runs on every redraw)
+  function useState() {
+    use('tab/' + (view === 'build' ? 'design' : view));
+    if (!towers.length && !extras.length) use('design/start-screen');
+    if (vaultFolder) use('folder/open');
+    if (view === 'print') use('printer/' + useWord(printer.id, true));
+    if (view === 'hardware') use('store/' + useWord(shopStore, true));
+  }
+  // Errors in the page: where (line in index.html) and the message's kind, quoted names taken out
+  let useErrs = 0;
+  const useError = (msg, line) => { if (useErrs++ < 5) use('error/line-' + (line || 0), String(msg || 'error').replace(/[“"'‘`][^”"'’`]*[”"'’`]/g, '…').replace(/[\w.-]+\.(stl|json|3mf|zip)\b/gi, '…').slice(0, 120)); };
+  addEventListener('error', e => { if ((!e.filename || e.filename.split('#')[0] === location.href.split('#')[0]) && !/^Script error/.test(e.message || '')) useError(e.message, e.lineno); });
+  addEventListener('unhandledrejection', e => { const r = e.reason || {}; useError('Unhandled: ' + ((r.name && r.name !== 'Error' ? r.name : r.message) || 'rejection'), 0); });
 
   // ---------- copy helpers ----------
   function copy(text, msg, fallbackEl) {
@@ -2328,6 +2419,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // "Later: plan without the files" holds for the visit (this tab, reloads included): no folder popup until a folder is chosen
   let folderHeroSkipped = (() => { try { return sessionStorage.getItem('vpp.folderLater') === '1'; } catch (e) { return false; } })(), folderHeroError = '';
   function skipFolder(on) {
+    if (on) use('folder/later');
     folderHeroSkipped = on;
     try { if (on) sessionStorage.setItem('vpp.folderLater', '1'); else sessionStorage.removeItem('vpp.folderLater'); } catch (e) {}
   }
@@ -2616,6 +2708,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   // A Ctrl/Cmd or Shift click on level i: how = 'add' (in or out), 'range' (anchor to i), 'addRange' (the range added)
   function selectLevels(t, i, how) {
+    use('levels/select-' + how);
     const cur = selLevels(t), ms = multiSel(t), a = ms && Number.isInteger(dsel.m.a) ? dsel.m.a : cur.length ? dsel.l : i;
     const range = []; for (let k = Math.min(a, i); k <= Math.max(a, i); k++) range.push(k);
     if (how === 'add' && cur.includes(i)) {
@@ -2730,10 +2823,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     t.fp = fpOf(t); fixRoof(t);
     t.levels.flat().forEach(u => { syncDividers(u); syncGrid(u); });
     towers.push(t); dsel = { t: t.id, l: null }; saveSel(); save();
-    view = 'build'; renderAll(); toast('Added “' + p.name + '”');
+    view = 'build'; renderAll(); use('design/template/' + useWord(p.name, true), 'Template: ' + p.name); toast('Added “' + p.name + '”');
   }
   // Level operations: the 3D view's right-click menu, the level panel's "⋯", "Add a level on top"
   function levelOp(t, op, i) {
+    use('level/' + useWord(op, true));
     const L = t.levels;
     delete dsel.m; // one level: several selected go through levelsOp
     if (op === 'up' && i < L.length - 1) { [L[i], L[i + 1]] = [L[i + 1], L[i]]; dsel.l = i + 1; }
@@ -2779,6 +2873,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // a button's menu gives the focus back to it, or to the panel's new "⋯" when the action drew the panel again
     const btn = !!opener && opener.tagName === 'BUTTON';
     el.querySelectorAll('[data-mi]').forEach(b => b.onclick = () => {
+      use('menu/' + useWord(items[+b.dataset.mi].label));
       menuClose(btn); items[+b.dataset.mi].fn();
       if (btn && !opener.isConnected) { const n = document.querySelector('#dInsp [data-lmenu]'); if (n) n.focus({ preventScroll: true }); }
     });
@@ -2832,6 +2927,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // Several levels at once (s: their indices, bottom to top): moved up or down one step each, copied above the top one
   // or below the bottom one (the copies are then selected), removed in one click (one Undo puts them all back)
   function levelsOp(t, op, s) {
+    use('levels/' + useWord(op, true));
     const L = t.levels, n = s.length, lo = s[0], hi = s[n - 1], m = dsel.m || {};
     let ns = s, l = dsel.l, a = Number.isInteger(m.a) ? m.a : l;
     const copy = i => L[i].map(u => { const k = JSON.parse(JSON.stringify(u)); k.roof = 'none'; return k; });
@@ -2967,6 +3063,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // Whether a file the user picked sits right in the Vault folder (then it is the design open there)
   const inVault = async (dir, h) => { try { const at = dir && await dir.resolve(h); return !!at && at.length === 1; } catch (e) { return false; } };
   async function saveDesign(as) {
+    use(as ? 'file/save-as' : 'file/save');
     const text = designText(), dir = await vaultDir();
     if (!as && dir) {
       try {
@@ -3011,6 +3108,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     markFile(name); toast(why ? `Saved ${name} to your downloads: ${why}` : `Saved ${name} to your downloads`, why ? { long: true } : undefined);
   }
   async function openDesign() {
+    use('file/open');
     if (window.showOpenFilePicker) {
       const dir = await vaultDir();
       try {
@@ -3044,7 +3142,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (ds && ds.t === 'loose' && extras.length) dsel = { t: 'loose' };
     else if (ds) { const t = towers.find(x => x.id === ds.t);
       if (t) dsel = { t: t.id, l: Number.isInteger(ds.l) && ds.l >= 0 && ds.l < t.levels.length ? ds.l : null, u: Number.isInteger(ds.u) && ds.u >= 0 ? ds.u : 0, ...(typeof ds.d === 'string' && SAFE_ID.test(ds.d) ? { d: ds.d } : {}) }; }
-    saveSel(); save(); saveExtras(); view = whole && VIEWS.includes(d.view) ? d.view : 'build'; renderAll(); undoReset(); markFile(name); toast(`Opened ${name}`);
+    saveSel(); save(); saveExtras(); view = whole && VIEWS.includes(d.view) ? d.view : 'build'; renderAll(); undoReset(); markFile(name); use(whole ? 'file/opened' : 'file/opened-old-version'); toast(`Opened ${name}`);
     return true;
   }
   // ---------- the File menu ----------
@@ -3647,6 +3745,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   // A slot clicked, or a whole plan set at once
   function divToggle(u, id) {
+    use('dividers/case-slot');
     const sel = divSel(u), [kind, a, b] = id.split(':'), flip = (arr, i) => arr.includes(i) ? arr.filter(x => x !== i) : [...arr, i];
     if (kind === 'c') sel.cells[+a] = flip(sel.cells[+a], +b);
     else if (kind === 'r') sel.rows = flip(sel.rows, +a);
@@ -3853,6 +3952,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     return n ? `${n} of ${fronts.length} named` : 'None';
   };
   function setLabel(u, id, text) {
+    use('label/text');
     const L = { ...(u.labels || {}) }, s = String(text).slice(0, LABEL_MAX);
     if (s.trim()) L[id] = s; else delete L[id];
     if (Object.keys(L).length) u.labels = L; else delete u.labels;
@@ -3952,6 +4052,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   // A click on a plan: the start, the end (the divider goes in), a divider taken away, or the start dropped
   function gridClick(u, fam, svg, ev) {
+    use('dividers/grid-click');
     const G = gridOf(fam), h = gridHit(u, fam, gridPoint(G, svg, ev)), lines = gridLines(u, fam);
     if (h.kind === 'end') { gpend = null; return { gridPlans: { ...(u.gridPlans || {}), [fam]: [...lines, h.end.line] } }; }
     if (h.kind === 'seg') { const s = h.seg; toast(`Divider removed${s.bad ? '' : ` (${s.files.join(' + ')} holes)`}.`); return { gridPlans: { ...(u.gridPlans || {}), [fam]: lines.filter((_, n) => n !== s.idx) } }; }
@@ -5629,7 +5730,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const want = v3want = {};
     if (!v3gl) v3status('Loading the 3D viewer…');
     let lib;
-    try { lib = await loadThree(); } catch (e) { v3status('Couldn’t load the 3D viewer (three.js, from cdn.jsdelivr.net). Check your connection and reload the page; the rest of the page works without it.'); return; }
+    try { lib = await loadThree(); } catch (e) { use('3d/viewer-not-loaded'); v3status('Couldn’t load the 3D viewer (three.js, from cdn.jsdelivr.net). Check your connection and reload the page; the rest of the page works without it.'); return; }
     if (v3want !== want) return; // something else was asked for meanwhile
     close3d();
     $('v3dTitle').textContent = t.name;
@@ -5957,6 +6058,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const rightAt = ev => {
       const t = curTower(); if (t !== v.t) return;
       const h = hitAt(ev), i = levelOfHit(h);
+      use(i < 0 ? '3d/right-click-stack' : '3d/right-click-level');
       if (i < 0) { menuOpen({ ...stackMenu(t), x: ev.clientX, y: ev.clientY, opener: el }); return; }
       // on one of several levels selected: their menu, the selection kept
       const ms = multiSel(t);
@@ -5970,7 +6072,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // Open or close what was clicked (the drawer of a module holding several, a case)
     const toggle = m => {
       if (!canOpen(m)) return;
-      m.open = !m.open; glide();
+      m.open = !m.open; glide(); use(m.lid ? '3d/open-case' : '3d/open-drawer');
       if (!store.get('openTip', false)) { store.set('openTip', true); v3tools(); }
     };
     const toggleAt = h => toggle(moverAt(h));
@@ -6044,6 +6146,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // Paint a part's kind with the brush: in every unit (the project's colour; units' own colours for it go), or in
   // the clicked unit only
   function v3paint(v, mesh) {
+    use('paint/click-in-3d');
     const { role, cfg } = mesh.userData;
     if (!ROLE_BY_ID.has(role)) { toast(role === 'hardware' || role === 'caster' ? 'Bolts and casters are bought, not printed. Click one with Select to change their finish.' : 'Tires print in TPU.'); return; }
     const id = v.brush, what = `${ROLE_BY_ID.get(role).label} painted ${colorName(id)}`;
@@ -6332,6 +6435,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     todo.forEach(u => { u.loading = false; });
     v3list(); v3mark(); // the outline takes the parts' bounds now
     let msg = `${plural(todo.reduce((a, u) => a + u.loaded, 0), 'part')} shown, ${Math.round(tris / 1000)}k triangles (from ${(src / 1e6).toFixed(1)}M in the files).`;
+    use('3d/real-parts');
+    if (missing.length) use('3d/parts-not-in-folder');
+    if (failed.length) use('3d/parts-not-simplified');
     if (missing.length) msg += ` Not found in ${vaultFolder.name}: ${missingList(missing.map(x => x[0]))}.`;
     if (failed.length) msg += ` Couldn’t simplify ${missingList(failed.map(x => x[0]))} (${failed[0][1]}).`;
     v3status(msg);
@@ -6475,6 +6581,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   async function export3d(fmt) {
     const v = v3, why = exportWhy(v);
     if (why) { toast(why); return; }
+    use('file/export-' + fmt);
     const items = exportItems(v), title = v.t.name;
     const blob = fmt === 'stl' ? stlOf(items, title) : await glbOf(v, items, title);
     const name = title.replace(/[\\/:*?"<>|]+/g, '-').trim() + '.' + fmt;
@@ -7232,6 +7339,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     $('countAsm').title = ap == null ? '' : `${ap}% assembled`;
     store.set('view', view);
     renderHeader();
+    useState();
   }
   // Header: the printer (opens the picker under it) and the Vault folder (file count once it is open)
   const printerShort = () => printer.id === 'custom' ? (printer.from || 'Custom printer') : preset().name.replace(/^Bambu Lab /, '').replace(/ \(single nozzle\)$/, '').split(' / ')[0];
@@ -7348,6 +7456,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // t, i: the stack and the level (null: the whole stack); the keys take the selection, the menus the level or stack they are about
   function copySel(t = curTower(), i = selLevel(t)) {
     if (!t) return false;
+    use(i == null ? 'design/copy-stack' : 'design/copy-level');
     // several levels selected, i one of them: all of them
     const ms = i != null && multiSel(t), s = ms && ms.includes(i) ? ms : [i];
     if (s.length > 1) { clip = { kind: 'level', lvs: s.map(k => clipCopy(t.levels[k])), from: levelsName(s) }; toast(`${clip.from} copied: ${MOD}+V pastes them above the selected level`); }
@@ -7356,6 +7465,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     return true;
   }
   function pasteClip(t = curTower(), i = selLevel(t)) {
+    use('design/paste');
     if (!clip) { toast(`Nothing copied yet: select a level or a stack, then ${MOD}+C`); return; }
     if (clip.kind === 'stack') {
       const x = { ...clipCopy(clip.t), id: newId(), name: clip.t.name + ' copy' }, at = t ? towers.indexOf(t) + 1 : towers.length;
@@ -7384,10 +7494,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (menuNow || fpOpen || !$('printerBox').hidden) return;
     if (e.key === 'Escape' && (gpend || v3ui.help)) return; // Esc drops a divider's start or closes the view's help first
     const k = e.key, dlg = document.querySelector('dialog[open]');
-    if (k === '?' && !e.ctrlKey && !e.metaKey && !e.altKey && (!dlg || dlg === $('keys'))) { e.preventDefault(); keysPop(); return; }
+    if (k === '?' && !e.ctrlKey && !e.metaKey && !e.altKey && (!dlg || dlg === $('keys'))) { e.preventDefault(); useKey(e); keysPop(); return; }
     if (dlg) return;
     if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (k === 's' || k === 'S' || k === 'o' || k === 'O')) {
       e.preventDefault(); if (e.repeat) return;
+      useKey(e);
       if (k.toLowerCase() === 'o') { openDesign(); return; }
       if (!towers.length && !extras.length) toast('Nothing to save yet'); else saveDesign(false);
       return;
@@ -7396,14 +7507,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && view === 'build' && (k === 'c' || k === 'C' || k === 'v' || k === 'V')) {
       if (k.toLowerCase() === 'c') { if (String(getSelection() || '').trim() || !copySel()) return; }
       else { if (e.repeat) { e.preventDefault(); return; } pasteClip(); }
-      e.preventDefault(); return;
+      useKey(e); e.preventDefault(); return;
     }
     if (e.ctrlKey || e.metaKey) return;
     // a tab list, a radio group… with arrow keys of its own keeps them
     if (/^Arrow/.test(k) && e.target.closest && e.target.closest('[role=tablist], [role=radiogroup], [role=menu]')) return;
     const step = !e.altKey && /^(Digit|Numpad)[1-4]$/.test(e.code) ? ['build', 'print', 'hardware', 'assemble'][+e.code.slice(-1) - 1] : null;
-    if (step) { if (!e.repeat && !$('tab-' + step).disabled && view !== step) { view = step; renderAll(); } if (!e.repeat) e.preventDefault(); return; }
-    if (view === 'build' && dsel && dsel.t !== 'loose' && keyDesign(e, k)) e.preventDefault();
+    if (step) { if (!e.repeat && !$('tab-' + step).disabled && view !== step) { useKey(e); view = step; renderAll(); } if (!e.repeat) e.preventDefault(); return; }
+    if (view === 'build' && dsel && dsel.t !== 'loose' && keyDesign(e, k)) { useKey(e); e.preventDefault(); }
   }, true);
 
   function renderAll() {
@@ -7416,7 +7527,15 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   $('aboutNotes').innerHTML = `Part rules come from the four PDF manuals in the Vault download and USSA\u2019s published component counts; anything worked out beyond them is marked <span class="badge inf">Inferred</span>. Sizes are measured from each STL (${FILES.length} files)${HAS_PREVIEWS ? ' and pictures are rendered from them' : ''}. Filament is a rough figure from part volume at standard settings, calibrated against USSA\u2019s own gram estimates. Progress and stacks are saved in this browser only.${window.VAULT_PUBLIC ? ' Free and open source, provided as is, with no support.' : ''}`;
   aboutShop();
   aboutCount();
-  if (document.visibilityState !== 'prerender') count(location.pathname, { t: document.title, r: document.referrer, s: screen.width, q: location.search });
+  if (document.visibilityState !== 'prerender') {
+    count(location.pathname, { t: document.title, r: document.referrer, s: screen.width, q: location.search });
+    // what the visit comes with: the theme (chosen, or the system's), the language, a touch screen, no folder window
+    use('theme/' + themeNow() + (document.documentElement.dataset.theme ? '' : '-system'));
+    if (/^[a-z]{2,3}(-[a-z0-9]{2,4})?$/i.test(navigator.language || '')) use('lang/' + navigator.language.toLowerCase());
+    if (matchMedia('(pointer: coarse)').matches) use('device/touch');
+    if (!('showDirectoryPicker' in window)) use('device/no-folder-window');
+    { const w = innerWidth; use('window/' + (w < 860 ? 'under-860' : w < 1240 ? '860-1239' : w < 1600 ? '1240-1599' : '1600-up'), 'Window width, px (the page\u2019s breakpoints)'); }
+  }
 
   migrateTowers();
   renderAll();

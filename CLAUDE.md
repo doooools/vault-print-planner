@@ -296,6 +296,12 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   (page, referrer, screen width; GoatCounter works out the country) and once per store link opened in Hardware (event
   `buy/<store>`, title = the item: which Amazon stores deserve an Associates tag). Only on `doooools.github.io`, never
   with `navigator.webdriver` (Playwright, the video), nor after "Don't count this browser" in About (`noCount`).
+  What is used (Dols, 2026-11-16, section "what is used" after it): `use(name)` sends an event at most once per visit;
+  `USES` names the buttons by selector (a click capture listener), `use()` calls name the gestures with no button
+  (undo, save, open, export, a drawer opened, paint in 3D, a shortcut through `useKey`), `useState` (in `renderTabs`)
+  the step shown, the folder open, the printer and the store; errors as `error/line-<n>`. Never a name, a label text,
+  a count of the person's parts or an id. A new button adds its rule to `USES`. Full list: `docs/ux-redesign.md`,
+  "What is counted"; About's "Visit count" says it in short.
 
 - Print: plate ticks select (Dols, 2026-11-13). A plate card's checkbox ticks it for the download (`plateSel`, kept for
   the page's life per print scope, not saved); the downloads (Bambu project, plate files, STL folders) hold the ticked
