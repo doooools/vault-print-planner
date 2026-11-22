@@ -1,0 +1,56 @@
+# Publishes the site (CLAUDE.md "Preprod"): main at https://doooools.github.io/vault-print-planner/ and the preprod
+# branch under .../preprod/, in one GitHub Pages deployment (a repository has one Pages site).
+# It runs once "Check the page" passed on a push to main or preprod, and by hand (Actions > Publish the site > Run
+# workflow). Each run publishes both branches as they are now, so a push to one never takes the other down. A failed
+# check publishes nothing: the site stays as it was.
+# It starts from workflow_run, which always runs on the default branch: the github-pages environment's rule (only main
+# may deploy) holds for preprod's pushes too, with no setting to change. Needs Settings > Pages > Source: GitHub Actions.
+name: Publish the site
+
+on:
+  workflow_run:
+    workflows: [Check the page]
+    types: [completed]
+    branches: [main, preprod]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - name: Put main at the root and preprod under preprod/
+        run: |
+          mkdir -p "$RUNNER_TEMP/site"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/site"
+          if git fetch --depth 1 origin preprod; then
+            mkdir -p "$RUNNER_TEMP/site/preprod"
+            git archive FETCH_HEAD | tar -x -C "$RUNNER_TEMP/site/preprod"
+            echo "preprod: $(git rev-parse --short FETCH_HEAD)"
+          else
+            echo "No preprod branch: main only"
+          fi
+          echo "main: $(git rev-parse --short HEAD)"
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/site
+      - id: deploy
+        uses: actions/deploy-pages@v4
