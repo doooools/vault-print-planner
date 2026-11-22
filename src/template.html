@@ -755,6 +755,22 @@ pre.code { margin: 0; background: var(--sheet-2); border-radius: 0; padding: 12p
 .design .v3-side { max-height: none; overflow: visible; border-left: 0; border-top: 2px dotted var(--edge); padding: 8px 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
 .design .v3-side > :not(#v3dStatus):not(#v3dPick) { display: none; }
 .design .v3-side .v3-status { flex: 1 1 300px; font-size: 13px; }
+/* Design fills the window on wide screens (Dols, 2026-11-22): the page itself never scrolls, the 3D view takes all the
+   height left under the stack's title, and only the rail and the inspector scroll, each in itself */
+@media (min-width: 1200px) {
+  body:has(#view-build:not([hidden]) > .design) { height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; padding-bottom: 0; }
+  body:has(#view-build:not([hidden]) > .design) > .wrap { flex: 1 1 0; min-height: 0; width: 100%; box-sizing: border-box; padding-bottom: 16px; grid-template-rows: minmax(0, 1fr); }
+  body:has(#view-build:not([hidden]) > .design) :is(.main, .results) { min-height: 0; height: 100%; grid-template-rows: minmax(0, 1fr); }
+  #view-build:not([hidden]) { min-height: 0; height: 100%; grid-template-rows: minmax(0, 1fr); }
+  .design { height: 100%; min-height: 0; flex-wrap: nowrap; align-items: stretch; }
+  .drail { min-height: 0; overflow-y: auto; overflow-x: hidden; align-content: start; padding: 0 4px 8px 0; }
+  .dinsp { position: relative; top: auto; max-height: none; min-height: 0; contain: none; }
+  .dcenter { min-height: 0; }
+  .dcenter.loose { overflow-y: auto; }
+  .design .v3-slot { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .design .v3-slot .v3-view { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr) auto; }
+  .design .v3-slot .v3-stage { height: auto; min-height: 0; }
+}
 .prt { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 28px; }
 .pmain { flex: 999 1 520px; min-width: 0; display: grid; gap: 18px; }
 /* Print's right column, like Design's inspector: the plate options, then the selected plate */
@@ -5974,7 +5990,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const px = { value: renderer.getPixelRatio() };
     // Hatching where the sun doesn't reach: lines 7 px apart, 1.5 px wide, ink at 28 %
     const toon = color => {
-      const m = new T.MeshToonMaterial({ color, gradientMap: ramp });
+      // Both sides: the simplified parts have hairline gaps (an edge whose neighbour moved), and through them one
+      // sees the part's own inside, which must be the part's colour, not its ink outline (Dols, 2026-11-22)
+      const m = new T.MeshToonMaterial({ color, gradientMap: ramp, side: T.DoubleSide });
       m.onBeforeCompile = sh => {
         sh.uniforms.uPx = px;
         sh.fragmentShader = 'uniform float uPx;\n' + sh.fragmentShader.replace('#include <opaque_fragment>',
@@ -6001,6 +6019,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         #include <colorspace_fragment>
         }`,
       side: T.BackSide,
+      // the outline sits behind the part's own back faces, so it only shows past the part's edge
+      ...!ring && { polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 },
       // a selection ring: over everything, but never over its own module (the stencil its mask wrote)
       ...ring && { depthTest: false, depthWrite: false, stencilWrite: true, stencilRef: 1, stencilFunc: T.NotEqualStencilFunc, stencilZPass: T.KeepStencilOp },
     });
