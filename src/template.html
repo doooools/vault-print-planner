@@ -33,8 +33,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<!-- The theme picked in the header (localStorage vpp.theme), set before the page is drawn so it never flashes the other one -->
-<script>try { var th = JSON.parse(localStorage.getItem('vpp.theme')); if (th === 'light' || th === 'dark') document.documentElement.dataset.theme = th; } catch (e) {}</script>
+<!-- Preprod: the same page published from the preprod branch under /preprod/ (CLAUDE.md "Preprod"). Its saved state lives
+     under vppPre.* instead of vpp.*, copied once from the live site's on the first visit, so a test never touches the
+     live project; data-preprod shows the strip above the header and a robots meta keeps it out of search engines. Then the theme picked in the header (localStorage
+     <key>theme), set before the page is drawn so it never flashes the other one -->
+<script>var VPP_PRE = location.pathname.split('/').indexOf('preprod') > 0, VPP_KEY = VPP_PRE ? 'vppPre.' : 'vpp.';
+try { if (VPP_PRE) { document.documentElement.dataset.preprod = ''; document.head.appendChild(Object.assign(document.createElement('meta'), { name: 'robots', content: 'noindex' })); if (localStorage.getItem('vppPre.copied') == null) {
+  for (var i = 0, ks = []; i < localStorage.length; i++) ks.push(localStorage.key(i));
+  ks.forEach(function (k) { if (k.indexOf('vpp.') === 0) localStorage.setItem('vppPre.' + k.slice(4), localStorage.getItem(k)); });
+  localStorage.setItem('vppPre.copied', JSON.stringify(Date.now())); } } } catch (e) {}
+try { var th = JSON.parse(localStorage.getItem(VPP_KEY + 'theme')); if (th === 'light' || th === 'dark') document.documentElement.dataset.theme = th; } catch (e) {}</script>
 <title>Vault Print Planner</title>
 <!-- Icon: a three-drawer Vault tower with an orange lock -->
 <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEWUlEQVR42sWXS2yUVRTHf+feO4+2A6VloJbUITYDslIBww6JbnwQDBu2bokxbogbFyw0mhqrK2Nkp3HrRkEMRiVKou4wirxKQSEWEzoMDWCn/ebee1xMO3RexTCTeFZf8t3H//7P/7yEmlkgFIvFMbX2VVX2oVoEHCB0Zwp4RKZFOCYhfDA9Pf3X8p0CByx8FjZv3brfKR+KMZtUFVWllyYiiAga43UvvHJ1aupzOGAF4JHio/uslaOqSozRi4it7ZHe3K6KgqpqMMY4ESEEffGP6YvHpLBt26jz4TcxJq+qAbAigqoSQujJ/cYYjDHLrAYRsRpjyTv7mHPeHzLW5WOM9cuTJCGVSjE0tI4YYxcyUIwY/pmfp1KpkMlkUFWrqsFYm3feH3Iqsl9r0ERESKpVxsbGOHz4dfL5PMEHHtQTqmCMUKlUmHhnkt/PnqMvmyXGKKqqKrLfCTKuqgKIMYbK/DzPPL2HHdu3Mzs7i3OuK/q99xQKBfbufZ7Tp3+hv68PwKgqgow7wDSrFaBSqfREAyEEKpUKqkobURvXnjrFGFMPnW7Db4UAW6wtAOccMcaeMRBC6OhK1w5xqXSTXC5XR98tgMG1aymVbt4fQAiBgYEBvvn2OzLZDJtGR/HeP7AbVBVrLXNzc3xx9Ev6+/uXwnrFg8e3bNVmBhYWFtiwIc/IyEhnAM0+bbsGrLWUb5WZmblOX19fixZcc8aan59n584dTL47QSaTXtogrZe79FKdofbfJx1AKGIMb7z5NidOfE0ul2tgwTW/PkkSdmx/goGBAUqlEs65JtQKLoP9+zJrfvgIgDt7XiYMF8AvNoAVEbz3DA8Ps2vXkxw//lULm6adCKvVKiGEeigu53JjDEYMIjB46gjZmTNkZ84weOoIImDENKxd3htjJEmStq50q8Vvx38tH6tXi9XOcu2Um0ql6lFRO7rJBdExt/vgPRfsPkiICjG0QAkhoKqk0+n7A1i+/MLFKUSEfD7fRuACGtGhx2G8BmCtCOIXQXKNYBWiKpl0mnNnz7dlom0YJknCli1FRkcfwvvQSq90CENt7cWstdwqlzl77nzbbOg6JY+RjRtXzwM0RuFqiSidTnFp+jIhhJazWvLAnbt3eeG5Z5mYeIskSTAiXbWlMUb6+weYnHyfjz/5lMHBwYYa05IHYggUCg+zsLBAuVzGWtt1LVi3LlDYXPjv1bBarSIiWGu7BrDMbLVabf9vtULSK1vtLAPE5sXOuXrc9qIzT6VSpFKpdkCiUfSKiGhNL5FsNsuPP/3M1WvXlhoT7erl1lpKpRInT36/EkQUEVX0iowXi5PGutdWtuWLi4sMDQ2xfv3wimz4gG25sdy+fZsbN2bJZjP12cAYY2Pw73UcTLz3XTUjzSyseH3DYNJxNBOpTWbdanG5kmjNWkYzCwfsXPnUhTXrh381ylPG2kFAagNqDyLgXo4RU2uPr3v0pT8vTR2tD6f/53j+L87BSjap/7cSAAAAAElFTkSuQmCC" sizes="32x32">
@@ -101,6 +109,13 @@ button { cursor: pointer; }
 
 /* Header: logo, the four steps, the File menu, the theme, the printer and the Vault folder, on one row at 1440 px.
    What's new and Report a bug or an idea sit under the name; the fork and Romy's planner are told in What's new */
+/* Preprod (CLAUDE.md "Preprod"): a striped strip above the header, only on the page published under /preprod/ */
+.preprod-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 6px max(16px, env(safe-area-inset-right, 0px)) 6px max(16px, env(safe-area-inset-left, 0px)); font-size: 13px; line-height: 1.35; color: var(--ink); background: repeating-linear-gradient(-45deg, var(--warn-soft) 0 14px, var(--sheet) 14px 28px); border-bottom: 2px solid var(--warn); }
+html:not([data-preprod]) .preprod-bar { display: none; }
+.preprod-bar b { font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--warn); }
+.preprod-bar .grow { flex: 1 1 320px; }
+.preprod-bar a, .preprod-bar .linkbtn { color: var(--ink); font-weight: 600; }
+.preprod-bar .linkbtn { display: inline; margin: 0; padding: 2px 0; font-size: inherit; }
 header.appbar { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; padding: 10px max(20px, env(safe-area-inset-right, 0px)) 10px max(20px, env(safe-area-inset-left, 0px)); background: var(--sheet); border-bottom: 1px solid var(--line); }
 .logo { display: flex; align-items: center; gap: 10px; }
 /* Under the name, What's new and Report a bug or an idea: small links, no width of their own on the row */
@@ -1000,6 +1015,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 </head>
 <body>
 
+<div class="preprod-bar" role="note" aria-label="Preprod"><b>Preprod</b><span class="grow">A test version, published before the live site. What you do here is kept apart from your project on the live site (copied from it on your first visit) and isn’t counted.</span><button type="button" class="linkbtn" id="preprodCopy" title="Replace what is saved here with the live site’s project, as it is now">Copy the live project again</button><a id="preprodLive" href="../">Open the live site</a></div>
+
 <header class="appbar">
   <div class="logo"><svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#222526"/><rect x="11" y="10" width="42" height="13" rx="3" fill="#d4d6d3"/><rect x="11" y="25.5" width="42" height="13" rx="3" fill="#d4d6d3"/><rect x="11" y="41" width="42" height="13" rx="3" fill="#d4d6d3"/><circle cx="32" cy="32" r="3.6" fill="#e8742f"/></svg>
     <div class="brand"><h1>Vault Print Planner</h1><p class="hlinks"><button type="button" class="newsbtn" id="newsBtn" aria-haspopup="dialog" title="What changed lately, and what this fork adds to Romy’s planner">What’s new</button><span aria-hidden="true"> · </span><button type="button" class="newsbtn" id="reportBtn" aria-haspopup="dialog" title="Report a bug or suggest an idea, on GitHub">Report a bug or an idea</button><span aria-hidden="true"> · </span><button type="button" class="newsbtn" id="keysBtn" aria-haspopup="dialog" aria-keyshortcuts="?" title="Keyboard shortcuts (?)">Shortcuts</button><span aria-hidden="true"> · </span><button type="button" class="newsbtn" id="aboutBtn" aria-haspopup="dialog" title="Not affiliated with USSA, store links, visit count, where the numbers come from">About</button></p></div></div>
@@ -1167,8 +1184,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 
   // ---------- storage (per-viewer conveniences only) ----------
   const store = {
-    get(k, d) { try { const v = localStorage.getItem('vpp.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem('vpp.' + k, JSON.stringify(v)); } catch (e) {} },
+    get(k, d) { try { const v = localStorage.getItem(VPP_KEY + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(VPP_KEY + k, JSON.stringify(v)); } catch (e) {} },
   };
 
   // ---------- undo ----------
@@ -2217,7 +2234,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // the request itself, sets no cookie and keeps no IP address. Only from the published site: never from a local copy or
   // a test browser (navigator.webdriver: Playwright, the video recordings), nor from a browser that opted out in About.
   const COUNT_HOST = 'doooools.github.io', COUNT_URL = 'https://dols.goatcounter.com/count';
-  const counting = () => location.hostname === COUNT_HOST && !navigator.webdriver && !/HeadlessChrome|Lighthouse|PageSpeed|bot\b|crawl|spider/i.test(navigator.userAgent) && !store.get('noCount', false);
+  const counting = () => location.hostname === COUNT_HOST && !VPP_PRE && !navigator.webdriver && !/HeadlessChrome|Lighthouse|PageSpeed|bot\b|crawl|spider/i.test(navigator.userAgent) && !store.get('noCount', false);
   function count(p, extra) {
     if (!counting()) return;
     try { new Image().src = COUNT_URL + '?' + new URLSearchParams(Object.assign({ p }, extra, { rnd: Math.random().toString(36).slice(2) })); } catch (e) {}
@@ -7527,6 +7544,17 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   $('aboutNotes').innerHTML = `Part rules come from the four PDF manuals in the Vault download and USSA\u2019s published component counts; anything worked out beyond them is marked <span class="badge inf">Inferred</span>. Sizes are measured from each STL (${FILES.length} files)${HAS_PREVIEWS ? ' and pictures are rendered from them' : ''}. Filament is a rough figure from part volume at standard settings, calibrated against USSA\u2019s own gram estimates. Progress and stacks are saved in this browser only.${window.VAULT_PUBLIC ? ' Free and open source, provided as is, with no support.' : ''}`;
   aboutShop();
   aboutCount();
+  // Preprod (CLAUDE.md "Preprod"): the strip above the header names it, the tab's title too; "Copy the live project
+  // again" (press and hold: it overwrites what was tested here) drops every vppPre.* key, and the reload copies the
+  // live site's vpp.* keys again (the script in <head>)
+  if (VPP_PRE) {
+    document.title = 'Preprod · ' + document.title;
+    $('preprodLive').href = location.pathname.replace(/preprod\/[^/]*$/, '');
+    holdButton($('preprodCopy'), () => {
+      try { Object.keys(localStorage).filter(k => k.startsWith('vppPre.')).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+      location.reload();
+    }, 'Press and hold to replace what is saved here with the live project');
+  }
   if (document.visibilityState !== 'prerender') {
     count(location.pathname, { t: document.title, r: document.referrer, s: screen.width, q: location.search });
     // what the visit comes with: the theme (chosen, or the system's), the language, a touch screen, no folder window
