@@ -60,7 +60,8 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   writing UTF-8: the user's checkout is on Windows.
 - Work on a branch off `preprod` (`claude/<name>` for Claude's threads), one pull request per piece of work, **into
   `preprod`** (see "Preprod"). Claude commits, pushes and opens the pull request without asking first (the user's rule
-  since 2026-11-12, confirmed in this file's update); **merging stays with the user**, into `preprod` and into `main`.
+  since 2026-11-12, confirmed in this file's update). **Claude merges its own pull request into `preprod`** once its
+  checks pass (Dols, 2026-11-22); **merging into `main` stays with the user** (see "Preprod").
 
 ## Preprod (Dols, 2026-11-22)
 - Two sites from one repository: `main` at https://doooools.github.io/vault-print-planner/ (live) and the `preprod`
@@ -73,6 +74,13 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
 - The flow: pull requests go into `preprod`; Dols tries them on the preprod site; to go live, a pull request from
   `preprod` into `main`, merged by Dols with **a merge commit** (a squash would part the two histories). A fix made
   straight on `main` is merged back into `preprod` (`git merge origin/main`) in the same thread.
+- Merging into `preprod` (Dols, 2026-11-22: "auto merge", now that the preprod is there to test): the thread that
+  opened the pull request merges it itself, with a merge commit, as soon as "Check the page" is green on its last
+  commit and GitHub says it merges cleanly; no wait for Dols. Not before the check passed, never with a red or running
+  check, never a pull request another thread or a person opened. A conflict (another thread merged first): merge
+  `origin/preprod` into the branch, rebuild `index.html` from `src/`, run `tools/check.py`, push, wait for green again.
+  The thread then tells Dols the change is on the preprod URL, with what to try there. The pull request from
+  `preprod` into `main` (going live) is opened when Dols asks, and **only Dols merges it**.
 - The page knows it is the preprod from its address (`VPP_PRE`: a `preprod` folder in the path, script in `<head>`):
   a striped strip above the header ("Preprod", "Copy the live project again", "Open the live site"), "Preprod · " in
   the tab's title, a robots `noindex`, and **no GoatCounter request at all** (`counting()`). Its saved state is under
