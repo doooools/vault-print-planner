@@ -151,6 +151,16 @@ def changelog_html():
         about = ' class="about"' if d[0].lower().startswith("about") else ""
         return f'<section{about}><h3>{h.escape(d[0], quote=False)}</h3>{"".join(d[1])}</section>'
     return "".join(intro) + "".join(day(d) for d in days)
+# The page's three typefaces (src/fonts/, latin subsets from Fontsource, licences beside them), inlined so the page
+# fetches no font: Anton (titles), Special Elite (labels, buttons), Courier Prime 400/700 (numbers, running text)
+def fonts_css():
+    import base64
+    faces = [("Anton", "anton-400", 400), ("Special Elite", "special-elite-400", 400),
+             ("Courier Prime", "courier-prime-400", 400), ("Courier Prime", "courier-prime-700", 700)]
+    return "\n".join(f'@font-face {{ font-family: "{fam}"; font-style: normal; font-weight: {w}; font-display: swap; '
+                     f'src: url(data:font/woff2;base64,{base64.b64encode((here / "fonts" / (f + ".woff2")).read_bytes()).decode()}) format("woff2"); }}'
+                     for fam, f, w in faces)
+html = html.replace("/*FONTS*/", fonts_css())
 html = html.replace("<!--CHANGELOG-->", changelog_html())
 html = html.replace("/*CATALOG*/", catalog).replace("/*RULES*/", (here / "rules.js").read_text(encoding="utf-8"))
 pathlib.Path(out).write_text(html, encoding="utf-8", newline="\n")

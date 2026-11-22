@@ -172,19 +172,57 @@ A step of its own, fed by the same data as `hwTable` for the whole build.
 - Step texts can use the build: "Cut the M16 rod to 338 mm, the length for an M base" instead of listing the four lengths.
 - Cases keep the "Inferred order" badge and its note.
 
-## Colours and theme
+## The look: Giscard Punk "encre" (Dols, 2026-11-22, preprod first)
 
-Keep the page's tokens and its dark theme. Two additions:
-- buttons with white text use `#c2511c` in the light theme: white on the current `--accent` (`#d9622b`) is under 4.5:1. `--accent` stays for outlines and marks;
-- a raised surface for selected cards: `#ffffff` light, `#2b3031` dark.
+The page took the look of Claude Design's handoff `vault-giscard-punk-handoff.zip` (brief, design guide, shader notes
+and mockups; not committed). It changes how things are drawn, not what they do: every control, setting and gesture
+stays. Where this section and the rules below disagree, this section wins.
+- **Paper and ink**: the ground is paper (`#f1eee7`) with ink (`#111111`) in light, and the two swap in dark
+  (`#070707` / `#f1eee7`). Tokens `--gp-*` at the top of the `<style>`, light by default, dark under
+  `prefers-color-scheme` and `[data-theme="dark"]`; the planner's names (`--ground`, `--ink`, `--accent`…) point at
+  them. Hex only: three.js can't read `oklch`. The Light / Dark switch, its storage and the system default are as
+  before. A faint scanline overlay covers the page (`body::after`, not clickable).
+- **Colours and their one meaning each**: yellow (`--accent`, `#f2d935`) = selected or done, a block with ink text
+  stuck on a little crooked (tabs, segmented buttons, toggles, filter chips, "Bought", the folder once picked);
+  pink (`--accent-btn`, `#fc65b6`) = the screen's one main action, with a hard 4 px black shadow (`--gp-shadow`); red
+  block with white text = a problem (`.issue.bad`, `.pflag`); blue = the whole stack (as before: "Stack settings"
+  and its inspector). The old orange is gone, and so is the dark "selected" fill.
+- **Type**: three fonts, embedded in the page (Dols, 2026-11-22: no request to Google Fonts): Anton for titles, in
+  capitals (step titles 48 px, panel titles 36 px, section heads 24 px); Special Elite for labels, buttons and tabs;
+  Courier Prime 400/700 for text and figures (tabular). `src/fonts/` holds the woff2 files (Fontsource 5.3.0, latin)
+  and their licences (OFL 1.1, Apache 2.0); `build.py` inlines them as `data:` URLs (`/*FONTS*/`). About says so.
+- **Shapes**: no rounded corners; borders 2 px in ink; shadows only hard (4, 6, 10 px black), never blurred. Dashed =
+  left out, new or disabled ("New stack", disabled buttons and tabs, a plate printed); dotted = separators between
+  rows; 45° hatching = progress (Print's and Assemble's bars).
+- **The taped card**: one per screen, the key thing on it, on `--raised` (ink in light, paper in dark), turned 1° with
+  a strip of tape (`::before`): the inspector's head (`.ihead`, blue for the stack), Print's selected plate (`.psel`),
+  Assemble's "Have ready" (`.asm-need`), Hardware's list options. The screen's key figure sits on it big (`kfig`: a
+  level's parts, the selected levels' parts, the hardware lines; Assemble's first item; Print's title says "22%
+  printed"). In the rail, the stack shown is a taped card too.
+- **Header**: one row from 1440 px (the printer's bed is hidden from 1240 to 1599 px, it is in the printer's window),
+  the name as a taped label, the four steps two by two on a phone.
+- **The 3D view ("encre", `open3d`)**: the canvas is transparent over the stage's paper and 16 px dot grid
+  (`--gp-vp-bg`, `--gp-vp-grid`). Flat colours in two tones (`MeshToonMaterial`, a 2 × 1 ramp): one light from the
+  front, left and above, so fronts and tops are lit and right sides in shade, at about 70 %; the shade hatched at 45°
+  in screen space (7 px, ink at 28 %). Every part is outlined in ink, 2.5 px at any zoom (an inverted hull: back faces
+  pushed out along normals averaged at the corners, `hullMat`, `inked`), plus 1 px ink creases on edges sharper than
+  30° (`EdgesGeometry`, once per shape). A hard shadow of the footprint, back and to the right (`--gp-vp-shadow`). The
+  level under the pointer: its ink outline thickens to 4 px (no box any more). The selected level(s): a yellow ring
+  (`--gp-vp-select`) around the whole module, drawn over the stack outside the module's own shape (stencil mask), with
+  an ink ring outside it in light. What a click would paint is tinted halfway to that yellow. Picking, the camera,
+  the tools, the menus and the mesh pipeline are untouched. The theme switch re-reads the shadow and the rings
+  (`v.retheme`).
 
-Parts and filament swatches keep their real colour in both themes.
+What the handoff changes in the rules below: orange actions became pink, the dark "selected" fill became the yellow
+block, step titles went from 28 px to 48 px, the mono font is now the text font too (Courier Prime). Kept against the
+handoff: sentence case in the page's words (capitals come from CSS on titles and labels only), the Bolts swatches, no
+footer.
 
 ## One look for each kind of thing (Dols, 2026-11-13)
 
 The pass of thread "Unifier l'interface de tout le planner" set these rules for every step, popup and panel:
-- **Buttons**: a filled orange button (`.btn.primary`, `--accent-btn`) does the screen's main action (Add a level on
-  top, Empty stack, Download, Mark as printed, Copy the list, Drawer done). Dark fill (`--ink`) only ever means
+- **Buttons** (orange then, pink since the look of 2026-11-22): a filled button (`.btn.primary`, `--accent-btn`) does the screen's main action (Add a level on
+  top, Empty stack, Download, Mark as printed, Copy the list, Drawer done). Dark fill (`--ink`; the yellow block since 2026-11-22) only ever means
   *selected*: tabs, segmented buttons, toggles of the 3D toolbar. There is no dark action button (`.btn.ink` is gone).
 - **The stack colour**: blue (`--stack`, `--stack-soft`, light and dark) means *the whole stack* in Design (Dols,
   2026-11-14): the stack picked in the rail (card and badge), the "Stack settings" button while it is on, and the
