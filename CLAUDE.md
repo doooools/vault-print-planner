@@ -28,7 +28,9 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   paper and ink swapped by theme, yellow = selected, pink = the one main action, red = a problem, blue = the whole stack,
   Anton / Special Elite / Courier Prime embedded (`src/fonts/`, inlined by `build.py` at `/*FONTS*/`), one taped card
   per screen (`.ihead`, `.psel`, `.asm-need`; key figure `kfig`), no radius, hard shadows. The 3D view is drawn in ink
-  (`open3d`: `toon`, `hullMat`, `inked`, creases, hard shadow, stencil selection ring `v3mark` → `ring`, `v.retheme`).
+  (`open3d`: `toon` (both sides: the simplified parts have hairline gaps), `hullMat` (offset behind the part), `inked`,
+  `creaseLines`, hard shadow, stencil selection ring `v3mark` → `ring`, `v.retheme`). From 1200 px Design fills the
+  window and doesn't scroll (`body:has(#view-build … .design)`): only the rail and the inspector scroll.
   Rules: `docs/ux-redesign.md` "The look", which wins over the older rules there.
 - What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file
   `3d/stl-absents-de-la-3d.md`.
