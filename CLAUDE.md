@@ -8,7 +8,8 @@ Upstream takes no feature requests ("fork it and change it"), so this fork is ou
 A **3D view of each stack** built from the user's own Vault STL files, with **colours** per part role (shell, front,
 drawer box, accents…), per stack and per unit, that feed what the planner does with colour: plate grouping, filament
 per colour and the Bambu project. Both are done (see "What is done"); the fork is now maintained and extended on the
-user's requests. Live site: https://doooools.github.io/vault-print-planner/ (GitHub Pages from `main`).
+user's requests. Live site: https://doooools.github.io/vault-print-planner/ (from `main`); preprod:
+https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Preprod").
 
 ## Where the work stands (2026-11-12)
 - The page redesign in `docs/ux-redesign.md` (approved 2026-11-11) shipped, all seven steps: tabs 1 · Design,
@@ -33,11 +34,12 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   `3d/stl-absents-de-la-3d.md`.
 
 ## Checks
-- Every pull request and every push to `main` runs `.github/workflows/check.yml`, i.e. `python -I tools/check.py`:
+- Every pull request and every push to `main` or `preprod` runs `.github/workflows/check.yml`, i.e. `python -I tools/check.py`:
   `index.html` is the build of `src/`, `validate.js` finds no problem (it exits 1 on any; unused files are only
   listed), the page's scripts parse, no mesh file is committed. Run it before pushing.
-- Every merge to `main` publishes the site within a minute. `index.html` is generated: on a merge conflict in it,
-  merge `src/` and rebuild, never edit it by hand.
+- Once that check passes on a push to `main` or `preprod`, `.github/workflows/pages.yml` ("Publish the site")
+  publishes both branches within a couple of minutes (see "Preprod"). `index.html` is generated: on a merge conflict
+  in it, merge `src/` and rebuild, never edit it by hand.
 - Review subagents (Dols kept them, 2026-11-14, PR #45): `.claude/agents/voltagent/` holds three of VoltAgent's
   (`surgeon-reviewer` for a diff's real bugs, `security-auditor`, `ux-microcopy-reviewer` for page text against
   `docs/ux-redesign.md`), copied unchanged (`SOURCE.txt`). Run them on request, not on every PR. Their long files ask
@@ -56,9 +58,30 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   `python -I src/build.py --public src/stl-measurements.tsv index.html previews/index.tsv`, then
   `python -I tools/check.py`. `.gitattributes` keeps text files in LF on every system. Keep `build.py` reading and
   writing UTF-8: the user's checkout is on Windows.
-- Work on a branch off `main` (`claude/<name>` for Claude's threads), one pull request per piece of work. Claude
-  commits, pushes and opens the pull request without asking first (the user's rule since 2026-11-12, confirmed in
-  this file's update); **merging stays with the user**.
+- Work on a branch off `preprod` (`claude/<name>` for Claude's threads), one pull request per piece of work, **into
+  `preprod`** (see "Preprod"). Claude commits, pushes and opens the pull request without asking first (the user's rule
+  since 2026-11-12, confirmed in this file's update); **merging stays with the user**, into `preprod` and into `main`.
+
+## Preprod (Dols, 2026-11-22)
+- Two sites from one repository: `main` at https://doooools.github.io/vault-print-planner/ (live) and the `preprod`
+  branch at https://doooools.github.io/vault-print-planner/preprod/. A repository has one Pages site, so
+  `.github/workflows/pages.yml` publishes both in one deployment: main's tree at the root, preprod's under `preprod/`,
+  each as its branch stands, so a push to one never changes the other. It starts from `workflow_run` once "Check the
+  page" passed on a push (a failed check publishes nothing), and by hand (Actions > Publish the site > Run workflow,
+  on `main`). `workflow_run` runs on the default branch, so the `github-pages` environment's "main only" rule holds
+  for preprod too. Needs Settings > Pages > Source: **GitHub Actions** (the old "Deploy from a branch" is gone).
+- The flow: pull requests go into `preprod`; Dols tries them on the preprod site; to go live, a pull request from
+  `preprod` into `main`, merged by Dols with **a merge commit** (a squash would part the two histories). A fix made
+  straight on `main` is merged back into `preprod` (`git merge origin/main`) in the same thread.
+- The page knows it is the preprod from its address (`VPP_PRE`: a `preprod` folder in the path, script in `<head>`):
+  a striped strip above the header ("Preprod", "Copy the live project again", "Open the live site"), "Preprod · " in
+  the tab's title, a robots `noindex`, and **no GoatCounter request at all** (`counting()`). Its saved state is under
+  localStorage `vppPre.*` instead of `vpp.*` (`VPP_KEY`, read by `store` and the theme script): on the first visit
+  the head script copies every `vpp.*` key over (flag `vppPre.copied`), then the two never meet, so a test can't
+  break the live project. "Copy the live project again" (press and hold) drops `vppPre.*` and reloads. IndexedDB
+  (`vault-planner`: the Vault folder's handle, the simplified meshes) is shared with the live site on purpose: the
+  folder stays picked and the cache serves both; a change to the mesh cache's format needs a new key.
+- Test locally under a `preprod/` folder to see the preprod look (e.g. a copy of `index.html` in `x/preprod/`).
 
 ## What is done
 - `src/build.py` fixed, plus `src/printer-beds.tsv` and `src/bambu-reach.tsv` recovered from the published page:

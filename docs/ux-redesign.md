@@ -301,7 +301,8 @@ loaded: one per visit (the page, the site the visitor came from, the screen widt
 `?utm_source=youtube&utm_campaign=video` or `?ref=reddit` on a shared link shows under Campaigns), then events, each
 **at most once per visit** (`use()` in `src/template.html`, section "what is used"). Never from a local copy, a test
 browser (`navigator.webdriver`, a headless user agent) or after "Don't count this browser" in About, which says what
-is counted. Never a stack, file, folder or design name, a label's text, the person's part counts, nor any id.
+is counted. Never a stack, file, folder or design name, a label's text, the person's part counts, nor any id. Never from
+the preprod site either (`/vault-print-planner/preprod/`, CLAUDE.md "Preprod"): it sends nothing.
 
 In the dashboard, events are the paths without a leading "/"; type the prefix in the filter to see a group.
 
