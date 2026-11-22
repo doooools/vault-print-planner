@@ -211,9 +211,9 @@ stays. Where this section and the rules below disagree, this section wins.
   pushed out along normals averaged at the corners, `hullMat`, `inked`; parts are drawn on both sides and the hull is
   pushed behind them, so the hairline gaps of the simplified parts show the part's colour, not ink), plus 1 px ink creases on edges sharper than
   30° between two faces where each face leaves the other's plane by more than 0.2 mm (`creaseLines`, once per shape;
-  edges with one face and thin triangles left out). The parts are simplified keeping their normals
-  (`simplifyWithAttributes` in `meshJob`), so flat faces stay flat: no long thin triangles fanned across them from a
-  fillet or a countersink, which drew false lines (Dols, 2026-11-22). A hard shadow of the footprint, back and to the right (`--gp-vp-shadow`). The
+  edges with one face and thin triangles left out: the simplifier fans long thin triangles across flat faces from a
+  fillet or a countersink). Keeping the normals while simplifying (`simplifyWithAttributes`, PR #90) was tried and
+  undone (Dols, 2026-11-23): slower, and the fronts and backs of the modules kept their lines. A hard shadow of the footprint, back and to the right (`--gp-vp-shadow`). The
   level under the pointer: its ink outline thickens to 4 px (no box any more). The selected level(s): a yellow ring
   (`--gp-vp-select`) around the whole module, drawn over the stack outside the module's own shape (stencil mask), with
   an ink ring outside it in light. What a click would paint is tinted halfway to that yellow. Picking, the camera,

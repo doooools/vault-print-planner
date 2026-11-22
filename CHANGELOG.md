@@ -12,7 +12,7 @@ Every difference is listed on [GitHub](https://github.com/doooools/vault-print-p
 
 ## 2026-11-22
 - **A new look:** paper and ink, swapped in the dark theme; yellow for what is selected or done, pink for the one main action of each screen, red for a problem. Titles in Anton, labels in Special Elite, text and figures in Courier Prime, all carried inside the page. Each screen puts its key thing on a taped card. Nothing you can do has changed: every button, setting and shortcut is where it was.
-- **Flat faces stay flat in 3D:** the parts are now simplified keeping the way their faces turn, so the false lines that ran across flat faces from screw holes and corners are gone. Your parts are simplified again once, the first time you open the 3D view (a little slower, then cached).
+- **Fewer false lines in 3D:** the ink lines now follow only real edges of the parts, not the thin triangles left by simplifying them.
 - **The 3D view drawn in ink:** flat colours in two tones, the shaded sides hatched, every part outlined, a hard shadow on the ground and the selected level ringed in yellow. Picking, the camera and every tool work as before.
 
 ## 2026-11-16
