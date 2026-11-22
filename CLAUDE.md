@@ -23,6 +23,12 @@ user's requests. Live site: https://doooools.github.io/vault-print-planner/ (Git
   view: hover, right-click menus, "⋯", one-line hint, "Bolts" swatches, "?"; A1, A2, A3, A4, A5, A6) is done on its branch.
   Session 4 (Design's panels: A7, A8, B2, B3, B4, X3, X4) is done on its branch. Session 8 (header, File menu,
   tabs: A9, A10) is done on its branch. Session 5 (Paint: C1, C3, C4, C5, C6, C7) is done on its branch.
+- The look (Dols, 2026-11-22, preprod first): Giscard Punk "encre" from Claude Design's handoff zip (not committed):
+  paper and ink swapped by theme, yellow = selected, pink = the one main action, red = a problem, blue = the whole stack,
+  Anton / Special Elite / Courier Prime embedded (`src/fonts/`, inlined by `build.py` at `/*FONTS*/`), one taped card
+  per screen (`.ihead`, `.psel`, `.asm-need`; key figure `kfig`), no radius, hard shadows. The 3D view is drawn in ink
+  (`open3d`: `toon`, `hullMat`, `inked`, creases, hard shadow, stencil selection ring `v3mark` → `ring`, `v.retheme`).
+  Rules: `docs/ux-redesign.md` "The look", which wins over the older rules there.
 - What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file
   `3d/stl-absents-de-la-3d.md`.
 

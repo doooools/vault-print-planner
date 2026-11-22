@@ -10,6 +10,10 @@ This page is a fork of [Romy's Vault Print Planner](https://vault.romy.io), made
 - **A new layout** in four steps, Design, Print, Hardware and Assemble, with Undo, design files, a dark theme and store links for where you live.
 Every difference is listed on [GitHub](https://github.com/doooools/vault-print-planner/blob/main/docs/differences-from-upstream.md). Amazon.com links in Hardware are still Romy's affiliate links, so US purchases keep supporting the original project. Romy's own changes are the ones marked "Romy's planner", from 2026-11-10 back.
 
+## 2026-11-22
+- **A new look:** paper and ink, swapped in the dark theme; yellow for what is selected or done, pink for the one main action of each screen, red for a problem. Titles in Anton, labels in Special Elite, text and figures in Courier Prime, all carried inside the page. Each screen puts its key thing on a taped card. Nothing you can do has changed: every button, setting and shortcut is where it was.
+- **The 3D view drawn in ink:** flat colours in two tones, the shaded sides hatched, every part outlined, a hard shadow on the ground and the selected level ringed in yellow. Picking, the camera and every tool work as before.
+
 ## 2026-11-16
 - **What is counted, said in full:** to learn which steps, tools and settings serve and which don't, the visit count now also notes, once per visit, the steps opened, the tools, settings, menu items and shortcuts used, the downloads, the theme, language and window width, and the page's errors. Still no cookie, no IP address kept, no id that follows you, and nothing you name or type (no stack, file or folder names, no label text). "About" lists it all, and "Don't count this browser" there turns all of it off.
 
