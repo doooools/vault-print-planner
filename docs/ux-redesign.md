@@ -201,12 +201,13 @@ stays. Where this section and the rules below disagree, this section wins.
   printed"). In the rail, the stack shown is a taped card too.
 - **Header**: one row from 1440 px (the printer's bed is hidden from 1240 to 1599 px, it is in the printer's window),
   the name as a taped label, the four steps two by two on a phone.
-- **The 3D view ("encre", `open3d`)**: the canvas is transparent over the stage's paper and 16 px dot grid
-  (`--gp-vp-bg`, `--gp-vp-grid`). Flat colours in two tones (`MeshToonMaterial`, a 2 × 1 ramp): one light from the
+- **The 3D view ("encre", `open3d`)**: the canvas is transparent over the stage's plain paper
+  (`--gp-vp-bg`; the dot grid went, Dols 2026-11-22). Flat colours in two tones (`MeshToonMaterial`, a 2 × 1 ramp): one light from the
   front, left and above, so fronts and tops are lit and right sides in shade, at about 70 %; the shade hatched at 45°
   in screen space (7 px, ink at 28 %). Every part is outlined in ink, 2.5 px at any zoom (an inverted hull: back faces
   pushed out along normals averaged at the corners, `hullMat`, `inked`), plus 1 px ink creases on edges sharper than
-  30° (`EdgesGeometry`, once per shape). A hard shadow of the footprint, back and to the right (`--gp-vp-shadow`). The
+  30° between two faces (`creaseLines`, once per shape; edges with one face and slivers left out, as the simplified
+  parts have many on flat faces). A hard shadow of the footprint, back and to the right (`--gp-vp-shadow`). The
   level under the pointer: its ink outline thickens to 4 px (no box any more). The selected level(s): a yellow ring
   (`--gp-vp-select`) around the whole module, drawn over the stack outside the module's own shape (stencil mask), with
   an ink ring outside it in light. What a click would paint is tinted halfway to that yellow. Picking, the camera,
