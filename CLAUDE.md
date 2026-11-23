@@ -368,6 +368,21 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   counts; keys no line has (stack left out) stay, shown "Not on these plates". "Reset all progress" and the list's
   "Clear" empty it (undoable: `progSnap` holds it).
 
+- Share links and codes (Dols, 2026-11-23, issue #84): section "share links and codes" before `renderStart`.
+  `shareState` (the design file's JSON, `kind: 'share'`, no printer, no progress) → `shareCode` ("V1" + base64url of
+  deflate-raw, "V0" plain without CompressionStream) → `#d=<code>`; `shareFrom` finds a code in a pasted link or code;
+  `openShareCode` → `loadDesign(text, name, share = true)` (own confirm text, no `markFile`). `shareFromAddress` runs
+  after the first render and on `hashchange`, and drops the hash. File menu: "Copy a share link", "Copy the share code",
+  "Open a share link or code…" (`copyShare`, `openShare`).
+- A plate's menu (Dols, 2026-11-23, issue #93): in `renderPrint`, `plateMenu(pl)` / `plateMenuAt` on a `.pcard[data-pn]`'s
+  `contextmenu`, the `.psel` panel's and its "⋯" (`data-pmenu`, in `.ptags`); `menuOpen` as in Design. "Download this
+  plate alone" is `makeDownload([pl], …)`, whatever is ticked.
+- Print settings by part (Dols, 2026-11-23, issue #83): `PS_OPTS` / `PS_ROLES` / `partSet` (localStorage
+  `partSettings`, design file `print.parts`, `plainPartSet`), next to `printAids`. `computeBuild` runs `partSetApply` on
+  merge's copied lines: walls, infill, `pattern`, `shells`, supports ('off' also `noSupports`, written as supports off);
+  the configurator's own values stay in `l.base`. `planFor` passes them; `buildProject` writes `sparse_infill_pattern`,
+  `top_shell_layers` / `bottom_shell_layers`, `enable_support` 0; the plate files `fill_pattern`, `top_solid_layers`…
+  The panel: `partsPanel` (Print's right column, `#pParts`, folds `ps-<role>` in `openInfo`).
 - Module shells' supports (Dols, 2026-11-13): rules.js gives them `supports: 'shell'`, a named set in the page's
   `SUPPORT_SETS` (tree(auto), default style, threshold 80°, on build plate only, critical regions only, remove small
   overhangs), written per object into the Bambu project and the plate files (`supportKeys`; PrusaSlicer: organic, 80°,

@@ -812,6 +812,10 @@ pre.code { margin: 0; background: var(--sheet-2); border-radius: 0; padding: 12p
 .popt > summary:hover .pval { color: var(--ink); }
 .popt > .pnote { margin: 0 0 8px; }
 .popt > .seg { margin-bottom: 12px; }
+.seg.wrap { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
+.seg.wrap button { padding: 7px 4px; font-size: 14px; }
+.psrow { margin: 0 0 12px; }
+.psrow > .lbl { font-family: var(--f-mono); font-size: 13px; color: var(--muted); margin-bottom: 6px; }
 .pfoot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding-top: 12px; border-top: 2px dotted var(--edge); }
 .pfoot details[open] { flex-basis: 100%; }
 .pnone { padding: 32px 24px; color: var(--muted); text-align: center; }
@@ -1088,6 +1092,7 @@ button.prole:hover { background: var(--sheet-2); }
 .pnav { display: flex; gap: 4px; }
 .iconbtn.sq { width: 44px; height: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 0; }
 .ptags { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ptags .pmore { margin-left: auto; width: 36px; height: 36px; }
 .ftag { display: inline-flex; align-items: center; gap: 8px; min-height: 30px; padding: 3px 10px 3px 6px; border: 1.5px solid var(--edge); border-radius: 0; font-weight: 400; font-size: 14px; }
 .ftag .dot2 { width: 16px; height: 16px; }
 .ftag.flag { padding: 3px 10px; border: 0; background: var(--bad-soft); color: var(--gp-on-red); font-family: var(--f-label); font-size: 13px; text-transform: uppercase; letter-spacing: .02em; }
@@ -1696,6 +1701,44 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // USSA's manual supports, one per drawer roof, printed against it (Print step, "Plate options"). It was a unit option
   // before: a build that had it on any unit starts with it on.
   let printAids = store.get('manualSupports', towers.some(t => t.levels.some(lv => lv.some(u => u.manualSupports))));
+  // ---------- print settings by part ----------
+  // Print's "Print settings by part" (Dols, 2026-11-23, issue #83): per kind of part (its colour role, R.ROLES, and the
+  // TPU tires), walls, infill, its pattern, top and bottom layers and supports, set over what the configurator gives
+  // each part (rules.js strengthOf, `supports`). Written per object into the Bambu Studio project and the plate files
+  // (planFor, buildProject); supports also move the part to or off the plates with supports (planPlates). Kept in
+  // localStorage `partSettings` and the design file (print.parts): { role: { walls, infill, pattern, shells, supports } }.
+  const PS_OPTS = {
+    walls: [2, 3, 4, 5, 6],
+    infill: [10, 15, 20, 25, 40, 60],
+    pattern: [{ v: 'grid', label: 'Grid' }, { v: 'gyroid', label: 'Gyroid' }, { v: 'cubic', label: 'Cubic' }, { v: 'lightning', label: 'Lightning' }],
+    shells: [3, 4, 5, 6, 8],
+    supports: [{ v: 'off', label: 'Off' }, { v: 'on', label: 'On' }] };
+  const PS_KEYS = Object.keys(PS_OPTS);
+  const psValues = k => PS_OPTS[k].map(o => typeof o === 'object' ? o.v : o);
+  const PS_ROLES = [...R.ROLES.filter(r => r.id !== 'labelText'), { id: 'tpu', label: 'Tires (TPU)' }];
+  // Only roles and values offered here survive (a design file is anyone's JSON)
+  function plainPartSet(o) {
+    const r = {};
+    if (isObj(o)) for (const { id } of PS_ROLES) if (isObj(o[id])) {
+      const s = {}; PS_KEYS.forEach(k => { if (psValues(k).includes(o[id][k])) s[k] = o[id][k]; });
+      if (Object.keys(s).length) r[id] = s;
+    }
+    return r;
+  }
+  let partSet = plainPartSet(store.get('partSettings', {}));
+  const savePartSet = () => store.set('partSettings', partSet);
+  // A line with its kind's settings over its own; what the configurator gave it stays in `base` (shown as the default)
+  function partSetApply(l) {
+    const s = partSet[l.role]; if (!s) return l;
+    l.base = { walls: l.walls, infill: l.infill, supports: l.supports };
+    if (s.walls) l.walls = s.walls;
+    if (s.infill) l.infill = s.infill;
+    if (s.pattern) l.pattern = s.pattern;
+    if (s.shells) l.shells = s.shells;
+    if (s.supports) l.supports = s.supports === 'on' ? l.supports || true : false; // on: its own kind of supports, if it had some
+    if (s.supports === 'off') l.noSupports = true; // written as off, whatever the slicer profile says
+    return l;
+  }
   let extras = store.get('extras', []);               // [{ path, qty }]: single parts printed on their own, outside any tower
   // What Print plans: every stack and the loose parts, but those left out here (stack ids, 'loose'). New stacks are in.
   let printSkip = store.get('printSkip', store.get('printScope', 'all') === 'extras' ? null : []);
@@ -2012,7 +2055,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     list.forEach(t => { const a = analyzeTower(t); all.push(...a.parts); a.issues.filter(i => i.k === 'bad').forEach(i => issues.push(t.name + ': ' + i.m)); });
     if (withX) all.push({ lines: xl, hardware: [] });
     const scope = whole ? 'all' : onlyExtras ? 'extras' : 'pick:' + [...list.map(t => t.id), ...(withX ? ['loose'] : [])].join(',');
-    return { ...merge(all), towerIssues: issues, empty, list, extras: withX ? xl.length : 0, onlyExtras, whole, scope };
+    const m = merge(all); m.lines.forEach(partSetApply); // merge's lines are copies: the settings by part go on them
+    return { ...m, towerIssues: issues, empty, list, extras: withX ? xl.length : 0, onlyExtras, whole, scope };
   }
 
   // ---------- part previews ----------
@@ -3219,7 +3263,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     more: '<circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="19" cy="12" r="1.2" fill="currentColor"/>',
     fit: '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>', drawer: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 12h6"/>',
     chev: '<path d="M9 6l6 6-6 6"/>', paste: '<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 11h6M9 15h4"/>', save: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>', file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
-    open: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', pen: '<path d="M4 20l1-4L16 5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/>', help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>',
+    open: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', check: '<path d="M5 12l5 5 9-10"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/>',
+    link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>', pen: '<path d="M4 20l1-4L16 5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/>', help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>',
   };
   const icon = k => `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
   // Width × depth × height of the whole stack as it stands, with its base, wheels, roof, handles… (stackSize)
@@ -3254,7 +3300,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   const VIEWS = ['build', 'print', 'hardware', 'assemble'];
   const projectState = () => ({ towers, extras, seq, colors: colorPrefs, printer,
-    print: { skip: printSkip, supports: printAids, labelsApart, mixSupports, printed, onHand, plates: plateState },
+    print: { skip: printSkip, supports: printAids, labelsApart, mixSupports, parts: partSet, printed, onHand, plates: plateState },
     labels: { relief: labelRelief, letter: labelLetter, font: labelFont },
     hardware: { bought: hwBought, skip: hwSkip }, assemble: { steps: stepsDone, built: asmBuilt, section: asmSec } });
   const designText = () => JSON.stringify({ app: 'vault-print-planner', kind: 'design', version: 4, saved: new Date().toISOString(), ...projectState(), view, sel: dsel }, null, 1);
@@ -3279,6 +3325,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     printAids = P.supports === true; store.set('manualSupports', printAids);
     labelsApart = P.labelsApart !== false; store.set('labelsApart', labelsApart);
     mixSupports = P.mixSupports === true; store.set('mixSupports', mixSupports);
+    partSet = plainPartSet(P.parts); savePartSet();
     printed = counts(P.printed); store.set('printed', printed);
     onHand = counts(P.onHand); saveHave();
     plateState = plainPlates(P.plates); store.set('plateState', plateState);
@@ -3359,12 +3406,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     inp.onchange = async () => { const f = inp.files[0]; if (f && loadDesign(await f.text(), f.name)) setDesignName(null); };
     inp.click();
   }
-  function loadDesign(text, name) {
+  // share: a share link's design (no file: nothing to mark as saved, and its own words)
+  function loadDesign(text, name, share) {
     let d = null; try { d = JSON.parse(text); } catch (e) { /* not JSON */ }
-    if (!d || d.app !== 'vault-print-planner' || !Array.isArray(d.towers)) { toast(`${name} isn’t a design saved by this configurator`); return false; }
+    if (!d || d.app !== 'vault-print-planner' || !Array.isArray(d.towers)) { toast(share ? 'This share link or code isn\u2019t one this configurator made' : `${name} isn’t a design saved by this configurator`); return false; }
     const whole = d.version >= 4; // the whole project: Print, Hardware and Assemble too
     if ((towers.length || extras.length || (whole && (Object.keys(printed).length || Object.keys(onHand).length || Object.keys(hwBought).length || Object.keys(stepsDone).length)))
-      && !confirm(whole ? `Open “${name}”? It replaces this project: stacks, loose parts, colors, and what is printed, bought and assembled.` : `Open “${name}”? It replaces the stacks and loose parts here. What you marked printed stays.`)) return false;
+      && !confirm(share ? 'Open the shared design? It replaces this project: stacks, loose parts, colors, print settings, and what is printed, bought and assembled. To keep yours, cancel and save it first (File › Save).'
+        : whole ? `Open “${name}”? It replaces this project: stacks, loose parts, colors, and what is printed, bought and assembled.` : `Open “${name}”? It replaces the stacks and loose parts here. What you marked printed stays.`)) return false;
     // Rebuilt from what the planner writes (plainTowers, plainColors, plainExtras): never kept as the file has it
     const cp = plainColors(d.colors); if (cp) { colorPrefs = cp; saveColors(); }
     if (whole) loadProject(d); // before the stacks: fixTower reads the printer
@@ -3379,7 +3428,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (ds && ds.t === 'loose' && extras.length) dsel = { t: 'loose' };
     else if (ds) { const t = towers.find(x => x.id === ds.t);
       if (t) dsel = { t: t.id, l: Number.isInteger(ds.l) && ds.l >= 0 && ds.l < t.levels.length ? ds.l : null, u: Number.isInteger(ds.u) && ds.u >= 0 ? ds.u : 0, ...(typeof ds.d === 'string' && SAFE_ID.test(ds.d) ? { d: ds.d } : {}) }; }
-    saveSel(); save(); saveExtras(); view = whole && VIEWS.includes(d.view) ? d.view : 'build'; renderAll(); undoReset(); markFile(name); use(whole ? 'file/opened' : 'file/opened-old-version'); toast(`Opened ${name}`);
+    saveSel(); save(); saveExtras(); view = whole && VIEWS.includes(d.view) ? d.view : 'build'; renderAll(); undoReset();
+    if (share) { designMark = null; store.set('designMark', null); setDesignName(null); use('file/opened-share'); toast('Opened the shared design'); return true; }
+    markFile(name); use(whole ? 'file/opened' : 'file/opened-old-version'); toast(`Opened ${name}`);
     return true;
   }
   // ---------- the File menu ----------
@@ -3405,9 +3456,61 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       { label: where ? `Save ${where}` : 'Save', icon: 'save', key: MOD + '+S', dis: empty, tip: empty ? 'Nothing to save yet' : where === 'in the Vault folder' ? 'Save these stacks, loose parts and colors into the Vault folder, next to the part files' : 'Save these stacks, loose parts and colors to a file', fn: () => saveDesign(false) },
       { label: 'Save as…', icon: 'file', dis: empty, tip: empty ? 'Nothing to save yet' : window.showSaveFilePicker ? 'Save a copy somewhere else, or under another name' : 'Save a copy under another name, to your downloads: this browser can’t ask where', fn: () => saveDesign(true) },
       { label: 'Open…', icon: 'open', key: MOD + '+O', tip: 'Open a design file saved before: it replaces this project, with what was printed, bought and assembled when it was saved', fn: openDesign },
+      { sep: true, label: 'Copy a share link', icon: 'link', dis: empty, tip: empty ? 'Nothing to share yet' : 'A link that opens these stacks, loose parts, colors and print settings in anyone\u2019s configurator, on their own printer. What you printed, bought and assembled stays here.', fn: () => copyShare(true) },
+      { label: 'Copy the share code', icon: 'dup', dis: empty, tip: empty ? 'Nothing to share yet' : 'The same as a code to paste, without the address', fn: () => copyShare(false) },
+      { label: 'Open a share link or code…', icon: 'paste', tip: 'Paste a link or a code someone shared: it replaces this project', fn: openShare },
       ...exportItemsMenu(true, true),
     ] });
   };
+  // ---------- share links and codes ----------
+  // A design in a link (Dols, 2026-11-23, issue #84): the stacks, loose parts, colors, Print's plate options and
+  // print settings by part, and the label look, as the design file's JSON (kind 'share', version 4, no progress) deflated
+  // and in base64url: "V1…" (or "V0…", plain, where the browser has no CompressionStream). The link is the page's
+  // address with #d=<code>: the part after # never leaves the browser (not to the server, not to the visit count). Opened
+  // by loadDesign like a file, read again by the same plainTowers & co. A link opened replaces the project (asked first),
+  // but for the printer: whoever opens it keeps their own (loadProject keeps it when the file has none).
+  const shareState = () => ({ app: 'vault-print-planner', kind: 'share', version: 4, towers, extras, seq, colors: colorPrefs,
+    print: { skip: printSkip, supports: printAids, labelsApart, mixSupports, parts: partSet }, labels: { relief: labelRelief, letter: labelLetter, font: labelFont } });
+  const b64u = bytes => { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+  const unb64u = t => Uint8Array.from(atob(t.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+  const pipeBytes = (bytes, ts) => new Response(new Blob([bytes]).stream().pipeThrough(ts)).arrayBuffer().then(b => new Uint8Array(b));
+  async function shareCode() {
+    const bytes = new TextEncoder().encode(JSON.stringify(shareState()));
+    return typeof CompressionStream === 'function' ? 'V1' + b64u(await pipeBytes(bytes, new CompressionStream('deflate-raw'))) : 'V0' + b64u(bytes);
+  }
+  // The code in a pasted link or code, or null
+  const shareFrom = t => { const m = /(?:^|[#?&]d=)(V[01][A-Za-z0-9_-]{8,})\s*$/.exec(String(t || '').trim()); return m ? m[1] : null; };
+  async function shareText(code) {
+    const bytes = unb64u(code.slice(2));
+    if (code[1] === '0') return new TextDecoder().decode(bytes);
+    if (typeof DecompressionStream !== 'function') throw new Error('This browser can\u2019t read a share code: open the link in a recent Chrome, Edge, Firefox or Safari.');
+    return new TextDecoder().decode(await pipeBytes(bytes, new DecompressionStream('deflate-raw')));
+  }
+  const shareUrl = code => location.origin + location.pathname + '#d=' + code;
+  async function copyShare(link) {
+    use(link ? 'file/share-link' : 'file/share-code');
+    let code; try { code = await shareCode(); } catch (e) { toast('The share code couldn\u2019t be made here (' + (e.message || e.name) + ')', { long: true }); return; }
+    const text = link ? shareUrl(code) : code, what = link ? 'Share link' : 'Share code';
+    const done = () => toast(`${what} copied (${text.length.toLocaleString('en')} characters). It opens these stacks, colors and print settings; what you printed, bought and assembled stays here.`, { long: true });
+    try { await navigator.clipboard.writeText(text); done(); } catch (e) { prompt(`Copy this ${what.toLowerCase()}:`, text); }
+  }
+  async function openShareCode(code) {
+    let text; try { text = await shareText(code); } catch (e) { toast(e.message && /browser/.test(e.message) ? e.message : 'This share link or code is cut short or damaged: ask for it again, or copy all of it', { long: true }); return false; }
+    return loadDesign(text, 'Shared design', true);
+  }
+  function openShare() {
+    use('file/open-share');
+    const t = prompt('Paste a share link or code:'); if (t === null || !t.trim()) return;
+    const code = shareFrom(t); if (!code) { toast('That isn\u2019t a share link or code from this configurator', { long: true }); return; }
+    openShareCode(code);
+  }
+  // A link opened (or pasted in the address bar while the page is open): its design, then the address without it
+  async function shareFromAddress() {
+    const code = shareFrom(location.hash); if (!code) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    await openShareCode(code);
+  }
+  addEventListener('hashchange', shareFromAddress);
   // First launch: printer, Vault folder, first stack
   function renderStart() {
     const items = PRESETS.map((p, i) => ({ p, i })).filter(({ p }) => presetFits(p));
@@ -4769,6 +4872,31 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         : `<div class="xlist"><div class="actions"><button type="button" class="btn" id="hBack">Back to the plates</button></div></div>`}
     </section>`;
   }
+  // Print settings by part (issue #83): one folded line per kind of part on these plates, its settings as segmented
+  // buttons over "Default" (what the configurator gives each part, said under the name)
+  const PS_NAMES = { walls: 'Walls', infill: 'Infill', pattern: 'Infill pattern', shells: 'Top and bottom layers', supports: 'Supports' };
+  const psWord = (k, v) => k === 'walls' ? v + ' walls' : k === 'infill' ? v + '%' : k === 'shells' ? v + ' layers' : k === 'supports' ? 'supports ' + v : PS_OPTS.pattern.find(o => o.v === v).label.toLowerCase();
+  const psSum = s => PS_KEYS.filter(k => s[k]).map(k => psWord(k, s[k])).join(' \u00b7 ');
+  function partsPanel(lines) {
+    const kinds = PS_ROLES.map(r => ({ r, ls: haveLines(lines).filter(l => l.role === r.id) })).filter(x => x.ls.length);
+    if (!kinds.length) return '';
+    const changed = kinds.filter(x => partSet[x.r.id]).length;
+    // What the configurator gives these parts: "2 or 3 walls", "15% infill", "supports on some"
+    const words = a => { const u = [...new Set(a)].sort((x, y) => x - y); return u.length > 2 ? u[0] + ' to ' + u[u.length - 1] : u.join(' or '); };
+    const deflt = ls => { const b = l => l.base || l, sup = ls.filter(l => b(l).supports).length;
+      return `${words(ls.map(l => b(l).walls || 2))} walls \u00b7 ${words(ls.map(l => b(l).infill || 15))}% infill \u00b7 ${sup ? sup === ls.length ? 'supports on' : 'supports on some' : 'no supports'}`; };
+    const row = (id, k, cur) => `<div class="psrow"><div class="lbl">${PS_NAMES[k]}</div><div class="seg wrap" data-ps="${id}|${k}" role="group" aria-label="${PS_NAMES[k]}">${segBtns([{ v: '', label: 'Default' }, ...PS_OPTS[k].map(o => typeof o === 'object' ? o : { v: o, label: String(o) })], cur == null ? '' : cur, 'data-psv')}</div></div>`;
+    return `<section class="panel popts pparts" id="pParts" aria-label="Print settings by part">
+      <div class="ihead"><span class="v3-sec">Print settings by part</span><h2>${plural(kinds.length, 'kind')} of part</h2><div class="mono">${changed ? plural(changed, 'kind') + ' set by you' : 'as the configurator sets them'}</div></div>
+      <div class="ibody">
+        <p class="pnote" style="margin:0 0 8px">Written for each part into the Bambu Studio project and the plate files; your slicer profile gives everything else. Supports on or off also moves a part to or off the plates with supports.</p>
+        ${kinds.map(({ r, ls }) => { const s = partSet[r.id] || {}, n = ls.reduce((a, l) => a + l.total, 0), flex = ls.some(l => l.flex);
+          return `<details class="popt" data-k="ps-${r.id}" ${openInfo.has('ps-' + r.id) ? 'open' : ''}><summary><span>${esc(r.label)}</span><span class="pval">${partSet[r.id] ? esc(psSum(s)) : 'default'}</span></summary>
+            <p class="pnote">${plural(n, 'part')} on these plates. Default: ${deflt(ls)}.${flex ? ' Some of these parts have to bend: more than 2 walls can make them stiff enough to crack.' : ''}</p>
+            ${PS_KEYS.map(k => row(r.id, k, s[k])).join('')}
+            ${partSet[r.id] ? `<div class="actions" style="margin:0 0 12px"><button type="button" class="btn" data-psreset="${r.id}">Back to the defaults</button></div>` : ''}</details>`; }).join('')}
+      </div></section>`;
+  }
   function renderPrint() {
     const b = computeBuild(true);
     if (b.empty) return emptyStep('view-print', 'to print');
@@ -4814,7 +4942,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // The sheet
     const card = pl => {
       const isNext = next && pl.n === next.n, note = plateNote(pl, isNext), on = sel && pl.n === sel.n, tick = plateSel.ns.has(pl.n);
-      return `<div class="pcard${pl.done ? ' done' : ''}${on ? ' on' : ''}${tick ? ' picked' : ''}">
+      return `<div class="pcard${pl.done ? ' done' : ''}${on ? ' on' : ''}${tick ? ' picked' : ''}" data-pn="${pl.n}">
         <button type="button" data-pick="${pl.n}" aria-pressed="${on}" title="Show this plate" aria-label="Plate ${pl.n}, show its layout"><span class="pn">Plate ${two(pl.n)}</span>
           ${plateSvg(pl, true)}<span class="mono pm">${plural(pl.items.length, 'part')} · ${aboutG(pl.grams)}</span><span class="pflag ${pl.done ? 'ok' : isNext ? 'next' : 'flag'}">${esc(note)}</span></button>
         <label class="ptick" title="Tick it for the download"><input type="checkbox" data-tick="${pl.n}" ${tick ? 'checked' : ''} aria-label="Tick plate ${pl.n} for the download"></label></div>`;
@@ -4854,7 +4982,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <div class="psel-head"><div><span class="v3-sec">Selected plate</span><h2>Plate ${two(sel.n)}</h2><span class="mono">${plural(sel.items.length, 'part')} · ${aboutG(sel.grams)} · ${Math.round(sel.tallest)} mm tall</span></div>
         <div class="pnav"><button type="button" class="iconbtn sq" data-step="-1" aria-label="Previous plate" ${idx > 0 ? '' : 'disabled'}><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button><button type="button" class="iconbtn sq" data-step="1" aria-label="Next plate" ${idx < allPlates.length - 1 ? '' : 'disabled'}><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button></div></div>
       <button type="button" class="btn ${sel.done ? '' : 'primary'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button>
-      <div class="ptags"><span class="ftag"><span class="dot2" style="background:${colorHex(sel.color)}"></span>${esc(colorName(sel.color))}</span>${selFlag && selFlag !== 'Printed' ? `<span class="ftag flag">${esc(selFlag)}</span>` : ''}</div>
+      <div class="ptags"><span class="ftag"><span class="dot2" style="background:${colorHex(sel.color)}"></span>${esc(colorName(sel.color))}</span>${selFlag && selFlag !== 'Printed' ? `<span class="ftag flag">${esc(selFlag)}</span>` : ''}<button type="button" class="iconbtn sq pmore" data-pmenu="${sel.n}" aria-haspopup="menu" aria-expanded="false" aria-label="Plate ${sel.n}: more" title="More for this plate (or right-click a plate)">${icon('more')}</button></div>
       ${plateSvg(sel)}
       ${sel.care ? `<div class="alert ${sel.items[0].diag || sel.items[0].asis ? 'ok' : 'warn'}" style="font-size:13px">${sel.items[0].asis ? 'Kept at the angle USSA exported it, where it just fits this bed. Check it in the slicer before printing.' : sel.items[0].diag ? 'Too long to lie straight, so it’s placed diagonally, the way USSA exported it.' : 'Lay this part on a different face than exported to fit; check supports.'}</div>` : ''}
       <div class="plist">${sel.lines.map((x, i) => `<div class="prow"><span class="pk" style="background:${colorHex(sel.color)};color:${LIGHT_FILL(sel.color) ? '#222' : '#fff'}">${i + 1}</span><span class="q num">${x.count}×</span><span class="lbl"><b>${esc(x.l.label)}</b><small class="mono">${esc(fileName(x.l.file.path))}</small></span>${x.l.walls ? `<span class="tag wall">${x.l.walls} walls${x.l.infill ? ' · ' + x.l.infill + '%' : ''}</span>` : ''}${x.l.supports ? '<span class="tag sup">supports</span>' : ''}</div>`).join('')}</div></aside>`;
@@ -4897,7 +5025,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <div class="actions" style="padding:0 18px 16px"><button class="btn" id="copyAll">Copy part list</button></div></details>`}
       `}
       </div>
-      <div class="pside">${detail}${opts}</div></div>`;
+      <div class="pside">${detail}${opts}${none ? '' : partsPanel(b.lines)}</div></div>`;
     const V = $('view-print');
     const markPlate = (pl, on, quiet) => {
       if (on) { pl.lines.forEach(x => { printed[pkey(x.l)] = (printed[pkey(x.l)] || 0) + x.count; }); pst.done.push({ n: pl.n, sig: pl.sig }); }
@@ -4943,6 +5071,45 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (key === 'printAids') { printAids = on; store.set('manualSupports', on); }
       renderPrint();
     });
+    // A plate's menu (issue #93): a right-click on its card, or the selected plate's "⋯". What a plate's own buttons do,
+    // and what needed the ticks before: download it alone, tick it or every plate of its filament, its parts' settings.
+    const plateMenu = pl => {
+      const tick = plateSel.ns.has(pl.n), miss = missing.length && pl.items.some(it => missing.includes(it.p.l.file.path));
+      const roles = [...new Set(pl.lines.map(x => x.l.role))], same = allPlates.filter(p => p.color === pl.color && !p.done);
+      const dlWhy = !canMake ? 'Open this page on a computer with your Vault download to make the print files' : miss ? 'Some of its parts aren\u2019t in your Vault folder' : '';
+      const to = el => { if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
+      return { head: `Plate ${two(pl.n)}${pl.done ? ' \u00b7 printed' : ''}`, sub: `${colorName(pl.color).split(' \u00b7 ')[0]} \u00b7 ${plural(pl.items.length, 'part')} \u00b7 ${aboutG(pl.grams)}`, items: [
+        { icon: 'chev', label: 'Show this plate', dis: selPlate === pl.n, fn: () => { selPlate = pl.n; renderPrint(); } },
+        { icon: 'check', label: tick ? 'Untick it' : 'Tick it for the download', fn: () => { tick ? plateSel.ns.delete(pl.n) : plateSel.ns.add(pl.n); renderPrint(); } },
+        { icon: 'check', label: `Tick the ${same.length} ${colorName(pl.color).split(' \u00b7 ')[0]} plates left`, dis: same.length < 2 || same.every(p => plateSel.ns.has(p.n)), fn: () => { same.forEach(p => plateSel.ns.add(p.n)); renderPrint(); } },
+        ...(picked.length ? [{ icon: 'check', label: 'Untick all', fn: () => { plateSel.ns.clear(); renderPrint(); } }] : []),
+        { sep: true, icon: 'save', label: bambu ? 'Download this plate alone (Bambu Studio project)' : 'Download this plate alone (plate file)', dis: !!dlWhy, tip: dlWhy || 'Only this plate, whatever is ticked', fn: () => makeDownload([pl], false, 'project') },
+        { icon: 'save', label: 'Download its STL folder (.zip)', dis: !!dlWhy, tip: dlWhy || 'Its STL files in one folder, for any other slicer', fn: () => makeDownload([pl], false, 'folders') },
+        { sep: true, icon: 'check', label: pl.done ? 'Put it back on the list' : 'Mark as printed', fn: () => { const was = pl.done; markPlate(pl, !was); if (!was && selPlate === pl.n) { const after = plates.find(p => p.n > pl.n) || plates.find(p => p !== pl); if (after) selPlate = after.n; } renderPrint(); renderTabs(); } },
+        { sep: true, icon: 'gear', label: 'Print settings of its parts\u2026', tip: 'Walls, infill, supports… for the kinds of part on this plate', fn: () => { roles.forEach(r => openInfo.add('ps-' + r)); renderPrint(); to($('pParts')); } },
+        { icon: 'gear', label: 'Plate options\u2026', fn: () => to(V.querySelector('.popts:not(.pparts)')) },
+      ] };
+    };
+    // At the pointer for a right-click; under the button for "⋯" or a context menu key (no pointer: on its first item)
+    const plateMenuAt = (pl, e, opener) => { const at = e.type === 'contextmenu' && (e.clientX || e.clientY); use('print/plate-menu'); menuOpen({ ...plateMenu(pl), opener, keys: !at && e.detail === 0, ...(at ? { x: e.clientX, y: e.clientY } : {}) }); };
+    V.querySelectorAll('.pcard[data-pn]').forEach(c => c.oncontextmenu = e => {
+      const pl = allPlates.find(p => p.n === +c.dataset.pn); if (!pl) return;
+      e.preventDefault(); plateMenuAt(pl, e, c.querySelector('[data-pick]'));
+    });
+    V.querySelectorAll('[data-pmenu]').forEach(b => b.onclick = e => {
+      const pl = allPlates.find(p => p.n === +b.dataset.pmenu); if (!pl) return;
+      if (menuFrom(b)) { menuClose(); return; }
+      plateMenuAt(pl, e, b);
+    });
+    if (sel) { const ps = V.querySelector('.psel'); if (ps) ps.oncontextmenu = e => { if (e.target.closest('button:not([data-pick])')) return; e.preventDefault(); plateMenuAt(sel, e, ps.querySelector('[data-pmenu]')); }; }
+    // Print settings by part: a button sets one setting of one kind of part ('' = its default), "Back to the defaults" all
+    V.querySelectorAll('[data-psv]').forEach(btn => btn.onclick = () => {
+      const [id, k] = btn.closest('[data-ps]').dataset.ps.split('|'), raw = btn.dataset.psv, v = raw === '' ? null : typeof PS_OPTS[k][0] === 'object' ? raw : +raw;
+      const s = { ...partSet[id] }; if (v == null) delete s[k]; else s[k] = v;
+      if (Object.keys(s).length) partSet[id] = s; else delete partSet[id];
+      savePartSet(); use('print/part-settings/' + k); renderPrint(); renderTabs();
+    });
+    V.querySelectorAll('[data-psreset]').forEach(btn => btn.onclick = () => { delete partSet[btn.dataset.psreset]; savePartSet(); renderPrint(); renderTabs(); });
     // Already printed: the rail's button shows the list in place of the sheet; Add, All N and the steppers change it
     V.querySelectorAll('[data-phave]').forEach(btn => btn.onclick = () => { printHave = !printHave; renderPrint(); });
     if ($('hBack')) $('hBack').onclick = () => { printHave = false; renderPrint(); };
@@ -5075,7 +5242,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   function planFor(plates) {
     return { bed: [printer.v[0], printer.v[1]], ...(preset().plate ? { plate: preset().plate } : {}), bambu: preset().bambu || null, label: { relief: labelRelief, letter: labelLetter, font: labelFont }, plates: plates.map(pl => ({ name: plateFolder(pl), color: pl.color, hex: colorHex(pl.color),
-      pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, ...(labelRelief && labelTexts.get(it) ? { text: labelTexts.get(it) } : {}), spin: it.asis ? 0 : +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + insetOf(it)[0]).toFixed(2), y: +(it.y + insetOf(it)[1]).toFixed(2), w: +(it.w - 2 * insetOf(it)[0]).toFixed(2), h: +(it.h - 2 * insetOf(it)[1]).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: it.diag === 45 ? true : it.diag } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: it.p.l.supports, ...(it.p.l.supports === true && needsBrim(it.p.l.file) ? { standing: true } : {}) } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}) })) })) };
+      pieces: pl.items.map(it => ({ path: it.p.l.file.path, name: it.p.l.label, ...(labelRelief && labelTexts.get(it) ? { text: labelTexts.get(it) } : {}), spin: it.asis ? 0 : +(it.p.l.file.angle || 0).toFixed(2), x: +(it.x + insetOf(it)[0]).toFixed(2), y: +(it.y + insetOf(it)[1]).toFixed(2), w: +(it.w - 2 * insetOf(it)[0]).toFixed(2), h: +(it.h - 2 * insetOf(it)[1]).toFixed(2), ...(it.p.pad ? { brim: it.p.pad } : {}), ...(it.diag ? { diag: it.diag === 45 ? true : it.diag } : {}), ...(it.corner ? { corner: it.corner } : {}), ...(it.p.l.tpu || it.p.l.color === 'tpu' ? { tpu: true } : {}), ...(it.p.l.supports ? { supports: it.p.l.supports, ...(it.p.l.supports === true && needsBrim(it.p.l.file) ? { standing: true } : {}) } : {}), ...(it.p.l.walls ? { walls: it.p.l.walls } : {}), ...(it.p.l.infill ? { infill: it.p.l.infill } : {}), ...(it.p.l.pattern ? { pattern: it.p.l.pattern } : {}), ...(it.p.l.noSupports ? { nosup: true } : {}), ...(it.p.l.shells ? { shells: it.p.l.shells } : {}) })) })) };
   }
   // ---------- Bambu Studio project, built right here in the browser ----------
   // Reads the STLs from the Vault folder the user picks (nothing is uploaded) and writes the same .3mf layout
@@ -7306,11 +7473,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         items.push(`  <item objectid="${objId}" p:UUID="${uuid(objId, '-b1ec-4553-aec9-835e5b724bb4')}" transform="${tr}" printable="1"/>\n`);
         rels.push(` <Relationship Target="/${file}" Id="rel-${rels.length + 1}" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>\n`);
         // Per-part print settings that override the printer profile for this object only
-        let extra = p.supports ? '    <metadata key="enable_support" value="1"/>\n' : '';
+        let extra = p.supports ? '    <metadata key="enable_support" value="1"/>\n' : p.nosup ? '    <metadata key="enable_support" value="0"/>\n' : '';
         extra += supportKeys(p).map(([k, v]) => `    <metadata key="${k}" value="${v}"/>\n`).join('');
         if (p.supports && p.standing) extra += '    <metadata key="support_type" value="normal(auto)"/>\n'; // tree supports would fan out ~40 mm
         if (p.walls) extra += `    <metadata key="wall_loops" value="${p.walls}"/>\n`;
         if (p.infill) extra += `    <metadata key="sparse_infill_density" value="${p.infill}%"/>\n`;
+        if (p.pattern) extra += `    <metadata key="sparse_infill_pattern" value="${p.pattern}"/>\n`;
+        if (p.shells) extra += `    <metadata key="top_shell_layers" value="${p.shells}"/>\n    <metadata key="bottom_shell_layers" value="${p.shells}"/>\n`;
         if (p.brim) extra += `    <metadata key="brim_type" value="outer_only"/>\n    <metadata key="brim_width" value="${p.brim === true ? 5 : p.brim}"/>\n`;
         settings.push(`  <object id="${objId}">\n    <metadata key="name" value="${xmlEsc(p.name)}"/>\n    <metadata key="extruder" value="${p.tpu ? tpuSlot : slotOf.get(plate.color) || 1}"/>\n${extra}    <part id="${meshId}" subtype="normal_part">\n      <metadata key="name" value="${xmlEsc(p.name)}"/>\n      <metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>\n    </part>\n${txt ? `    <part id="${txt.id}" subtype="normal_part">\n      <metadata key="name" value="${xmlEsc(txt.name)}"/>\n      <metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>\n      <metadata key="extruder" value="${txt.slot}"/>\n    </part>\n` : ''}  </object>\n`);
         inst.push(`    <model_instance>\n      <metadata key="object_id" value="${objId}"/>\n      <metadata key="instance_id" value="0"/>\n      <metadata key="identify_id" value="${objId}"/>\n    </model_instance>\n`);
@@ -7344,16 +7513,21 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (p.brim) n.push(`brim ${p.brim === true ? BRIM : p.brim} mm`);
     if (p.walls) n.push(`${p.walls} walls`);
     if (p.infill) n.push(`${p.infill}% infill`);
+    if (p.pattern) n.push(`${p.pattern} infill pattern`);
+    if (p.shells) n.push(`${p.shells} top and bottom layers`);
+    if (p.nosup) n.push('no supports');
     if (p.tpu) n.push('TPU');
     if (/Manual Supports\//.test(p.path || '')) n.push('stand against the roof end');
     return n;
   }
   const NOTE_HELP = [
     'supports: turn supports on for this part.',
+    'no supports: turn supports off for this part (set in Print settings by part).',
     'normal supports: supports on, but normal/grid/snug style, not tree or organic (this tall part prints on its edge, and tree supports fan out into the next part).',
     ...Object.values(SUPPORT_SETS).map(x => x.help),
     'brim N mm: an outer brim this wide, so the tall, narrow part stays down.',
-    'N walls / N% infill: what USSA asks for this part.',
+    'N walls / N% infill: what USSA asks for this part, or what you set in Print settings by part.',
+    'infill pattern, N top and bottom layers: what you set in Print settings by part.',
     'TPU: print in TPU 95A (the tires).',
   ];
   function settingsText(plan, intro, placed) {
@@ -7425,17 +7599,23 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           // PrusaSlicer's per-part settings
           const md = (key, val) => `  <metadata type="object" key="${key}" value="${xmlEsc(val)}"/>\n`;
           let c = md('name', p.name);
+          if (p.nosup) c += md('support_material', 0);
           if (p.supports) c += md('support_material', 1) + md('support_material_auto', 1) + (p.standing ? md('support_material_style', 'snug') : '') + supportKeys(p, true).map(([k, v]) => md(k, v)).join('');
           if (p.brim) c += md('brim_type', 'outer_only') + md('brim_width', p.brim === true ? BRIM : p.brim);
           if (p.walls) c += md('perimeters', p.walls);
           if (p.infill) c += md('fill_density', p.infill + '%');
+          if (p.pattern) c += md('fill_pattern', p.pattern);
+          if (p.shells) c += md('top_solid_layers', p.shells) + md('bottom_solid_layers', p.shells);
           // The same settings the way OrcaSlicer (and Bambu Studio) read them
           const om = (key, val) => `    <metadata key="${key}" value="${xmlEsc(val)}"/>\n`;
           let o = om('name', p.name);
+          if (p.nosup) o += om('enable_support', 0);
           if (p.supports) o += om('enable_support', 1) + (p.standing ? om('support_type', 'normal(auto)') : '') + supportKeys(p).map(([k, v]) => om(k, v)).join('');
           if (p.brim) o += om('brim_type', 'outer_only') + om('brim_width', p.brim === true ? BRIM : p.brim);
           if (p.walls) o += om('wall_loops', p.walls);
           if (p.infill) o += om('sparse_infill_density', p.infill + '%');
+          if (p.pattern) o += om('sparse_infill_pattern', p.pattern);
+          if (p.shells) o += om('top_shell_layers', p.shells) + om('bottom_shell_layers', p.shells);
           orca.push(`  <object id="${id}">\n${o}    <part id="${id}" subtype="normal_part">\n      <metadata key="name" value="${xmlEsc(p.name)}"/>\n    </part>\n  </object>\n`);
           const tn = m.tris.length / 3, tv = tx ? `  <volume firstid="${tn}" lastid="${tn + tx.tris.length / 3 - 1}">\n   <metadata type="volume" key="name" value="${xmlEsc('Label text: ' + p.text.s)}"/>\n   <metadata type="volume" key="volume_type" value="ModelPart"/>\n  </volume>\n` : '';
           conf.push(` <object id="${id}" instances_count="1">\n${c}  <volume firstid="0" lastid="${tn - 1}">\n   <metadata type="volume" key="name" value="${xmlEsc(p.name)}"/>\n   <metadata type="volume" key="volume_type" value="ModelPart"/>\n  </volume>\n${tv} </object>\n`);
@@ -7995,6 +8175,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   migrateTowers();
   renderAll();
   undoReset(); // what the page opened with is where undo stops
+  shareFromAddress(); // opened from a share link
 })();
 </script>
 </body>

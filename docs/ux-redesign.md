@@ -115,6 +115,7 @@ Shown when there is no stack. Three rows: printer, Vault folder (same text and "
   while it works, "Why simplified?" after), which opens it again; × or Esc tucks it away too. The fold is one stroke of
   about two thirds of a second, gathering speed, with no pause nor slowing down (Dols), and stays visible all the way into the button, which then flashes yellow, even with less motion asked (Dols,
   2026-11-23: "c'est important qu'on voit la page se replier dans son encart").
+- **Share links and codes** (Dols, 2026-11-23, issue #84): the File menu's "Copy a share link", "Copy the share code" (greyed with nothing to share) and "Open a share link or code…" (asks for it with `prompt()`). The link is the page's address with `#d=<code>`; the code holds the stacks, loose parts, colors, Print's plate options and stacks left out, the print settings by part and the label look, compressed (one stack ≈ 800 characters). Never the printer (whoever opens it keeps theirs), nor what is printed, bought or assembled. Copied: a long toast with its length and what it holds. Opened (the link loaded, pasted in the address bar, or the code pasted): it replaces the project, asked first when there is one ("To keep yours, cancel and save it first"), then "Opened the shared design"; the address loses its `#d=…`; the File menu says "Not saved to a file yet". A code cut short: "This share link or code is cut short or damaged: ask for it again, or copy all of it".
 - **The stack in 3D, to a file** (Dols, 2026-11-15: renders in Blender): "Export as STL" and "Export as GLB, with colors", at the end of the stack's right-click menu and of the File menu (there "Export the stack as …"). What the view shows, as it stands: drawers and cases open or closed, levels spread or not, the roof hidden or not, the bolts and casters; never the shadow or the outlines. The parts are the simplified ones the view draws (0.15 mm). STL: one solid, in mm, Z up, the floor at 0 and the footprint centred, no colour nor label. GLB: one object per part named after its file, grouped by level (and roof, base, column), one material per colour named after the filament ("Orange #e8742f", "Bolts, grey (zinc-plated or stainless)"), the labels as textured planes, in metres. Both greyed until the parts are in, with the reason as the tooltip ("Choose your Vault folder first: until then the view shows boxes, not the parts", "Wait until every part is in the view"): boxes are never exported. Made in the browser and downloaded; the toast: "Saved Test stack.glb to your downloads (4.1 MB). USSA's parts: for your own renders, not to share." The GLB's `asset.copyright` and the STL's header say the same.
 - The "Paint" tool button carries the stack's filaments as small swatches (up to four, then "+N"; the names in its `title`), so the toolbar says where colours are set (UX audit C7, 2026-11-14).
 - Right: the inspector.
@@ -152,6 +153,21 @@ Today's "Extra parts" (`extrasPanel`), as an entry of the rail: search among the
   right under it (then selects the next unprinted plate), its tags, the large nesting with numbered parts, the numbered
   part list with file name and settings (walls, supports).
 - Plate options, under the selected plate in the right column (Dols, 2026-11-14, "double bandeau" like Design: a rail on the left, a column of settings on the right), always shown: one folded line per setting with its value (`popt`: "Parts with supports · plates of their own"), which opens on its segmented buttons: "Parts with supports" (`mixSupports`), "Manual supports" (`printAids`), "Labels" (`labelsApart`; its hint sends the text's settings to Design's Label section, where they moved on 2026-11-15); then the folded "How plates are laid out" text and "Reset all progress" on one row (no clear button since UX audit D7). It was a "Plate options…" popover before.
+- A plate's menu (Dols, 2026-11-23, issue #93): a right-click on a plate card (or the context menu key), or the
+  selected plate's "⋯" (beside its filament tag), opens the menu the 3D view's levels have: "Plate 03 · Light grey · 2
+  parts · ≈ 400 g", then Show this plate, Tick it for the download (Untick it), Tick the N <filament> plates left,
+  Untick all (while some are ticked); Download this plate alone (the Bambu Studio project or the plate file, whatever is
+  ticked), Download its STL folder (.zip), both greyed with the reason when a part is missing; Mark as printed (Put it
+  back on the list); Print settings of its parts… (opens its kinds of part below and scrolls there), Plate options….
+- Print settings by part (Dols, 2026-11-23, issue #83), a panel under Plate options: one folded line per kind of part
+  on these plates (the colour roles of Paint, and "Tires (TPU)"), its value on the right ("default", or "4 walls ·
+  gyroid · supports off"). Open, it says how many parts it holds and what the configurator gives them ("Default: 2 or 3
+  walls · 15% infill · supports on some"), then five rows of segmented buttons, each starting with "Default": Walls
+  (2 to 6), Infill (10 to 60 %), Infill pattern (grid, gyroid, cubic, lightning), Top and bottom layers (3 to 8),
+  Supports (off, on), and "Back to the defaults" once one is set. A kind with parts that bend (latches, springs) warns
+  that more than 2 walls can make them crack. Written per object into the Bambu Studio project, the plate files
+  (PrusaSlicer and OrcaSlicer keys) and the STL folders' notes; supports also move the part to or off the plates with
+  supports. Saved in this browser (`partSettings`) and in the design file.
 - Already printed (Dols, 2026-11-14): under the rail's stacks, a dashed button "Already printed" (like Design's
   "Loose parts") shows, in place of the filters and the sheet, a list of parts printed before: search among the parts
   on these plates only (the picked stacks' lines that fit the printer), "Add" or "All N" on each, then "Your parts
@@ -344,11 +360,13 @@ In the dashboard, events are the paths without a leading "/"; type the prefix in
   the Selected card's buttons.
 - `menu/<item>`: any menu item used (level, levels, stack, File menus), digits as N.
 - `key/<key>`: a shortcut that did something (`key/mod+z`, `key/step-number`, `key/r`…).
-- `file/…`: menu, save, save as, open, opened (or opened an older file), export STL / GLB.
+- `file/…`: menu, save, save as, open, opened (or opened an older file), export STL / GLB, share link or code copied,
+  "Open a share link or code…", a shared design opened (`file/opened-share`). The code itself is never sent: it is
+  after the `#`, which the visit count leaves out.
 - `folder/…`: the Vault folder open during the visit, "later" on the start screen, the header button.
 - `print/…`: stacks to print, filter, plate select / tick / previous-next, tick all, mark (un)printed, the downloads
   (Bambu project, plate files, STL folders), choose a folder, already printed (opened, add, stepper), plate options
-  (`print/<option>=<value>`), copy the part list, reset all progress; `printer/<id>` once Print is shown.
+  (`print/<option>=<value>`), print settings by part (`print/part-settings/<setting>`), a plate's menu opened (`print/plate-menu`, its items as `menu/…`), copy the part list, reset all progress; `printer/<id>` once Print is shown.
 - `hardware/…`: stacks in the list, jump to, bolt finish, ticked bought, copy, CSV; `store/<id>` once Hardware is
   shown or a store is picked; `buy/<store>` (each store link opened, as before).
 - `assemble/…`: a step ticked, a unit done.
