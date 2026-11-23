@@ -368,6 +368,9 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   counts; keys no line has (stack left out) stay, shown "Not on these plates". "Reset all progress" and the list's
   "Clear" empty it (undoable: `progSnap` holds it).
 
+- A plate's menu (Dols, 2026-11-23, issue #93): in `renderPrint`, `plateMenu(pl)` / `plateMenuAt` on a `.pcard[data-pn]`'s
+  `contextmenu`, the `.psel` panel's and its "⋯" (`data-pmenu`, in `.ptags`); `menuOpen` as in Design. "Download this
+  plate alone" is `makeDownload([pl], …)`, whatever is ticked.
 - Print settings by part (Dols, 2026-11-23, issue #83): `PS_OPTS` / `PS_ROLES` / `partSet` (localStorage
   `partSettings`, design file `print.parts`, `plainPartSet`), next to `printAids`. `computeBuild` runs `partSetApply` on
   merge's copied lines: walls, infill, `pattern`, `shells`, supports ('off' also `noSupports`, written as supports off);

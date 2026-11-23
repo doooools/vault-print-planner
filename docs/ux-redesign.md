@@ -152,6 +152,12 @@ Today's "Extra parts" (`extrasPanel`), as an entry of the rail: search among the
   right under it (then selects the next unprinted plate), its tags, the large nesting with numbered parts, the numbered
   part list with file name and settings (walls, supports).
 - Plate options, under the selected plate in the right column (Dols, 2026-11-14, "double bandeau" like Design: a rail on the left, a column of settings on the right), always shown: one folded line per setting with its value (`popt`: "Parts with supports · plates of their own"), which opens on its segmented buttons: "Parts with supports" (`mixSupports`), "Manual supports" (`printAids`), "Labels" (`labelsApart`; its hint sends the text's settings to Design's Label section, where they moved on 2026-11-15); then the folded "How plates are laid out" text and "Reset all progress" on one row (no clear button since UX audit D7). It was a "Plate options…" popover before.
+- A plate's menu (Dols, 2026-11-23, issue #93): a right-click on a plate card (or the context menu key), or the
+  selected plate's "⋯" (beside its filament tag), opens the menu the 3D view's levels have: "Plate 03 · Light grey · 2
+  parts · ≈ 400 g", then Show this plate, Tick it for the download (Untick it), Tick the N <filament> plates left,
+  Untick all (while some are ticked); Download this plate alone (the Bambu Studio project or the plate file, whatever is
+  ticked), Download its STL folder (.zip), both greyed with the reason when a part is missing; Mark as printed (Put it
+  back on the list); Print settings of its parts… (opens its kinds of part below and scrolls there), Plate options….
 - Print settings by part (Dols, 2026-11-23, issue #83), a panel under Plate options: one folded line per kind of part
   on these plates (the colour roles of Paint, and "Tires (TPU)"), its value on the right ("default", or "4 walls ·
   gyroid · supports off"). Open, it says how many parts it holds and what the configurator gives them ("Default: 2 or 3
@@ -357,7 +363,7 @@ In the dashboard, events are the paths without a leading "/"; type the prefix in
 - `folder/…`: the Vault folder open during the visit, "later" on the start screen, the header button.
 - `print/…`: stacks to print, filter, plate select / tick / previous-next, tick all, mark (un)printed, the downloads
   (Bambu project, plate files, STL folders), choose a folder, already printed (opened, add, stepper), plate options
-  (`print/<option>=<value>`), print settings by part (`print/part-settings/<setting>`), copy the part list, reset all progress; `printer/<id>` once Print is shown.
+  (`print/<option>=<value>`), print settings by part (`print/part-settings/<setting>`), a plate's menu opened (`print/plate-menu`, its items as `menu/…`), copy the part list, reset all progress; `printer/<id>` once Print is shown.
 - `hardware/…`: stacks in the list, jump to, bolt finish, ticked bought, copy, CSV; `store/<id>` once Hardware is
   shown or a store is picked; `buy/<store>` (each store link opened, as before).
 - `assemble/…`: a step ticked, a unit done.

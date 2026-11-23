@@ -1092,6 +1092,7 @@ button.prole:hover { background: var(--sheet-2); }
 .pnav { display: flex; gap: 4px; }
 .iconbtn.sq { width: 44px; height: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 0; }
 .ptags { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ptags .pmore { margin-left: auto; width: 36px; height: 36px; }
 .ftag { display: inline-flex; align-items: center; gap: 8px; min-height: 30px; padding: 3px 10px 3px 6px; border: 1.5px solid var(--edge); border-radius: 0; font-weight: 400; font-size: 14px; }
 .ftag .dot2 { width: 16px; height: 16px; }
 .ftag.flag { padding: 3px 10px; border: 0; background: var(--bad-soft); color: var(--gp-on-red); font-family: var(--f-label); font-size: 13px; text-transform: uppercase; letter-spacing: .02em; }
@@ -3262,7 +3263,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     more: '<circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="19" cy="12" r="1.2" fill="currentColor"/>',
     fit: '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>', drawer: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 12h6"/>',
     chev: '<path d="M9 6l6 6-6 6"/>', paste: '<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 11h6M9 15h4"/>', save: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>', file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
-    open: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', pen: '<path d="M4 20l1-4L16 5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/>', help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>',
+    open: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', check: '<path d="M5 12l5 5 9-10"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/>',
+    link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>', pen: '<path d="M4 20l1-4L16 5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/>', help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>',
   };
   const icon = k => `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
   // Width × depth × height of the whole stack as it stands, with its base, wheels, roof, handles… (stackSize)
@@ -4883,7 +4886,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // The sheet
     const card = pl => {
       const isNext = next && pl.n === next.n, note = plateNote(pl, isNext), on = sel && pl.n === sel.n, tick = plateSel.ns.has(pl.n);
-      return `<div class="pcard${pl.done ? ' done' : ''}${on ? ' on' : ''}${tick ? ' picked' : ''}">
+      return `<div class="pcard${pl.done ? ' done' : ''}${on ? ' on' : ''}${tick ? ' picked' : ''}" data-pn="${pl.n}">
         <button type="button" data-pick="${pl.n}" aria-pressed="${on}" title="Show this plate" aria-label="Plate ${pl.n}, show its layout"><span class="pn">Plate ${two(pl.n)}</span>
           ${plateSvg(pl, true)}<span class="mono pm">${plural(pl.items.length, 'part')} · ${aboutG(pl.grams)}</span><span class="pflag ${pl.done ? 'ok' : isNext ? 'next' : 'flag'}">${esc(note)}</span></button>
         <label class="ptick" title="Tick it for the download"><input type="checkbox" data-tick="${pl.n}" ${tick ? 'checked' : ''} aria-label="Tick plate ${pl.n} for the download"></label></div>`;
@@ -4923,7 +4926,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       <div class="psel-head"><div><span class="v3-sec">Selected plate</span><h2>Plate ${two(sel.n)}</h2><span class="mono">${plural(sel.items.length, 'part')} · ${aboutG(sel.grams)} · ${Math.round(sel.tallest)} mm tall</span></div>
         <div class="pnav"><button type="button" class="iconbtn sq" data-step="-1" aria-label="Previous plate" ${idx > 0 ? '' : 'disabled'}><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button><button type="button" class="iconbtn sq" data-step="1" aria-label="Next plate" ${idx < allPlates.length - 1 ? '' : 'disabled'}><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button></div></div>
       <button type="button" class="btn ${sel.done ? '' : 'primary'} big" id="pToggle">${sel.done ? 'Printed. Undo' : 'Mark as printed'}</button>
-      <div class="ptags"><span class="ftag"><span class="dot2" style="background:${colorHex(sel.color)}"></span>${esc(colorName(sel.color))}</span>${selFlag && selFlag !== 'Printed' ? `<span class="ftag flag">${esc(selFlag)}</span>` : ''}</div>
+      <div class="ptags"><span class="ftag"><span class="dot2" style="background:${colorHex(sel.color)}"></span>${esc(colorName(sel.color))}</span>${selFlag && selFlag !== 'Printed' ? `<span class="ftag flag">${esc(selFlag)}</span>` : ''}<button type="button" class="iconbtn sq pmore" data-pmenu="${sel.n}" aria-haspopup="menu" aria-expanded="false" aria-label="Plate ${sel.n}: more" title="More for this plate (or right-click a plate)">${icon('more')}</button></div>
       ${plateSvg(sel)}
       ${sel.care ? `<div class="alert ${sel.items[0].diag || sel.items[0].asis ? 'ok' : 'warn'}" style="font-size:13px">${sel.items[0].asis ? 'Kept at the angle USSA exported it, where it just fits this bed. Check it in the slicer before printing.' : sel.items[0].diag ? 'Too long to lie straight, so it’s placed diagonally, the way USSA exported it.' : 'Lay this part on a different face than exported to fit; check supports.'}</div>` : ''}
       <div class="plist">${sel.lines.map((x, i) => `<div class="prow"><span class="pk" style="background:${colorHex(sel.color)};color:${LIGHT_FILL(sel.color) ? '#222' : '#fff'}">${i + 1}</span><span class="q num">${x.count}×</span><span class="lbl"><b>${esc(x.l.label)}</b><small class="mono">${esc(fileName(x.l.file.path))}</small></span>${x.l.walls ? `<span class="tag wall">${x.l.walls} walls${x.l.infill ? ' · ' + x.l.infill + '%' : ''}</span>` : ''}${x.l.supports ? '<span class="tag sup">supports</span>' : ''}</div>`).join('')}</div></aside>`;
@@ -5012,6 +5015,37 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       if (key === 'printAids') { printAids = on; store.set('manualSupports', on); }
       renderPrint();
     });
+    // A plate's menu (issue #93): a right-click on its card, or the selected plate's "⋯". What a plate's own buttons do,
+    // and what needed the ticks before: download it alone, tick it or every plate of its filament, its parts' settings.
+    const plateMenu = pl => {
+      const tick = plateSel.ns.has(pl.n), miss = missing.length && pl.items.some(it => missing.includes(it.p.l.file.path));
+      const roles = [...new Set(pl.lines.map(x => x.l.role))], same = allPlates.filter(p => p.color === pl.color && !p.done);
+      const dlWhy = !canMake ? 'Open this page on a computer with your Vault download to make the print files' : miss ? 'Some of its parts aren\u2019t in your Vault folder' : '';
+      const to = el => { if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
+      return { head: `Plate ${two(pl.n)}${pl.done ? ' \u00b7 printed' : ''}`, sub: `${colorName(pl.color).split(' \u00b7 ')[0]} \u00b7 ${plural(pl.items.length, 'part')} \u00b7 ${aboutG(pl.grams)}`, items: [
+        { icon: 'chev', label: 'Show this plate', dis: selPlate === pl.n, fn: () => { selPlate = pl.n; renderPrint(); } },
+        { icon: 'check', label: tick ? 'Untick it' : 'Tick it for the download', fn: () => { tick ? plateSel.ns.delete(pl.n) : plateSel.ns.add(pl.n); renderPrint(); } },
+        { icon: 'check', label: `Tick the ${same.length} ${colorName(pl.color).split(' \u00b7 ')[0]} plates left`, dis: same.length < 2 || same.every(p => plateSel.ns.has(p.n)), fn: () => { same.forEach(p => plateSel.ns.add(p.n)); renderPrint(); } },
+        ...(picked.length ? [{ icon: 'check', label: 'Untick all', fn: () => { plateSel.ns.clear(); renderPrint(); } }] : []),
+        { sep: true, icon: 'save', label: bambu ? 'Download this plate alone (Bambu Studio project)' : 'Download this plate alone (plate file)', dis: !!dlWhy, tip: dlWhy || 'Only this plate, whatever is ticked', fn: () => makeDownload([pl], false, 'project') },
+        { icon: 'save', label: 'Download its STL folder (.zip)', dis: !!dlWhy, tip: dlWhy || 'Its STL files in one folder, for any other slicer', fn: () => makeDownload([pl], false, 'folders') },
+        { sep: true, icon: 'check', label: pl.done ? 'Put it back on the list' : 'Mark as printed', fn: () => { const was = pl.done; markPlate(pl, !was); if (!was && selPlate === pl.n) { const after = plates.find(p => p.n > pl.n) || plates.find(p => p !== pl); if (after) selPlate = after.n; } renderPrint(); renderTabs(); } },
+        { sep: true, icon: 'gear', label: 'Print settings of its parts\u2026', tip: 'Walls, infill, supports… for the kinds of part on this plate', fn: () => { roles.forEach(r => openInfo.add('ps-' + r)); renderPrint(); to($('pParts')); } },
+        { icon: 'gear', label: 'Plate options\u2026', fn: () => to(V.querySelector('.popts:not(.pparts)')) },
+      ] };
+    };
+    // At the pointer for a right-click; under the button for "⋯" or a context menu key (no pointer: on its first item)
+    const plateMenuAt = (pl, e, opener) => { const at = e.type === 'contextmenu' && (e.clientX || e.clientY); use('print/plate-menu'); menuOpen({ ...plateMenu(pl), opener, keys: !at && e.detail === 0, ...(at ? { x: e.clientX, y: e.clientY } : {}) }); };
+    V.querySelectorAll('.pcard[data-pn]').forEach(c => c.oncontextmenu = e => {
+      const pl = allPlates.find(p => p.n === +c.dataset.pn); if (!pl) return;
+      e.preventDefault(); plateMenuAt(pl, e, c.querySelector('[data-pick]'));
+    });
+    V.querySelectorAll('[data-pmenu]').forEach(b => b.onclick = e => {
+      const pl = allPlates.find(p => p.n === +b.dataset.pmenu); if (!pl) return;
+      if (menuFrom(b)) { menuClose(); return; }
+      plateMenuAt(pl, e, b);
+    });
+    if (sel) { const ps = V.querySelector('.psel'); if (ps) ps.oncontextmenu = e => { if (e.target.closest('button:not([data-pick])')) return; e.preventDefault(); plateMenuAt(sel, e, ps.querySelector('[data-pmenu]')); }; }
     // Print settings by part: a button sets one setting of one kind of part ('' = its default), "Back to the defaults" all
     V.querySelectorAll('[data-psv]').forEach(btn => btn.onclick = () => {
       const [id, k] = btn.closest('[data-ps]').dataset.ps.split('|'), raw = btn.dataset.psv, v = raw === '' ? null : typeof PS_OPTS[k][0] === 'object' ? raw : +raw;
