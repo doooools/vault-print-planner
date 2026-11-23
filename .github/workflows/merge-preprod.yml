@@ -1,0 +1,123 @@
+# Merges a pull request into preprod by itself once "Check the page" passed on it (Dols, 2026-11-23), so that the
+# change is on https://doooools.github.io/vault-print-planner/preprod/ a few minutes later. Never a pull request into
+# main: going live stays Dols's own merge (CLAUDE.md "Preprod").
+#
+# Only pull requests
+#   - into preprod,
+#   - from a branch of this repository (never a fork),
+#   - opened by an account in TRUSTED (Dols's; Claude's threads open theirs with it),
+#   - not a draft (open a draft, or turn one back into a draft, to keep it out),
+#   - whose last commit is the one the check passed on,
+#   - that changes no file in .github/workflows/ (GitHub doesn't let GITHUB_TOKEN merge those: Dols does),
+#   - whose merge with preprod as it is now passes tools/check.py again here.
+# It merges with a merge commit, then starts "Publish the site" by hand: a merge made with GITHUB_TOKEN starts no other
+# workflow, so the push to preprod would publish nothing on its own.
+#
+# It starts from workflow_run, which reads this file from the default branch (main) only: a change to it works once
+# it is on main. Anything it leaves alone says why in the run's log (Actions > Merge into preprod).
+name: Merge into preprod
+
+on:
+  workflow_run:
+    workflows: [Check the page]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: merge-preprod
+  cancel-in-progress: false
+
+env:
+  TRUSTED: doooools
+  REPO: ${{ github.repository }}
+  HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+  HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Find the pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api -X GET "repos/$REPO/pulls" -f state=open -f base=preprod -f head="${REPO%%/*}:$HEAD_BRANCH" \
+            --jq '.[] | [.number, .user.login, .head.repo.full_name, .head.sha, .draft, .base.ref] | @tsv' > prs.tsv
+          number=
+          while IFS=$'\t' read -r n login head_repo sha draft base; do
+            why=
+            [ "$base" = preprod ] || why+="; it goes into $base"
+            [ "$head_repo" = "$REPO" ] || why+="; its branch is in $head_repo, not this repository"
+            [[ " $TRUSTED " == *" $login "* ]] || why+="; it was opened by $login, who isn't in TRUSTED"
+            [ "$draft" = false ] || why+="; it is a draft"
+            [ "$sha" = "$HEAD_SHA" ] || why+="; its last commit ($sha) isn't the one the check passed on ($HEAD_SHA)"
+            if [ -z "$why" ]; then
+              files=$(gh api "repos/$REPO/pulls/$n/files" --paginate --jq '.[].filename' < /dev/null)
+              if grep -q '^\.github/workflows/' <<< "$files"; then
+                why+="; it changes a workflow, which GITHUB_TOKEN may not merge: Dols merges it"
+              fi
+            fi
+            if [ -n "$why" ]; then echo "Left alone: #$n${why/#;/:}."; else number=$n; fi
+          done < prs.tsv
+          if [ -z "$number" ]; then echo "Nothing to merge into preprod for $HEAD_BRANCH at $HEAD_SHA."; fi
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+
+      # The check ran on the branch merged with preprod as it stood then. preprod may have moved since: merge again
+      # here and run the same check before merging for real. No token in these steps: they run the branch's code.
+      - if: steps.pr.outputs.number != ''
+        uses: actions/checkout@v4
+        with:
+          ref: preprod
+          fetch-depth: 0
+          persist-credentials: false
+      - if: steps.pr.outputs.number != ''
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - if: steps.pr.outputs.number != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Merge with preprod as it is now and check
+        id: try
+        if: steps.pr.outputs.number != ''
+        run: |
+          set -euo pipefail
+          echo "base=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          git fetch --no-tags origin "$HEAD_SHA"
+          git -c user.name=check -c user.email=check@localhost merge --no-ff --no-edit "$HEAD_SHA" \
+            || { echo "::error::#${{ steps.pr.outputs.number }} doesn't merge cleanly into preprod: merge preprod into the branch and push."; exit 1; }
+          python -I tools/check.py
+
+      - name: Merge the pull request
+        if: steps.pr.outputs.number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ steps.pr.outputs.number }}
+          BASE: ${{ steps.try.outputs.base }}
+        run: |
+          set -euo pipefail
+          now=$(gh api "repos/$REPO/branches/preprod" --jq .commit.sha)
+          if [ "$now" != "$BASE" ]; then
+            echo "::error::preprod moved while #$NUMBER was being checked ($BASE, now $now): re-run this job."
+            exit 1
+          fi
+          gh pr merge "$NUMBER" --repo "$REPO" --merge --match-head-commit "$HEAD_SHA"
+          echo "Merged #$NUMBER into preprod."
+
+      - name: Publish the site
+        if: steps.pr.outputs.number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$REPO" --ref main
