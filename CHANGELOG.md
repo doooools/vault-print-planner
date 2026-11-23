@@ -10,6 +10,9 @@ This page is a fork of [Romy's Vault Print Planner](https://vault.romy.io), made
 - **A new layout** in four steps, Design, Print, Hardware and Assemble, with Undo, design files, a dark theme and store links for where you live.
 Every difference is listed on [GitHub](https://github.com/doooools/vault-print-planner/blob/main/docs/differences-from-upstream.md). Amazon.com links in Hardware are still Romy's affiliate links, so US purchases keep supporting the original project. Romy's own changes are the ones marked "Romy's planner", from 2026-11-10 back.
 
+## 2026-11-23
+- **Why the parts are simplified:** while the 3D view makes its lighter copies of your part files, a window says so, with a turning wheel and how many are done: the copies only make the view lighter, and what you print never changes, since Print always uses your original STL files. When the last one is done it tucks itself under the view, beside the triangle count, where "Why simplified?" opens it again. Parts this browser already keeps load without it.
+
 ## 2026-11-22
 - **A new look:** paper and ink, swapped in the dark theme; yellow for what is selected or done, pink for the one main action of each screen, red for a problem. Titles in Anton, labels in Special Elite, text and figures in Courier Prime, all carried inside the page. Each screen puts its key thing on a taped card. Nothing you can do has changed: every button, setting and shortcut is where it was.
 - **Fewer false lines in 3D:** the ink lines now follow only real edges of the parts, not the thin triangles left by simplifying them.

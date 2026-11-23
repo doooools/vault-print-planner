@@ -422,6 +422,28 @@ dialog#v3d::backdrop { background: rgba(7, 7, 7, .6); }
 .v3-hintbar.tip kbd { font-size: 13px; }
 .v3-hintbar.tip .btn { min-height: 36px; }
 @keyframes v3tip { 50% { box-shadow: 10px 10px 0 #000; } }
+/* While parts are simplified: the window over the view that says why, and its button in the strip under it */
+.v3-simp { position: absolute; inset: 0; z-index: 3; margin: auto; width: min(440px, calc(100% - 24px)); height: fit-content; max-height: calc(100% - 24px); overflow-y: auto; box-sizing: border-box; display: grid; gap: 10px; padding: 18px 20px 16px; border: 2px solid var(--ink); background: var(--ground); color: var(--ink); box-shadow: var(--gp-shadow-modal, var(--gp-shadow-toast)); font-size: 14px; transform-origin: center; }
+.v3-simp[hidden] { display: none; }
+.v3-simp p { margin: 0; color: var(--muted); }
+.v3-simp .pnote { font-size: 13px; }
+.v3-simp .v3-simpnow { color: var(--ink); font-family: var(--f-mono); font-size: 13px; }
+.v3-simp .v3-simpkey { padding: 8px 10px; border-left: 4px solid var(--accent); background: var(--sheet-2); color: var(--ink); }
+.v3-simp .v3-bar[hidden] { display: none; }
+.v3-simphead { display: flex; align-items: center; gap: 12px; padding-right: 36px; }
+.v3-simphead h3 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 22px; line-height: 1.1; text-transform: uppercase; }
+.v3-simpx { position: absolute; top: 8px; right: 8px; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 2px solid var(--ink); background: var(--ground); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
+.v3-simpx:hover { background: var(--sheet-2); }
+.v3-simpmark { flex: 0 0 auto; width: 30px; height: 30px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; font: 700 18px var(--f-mono); }
+.v3-simpmark.ok { border: 3px solid var(--ink); }
+/* The wheel: an ink ring with a gap, turning */
+.v3-spin { display: inline-block; box-sizing: border-box; width: 30px; height: 30px; border: 3px solid var(--ink); border-right-color: transparent; border-radius: 50%; animation: v3spin .9s linear infinite; }
+.v3-spin.sm { width: 14px; height: 14px; border-width: 2px; vertical-align: -2px; margin-right: 6px; }
+@keyframes v3spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .v3-spin { animation-duration: 2.4s; } }
+.v3-simpbtn { flex: 0 0 auto; min-height: 32px; padding: 4px 10px; border: 2px solid var(--ink); border-radius: 0; background: var(--ground); color: var(--ink); font-family: var(--f-label); font-size: 13px; cursor: pointer; white-space: nowrap; }
+.v3-simpbtn:hover, .v3-simpbtn[aria-expanded=true] { background: var(--sheet-2); }
+.v3-simpbtn[hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) { .v3-hintbar.tip { animation: none; } }
 .v3-hintbar { position: absolute; left: 12px; bottom: 12px; max-width: calc(100% - 24px); padding: 7px 12px; border: 2px solid var(--edge); border-radius: 0; background: var(--ground); color: var(--muted); font-size: 13px; }
 .v3-hintbar b { color: var(--ink); font-weight: 700; }
@@ -753,7 +775,7 @@ pre.code { margin: 0; background: var(--sheet-2); border-radius: 0; padding: 12p
   .dinsp { align-self: stretch; contain: size; min-height: min(520px, calc(100vh - 24px)); }
 }
 .design .v3-side { max-height: none; overflow: visible; border-left: 0; border-top: 2px dotted var(--edge); padding: 8px 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
-.design .v3-side > :not(#v3dStatus):not(#v3dPick) { display: none; }
+.design .v3-side > :not(#v3dStatus):not(#v3dPick):not(#v3dSimpBtn) { display: none; }
 .design .v3-side .v3-status { flex: 1 1 300px; font-size: 13px; }
 /* Design fills the window on wide screens (Dols, 2026-11-22): the page itself never scrolls, the 3D view takes all the
    height left under the stack's title, and only the rail and the inspector scroll, each in itself */
@@ -1277,8 +1299,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   <div class="acts"><button type="button" class="btn primary" id="relinkGo" autofocus></button><button type="button" class="btn" id="relinkOther">Choose another folder…</button><button type="button" class="linkbtn" id="relinkLater">Not now: show boxes</button></div></dialog>
 <dialog id="viewer" aria-label="Part preview"><button type="button" class="vclose" id="viewerClose" aria-label="Close preview">&times;</button><div id="viewerBody" class="vbody"></div></dialog>
 <div id="v3home" hidden><div class="v3-view" id="v3view">
-  <div class="v3-stage"><div class="v3-canvas" id="v3dCanvas"></div><div class="v3-tools" id="v3dTools"></div><div id="v3dBrush" hidden></div></div>
-  <div class="v3-side"><h2 id="v3dTitle">3D</h2><p class="v3-status" id="v3dStatus" role="status"></p>
+  <div class="v3-stage"><div class="v3-canvas" id="v3dCanvas"></div><div class="v3-tools" id="v3dTools"></div><div id="v3dBrush" hidden></div><div class="v3-simp" id="v3dSimp" hidden aria-labelledby="v3dSimpTitle"></div></div>
+  <div class="v3-side"><h2 id="v3dTitle">3D</h2><p class="v3-status" id="v3dStatus" role="status"></p><button type="button" class="v3-simpbtn" id="v3dSimpBtn" hidden aria-controls="v3dSimp" aria-expanded="false"></button>
     <button type="button" class="btn" id="v3dPick" hidden>Show the real parts…</button>
     <div id="v3dSel"></div>
     <div class="v3-sec">Units, top to bottom</div>
@@ -2493,6 +2515,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     ['[data-v3tool]', useVal('3d/tool', 'data-v3tool')], ['[data-v3tog="explode"]', '3d/spread-levels'], ['[data-v3tog="hideRoof"]', '3d/hide-roof'],
     ['[data-v3spin]', '3d/rotate'], ['[data-v3help]', '3d/help'], ['[data-v3fin]', useVal('3d/bolts', 'data-v3fin')], ['[data-v3hwc]', useVal('3d/selected-bolts', 'data-v3hwc')],
     ['[data-v3pick]', '3d/units-list'], ['[data-v3tipok]', '3d/tip-ok'],
+    ['#v3dSimpBtn', '3d/why-simplified'], ['[data-v3simpx]', '3d/simplifying-hide'],
     // Paint and the filament picker
     ['[data-v3scope]', useVal('paint/a-click-paints', 'data-v3scope')], ['[data-v3brush], [data-brush]', 'paint/brush'], ['[data-v3add], [data-padd]', 'paint/add-a-filament'],
     ['[data-v3change]', 'paint/selected-change-color'], ['[data-v3back]', 'paint/selected-back-to-stack-color'], ['[data-cpreset]', useVal('paint/start-from', 'data-cpreset')],
@@ -5923,7 +5946,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       let m = null;
       try { m = await idb('readonly', s => s.get(key)); } catch (e) { /* no cache */ }
       if (!m) {
-        m = await meshRunner()(file, SIMPLIFY_MM);
+        simpStart(); // really simplified this time, not from the cache: the window says why (simp)
+        try { m = await meshRunner()(file, SIMPLIFY_MM); } finally { simpEnd(); }
         try { await idb('readwrite', s => s.put({ pos: m.pos, idx: m.idx, src: m.src, tris: m.tris }, key)); } catch (e) { /* keeping it is only a convenience */ }
       }
       return m;
@@ -5932,6 +5956,82 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     meshMemo.set(path, p);
     return p;
   }
+  // ---------- while parts are simplified: a window that says why (Dols, 2026-11-23) ----------
+  // Over the view as soon as a part file is really simplified (never for parts from this browser's cache), with a
+  // spinner and the count, it says the simplification only lightens the view and never touches what is printed. When
+  // the last file is done it tucks itself into the strip under the view (#v3dSimpBtn), which opens it again. It doesn't
+  // take the focus nor stop anything: the view can be turned meanwhile. A batch = files simplified one after the other.
+  const simp = { total: 0, done: 0, open: false, hid: false, ran: false, tucking: false, timer: 0, shown: null };
+  function simpStart() {
+    if (simp.done >= simp.total) { simp.total = simp.done = 0; simp.hid = false; } // a new batch
+    simp.total++; simp.ran = true;
+    // after a moment: a file that takes no time doesn't flash the window
+    if (!simp.open && !simp.hid && !simp.timer) simp.timer = setTimeout(() => {
+      simp.timer = 0;
+      if (simp.done < simp.total && !simp.hid) { simp.open = true; use('3d/simplifying'); }
+      simpDraw();
+    }, 400);
+    simpDraw();
+  }
+  function simpEnd() {
+    simp.done++;
+    if (simp.done >= simp.total) {
+      clearTimeout(simp.timer); simp.timer = 0;
+      // "Done" stays a moment, then the window tucks away (unless another batch started meanwhile)
+      if (simp.open) setTimeout(() => { if (simp.open && simp.done >= simp.total) simpTuck(); }, 1400);
+    }
+    simpDraw();
+  }
+  const simpBusy = () => simp.done < simp.total;
+  function simpDraw() {
+    const box = $('v3dSimp'), btn = $('v3dSimpBtn'), busy = simpBusy();
+    btn.hidden = !busy && !(v3 && v3.units.some(u => u.loaded));
+    btn.classList.toggle('busy', busy);
+    btn.setAttribute('aria-expanded', String(simp.open));
+    btn.innerHTML = `${busy ? '<span class="v3-spin sm" aria-hidden="true"></span>' : ''}${busy ? `Simplifying ${simp.done} of ${simp.total}\u2026` : 'Why simplified?'}`;
+    if (!simp.open && !simp.tucking) { box.hidden = true; return; }
+    box.hidden = false;
+    if (!box.firstChild) {
+      box.innerHTML = `<button type="button" class="v3-simpx" data-v3simpx aria-label="Hide this window" title="Hide (Esc)">&times;</button>
+        <div class="v3-simphead"><span class="v3-simpmark" aria-hidden="true"></span><h3 id="v3dSimpTitle">Making the 3D view lighter</h3></div>
+        <p class="v3-simpnow" role="status" aria-live="polite"></p><div class="v3-bar"><span></span></div>
+        <p>Your part files hold millions of triangles: too many for a browser to turn smoothly. The 3D view draws a lighter copy of each part, within ${SIMPLIFY_MM} mm of the original.</p>
+        <p class="v3-simpkey"><b>What you print doesn\u2019t change.</b> Print\u2019s plates and downloads always use your original STL files, as they are. Only Export from the 3D view takes the lighter copies.</p>
+        <p class="pnote">This browser keeps the copies: next time, these parts show at once.</p>`;
+      box.querySelector('[data-v3simpx]').onclick = () => { simp.hid = true; simpTuck(); };
+    }
+    box.querySelector('.v3-simpmark').className = 'v3-simpmark' + (busy ? ' v3-spin' : ' ok');
+    box.querySelector('.v3-simpmark').textContent = busy ? '' : '\u2713';
+    const pct = simp.total ? Math.round(100 * simp.done / simp.total) : 100;
+    box.querySelector('.v3-bar').hidden = !busy;
+    box.querySelector('.v3-bar span').style.width = pct + '%';
+    const sh = simp.shown;
+    box.querySelector('.v3-simpnow').textContent = busy
+      ? `Simplifying part files: ${simp.done} of ${simp.total} done. The big ones take a while.`
+      : (simp.ran ? 'Done. ' : 'These parts were simplified on an earlier visit and kept in this browser. ') +
+        (sh && sh.src ? `The view shows ${Math.round(sh.tris / 1000)}k triangles, from ${(sh.src / 1e6).toFixed(1)}M in your files.` : '');
+  }
+  // Closes the window towards its button in the strip under the view (or at once, with less motion asked)
+  function simpTuck() {
+    const box = $('v3dSimp'), btn = $('v3dSimpBtn');
+    simp.open = false; simpDraw();
+    if (box.hidden || simp.tucking) return;
+    const a = box.getBoundingClientRect(), b = btn.hidden ? null : btn.getBoundingClientRect();
+    if (!b || !a.width || !b.width || !box.animate || matchMedia('(prefers-reduced-motion: reduce)').matches) { box.hidden = true; return; }
+    const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2), k = Math.max(.06, b.width / a.width);
+    simp.tucking = true; box.hidden = false;
+    const an = box.animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${dx}px, ${dy}px) scale(${k})`, opacity: .15 }], { duration: 480, easing: 'cubic-bezier(.55, 0, .8, .2)' });
+    an.onfinish = an.oncancel = () => {
+      simp.tucking = false; simpDraw();
+      if (btn.animate && !btn.hidden) btn.animate([{ transform: 'none' }, { transform: 'scale(1.12) rotate(-2deg)' }, { transform: 'none' }], { duration: 320 });
+    };
+  }
+  $('v3dSimpBtn').onclick = () => {
+    if (simp.open) { simp.hid = true; return simpTuck(); }
+    simp.open = true; simp.hid = false; simpDraw();
+    const x = $('v3dSimp').querySelector('[data-v3simpx]'); if (x) x.focus({ preventScroll: true });
+  };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && simp.open && !document.querySelector('dialog[open]')) { simp.hid = true; simpTuck(); } });
 
   // ---------- the 3D view: one view, three tools ----------
   // Turn (a click selects a part), Paint (a click gives the brush colour to that kind of part, in every unit or in the
@@ -6608,6 +6708,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // Only to show the real parts: the folder is changed from step 1 (unitFolderBar), not here
     $('v3dPick').hidden = !v.units.some(u => u.place) || !canPickFolder || !!vaultFolder;
     $('v3dPick').textContent = folderLink === 'ask' && folderLinkName ? `Reconnect ${folderLinkName}…` : 'Show the real parts…';
+    simpDraw();
   }
   // A part kind's colour in the stack shown (kept even when it is the default: the project's may differ), or the
   // project's when there is no stack
@@ -6766,6 +6867,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     todo.forEach(u => { u.loading = false; });
     v3list(); v3mark(); // the outline takes the parts' bounds now
     let msg = `${plural(todo.reduce((a, u) => a + u.loaded, 0), 'part')} shown, ${Math.round(tris / 1000)}k triangles (from ${(src / 1e6).toFixed(1)}M in the files).`;
+    simp.shown = { tris, src }; simpDraw();
     use('3d/real-parts');
     if (missing.length) use('3d/parts-not-in-folder');
     if (failed.length) use('3d/parts-not-simplified');
@@ -7823,7 +7925,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   addEventListener('keydown', e => {
     if (e.defaultPrevented || e.isComposing || typing(e.target) || typing(document.activeElement)) return;
     if (menuNow || fpOpen || !$('printerBox').hidden) return;
-    if (e.key === 'Escape' && (gpend || v3ui.help)) return; // Esc drops a divider's start or closes the view's help first
+    if (e.key === 'Escape' && (gpend || v3ui.help || simp.open)) return; // Esc drops a divider's start or closes the view's help first
     const k = e.key, dlg = document.querySelector('dialog[open]');
     if (k === '?' && !e.ctrlKey && !e.metaKey && !e.altKey && (!dlg || dlg === $('keys'))) { e.preventDefault(); useKey(e); keysPop(); return; }
     if (dlg) return;
