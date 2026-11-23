@@ -1,9 +1,9 @@
 # What's new
 
-Changes to the Vault Print Planner, newest first: this fork's, then those of Romy's original planner.
+Changes to the 3D Vault Configurator, newest first: this fork's, then those of Romy's original planner.
 
 ## About this fork
-This page is a fork of [Romy's Vault Print Planner](https://vault.romy.io), made by Romy Macasieb and shared under the MIT licence. Romy's planner does the heart of the work: it lists every file a Vault build needs, checks each part against your printer, lays the parts out on plates and makes the Bambu Studio project. It takes no feature requests and invites forks instead: this one, kept by [Dols](https://github.com/doooools), holds all of Romy's planner and adds:
+This page, 3D Vault Configurator, is a fork of [Romy's Vault Print Planner](https://vault.romy.io), made by Romy Macasieb and shared under the MIT licence. Romy's planner does the heart of the work: it lists every file a Vault build needs, checks each part against your printer, lays the parts out on plates and makes the Bambu Studio project. It takes no feature requests and invites forks instead: this one, kept by [Dols](https://github.com/doooools), holds all of Romy's planner and adds:
 - **Your stacks in 3D,** made from your own Vault files, with drawers and cases that open and every bolt in place.
 - **Colours:** a filament for each kind of part, for a whole stack or a single module, that the plates, the filament totals and the Bambu Studio project follow.
 - **More inside a module:** several drawers in one module, each with its own inside, lock and geared rails, and case and drawer dividers placed on a plan.
@@ -11,6 +11,7 @@ This page is a fork of [Romy's Vault Print Planner](https://vault.romy.io), made
 Every difference is listed on [GitHub](https://github.com/doooools/vault-print-planner/blob/main/docs/differences-from-upstream.md). Amazon.com links in Hardware are still Romy's affiliate links, so US purchases keep supporting the original project. Romy's own changes are the ones marked "Romy's planner", from 2026-11-10 back.
 
 ## 2026-11-23
+- **A new name: 3D Vault Configurator.** This fork was called Vault Print Planner, like Romy's original: it now has a name of its own, for what it has become. Same address, and your stacks, colours and saved design files carry on as they were.
 - **Why the parts are simplified:** while the 3D view makes its lighter copies of your part files, a window says so, with a turning wheel and how many are done: the copies only make the view lighter, and what you print never changes, since Print always uses your original STL files. When the last one is done it tucks itself under the view, beside the triangle count, where "Why simplified?" opens it again. Parts this browser already keeps load without it.
 
 ## 2026-11-22
