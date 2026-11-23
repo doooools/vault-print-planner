@@ -44,7 +44,8 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   `index.html` is the build of `src/`, `validate.js` finds no problem (it exits 1 on any; unused files are only
   listed), the page's scripts parse, no mesh file is committed. Run it before pushing.
 - Once that check passes on a push to `main` or `preprod`, `.github/workflows/pages.yml` ("Publish the site")
-  publishes both branches within a couple of minutes (see "Preprod"). `index.html` is generated: on a merge conflict
+  publishes both branches within a couple of minutes (see "Preprod"), as it does when `merge-preprod.yml` merged a
+  pull request into `preprod` and started it. `index.html` is generated: on a merge conflict
   in it, merge `src/` and rebuild, never edit it by hand.
 - Review subagents (Dols kept them, 2026-11-14, PR #45): `.claude/agents/voltagent/` holds three of VoltAgent's
   (`surgeon-reviewer` for a diff's real bugs, `security-auditor`, `ux-microcopy-reviewer` for page text against
@@ -66,8 +67,8 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   writing UTF-8: the user's checkout is on Windows.
 - Work on a branch off `preprod` (`claude/<name>` for Claude's threads), one pull request per piece of work, **into
   `preprod`** (see "Preprod"). Claude commits, pushes and opens the pull request without asking first (the user's rule
-  since 2026-11-12, confirmed in this file's update). **Claude merges its own pull request into `preprod`** once its
-  checks pass (Dols, 2026-11-22); **merging into `main` stays with the user** (see "Preprod").
+  since 2026-11-12, confirmed in this file's update). **GitHub merges it into `preprod`** once its
+  checks pass (Dols, 2026-11-22; `merge-preprod.yml`); **merging into `main` stays with the user** (see "Preprod").
 
 ## Preprod (Dols, 2026-11-22)
 - Two sites from one repository: `main` at https://doooools.github.io/vault-print-planner/ (live) and the `preprod`
@@ -80,13 +81,20 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
 - The flow: pull requests go into `preprod`; Dols tries them on the preprod site; to go live, a pull request from
   `preprod` into `main`, merged by Dols with **a merge commit** (a squash would part the two histories). A fix made
   straight on `main` is merged back into `preprod` (`git merge origin/main`) in the same thread.
-- Merging into `preprod` (Dols, 2026-11-22: "auto merge", now that the preprod is there to test): the thread that
-  opened the pull request merges it itself, with a merge commit, as soon as "Check the page" is green on its last
-  commit and GitHub says it merges cleanly; no wait for Dols. Not before the check passed, never with a red or running
-  check, never a pull request another thread or a person opened. A conflict (another thread merged first): merge
-  `origin/preprod` into the branch, rebuild `index.html` from `src/`, run `tools/check.py`, push, wait for green again.
-  The thread then tells Dols the change is on the preprod URL, with what to try there. The pull request from
-  `preprod` into `main` (going live) is opened when Dols asks, and **only Dols merges it**.
+- Merging into `preprod` (Dols, 2026-11-22: "auto merge", now that the preprod is there to test; GitHub does it since
+  2026-11-23, PR #97, because the session's permission check refused threads' merges): `.github/workflows/merge-preprod.yml`
+  ("Merge into preprod") starts when "Check the page" passed on a pull request and merges it, with a merge commit, if it
+  goes into `preprod`, comes from a branch of this repository (never a fork), was opened by an account in `TRUSTED`
+  (`doooools`: Claude's threads open theirs with it), isn't a draft, its last commit is the one checked, it changes no
+  file in `.github/workflows/` (`GITHUB_TOKEN` may not merge those: Dols does), and its merge with `preprod` as it is
+  now passes `tools/check.py` again. Then it starts "Publish the site" itself (a merge made with `GITHUB_TOKEN` starts
+  no other workflow). What it leaves alone says why in its run's log. It never touches a pull request into `main`.
+  A thread opens its pull request into `preprod` and doesn't merge it: open it as a draft to keep it out until it is
+  ready. A conflict (another pull request merged first): merge `origin/preprod` into the branch, rebuild `index.html`
+  from `src/`, run `tools/check.py`, push; the new check starts the merge again. The thread then tells Dols the change
+  is on the preprod URL, with what to try there. `workflow_run` reads the workflow from `main` only: a change to
+  `merge-preprod.yml` works once it is on `main`. The pull request from `preprod` into `main` (going live) is opened
+  when Dols asks, and **only Dols merges it**.
 - The page knows it is the preprod from its address (`VPP_PRE`: a `preprod` folder in the path, script in `<head>`):
   a striped strip above the header ("Preprod", "Copy the live project again", "Open the live site"), "Preprod · " in
   the tab's title, a robots `noindex`, and **no GoatCounter request at all** (`counting()`). Its saved state is under
