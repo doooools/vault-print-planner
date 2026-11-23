@@ -445,7 +445,9 @@ dialog#v3d::backdrop { background: rgba(7, 7, 7, .6); }
 .v3-simpbtn:hover, .v3-simpbtn[aria-expanded=true] { background: var(--sheet-2); }
 .v3-simpbtn[hidden] { display: none; }
 .v3-simp .v3-simpres { display: grid; gap: 6px; margin: 2px 0; }
-.v3-simp .v3-simpres .seg { display: grid; grid-template-columns: 1fr 1fr; }
+.v3-simp .v3-simpres .seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); }
+.v3-simp .v3-simpres .seg button { padding-inline: 4px; }
+.v3-simp .v3-simprec { margin-left: 6px; text-transform: none; letter-spacing: 0; color: var(--muted); }
 @media (prefers-reduced-motion: reduce) { .v3-hintbar.tip { animation: none; } }
 .v3-hintbar { position: absolute; left: 12px; bottom: 12px; max-width: calc(100% - 24px); padding: 7px 12px; border: 2px solid var(--edge); border-radius: 0; background: var(--ground); color: var(--muted); font-size: 13px; }
 .v3-hintbar b { color: var(--ink); font-weight: 700; }
@@ -5882,8 +5884,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
 
   // Read an STL, weld identical corners, drop triangles with no area (some exports carry 100k+ of them, which wreck a
-  // simplifier), then simplify to SIMPLIFY_MM. Self-contained: it also runs in a worker, from its source text.
-  function meshJob(buf, MS, tol) {
+  // simplifier), then simplify within tol mm (the level's, MESH_LEVELS), loosening it until the part holds at most `most`
+  // triangles (0: no cap). Self-contained: it also runs in a worker, from its source text.
+  function meshJob(buf, MS, tol, most) {
     const dv = new DataView(buf), n = buf.byteLength >= 84 ? dv.getUint32(80, true) : 0, bin = 84 + n * 50 === buf.byteLength;
     let raw = null;
     if (!bin) {
@@ -5932,10 +5935,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     }
     const kept = idx.subarray(0, nt * 3);
     let e = tol, out = kept;
-    // tol 0: full resolution (the "Full resolution" setting): every triangle of the file, only welded and cleaned
-    if (tol > 0) for (let pass = 0; pass < 4; pass++, e *= 3) { // a tower can top 20M triangles: keep each part under 150k
+    // tol 0: native (the "Native" level): every triangle of the file, only welded and cleaned
+    if (tol > 0) for (let pass = 0; pass < 4; pass++, e *= 3) { // a tower can top 20M triangles: keep each part under `most`
       out = MS.simplify(kept, pts, 3, Math.min(kept.length, 3 * 500), e, ['ErrorAbsolute', 'Prune'])[0];
-      if (out.length <= 3 * 150000) break;
+      if (!most || out.length <= 3 * most) break;
     }
     const remap = new Int32Array(count).fill(-1), oidx = new Uint32Array(out.length);
     let m = 0;
@@ -6073,14 +6076,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (meshPool) return meshPool;
     let url = null, broken = false, worked = false, local = null, inFlight = 0, running = 0, timer = null;
     const idle = [], waiting = [];
-    const runLocal = async (buf, tol) => {
+    const runLocal = async (buf, tol, cap) => {
       local = local || import(CDN_SIMPLIFIER).then(async m => { await m.MeshoptSimplifier.ready; return m.MeshoptSimplifier; });
-      return meshJob(buf, await local, tol);
+      return meshJob(buf, await local, tol, cap);
     };
     const src = () => `import { MeshoptSimplifier as MS } from '${CDN_SIMPLIFIER}';\nconst meshJob = ${meshJob.toString()};\n` +
-      'onmessage = async e => { const { buf, tol } = e.data; try { await MS.ready; const r = meshJob(buf, MS, tol); postMessage({ r }, [r.pos.buffer, r.idx.buffer]); } catch (err) { postMessage({ error: String((err && err.message) || err) }); } };';
+      'onmessage = async e => { const { buf, tol, cap } = e.data; try { await MS.ready; const r = meshJob(buf, MS, tol, cap); postMessage({ r }, [r.pos.buffer, r.idx.buffer]); } catch (err) { postMessage({ error: String((err && err.message) || err) }); } };';
     const letGo = () => { clearTimeout(timer); timer = setTimeout(() => { while (idle.length) idle.pop().terminate(); }, 15000); };
-    const onWorker = (buf, tol) => new Promise((res, rej) => {
+    const onWorker = (buf, tol, cap) => new Promise((res, rej) => {
       let w = idle.pop();
       try { url = url || URL.createObjectURL(new Blob([src()], { type: 'text/javascript' })); w = w || new Worker(url, { type: 'module' }); }
       catch (e) { broken = true; rej(Object.assign(new Error('retry'), { retry: true })); return; }
@@ -6092,43 +6095,52 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         // Before any worker has answered, an error means workers can't load the simplifier here: do it on the page
         if (!worked) { broken = true; rej(Object.assign(new Error('retry'), { retry: true })); } else rej(new Error('ran out of memory'));
       };
-      w.postMessage({ buf, tol }, [buf]);
+      w.postMessage({ buf, tol, cap }, [buf]);
     });
-    meshPool = async (file, tol) => {
+    meshPool = async (file, tol, cap) => {
       const size = file.size;
       while (running >= MESH_WORKERS || (running && inFlight + size > MESH_BUDGET)) await new Promise(r => waiting.push(r));
       running++; inFlight += size;
       try {
-        if (broken) return await runLocal(await file.arrayBuffer(), tol);
-        try { return await onWorker(await file.arrayBuffer(), tol); }
-        catch (e) { if (e.retry) return await runLocal(await file.arrayBuffer(), tol); throw e; }
+        if (broken) return await runLocal(await file.arrayBuffer(), tol, cap);
+        try { return await onWorker(await file.arrayBuffer(), tol, cap); }
+        catch (e) { if (e.retry) return await runLocal(await file.arrayBuffer(), tol, cap); throw e; }
       } finally { running--; inFlight -= size; waiting.splice(0).forEach(r => r()); }
     };
     return meshPool;
   }
-  // Simplified meshes by file path, for as long as the page is open (and in IndexedDB across visits). With "Full
-  // resolution" (meshFull, this browser's own setting, Dols 2026-11-23) the files are only welded and cleaned, never
-  // kept in IndexedDB (a stack's would weigh hundreds of MB): read again at each visit.
-  let meshFull = !!store.get('meshFull', false);
+  // How much the 3D view simplifies the parts: "Parts in the 3D view" in the window below, this browser's own setting
+  // (localStorage meshLevel, Dols 2026-11-23: "l'actuel sera super low, ajoute low medium et high (+ natif)"). tol: how
+  // far the surface may stray, in mm (0: every triangle, only welded and cleaned); cap: most triangles per part, the
+  // tolerance loosened until it fits (0: none); keep: kept in IndexedDB (High and Native would weigh hundreds of MB).
+  // Super low is the old single setting: its cache key is unchanged.
+  const MESH_LEVELS = [
+    { id: 'superlow', name: 'Super low', tol: SIMPLIFY_MM, cap: 150000, keep: true },
+    { id: 'low', name: 'Low', tol: 0.05, cap: 400000, keep: true },
+    { id: 'medium', name: 'Medium', tol: 0.02, cap: 1000000, keep: true },
+    { id: 'high', name: 'High', tol: 0.005, cap: 0, keep: false },
+    { id: 'native', name: 'Native', tol: 0, cap: 0, keep: false, sub: 'original' },
+  ];
+  const meshLv = id => MESH_LEVELS.find(m => m.id === id);
+  // the old "Full resolution" (meshFull) is Native
+  let meshLevel = (meshLv(store.get('meshLevel', '')) || meshLv(store.get('meshFull', false) === true ? 'native' : 'superlow')).id;
+  const meshNow = () => meshLv(meshLevel);
+  // Meshes by file path and level, for as long as the page is open (and in IndexedDB across visits when the level keeps
+  // them): read again at each visit otherwise.
   const meshMemo = new Map();
   function partMesh(path) {
-    const tol = meshFull ? 0 : SIMPLIFY_MM, mk = path + '|' + tol;
+    const lv = meshNow(), tol = lv.tol, mk = path + '|' + tol;
     if (meshMemo.has(mk)) return meshMemo.get(mk);
     const p = (async () => {
       const h = findFile(vaultFolder.files, path);
       if (!h) throw new Error('not in the folder');
-      const file = h.getFile ? await h.getFile() : h, key = `${MESH_CACHE}${path}|${file.size}|${file.lastModified}|${SIMPLIFY_MM}`;
+      const file = h.getFile ? await h.getFile() : h, key = `${MESH_CACHE}${path}|${file.size}|${file.lastModified}|${tol}`;
       let m = null;
-      if (!tol) {
-        simpStart();
-        try { m = await meshRunner()(file, 0); } finally { simpEnd(); }
-        return m;
-      }
-      try { m = await idb('readonly', s => s.get(key)); } catch (e) { /* no cache */ }
+      if (lv.keep) try { m = await idb('readonly', s => s.get(key)); } catch (e) { /* no cache */ }
       if (!m) {
-        simpStart(); // really simplified this time, not from the cache: the window says why (simp)
-        try { m = await meshRunner()(file, SIMPLIFY_MM); } finally { simpEnd(); }
-        try { await idb('readwrite', s => s.put({ pos: m.pos, idx: m.idx, src: m.src, tris: m.tris }, key)); } catch (e) { /* keeping it is only a convenience */ }
+        simpStart(); // really read or simplified this time, not from the cache: the window says why (simp)
+        try { m = await meshRunner()(file, tol, lv.cap); } finally { simpEnd(); }
+        if (lv.keep) try { await idb('readwrite', s => s.put({ pos: m.pos, idx: m.idx, src: m.src, tris: m.tris }, key)); } catch (e) { /* keeping it is only a convenience */ }
       }
       return m;
     })();
@@ -6136,11 +6148,11 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     meshMemo.set(mk, p);
     return p;
   }
-  // "Lighter" / "Full resolution" in the window below: the parts shown are loaded again the other way. The other way's
-  // meshes are let go (a full stack can hold GBs); the lighter ones come back from IndexedDB at once.
-  function setMeshFull(on) {
-    on = !!on; if (on === meshFull) return;
-    meshFull = on; store.set('meshFull', on); meshMemo.clear();
+  // A level picked in the window below: the parts shown are loaded again at it. The other level's meshes are let go
+  // (a native stack can hold GBs); the kept levels come back from IndexedDB at once.
+  function setMeshLevel(id) {
+    if (!meshLv(id) || id === meshLevel) return;
+    meshLevel = id; store.set('meshLevel', id); meshMemo.clear();
     simp.ran = false; simp.shown = null;
     if (v3 && vaultFolder) loadParts(v3);
     simpDraw();
@@ -6177,26 +6189,26 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     btn.hidden = !busy && !(v3 && v3.units.some(u => u.loaded));
     btn.classList.toggle('busy', busy);
     btn.setAttribute('aria-expanded', String(simp.open));
-    btn.innerHTML = `${busy ? '<span class="v3-spin sm" aria-hidden="true"></span>' : ''}${busy ? `${meshFull ? 'Loading' : 'Simplifying'} ${simp.done} of ${simp.total}\u2026` : meshFull ? 'Full resolution' : 'Why simplified?'}`;
+    const lv = meshNow(), native = !lv.tol;
+    btn.innerHTML = `${busy ? '<span class="v3-spin sm" aria-hidden="true"></span>' : ''}${busy ? `${native ? 'Loading' : 'Simplifying'} ${simp.done} of ${simp.total}\u2026` : native ? 'Native resolution' : lv.id === 'superlow' ? 'Why simplified?' : `Detail: ${lv.name}`}`;
     if (!simp.open && !simp.tucking) { box.hidden = true; return; }
     box.hidden = false;
-    const mode = meshFull ? 'full' : 'light';
+    const mode = lv.id;
     if (box.dataset.mode !== mode) { // built again when the setting changes: its words follow it
       box.dataset.mode = mode;
-      const res = `<div class="field v3-simpres"><div class="lbl">Parts in the 3D view</div><div class="seg" role="group" aria-label="Parts in the 3D view">
-          <button type="button" data-v3res="light" aria-pressed="${!meshFull}">Lighter<small>recommended</small></button>
-          <button type="button" data-v3res="full" aria-pressed="${meshFull}">Full resolution<small>every triangle</small></button></div></div>`;
+      const res = `<div class="field v3-simpres"><div class="lbl">Parts in the 3D view <span class="v3-simprec">Super low is recommended</span></div><div class="seg" role="group" aria-label="Parts in the 3D view">
+          ${MESH_LEVELS.map(m => `<button type="button" data-v3res="${m.id}" aria-pressed="${m.id === lv.id}">${m.name}<small>${m.sub || `${m.tol} mm`}</small></button>`).join('')}</div></div>`;
       box.innerHTML = `<button type="button" class="v3-simpx" data-v3simpx aria-label="Hide this window" title="Hide (Esc)">&times;</button>
-        <div class="v3-simphead"><span class="v3-simpmark" aria-hidden="true"></span><h3 id="v3dSimpTitle">${meshFull ? 'Parts at full resolution' : 'Making the 3D view lighter'}</h3></div>
+        <div class="v3-simphead"><span class="v3-simpmark" aria-hidden="true"></span><h3 id="v3dSimpTitle">${native ? 'Parts at native resolution' : 'Making the 3D view lighter'}</h3></div>
         <p class="v3-simpnow" role="status" aria-live="polite"></p><div class="v3-bar"><span></span></div>
-        ${meshFull
+        ${native
           ? '<p>The 3D view draws every triangle of your part files. A whole stack can pass 15 million: the view turns slower, takes much more memory (a big stack can need several GB, and a tab short of it reloads), and the parts are read again at each visit: this browser doesn\u2019t keep them.</p>'
-          : `<p>Your part files hold millions of triangles: too many for a browser to turn smoothly. The 3D view draws a lighter copy of each part, within ${SIMPLIFY_MM} mm of the original.</p>`}
+          : `<p>Your part files hold millions of triangles: too many for a browser to turn smoothly. The 3D view draws a lighter copy of each part, within ${lv.tol} mm of the original.${lv.id === 'superlow' ? '' : ' The finer the level, the closer to your files, and the slower the view turns and the more memory it takes.'}</p>`}
         ${res}
-        <p class="v3-simpkey"><b>What you print doesn\u2019t change.</b> Print\u2019s plates and downloads always use your original STL files, as they are.${meshFull ? '' : ' Only Export from the 3D view takes the lighter copies.'}</p>
-        ${meshFull ? '' : '<p class="pnote">This browser keeps the copies: next time, these parts show at once.</p>'}`;
+        <p class="v3-simpkey"><b>What you print doesn\u2019t change.</b> Print\u2019s plates and downloads always use your original STL files, as they are.${native ? '' : ' Only Export from the 3D view takes the lighter copies.'}</p>
+        ${native ? '' : `<p class="pnote">${lv.keep ? 'This browser keeps the copies: next time, these parts show at once.' : 'At this level the copies are too big to keep: they are made again at each visit.'}</p>`}`;
       box.querySelector('[data-v3simpx]').onclick = () => { simp.hid = true; simpTuck(); };
-      box.querySelectorAll('[data-v3res]').forEach(b => b.onclick = () => { simp.focusRes = true; setMeshFull(b.dataset.v3res === 'full'); });
+      box.querySelectorAll('[data-v3res]').forEach(b => b.onclick = () => { simp.focusRes = true; setMeshLevel(b.dataset.v3res); });
       // the buttons were made again: the focus goes back to the one just pressed
       if (simp.focusRes) { simp.focusRes = false; const b = box.querySelector(`[data-v3res="${mode}"]`); if (b) b.focus({ preventScroll: true }); }
     }
@@ -6205,12 +6217,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const pct = simp.total ? Math.round(100 * simp.done / simp.total) : 100;
     box.querySelector('.v3-bar').hidden = !busy;
     box.querySelector('.v3-bar span').style.width = pct + '%';
-    const sh = simp.shown;
+    const sh = simp.shown, tri = n => n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : `${Math.round(n / 1000)}k`;
     box.querySelector('.v3-simpnow').textContent = busy
-      ? `${meshFull ? 'Reading part files at full resolution' : 'Simplifying part files'}: ${simp.done} of ${simp.total} done. The big ones take a while.`
-      : meshFull ? (sh && sh.tris ? `Done. The view shows all ${(sh.tris / 1e6).toFixed(1)}M triangles of your files.` : 'The parts load at full resolution once your Vault folder is open.')
+      ? `${native ? 'Reading part files at native resolution' : 'Simplifying part files'}: ${simp.done} of ${simp.total} done. The big ones take a while.`
+      : native ? (sh && sh.tris ? `Done. The view shows all ${tri(sh.tris)} triangles of your files.` : 'The parts load at native resolution once your Vault folder is open.')
       : (simp.ran ? 'Done. ' : 'These parts were simplified on an earlier visit and kept in this browser. ') +
-        (sh && sh.src ? `The view shows ${Math.round(sh.tris / 1000)}k triangles, from ${(sh.src / 1e6).toFixed(1)}M in your files.` : '');
+        (sh && sh.src ? `The view shows ${tri(sh.tris)} triangles, from ${tri(sh.src)} in your files.` : '');
   }
   // Closes the window by folding it into its button in the strip under the view, slowly enough to be followed (Dols,
   // 2026-11-23: "c'est important qu'on voit la page se replier dans son encart"), even with less motion asked: it is
@@ -7007,7 +7019,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const paths = [...new Set(todo.flatMap(u => u.place.parts.map(p => p.path)))];
     const missing = [], failed = [];
     let done = 0, tris = 0, src = 0;
-    const say = () => v3status(meshFull ? `Reading part files at full resolution: ${done} of ${paths.length}…` : `Reading and simplifying part files: ${done} of ${paths.length}… The big ones take a while the first time; after that this browser keeps them.`);
+    const say = () => v3status(!meshNow().tol ? `Reading part files at native resolution: ${done} of ${paths.length}…` : `Reading and simplifying part files: ${done} of ${paths.length}… The big ones take a while${meshNow().keep ? ' the first time; after that this browser keeps them' : ''}.`);
     todo.forEach(u => {
       u.loading = true; u.loaded = 0; u.failed = 0; u.bolts = 0;
       if (u.parts) u.g.remove(u.parts); // parts from a folder chosen before
