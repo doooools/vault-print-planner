@@ -3406,12 +3406,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     inp.onchange = async () => { const f = inp.files[0]; if (f && loadDesign(await f.text(), f.name)) setDesignName(null); };
     inp.click();
   }
-  function loadDesign(text, name) {
+  // share: a share link's design (no file: nothing to mark as saved, and its own words)
+  function loadDesign(text, name, share) {
     let d = null; try { d = JSON.parse(text); } catch (e) { /* not JSON */ }
-    if (!d || d.app !== 'vault-print-planner' || !Array.isArray(d.towers)) { toast(`${name} isn’t a design saved by this configurator`); return false; }
+    if (!d || d.app !== 'vault-print-planner' || !Array.isArray(d.towers)) { toast(share ? 'This share link or code isn\u2019t one this configurator made' : `${name} isn’t a design saved by this configurator`); return false; }
     const whole = d.version >= 4; // the whole project: Print, Hardware and Assemble too
     if ((towers.length || extras.length || (whole && (Object.keys(printed).length || Object.keys(onHand).length || Object.keys(hwBought).length || Object.keys(stepsDone).length)))
-      && !confirm(whole ? `Open “${name}”? It replaces this project: stacks, loose parts, colors, and what is printed, bought and assembled.` : `Open “${name}”? It replaces the stacks and loose parts here. What you marked printed stays.`)) return false;
+      && !confirm(share ? 'Open the shared design? It replaces this project: stacks, loose parts, colors, print settings, and what is printed, bought and assembled. To keep yours, cancel and save it first (File › Save).'
+        : whole ? `Open “${name}”? It replaces this project: stacks, loose parts, colors, and what is printed, bought and assembled.` : `Open “${name}”? It replaces the stacks and loose parts here. What you marked printed stays.`)) return false;
     // Rebuilt from what the planner writes (plainTowers, plainColors, plainExtras): never kept as the file has it
     const cp = plainColors(d.colors); if (cp) { colorPrefs = cp; saveColors(); }
     if (whole) loadProject(d); // before the stacks: fixTower reads the printer
@@ -3426,7 +3428,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (ds && ds.t === 'loose' && extras.length) dsel = { t: 'loose' };
     else if (ds) { const t = towers.find(x => x.id === ds.t);
       if (t) dsel = { t: t.id, l: Number.isInteger(ds.l) && ds.l >= 0 && ds.l < t.levels.length ? ds.l : null, u: Number.isInteger(ds.u) && ds.u >= 0 ? ds.u : 0, ...(typeof ds.d === 'string' && SAFE_ID.test(ds.d) ? { d: ds.d } : {}) }; }
-    saveSel(); save(); saveExtras(); view = whole && VIEWS.includes(d.view) ? d.view : 'build'; renderAll(); undoReset(); markFile(name); use(whole ? 'file/opened' : 'file/opened-old-version'); toast(`Opened ${name}`);
+    saveSel(); save(); saveExtras(); view = whole && VIEWS.includes(d.view) ? d.view : 'build'; renderAll(); undoReset();
+    if (share) { designMark = null; store.set('designMark', null); setDesignName(null); use('file/opened-share'); toast('Opened the shared design'); return true; }
+    markFile(name); use(whole ? 'file/opened' : 'file/opened-old-version'); toast(`Opened ${name}`);
     return true;
   }
   // ---------- the File menu ----------
@@ -3452,9 +3456,61 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       { label: where ? `Save ${where}` : 'Save', icon: 'save', key: MOD + '+S', dis: empty, tip: empty ? 'Nothing to save yet' : where === 'in the Vault folder' ? 'Save these stacks, loose parts and colors into the Vault folder, next to the part files' : 'Save these stacks, loose parts and colors to a file', fn: () => saveDesign(false) },
       { label: 'Save as…', icon: 'file', dis: empty, tip: empty ? 'Nothing to save yet' : window.showSaveFilePicker ? 'Save a copy somewhere else, or under another name' : 'Save a copy under another name, to your downloads: this browser can’t ask where', fn: () => saveDesign(true) },
       { label: 'Open…', icon: 'open', key: MOD + '+O', tip: 'Open a design file saved before: it replaces this project, with what was printed, bought and assembled when it was saved', fn: openDesign },
+      { sep: true, label: 'Copy a share link', icon: 'link', dis: empty, tip: empty ? 'Nothing to share yet' : 'A link that opens these stacks, loose parts, colors and print settings in anyone\u2019s configurator, on their own printer. What you printed, bought and assembled stays here.', fn: () => copyShare(true) },
+      { label: 'Copy the share code', icon: 'dup', dis: empty, tip: empty ? 'Nothing to share yet' : 'The same as a code to paste, without the address', fn: () => copyShare(false) },
+      { label: 'Open a share link or code…', icon: 'paste', tip: 'Paste a link or a code someone shared: it replaces this project', fn: openShare },
       ...exportItemsMenu(true, true),
     ] });
   };
+  // ---------- share links and codes ----------
+  // A design in a link (Dols, 2026-11-23, issue #84): the stacks, loose parts, colors, Print's plate options and
+  // print settings by part, and the label look, as the design file's JSON (kind 'share', version 4, no progress) deflated
+  // and in base64url: "V1…" (or "V0…", plain, where the browser has no CompressionStream). The link is the page's
+  // address with #d=<code>: the part after # never leaves the browser (not to the server, not to the visit count). Opened
+  // by loadDesign like a file, read again by the same plainTowers & co. A link opened replaces the project (asked first),
+  // but for the printer: whoever opens it keeps their own (loadProject keeps it when the file has none).
+  const shareState = () => ({ app: 'vault-print-planner', kind: 'share', version: 4, towers, extras, seq, colors: colorPrefs,
+    print: { skip: printSkip, supports: printAids, labelsApart, mixSupports, parts: partSet }, labels: { relief: labelRelief, letter: labelLetter, font: labelFont } });
+  const b64u = bytes => { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+  const unb64u = t => Uint8Array.from(atob(t.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+  const pipeBytes = (bytes, ts) => new Response(new Blob([bytes]).stream().pipeThrough(ts)).arrayBuffer().then(b => new Uint8Array(b));
+  async function shareCode() {
+    const bytes = new TextEncoder().encode(JSON.stringify(shareState()));
+    return typeof CompressionStream === 'function' ? 'V1' + b64u(await pipeBytes(bytes, new CompressionStream('deflate-raw'))) : 'V0' + b64u(bytes);
+  }
+  // The code in a pasted link or code, or null
+  const shareFrom = t => { const m = /(?:^|[#?&]d=)(V[01][A-Za-z0-9_-]{8,})\s*$/.exec(String(t || '').trim()); return m ? m[1] : null; };
+  async function shareText(code) {
+    const bytes = unb64u(code.slice(2));
+    if (code[1] === '0') return new TextDecoder().decode(bytes);
+    if (typeof DecompressionStream !== 'function') throw new Error('This browser can\u2019t read a share code: open the link in a recent Chrome, Edge, Firefox or Safari.');
+    return new TextDecoder().decode(await pipeBytes(bytes, new DecompressionStream('deflate-raw')));
+  }
+  const shareUrl = code => location.origin + location.pathname + '#d=' + code;
+  async function copyShare(link) {
+    use(link ? 'file/share-link' : 'file/share-code');
+    let code; try { code = await shareCode(); } catch (e) { toast('The share code couldn\u2019t be made here (' + (e.message || e.name) + ')', { long: true }); return; }
+    const text = link ? shareUrl(code) : code, what = link ? 'Share link' : 'Share code';
+    const done = () => toast(`${what} copied (${text.length.toLocaleString('en')} characters). It opens these stacks, colors and print settings; what you printed, bought and assembled stays here.`, { long: true });
+    try { await navigator.clipboard.writeText(text); done(); } catch (e) { prompt(`Copy this ${what.toLowerCase()}:`, text); }
+  }
+  async function openShareCode(code) {
+    let text; try { text = await shareText(code); } catch (e) { toast(e.message && /browser/.test(e.message) ? e.message : 'This share link or code is cut short or damaged: ask for it again, or copy all of it', { long: true }); return false; }
+    return loadDesign(text, 'Shared design', true);
+  }
+  function openShare() {
+    use('file/open-share');
+    const t = prompt('Paste a share link or code:'); if (t === null || !t.trim()) return;
+    const code = shareFrom(t); if (!code) { toast('That isn\u2019t a share link or code from this configurator', { long: true }); return; }
+    openShareCode(code);
+  }
+  // A link opened (or pasted in the address bar while the page is open): its design, then the address without it
+  async function shareFromAddress() {
+    const code = shareFrom(location.hash); if (!code) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    await openShareCode(code);
+  }
+  addEventListener('hashchange', shareFromAddress);
   // First launch: printer, Vault folder, first stack
   function renderStart() {
     const items = PRESETS.map((p, i) => ({ p, i })).filter(({ p }) => presetFits(p));
@@ -8119,6 +8175,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   migrateTowers();
   renderAll();
   undoReset(); // what the page opened with is where undo stops
+  shareFromAddress(); // opened from a share link
 })();
 </script>
 </body>

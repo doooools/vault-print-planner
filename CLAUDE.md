@@ -368,6 +368,12 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   counts; keys no line has (stack left out) stay, shown "Not on these plates". "Reset all progress" and the list's
   "Clear" empty it (undoable: `progSnap` holds it).
 
+- Share links and codes (Dols, 2026-11-23, issue #84): section "share links and codes" before `renderStart`.
+  `shareState` (the design file's JSON, `kind: 'share'`, no printer, no progress) → `shareCode` ("V1" + base64url of
+  deflate-raw, "V0" plain without CompressionStream) → `#d=<code>`; `shareFrom` finds a code in a pasted link or code;
+  `openShareCode` → `loadDesign(text, name, share = true)` (own confirm text, no `markFile`). `shareFromAddress` runs
+  after the first render and on `hashchange`, and drops the hash. File menu: "Copy a share link", "Copy the share code",
+  "Open a share link or code…" (`copyShare`, `openShare`).
 - A plate's menu (Dols, 2026-11-23, issue #93): in `renderPrint`, `plateMenu(pl)` / `plateMenuAt` on a `.pcard[data-pn]`'s
   `contextmenu`, the `.psel` panel's and its "⋯" (`data-pmenu`, in `.ptags`); `menuOpen` as in Design. "Download this
   plate alone" is `makeDownload([pl], …)`, whatever is ticked.
