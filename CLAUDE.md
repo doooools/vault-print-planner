@@ -119,8 +119,13 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
     `R.exterior` uses 51.5 / 99.5 / 195.5 (USSA's figures): within 0.5 mm, pick one and say so.
 - 3D view (section "3D stack view" in `src/template.html`): three.js 0.186.1 and meshoptimizer 1.3.0 from jsDelivr,
   loaded when the view is first shown; boxes before the folder is picked, then real parts simplified in workers
-  (0.15 mm, cached in IndexedDB under `MESH_CACHE` `mesh3d.1:`; simplifying with the normals as attributes, PR #90,
-  was undone by Dols on 2026-11-23: slower, and it didn't clear the modules' fronts and backs). While a file is really
+  (0.15 mm, cached in IndexedDB under `MESH_CACHE` `mesh3d.4:`; simplifying with the normals as attributes, PR #90,
+  was undone by Dols on 2026-11-23: slower, and it didn't clear the modules' fronts and backs; so was a finer
+  simplification near sharp edges, PR #102: too slow). The ink comes from the file's own triangles (Dols, 2026-11-23,
+  "fausses arêtes du shader"): `meshJob` returns `ink` (segments on every edge of the file sharper than 30°) and `nrm`
+  (each kept corner's normal from the file's faces within 30° of the simplified face; a facet over 1 mm across that
+  only touches faces of another slope keeps its own), cached with the mesh, carried by `meshPieces` / `meshPiece`,
+  read by `geom` (`g.userData.ink`) and `creaseLines`; `creaseMat` draws the lines 0.5 mm nearer the eye. While a file is really
   simplified (a cache miss in `partMesh`: `simpStart` / `simpEnd`, counts per batch in `simp`), the window `#v3dSimp`
   over the stage says why and that Print uses the original files, with a spinner (`.v3-spin`); done, `simpTuck` folds
   it (~0.65 s, always animated: Dols wants to see it go) into `#v3dSimpBtn` in the strip under the view ("Why simplified?"), which reopens it (Dols, 2026-11-23).

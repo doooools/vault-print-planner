@@ -252,9 +252,13 @@ stays. Where this section and the rules below disagree, this section wins.
   in screen space (7 px, ink at 28 %). Every part is outlined in ink, 2.5 px at any zoom (an inverted hull: back faces
   pushed out along normals averaged at the corners, `hullMat`, `inked`; parts are drawn on both sides and the hull is
   pushed behind them, so the hairline gaps of the simplified parts show the part's colour, not ink), plus 1 px ink creases on edges sharper than
-  30° between two faces where each face leaves the other's plane by more than 0.2 mm (`creaseLines`, once per shape;
-  edges with one face and thin triangles left out: the simplifier fans long thin triangles across flat faces from a
-  fillet or a countersink). Keeping the normals while simplifying (`simplifyWithAttributes`, PR #90) was tried and
+  30° between two faces. Since Dols's "fausses arêtes" (2026-11-23) the creases and the shading normals of a part read
+  from the folder come from the file's own triangles, worked out before simplifying (`meshJob`: `ink`, `nrm`): a
+  simplified flat face draws no line and no hatching however its thin facets turn, and engraved logos, text and round
+  holes keep their true outline. The lines are drawn 0.5 mm nearer the eye along the line of sight (`creaseMat`), since
+  the file's edge can lie under the simplified surface. `creaseLines` (30°, each face 0.2 mm off the other's plane)
+  only serves the shapes made in the page (bolts). Simplifying more finely to keep the edges (PR #102) was undone the
+  same day: too slow. Keeping the normals while simplifying (`simplifyWithAttributes`, PR #90) was tried and
   undone (Dols, 2026-11-23): slower, and the fronts and backs of the modules kept their lines. A hard shadow of the footprint, back and to the right (`--gp-vp-shadow`). The
   level under the pointer: its ink outline thickens to 4 px (no box any more). The selected level(s): a yellow ring
   (`--gp-vp-select`) around the whole module, drawn over the stack outside the module's own shape (stencil mask), with
