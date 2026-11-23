@@ -11,6 +11,7 @@ This page, 3D Vault Configurator, is a fork of [Romy's Vault Print Planner](http
 Every difference is listed on [GitHub](https://github.com/doooools/vault-print-planner/blob/main/docs/differences-from-upstream.md). Amazon.com links in Hardware are still Romy's affiliate links, so US purchases keep supporting the original project. Romy's own changes are the ones marked "Romy's planner", from 2026-11-10 back.
 
 ## 2026-11-23
+- **Print settings for each kind of part:** under Plate options in Print, set the walls, infill, infill pattern, top and bottom layers and supports of each kind of part (module shells, fronts, drawer boxes, roofs, tires…). Each starts on Default, what the configurator gives those parts. What you set goes into the Bambu Studio project and the plate files for those parts only, and is saved with the design file.
 - **A new name: 3D Vault Configurator.** This fork was called Vault Print Planner, like Romy's original: it now has a name of its own, for what it has become. Same address, and your stacks, colours and saved design files carry on as they were.
 - **Why the parts are simplified:** while the 3D view makes its lighter copies of your part files, a window says so, with a turning wheel and how many are done: the copies only make the view lighter, and what you print never changes, since Print always uses your original STL files. When the last one is done it tucks itself under the view, beside the triangle count, where "Why simplified?" opens it again. Parts this browser already keeps load without it.
 

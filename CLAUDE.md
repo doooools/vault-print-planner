@@ -368,6 +368,12 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   counts; keys no line has (stack left out) stay, shown "Not on these plates". "Reset all progress" and the list's
   "Clear" empty it (undoable: `progSnap` holds it).
 
+- Print settings by part (Dols, 2026-11-23, issue #83): `PS_OPTS` / `PS_ROLES` / `partSet` (localStorage
+  `partSettings`, design file `print.parts`, `plainPartSet`), next to `printAids`. `computeBuild` runs `partSetApply` on
+  merge's copied lines: walls, infill, `pattern`, `shells`, supports ('off' also `noSupports`, written as supports off);
+  the configurator's own values stay in `l.base`. `planFor` passes them; `buildProject` writes `sparse_infill_pattern`,
+  `top_shell_layers` / `bottom_shell_layers`, `enable_support` 0; the plate files `fill_pattern`, `top_solid_layers`…
+  The panel: `partsPanel` (Print's right column, `#pParts`, folds `ps-<role>` in `openInfo`).
 - Module shells' supports (Dols, 2026-11-13): rules.js gives them `supports: 'shell'`, a named set in the page's
   `SUPPORT_SETS` (tree(auto), default style, threshold 80°, on build plate only, critical regions only, remove small
   overhangs), written per object into the Bambu project and the plate files (`supportKeys`; PrusaSlicer: organic, 80°,

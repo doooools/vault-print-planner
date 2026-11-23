@@ -152,6 +152,15 @@ Today's "Extra parts" (`extrasPanel`), as an entry of the rail: search among the
   right under it (then selects the next unprinted plate), its tags, the large nesting with numbered parts, the numbered
   part list with file name and settings (walls, supports).
 - Plate options, under the selected plate in the right column (Dols, 2026-11-14, "double bandeau" like Design: a rail on the left, a column of settings on the right), always shown: one folded line per setting with its value (`popt`: "Parts with supports · plates of their own"), which opens on its segmented buttons: "Parts with supports" (`mixSupports`), "Manual supports" (`printAids`), "Labels" (`labelsApart`; its hint sends the text's settings to Design's Label section, where they moved on 2026-11-15); then the folded "How plates are laid out" text and "Reset all progress" on one row (no clear button since UX audit D7). It was a "Plate options…" popover before.
+- Print settings by part (Dols, 2026-11-23, issue #83), a panel under Plate options: one folded line per kind of part
+  on these plates (the colour roles of Paint, and "Tires (TPU)"), its value on the right ("default", or "4 walls ·
+  gyroid · supports off"). Open, it says how many parts it holds and what the configurator gives them ("Default: 2 or 3
+  walls · 15% infill · supports on some"), then five rows of segmented buttons, each starting with "Default": Walls
+  (2 to 6), Infill (10 to 60 %), Infill pattern (grid, gyroid, cubic, lightning), Top and bottom layers (3 to 8),
+  Supports (off, on), and "Back to the defaults" once one is set. A kind with parts that bend (latches, springs) warns
+  that more than 2 walls can make them crack. Written per object into the Bambu Studio project, the plate files
+  (PrusaSlicer and OrcaSlicer keys) and the STL folders' notes; supports also move the part to or off the plates with
+  supports. Saved in this browser (`partSettings`) and in the design file.
 - Already printed (Dols, 2026-11-14): under the rail's stacks, a dashed button "Already printed" (like Design's
   "Loose parts") shows, in place of the filters and the sheet, a list of parts printed before: search among the parts
   on these plates only (the picked stacks' lines that fit the printer), "Add" or "All N" on each, then "Your parts
@@ -348,7 +357,7 @@ In the dashboard, events are the paths without a leading "/"; type the prefix in
 - `folder/…`: the Vault folder open during the visit, "later" on the start screen, the header button.
 - `print/…`: stacks to print, filter, plate select / tick / previous-next, tick all, mark (un)printed, the downloads
   (Bambu project, plate files, STL folders), choose a folder, already printed (opened, add, stepper), plate options
-  (`print/<option>=<value>`), copy the part list, reset all progress; `printer/<id>` once Print is shown.
+  (`print/<option>=<value>`), print settings by part (`print/part-settings/<setting>`), copy the part list, reset all progress; `printer/<id>` once Print is shown.
 - `hardware/…`: stacks in the list, jump to, bolt finish, ticked bought, copy, CSV; `store/<id>` once Hardware is
   shown or a store is picked; `buy/<store>` (each store link opened, as before).
 - `assemble/…`: a step ticked, a unit done.
