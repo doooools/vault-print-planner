@@ -255,7 +255,8 @@ stays. Where this section and the rules below disagree, this section wins.
   30° between two faces. Since Dols's "fausses arêtes" (2026-11-23) the creases and the shading normals of a part read
   from the folder come from the file's own triangles, worked out before simplifying (`meshJob`: `ink`, `nrm`): a
   simplified flat face draws no line and no hatching however its thin facets turn, and engraved logos, text and round
-  holes keep their true outline. The lines are drawn 0.5 mm nearer the eye along the line of sight (`creaseMat`), since
+  holes keep their true outline. The files' open seams (corners a micrometre apart, T-junctions) are sewn first,
+  else the simplifier opened them into slits across fronts that showed the ink behind. The lines are drawn 0.5 mm nearer the eye along the line of sight (`creaseMat`), since
   the file's edge can lie under the simplified surface. `creaseLines` (30°, each face 0.2 mm off the other's plane)
   only serves the shapes made in the page (bolts). Simplifying more finely to keep the edges (PR #102) was undone the
   same day: too slow. Keeping the normals while simplifying (`simplifyWithAttributes`, PR #90) was tried and
