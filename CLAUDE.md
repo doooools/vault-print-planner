@@ -110,8 +110,8 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   (0.15 mm, cached in IndexedDB under `MESH_CACHE` `mesh3d.1:`; simplifying with the normals as attributes, PR #90,
   was undone by Dols on 2026-11-23: slower, and it didn't clear the modules' fronts and backs). While a file is really
   simplified (a cache miss in `partMesh`: `simpStart` / `simpEnd`, counts per batch in `simp`), the window `#v3dSimp`
-  over the stage says why and that Print uses the original files, with a spinner (`.v3-spin`); done, `simpTuck` flies
-  it into `#v3dSimpBtn` in the strip under the view ("Why simplified?"), which reopens it (Dols, 2026-11-23). Shown in step 1 (Design) in the middle of the stack's card (`designCenter`'s
+  over the stage says why and that Print uses the original files, with a spinner (`.v3-spin`); done, `simpTuck` folds
+  it (~1 s, always animated: Dols wants to see it go) into `#v3dSimpBtn` in the strip under the view ("Why simplified?"), which reopens it (Dols, 2026-11-23). Shown in step 1 (Design) in the middle of the stack's card (`designCenter`'s
   `.v3-slot`): `v3sync()` (after every render) moves the one persistent `#v3view` into the shown step's `.v3-slot`, or
   parks it in `#v3home`, and shows the selected stack (`curTower()`) as it is. The model is rebuilt only when
   the stack changes (`v.key`, colours left out, or the same levels as new objects: an undo), and just repainted otherwise. A rebuild of the same stack (any change: an option, a divider,

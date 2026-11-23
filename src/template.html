@@ -6011,19 +6011,31 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       : (simp.ran ? 'Done. ' : 'These parts were simplified on an earlier visit and kept in this browser. ') +
         (sh && sh.src ? `The view shows ${Math.round(sh.tris / 1000)}k triangles, from ${(sh.src / 1e6).toFixed(1)}M in your files.` : '');
   }
-  // Closes the window towards its button in the strip under the view (or at once, with less motion asked)
+  // Closes the window by folding it into its button in the strip under the view, slowly enough to be followed (Dols,
+  // 2026-11-23: "c'est important qu'on voit la page se replier dans son encart"), even with less motion asked: it is
+  // what tells where the window went. The button then flashes yellow.
   function simpTuck() {
-    const box = $('v3dSimp'), btn = $('v3dSimpBtn');
-    simp.open = false; simpDraw();
-    if (box.hidden || simp.tucking) return;
+    const box = $('v3dSimp'), btn = $('v3dSimpBtn'), shown = !box.hidden;
+    if (simp.tucking) return;
+    // tucking first: simpDraw hides the window once it is neither open nor on its way (the fold never showed before)
+    simp.open = false; simp.tucking = shown; simpDraw();
+    if (!shown) return;
     const a = box.getBoundingClientRect(), b = btn.hidden ? null : btn.getBoundingClientRect();
-    if (!b || !a.width || !b.width || !box.animate || matchMedia('(prefers-reduced-motion: reduce)').matches) { box.hidden = true; return; }
+    if (!b || !a.width || !b.width || !box.animate) { simp.tucking = false; simpDraw(); return; }
     const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2), k = Math.max(.06, b.width / a.width);
-    simp.tucking = true; box.hidden = false;
-    const an = box.animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${dx}px, ${dy}px) scale(${k})`, opacity: .15 }], { duration: 480, easing: 'cubic-bezier(.55, 0, .8, .2)' });
+    box.style.transformOrigin = 'center';
+    const an = box.animate([
+      { transform: 'none', opacity: 1, easing: 'ease-out' },
+      { transform: 'scale(1.03) rotate(-1deg)', opacity: 1, offset: .12, easing: 'cubic-bezier(.5, 0, .25, 1)' },
+      { transform: `translate(${dx * .6}px, ${dy * .6}px) scale(.45) rotate(-2deg)`, opacity: 1, offset: .6, easing: 'cubic-bezier(.4, 0, .6, 1)' },
+      { transform: `translate(${dx}px, ${dy}px) scale(${k})`, opacity: .5 }], { duration: 950 });
     an.onfinish = an.oncancel = () => {
       simp.tucking = false; simpDraw();
-      if (btn.animate && !btn.hidden) btn.animate([{ transform: 'none' }, { transform: 'scale(1.12) rotate(-2deg)' }, { transform: 'none' }], { duration: 320 });
+      if (btn.animate && !btn.hidden) btn.animate([
+        { transform: 'none', background: 'var(--gp-yellow)', color: 'var(--gp-on-yellow)', borderColor: 'var(--ink)' },
+        { transform: 'scale(1.15) rotate(-3deg)', background: 'var(--gp-yellow)', color: 'var(--gp-on-yellow)', offset: .3 },
+        { transform: 'none', background: 'var(--gp-yellow)', color: 'var(--gp-on-yellow)', offset: .7 },
+        { transform: 'none' }], { duration: 900 });
     };
   }
   $('v3dSimpBtn').onclick = () => {
