@@ -6024,11 +6024,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (!b || !a.width || !b.width || !box.animate) { simp.tucking = false; simpDraw(); return; }
     const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2), k = Math.max(.06, b.width / a.width);
     box.style.transformOrigin = 'center';
+    // one stroke, gathering speed into the button: no lift nor easing out on the way (Dols: no slowing down)
     const an = box.animate([
-      { transform: 'none', opacity: 1, easing: 'ease-out' },
-      { transform: 'scale(1.03) rotate(-1deg)', opacity: 1, offset: .12, easing: 'cubic-bezier(.5, 0, .25, 1)' },
-      { transform: `translate(${dx * .6}px, ${dy * .6}px) scale(.45) rotate(-2deg)`, opacity: 1, offset: .6, easing: 'cubic-bezier(.4, 0, .6, 1)' },
-      { transform: `translate(${dx}px, ${dy}px) scale(${k})`, opacity: .5 }], { duration: 650 });
+      { transform: 'none', opacity: 1 },
+      { transform: `translate(${dx}px, ${dy}px) scale(${k})`, opacity: .5 }], { duration: 650, easing: 'cubic-bezier(.45, 0, 1, 1)' });
     an.onfinish = an.oncancel = () => {
       simp.tucking = false; simpDraw();
       if (btn.animate && !btn.hidden) btn.animate([
