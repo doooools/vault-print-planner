@@ -127,13 +127,7 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   Its "Parts in the 3D view" setting (`data-v3res`, `setMeshLevel`): five levels in `MESH_LEVELS` (Super low 0.15 mm,
   the default and the old cache key; Low; Medium; High; Native = tol 0, which skips the simplifier), `meshLevel` in
   localStorage per browser (the old `meshFull` = Native); `meshJob(buf, MS, tol, most)` loosens tol until a part holds
-  `most` triangles (then a second pass with `most` as the target); `partMesh` memo key `path|tol`, IndexedDB key ends `|tol`, only `keep` levels are stored.
-  Sharp edges (Dols, 2026-11-23, the padlock ring turned hexagon): meshoptimizer weighs a corner's error by face area, so
-  shallow engravings among big flat faces went polygonal within "0.15 mm". `meshJob` finds the sharp edges (faces
-  turning > 35°, or a rim), keeps each chain of them within `tol / 5` by Douglas-Peucker and locks those corners
-  (`simplifyWithAttributes` with `vertex_lock`; the line tolerance doubles while the locks pass `most / 3`), and splits
-  every corner by smooth group so each sharp edge is a seam: a flat face keeps its corners on its plane. Cache key
-  `mesh3d.3:`. Shown in step 1 (Design) in the middle of the stack's card (`designCenter`'s
+  `most` triangles; `partMesh` memo key `path|tol`, IndexedDB key ends `|tol`, only `keep` levels are stored. Shown in step 1 (Design) in the middle of the stack's card (`designCenter`'s
   `.v3-slot`): `v3sync()` (after every render) moves the one persistent `#v3view` into the shown step's `.v3-slot`, or
   parks it in `#v3home`, and shows the selected stack (`curTower()`) as it is. The model is rebuilt only when
   the stack changes (`v.key`, colours left out, or the same levels as new objects: an undo), and just repainted otherwise. A rebuild of the same stack (any change: an option, a divider,

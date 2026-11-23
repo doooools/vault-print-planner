@@ -5514,7 +5514,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const CDN_THREE = 'https://cdn.jsdelivr.net/npm/three@0.186.1/';
   const CDN_SIMPLIFIER = 'https://cdn.jsdelivr.net/npm/meshoptimizer@1.3.0/meshopt_simplifier.js';
   const SIMPLIFY_MM = 0.15; // how far a simplified surface may stray from the part's, in mm
-  const MESH_CACHE = 'mesh3d.3:'; // IndexedDB key prefix; bump when meshJob changes (3: sharp edges kept, 2026-11-23)
+  const MESH_CACHE = 'mesh3d.1:'; // IndexedDB key prefix; bump when meshJob changes
   let threeLib = null;
   const loadThree = () => threeLib || (threeLib = Promise.all([import(CDN_THREE + '+esm'), import(CDN_THREE + 'examples/jsm/controls/OrbitControls.js/+esm')])
     .then(([T, oc]) => ({ T, OrbitControls: oc.OrbitControls })).catch(e => { threeLib = null; throw e; }));
@@ -5884,9 +5884,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
 
   // Read an STL, weld identical corners, drop triangles with no area (some exports carry 100k+ of them, which wreck a
-  // simplifier), then simplify within tol mm (the level's, MESH_LEVELS) keeping the part's sharp edges finer (below);
-  // past `most` triangles (0: no cap) the cheapest collapses go on until it fits. Self-contained: it also runs in a
-  // worker, from its source text.
+  // simplifier), then simplify within tol mm (the level's, MESH_LEVELS), loosening it until the part holds at most `most`
+  // triangles (0: no cap). Self-contained: it also runs in a worker, from its source text.
   function meshJob(buf, MS, tol, most) {
     const dv = new DataView(buf), n = buf.byteLength >= 84 ? dv.getUint32(80, true) : 0, bin = 84 + n * 50 === buf.byteLength;
     let raw = null;
@@ -5935,108 +5934,18 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       idx[nt * 3] = p; idx[nt * 3 + 1] = q; idx[nt * 3 + 2] = r; nt++;
     }
     const kept = idx.subarray(0, nt * 3);
+    let e = tol, out = kept;
     // tol 0: native (the "Native" level): every triangle of the file, only welded and cleaned
-    if (!(tol > 0)) return { pos: pts.slice(0, count * 3), idx: kept.slice(), src: nv / 3, kept: nt, tris: nt, err: 0, lines: 0 };
-    // The simplifier weighs a corner's error over all the faces around it, by area: an engraving 0.2 mm deep (the
-    // padlock's ring on a case front, USSA DESIGN on a module's back) sits among big flat faces and could turn into a
-    // hexagon while staying "within 0.15 mm" (Dols, 2026-11-23: "le cercle est clairement polygonal"). So the part's
-    // sharp edges (faces turning more than SHARP, or a rim) are kept on their own terms: each chain of them, corner to
-    // corner, keeps the points it needs to stay within `line` mm (Douglas-Peucker), and those corners are locked. And
-    // every corner is split by the faces turning less than SHARP around it: each sharp edge is then a seam, which the
-    // simplifier only shortens along itself, so a flat face keeps its corners on its own plane (no slivers tilted
-    // towards a fillet, which the ink drew as false lines). Flat and smooth areas still go down to a few triangles.
-    const SHARP = Math.cos(35 * Math.PI / 180), fn = new Float32Array(nt * 3);
-    for (let t = 0; t < nt; t++) {
-      const p = kept[t * 3] * 3, q = kept[t * 3 + 1] * 3, r = kept[t * 3 + 2] * 3;
-      const ux = pts[q] - pts[p], uy = pts[q + 1] - pts[p + 1], uz = pts[q + 2] - pts[p + 2], vx = pts[r] - pts[p], vy = pts[r + 1] - pts[p + 1], vz = pts[r + 2] - pts[p + 2];
-      const x = uy * vz - uz * vy, y = uz * vx - ux * vz, z = ux * vy - uy * vx, l = Math.hypot(x, y, z) || 1;
-      fn[t * 3] = x / l; fn[t * 3 + 1] = y / l; fn[t * 3 + 2] = z / l;
+    if (tol > 0) for (let pass = 0; pass < 4; pass++, e *= 3) { // a tower can top 20M triangles: keep each part under `most`
+      out = MS.simplify(kept, pts, 3, Math.min(kept.length, 3 * 500), e, ['ErrorAbsolute', 'Prune'])[0];
+      if (!most || out.length <= 3 * most) break;
     }
-    const turn = (f, g) => fn[f * 3] * fn[g * 3] + fn[f * 3 + 1] * fn[g * 3 + 1] + fn[f * 3 + 2] * fn[g * 3 + 2];
-    // corners around each vertex
-    const st = new Uint32Array(count + 1);
-    for (let c = 0; c < kept.length; c++) st[kept[c] + 1]++;
-    for (let v = 0; v < count; v++) st[v + 1] += st[v];
-    const around = new Uint32Array(kept.length), fill = st.slice(0, count);
-    for (let c = 0; c < kept.length; c++) around[fill[kept[c]]++] = c;
-    // sharp edges: once per edge, from the face where it runs a -> b with a < b (or from its only face)
-    let ea = new Uint32Array(1024), ne = 0;
-    for (let c = 0; c < kept.length; c++) {
-      const f = (c / 3) | 0, a = kept[c], b = kept[f * 3 + (c + 1) % 3];
-      let g = -1;
-      for (let k = st[b]; k < st[b + 1]; k++) { const c2 = around[k], f2 = (c2 / 3) | 0; if (f2 !== f && kept[f2 * 3 + (c2 + 1) % 3] === a) { g = f2; break; } }
-      if (g >= 0 ? a < b && turn(f, g) < SHARP : true) {
-        if (ne * 2 + 2 > ea.length) { const x = new Uint32Array(ea.length * 2); x.set(ea); ea = x; }
-        ea[ne * 2] = a; ea[ne * 2 + 1] = b; ne++;
-      }
-    }
-    const deg = new Uint32Array(count + 1);
-    for (let i = 0; i < ne * 2; i++) deg[ea[i] + 1]++;
-    for (let v = 0; v < count; v++) deg[v + 1] += deg[v];
-    const nb = new Uint32Array(ne * 2), en = new Uint32Array(ne * 2), slot = deg.slice(0, count);
-    for (let i = 0; i < ne; i++) { const a = ea[i * 2], b = ea[i * 2 + 1]; nb[slot[a]] = b; en[slot[a]++] = i; nb[slot[b]] = a; en[slot[b]++] = i; }
-    const lockAt = line => {
-      const lk = new Uint8Array(count), used = new Uint8Array(ne), l2 = line * line;
-      const dp = ch => { // Douglas-Peucker over a chain of vertex ids, both ends kept
-        lk[ch[0]] = lk[ch[ch.length - 1]] = 1;
-        const todo = [0, ch.length - 1];
-        while (todo.length) {
-          const j = todo.pop(), i = todo.pop(); if (j - i < 2) continue;
-          const A = ch[i] * 3, B = ch[j] * 3, dx = pts[B] - pts[A], dy = pts[B + 1] - pts[A + 1], dz = pts[B + 2] - pts[A + 2], L = dx * dx + dy * dy + dz * dz;
-          let best = -1, bd = l2;
-          for (let k = i + 1; k < j; k++) {
-            const C = ch[k] * 3; let px = pts[C] - pts[A], py = pts[C + 1] - pts[A + 1], pz = pts[C + 2] - pts[A + 2];
-            const u = L ? Math.max(0, Math.min(1, (px * dx + py * dy + pz * dz) / L)) : 0; px -= u * dx; py -= u * dy; pz -= u * dz;
-            const d = px * px + py * py + pz * pz; if (d > bd) { bd = d; best = k; }
-          }
-          if (best >= 0) { lk[ch[best]] = 1; todo.push(i, best, best, j); }
-        }
-      };
-      const walk = (v0, k0) => { // along sharp edges from v0 until a corner (not two sharp edges) or back to v0
-        const ch = [v0]; let k = k0;
-        for (;;) {
-          used[en[k]] = 1; const w = nb[k]; ch.push(w);
-          if (w === v0 || deg[w + 1] - deg[w] !== 2) return ch;
-          k = -1; for (let j = deg[w]; j < deg[w + 1]; j++) if (!used[en[j]]) { k = j; break; }
-          if (k < 0) return ch;
-        }
-      };
-      for (let v = 0; v < count; v++) { const d = deg[v + 1] - deg[v]; if (d && d !== 2) { lk[v] = 1; for (let k = deg[v]; k < deg[v + 1]; k++) if (!used[en[k]]) dp(walk(v, k)); } }
-      for (let v = 0; v < count; v++) for (let k = deg[v]; k < deg[v + 1]; k++) if (!used[en[k]]) { // a loop: cut it at its far point too
-        const ch = walk(v, k), A = v * 3; let far = 0, fd = -1;
-        for (let i = 1; i < ch.length - 1; i++) { const C = ch[i] * 3, d = (pts[C] - pts[A]) ** 2 + (pts[C + 1] - pts[A + 1]) ** 2 + (pts[C + 2] - pts[A + 2]) ** 2; if (d > fd) { fd = d; far = i; } }
-        if (far) { dp(ch.slice(0, far + 1)); dp(ch.slice(far)); } else dp(ch);
-      }
-      let n = 0; for (let v = 0; v < count; v++) n += lk[v];
-      return { lk, n };
-    };
-    // the edges' own tolerance, a fifth of the surface's; looser while the locked corners would hold most of the budget
-    let line = tol / 5, L = lockAt(line);
-    for (let i = 0; most && i < 4 && L.n > most / 3; i++) L = lockAt(line *= 2);
-    // split corners into smooth groups: one vertex per group of faces turning less than SHARP from its first face
-    const I2 = new Uint32Array(kept.length), from = new Uint32Array(kept.length), first = [];
-    let n2 = 0;
-    for (let v = 0; v < count; v++) {
-      first.length = 0;
-      for (let k = st[v]; k < st[v + 1]; k++) {
-        const c = around[k], f = (c / 3) | 0; let id = -1;
-        for (let r = 0; r < first.length; r += 2) if (turn(f, first[r]) >= SHARP) { id = first[r + 1]; break; }
-        if (id < 0) { id = n2++; from[id] = v; first.push(f, id); }
-        I2[c] = id;
-      }
-    }
-    const P2 = new Float32Array(n2 * 3), lock = new Uint8Array(n2);
-    for (let i = 0; i < n2; i++) { const v = from[i]; P2[i * 3] = pts[v * 3]; P2[i * 3 + 1] = pts[v * 3 + 1]; P2[i * 3 + 2] = pts[v * 3 + 2]; lock[i] = L.lk[v]; }
-    const none = new Float32Array(0), flags = ['ErrorAbsolute', 'Prune'];
-    let [out, e] = MS.simplifyWithAttributes(I2, P2, 3, none, 0, [], lock, Math.min(I2.length, 3 * 500), tol, flags);
-    // a tower can top 20M triangles: past `most`, the cheapest collapses go on until the part fits
-    if (most && out.length > 3 * most) [out, e] = MS.simplifyWithAttributes(I2, P2, 3, none, 0, [], lock, 3 * most, tol * 20, flags);
-    const remap = new Int32Array(n2).fill(-1), oidx = new Uint32Array(out.length);
+    const remap = new Int32Array(count).fill(-1), oidx = new Uint32Array(out.length);
     let m = 0;
     for (let i = 0; i < out.length; i++) { const v = out[i]; if (remap[v] < 0) remap[v] = m++; oidx[i] = remap[v]; }
     const opos = new Float32Array(m * 3);
-    for (let v = 0; v < n2; v++) if (remap[v] >= 0) opos.set(P2.subarray(v * 3, v * 3 + 3), remap[v] * 3);
-    return { pos: opos, idx: oidx, src: nv / 3, kept: nt, tris: out.length / 3, err: Math.max(e, tol), lines: line };
+    for (let v = 0; v < count; v++) if (remap[v] >= 0) opos.set(pts.subarray(v * 3, v * 3 + 3), remap[v] * 3);
+    return { pos: opos, idx: oidx, src: nv / 3, kept: nt, tris: out.length / 3, err: e };
   }
   // A file's connected pieces (some files hold several parts printed side by side: a drawer's two racks, a case's two
   // hinge leaves, two rods). Corners closer than 0.001 mm count as one, then triangles sharing a corner join a piece.
@@ -6294,7 +6203,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         <p class="v3-simpnow" role="status" aria-live="polite"></p><div class="v3-bar"><span></span></div>
         ${native
           ? '<p>The 3D view draws every triangle of your part files. A whole stack can pass 15 million: the view turns slower, takes much more memory (a big stack can need several GB, and a tab short of it reloads), and the parts are read again at each visit: this browser doesn\u2019t keep them.</p>'
-          : `<p>Your part files hold millions of triangles: too many for a browser to turn smoothly. The 3D view draws a lighter copy of each part, within ${lv.tol} mm of the original, and its sharp edges within ${+(lv.tol / 5).toPrecision(2)} mm, so engravings and small rounds stay round.${lv.id === 'superlow' ? '' : ' The finer the level, the closer to your files, and the slower the view turns and the more memory it takes.'}</p>`}
+          : `<p>Your part files hold millions of triangles: too many for a browser to turn smoothly. The 3D view draws a lighter copy of each part, within ${lv.tol} mm of the original.${lv.id === 'superlow' ? '' : ' The finer the level, the closer to your files, and the slower the view turns and the more memory it takes.'}</p>`}
         ${res}
         <p class="v3-simpkey"><b>What you print doesn\u2019t change.</b> Print\u2019s plates and downloads always use your original STL files, as they are.${native ? '' : ' Only Export from the 3D view takes the lighter copies.'}</p>
         ${native ? '' : `<p class="pnote">${lv.keep ? 'This browser keeps the copies: next time, these parts show at once.' : 'At this level the copies are too big to keep: they are made again at each visit.'}</p>`}`;
