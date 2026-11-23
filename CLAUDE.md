@@ -391,6 +391,20 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   `openShareCode` → `loadDesign(text, name, share = true)` (own confirm text, no `markFile`). `shareFromAddress` runs
   after the first render and on `hashchange`, and drops the hash. File menu: "Copy a share link", "Copy the share code",
   "Open a share link or code…" (`copyShare`, `openShare`).
+- Right-click menus everywhere (Dols, 2026-11-23, section "right-click menus, everywhere" in `src/template.html`, before
+  `segBtns`): one `contextmenu` listener on the document (it leaves alone a handler that called preventDefault: the
+  3D view's canvas, a plate card). `ctxFind` walks from the element under the pointer up, matching the step's rules
+  (`CTXV[view]`, rebuilt by `renderPrint` / `renderHardware` / `renderAssemble` with their closures, cleared at their
+  start) then the page's (`ctxRule(name, selector, (el, ev) => menu)`); a menu with no item goes on to the next; none:
+  `pageMenu()` (`ctxUndo`, `CTXP[view]()`, `ctxFile`, shortcuts). Helpers: `ctxJoin` (lists with a line between),
+  `ctxMirror` (a block's buttons as items, `b._hold` set by `holdButton` for held ones), `ctxFolds`, `ctxSteps`,
+  `linkMenu`, `railStackMenu`, `viewMenu`, `brushMenu`, `roleMenu`, `filamentMenu`, `dupStack` (also Stack settings'
+  "Duplicate stack": the copy goes last). `menuOpen` items take `on` (a tick,
+  `menuitemcheckbox`), `hold` (`holdButton` on the item) and `u` (the visit count's word for a label holding a name);
+  the menu goes into the open modal `<dialog>` when there is one. Browser's menu kept on text fields (`ctxField`) and
+  with Shift held at the right press (`ctxRight`); `ctxPress` tells a key (context menu key, Shift + F10: under the
+  focus, first item focused) from a press. Counted `right-click/<rule name>`. Full list: `docs/ux-redesign.md`,
+  "Right-click menus, everywhere".
 - A plate's menu (Dols, 2026-11-23, issue #93): in `renderPrint`, `plateMenu(pl)` / `plateMenuAt` on a `.pcard[data-pn]`'s
   `contextmenu`, the `.psel` panel's and its "⋯" (`data-pmenu`, in `.ptags`); `menuOpen` as in Design. "Download this
   plate alone" is `makeDownload([pl], …)`, whatever is ticked.

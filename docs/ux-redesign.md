@@ -346,6 +346,63 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   a drag holds it and it goes on from where it was let go; off at every page load, kept while the stack changes and
   onto another stack.
 
+## Right-click menus, everywhere (Dols, 2026-11-23)
+
+"On doit avoir un clic droit custom de partout, et il doit être pertinent." A right-click anywhere on the page opens
+the page's own menu (`.vmenu`, the one the 3D view's levels and the plates had), never the browser's, with what can be
+done with what is under the pointer; nothing more precise under it: the step's own menu. Section "right-click menus,
+everywhere" in `src/template.html`: one `contextmenu` listener on the document; the element under the pointer and each
+one holding it are matched against the step's rules (`CTXV[view]`, made by `renderPrint`, `renderHardware`,
+`renderAssemble` with their plates, rows and steps), then the page's (`CTX`, `ctxRule`); a handler that made its own
+menu first (the 3D view, a plate card) is left alone. What each menu holds:
+
+- **Header**: a step tab: the four steps (the one shown ticked, keys 1 to 4). File: the File menu. Light / Dark: the
+  two themes. The printer: Choose another printer…, See its plates in Print. The Vault folder: Open <folder>, Choose
+  another folder…. The page's name and its links: What's new, Report a bug or an idea, Keyboard shortcuts, About, the
+  steps.
+- **Design**: a stack in the rail: Stack settings, Rename…, Add a level on top, Duplicate stack, Copy stack, Paste,
+  Export (the stack shown), Remove stack (held). The rail's space, New stack, Start from a template…: New stack, Start
+  from a template…, Paste the stack copied, Loose parts. Loose parts: show them, Print only these, Clear (held); a part
+  in their list: One more, One fewer, Take it out of the list (held); in the search: Add it. The stack's card (name,
+  size, buttons, the strip under the view): Rename… then the 3D view's stack menu. The view's toolbar and hint bar: the
+  tool (Select, Paint), Rotate, Spread levels, Hide roof, the bolt finish (ticked when on), Fit the stack in the view,
+  How to move the view. Paint's brush bar: one brush per filament, Add a filament…, what a click paints, Back to Select.
+  The view's list of units: that level's menu (it gets selected). The panel: the level's menu (with Select the level
+  below / above first), the levels' menu with several selected, the stack's menu on Stack settings; on a drawer tab:
+  Set up this drawer, Same settings in every drawer; on a divider plan: its None / Every other / All / Clear; on a
+  section: Fold or Unfold it, Fold every section, Unfold every section. While painting: a part type: Paint them
+  <filament> for each filament (the one in use ticked), Another filament…; a group's "Paint these": the same for the
+  group; a filament: Paint with it, Add a filament…, Remove it from your filaments (held); a module's own colour: Back
+  to the stack color; elsewhere: Start from (the three presets), Add a filament…, Back to Select.
+- **Print**: a plate: its menu (issue #93), also on the selected plate's buttons. A filament's pill or heading: Show
+  only these plates, Show every plate, Tick these N plates, Untick them. A stack in the rail: Leave it out of the plates
+  / Put it in the plates, Print only this one, Print everything, Show it in Design. Already printed: Show the list /
+  Back to the plates; a part in its list: its own buttons. The downloads: the two downloads, Tick every plate shown,
+  Untick all. The selection bar: its buttons. Print settings by part: Back to the defaults, the folds. Plate options:
+  the folds, Reset all progress (held).
+- **Hardware**: a line (its store link too): Mark it bought / Not bought yet, Open its product page (or Search for it on
+  <store>), Copy this line, then its group's. A group's heading or its "Jump to" link: Mark the N <group> bought, None
+  of the <group> bought yet. A stack in the rail: Leave it out of the list / Put it in the list, List only this one,
+  List every stack, Show it in Design. The bolt finish: the two finishes.
+- **Assemble**: a step: Done / Not done yet, Done, with the N before it, Not done, nor those after it, Open the hardware
+  list (a step with bolts). A section in the rail: Show it, Tick all its steps, Untick all its steps (held).
+- **Windows** (What's new, About, a template…): Close (Esc); a template card: Add this stack. **A link**: Open it (in a
+  new tab when it opens one), Copy the link; a link within the page ("Jump to"): Go there.
+- **The step's own menu**, anywhere else: Undo: <what> and Redo: <what> (greyed when there is none), what the step
+  does (Design: New stack, Start from a template…, Paste the stack copied, Stack settings, Add a level on top; Print:
+  the downloads, tick all / untick all, Already printed…, Reset all progress (held); Hardware: Copy the list, Export as
+  CSV, Mark everything bought, Untick everything (held), the bolt finish; Assemble: Previous section, Next section,
+  "<Unit> done, next one", Open the hardware list), Save, Open a design file…, Keyboard shortcuts.
+
+Rules: a menu acts on what was right-clicked (a stack in the rail, a plate, a line), whether or not it is the one
+selected; acting on a level selects it. A removal in a menu is pressed and held like its button (the item fills in red,
+"Hold it down to remove stack" when let go sooner); "Remove level" stays a plain click with Undo. The menu's settings
+show a tick on the one in use (`menuitemcheckbox`). Kept for the browser: text fields (search, names, labels: paste,
+spelling) and a right-click with **Shift** held, the browser's own menu for whoever needs it. Text selected under the
+pointer adds "Copy" first. The context menu key and Shift + F10 open the same menu under the element that has the focus,
+on its first item. Inside a window the menu opens in the window (the page under it can't be clicked). A new element
+with things to do gets its rule (`ctxRule`, or the step's `CTXV`), a removal `hold: true`, a label holding a name `u`.
+
 ## What is counted (Dols, 2026-11-16)
 
 Dols wants to know what serves, what doesn't and what to improve, with no cookie, nothing in the way of the person and
@@ -373,7 +430,15 @@ In the dashboard, events are the paths without a leading "/"; type the prefix in
 - `paint/…`: a click in 3D, brush, "A click paints", add a filament, part type or group painted, module exception,
   the presets ("Start from"), the filament picker (opened, scope, Bambu colour, line filter, tray colour, "Use it"),
   the Selected card's buttons.
-- `menu/<item>`: any menu item used (level, levels, stack, File menus), digits as N.
+- `menu/<item>`: any menu item used (level, levels, stack, File menus, the right-click menus), digits as N; an item
+  whose label holds a name (a filament, a stack) counts under a fixed word (`menu/brush`, `menu/paint-part-type`…).
+- `right-click/<where>`: a right-click menu opened (Dols, 2026-11-23): `tab`, `file`, `theme`, `printer`, `folder`,
+  `brand`, `template`, `window`, `rail-stack`, `loose`, `stacks`, `start`, `loose-part`, `3d-brush`, `3d-toolbar`,
+  `3d-unit`, `3d-selected`, `stack-card`, `paint-type`, `paint-group`, `filament`, `own-color`, `panel`, `link`,
+  `print/plate`, `print/filament`, `print/group`, `print/stack`, `print/already-printed`, `print/part-row`,
+  `print/downloads`, `print/selection`, `print/part-settings`, `print/options`, `hardware/line`, `hardware/group`,
+  `hardware/jump`, `hardware/stack`, `hardware/finish`, `assemble/step`, `assemble/section`, and the step's own menu
+  `page-build`, `page-print`, `page-hardware`, `page-assemble`. The 3D view's and the plates' keep theirs.
 - `key/<key>`: a shortcut that did something (`key/mod+z`, `key/step-number`, `key/r`…).
 - `file/…`: menu, save, save as, open, opened (or opened an older file), export STL / GLB, share link or code copied,
   "Open a share link or code…", a shared design opened (`file/opened-share`). The code itself is never sent: it is
