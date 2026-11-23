@@ -119,21 +119,20 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
     `R.exterior` uses 51.5 / 99.5 / 195.5 (USSA's figures): within 0.5 mm, pick one and say so.
 - 3D view (section "3D stack view" in `src/template.html`): three.js 0.186.1 and meshoptimizer 1.3.0 from jsDelivr,
   loaded when the view is first shown; boxes before the folder is picked, then real parts simplified in workers
-  (0.15 mm, cached in IndexedDB under `MESH_CACHE` `mesh3d.1:`; simplifying with the normals as attributes, PR #90,
-  was undone by Dols on 2026-11-23: slower, and it didn't clear the modules' fronts and backs). While a file is really
+  (0.15 mm, cached in IndexedDB under `MESH_CACHE` `mesh3d.4:`; simplifying with the normals as attributes, PR #90,
+  was undone by Dols on 2026-11-23: slower, and it didn't clear the modules' fronts and backs; so was a finer
+  simplification near sharp edges, PR #102: too slow). The ink comes from the file's own triangles (Dols, 2026-11-23,
+  "fausses arêtes du shader"): `meshJob` returns `ink` (segments on every edge of the file sharper than 30°) and `nrm`
+  (each kept corner's normal from the file's faces within 30° of the simplified face; a facet over 1 mm across that
+  only touches faces of another slope keeps its own), cached with the mesh, carried by `meshPieces` / `meshPiece`,
+  read by `geom` (`g.userData.ink`) and `creaseLines`; `creaseMat` draws the lines 0.5 mm nearer the eye. While a file is really
   simplified (a cache miss in `partMesh`: `simpStart` / `simpEnd`, counts per batch in `simp`), the window `#v3dSimp`
   over the stage says why and that Print uses the original files, with a spinner (`.v3-spin`); done, `simpTuck` folds
   it (~0.65 s, always animated: Dols wants to see it go) into `#v3dSimpBtn` in the strip under the view ("Why simplified?"), which reopens it (Dols, 2026-11-23).
   Its "Parts in the 3D view" setting (`data-v3res`, `setMeshLevel`): five levels in `MESH_LEVELS` (Super low 0.15 mm,
   the default and the old cache key; Low; Medium; High; Native = tol 0, which skips the simplifier), `meshLevel` in
   localStorage per browser (the old `meshFull` = Native); `meshJob(buf, MS, tol, most)` loosens tol until a part holds
-  `most` triangles (then a second pass with `most` as the target); `partMesh` memo key `path|tol`, IndexedDB key ends `|tol`, only `keep` levels are stored.
-  Sharp edges (Dols, 2026-11-23, the padlock ring turned hexagon): meshoptimizer weighs a corner's error by face area, so
-  shallow engravings among big flat faces went polygonal within "0.15 mm". `meshJob` finds the sharp edges (faces
-  turning > 35°, or a rim), keeps each chain of them within `tol / 5` by Douglas-Peucker and locks those corners
-  (`simplifyWithAttributes` with `vertex_lock`; the line tolerance doubles while the locks pass `most / 3`), and splits
-  every corner by smooth group so each sharp edge is a seam: a flat face keeps its corners on its plane. Cache key
-  `mesh3d.3:`. Shown in step 1 (Design) in the middle of the stack's card (`designCenter`'s
+  `most` triangles; `partMesh` memo key `path|tol`, IndexedDB key ends `|tol`, only `keep` levels are stored. Shown in step 1 (Design) in the middle of the stack's card (`designCenter`'s
   `.v3-slot`): `v3sync()` (after every render) moves the one persistent `#v3view` into the shown step's `.v3-slot`, or
   parks it in `#v3home`, and shows the selected stack (`curTower()`) as it is. The model is rebuilt only when
   the stack changes (`v.key`, colours left out, or the same levels as new objects: an undo), and just repainted otherwise. A rebuild of the same stack (any change: an option, a divider,

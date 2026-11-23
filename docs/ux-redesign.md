@@ -126,10 +126,6 @@ Shown when there is no stack. Three rows: printer, Vault folder (same text and "
   memory, read again at each visit) and "Reading part files at native resolution: 3 of 13 done.". The strip's button
   reads "Why simplified?" at Super low, "Detail: Medium" at the others, "Native resolution" at Native. Export from the
   3D view takes the parts at the level shown.
-  Each level keeps the parts' sharp edges five times finer than their faces (Dols, 2026-11-23: on a case front the
-  padlock's ring came out as a hexagon, and so did USSA DESIGN on a module's back): Super low keeps flat and smooth areas
-  within 0.15 mm but every sharp edge within 0.03 mm, so engravings, holes and small rounds stay round. The window says
-  it: "within 0.15 mm of the original, and its sharp edges within 0.03 mm, so engravings and small rounds stay round".
 - **Share links and codes** (Dols, 2026-11-23, issue #84): the File menu's "Copy a share link", "Copy the share code" (greyed with nothing to share) and "Open a share link or code…" (asks for it with `prompt()`). The link is the page's address with `#d=<code>`; the code holds the stacks, loose parts, colors, Print's plate options and stacks left out, the print settings by part and the label look, compressed (one stack ≈ 800 characters). Never the printer (whoever opens it keeps theirs), nor what is printed, bought or assembled. Copied: a long toast with its length and what it holds. Opened (the link loaded, pasted in the address bar, or the code pasted): it replaces the project, asked first when there is one ("To keep yours, cancel and save it first"), then "Opened the shared design"; the address loses its `#d=…`; the File menu says "Not saved to a file yet". A code cut short: "This share link or code is cut short or damaged: ask for it again, or copy all of it".
 - **The stack in 3D, to a file** (Dols, 2026-11-15: renders in Blender): "Export as STL" and "Export as GLB, with colors", at the end of the stack's right-click menu and of the File menu (there "Export the stack as …"). What the view shows, as it stands: drawers and cases open or closed, levels spread or not, the roof hidden or not, the bolts and casters; never the shadow or the outlines. The parts are the ones the view draws, at the level of detail it shows (Super low: 0.15 mm). STL: one solid, in mm, Z up, the floor at 0 and the footprint centred, no colour nor label. GLB: one object per part named after its file, grouped by level (and roof, base, column), one material per colour named after the filament ("Orange #e8742f", "Bolts, grey (zinc-plated or stainless)"), the labels as textured planes, in metres. Both greyed until the parts are in, with the reason as the tooltip ("Choose your Vault folder first: until then the view shows boxes, not the parts", "Wait until every part is in the view"): boxes are never exported. Made in the browser and downloaded; the toast: "Saved Test stack.glb to your downloads (4.1 MB). USSA's parts: for your own renders, not to share." The GLB's `asset.copyright` and the STL's header say the same.
 - The "Paint" tool button carries the stack's filaments as small swatches (up to four, then "+N"; the names in its `title`), so the toolbar says where colours are set (UX audit C7, 2026-11-14).
@@ -256,9 +252,13 @@ stays. Where this section and the rules below disagree, this section wins.
   in screen space (7 px, ink at 28 %). Every part is outlined in ink, 2.5 px at any zoom (an inverted hull: back faces
   pushed out along normals averaged at the corners, `hullMat`, `inked`; parts are drawn on both sides and the hull is
   pushed behind them, so the hairline gaps of the simplified parts show the part's colour, not ink), plus 1 px ink creases on edges sharper than
-  30° between two faces where each face leaves the other's plane by more than 0.2 mm (`creaseLines`, once per shape;
-  edges with one face and thin triangles left out: the simplifier fans long thin triangles across flat faces from a
-  fillet or a countersink). Keeping the normals while simplifying (`simplifyWithAttributes`, PR #90) was tried and
+  30° between two faces. Since Dols's "fausses arêtes" (2026-11-23) the creases and the shading normals of a part read
+  from the folder come from the file's own triangles, worked out before simplifying (`meshJob`: `ink`, `nrm`): a
+  simplified flat face draws no line and no hatching however its thin facets turn, and engraved logos, text and round
+  holes keep their true outline. The lines are drawn 0.5 mm nearer the eye along the line of sight (`creaseMat`), since
+  the file's edge can lie under the simplified surface. `creaseLines` (30°, each face 0.2 mm off the other's plane)
+  only serves the shapes made in the page (bolts). Simplifying more finely to keep the edges (PR #102) was undone the
+  same day: too slow. Keeping the normals while simplifying (`simplifyWithAttributes`, PR #90) was tried and
   undone (Dols, 2026-11-23): slower, and the fronts and backs of the modules kept their lines. A hard shadow of the footprint, back and to the right (`--gp-vp-shadow`). The
   level under the pointer: its ink outline thickens to 4 px (no box any more). The selected level(s): a yellow ring
   (`--gp-vp-select`) around the whole module, drawn over the stack outside the module's own shape (stencil mask), with
