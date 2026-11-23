@@ -133,6 +133,7 @@ The fork counts exactly what the build needs, where the original added 10% and s
 
 **The site**
 
+- Name: **3D Vault Configurator** (Dols, 2026-11-23) instead of Vault Print Planner, in the page's title and header, the README and the issue forms. The repository and the address keep `vault-print-planner`.
 - Address: [doooools.github.io/vault-print-planner](https://doooools.github.io/vault-print-planner/) (GitHub Pages, republished on every merge) instead of vault.romy.io. Romy's `CNAME` file was removed.
 - Removed: the Ko-fi button, Romy's byline in the header, the YouTube link, the README's "No support" paragraph. Romy's planner is credited in the page, the README and "What's new".
 - README rewritten for the fork (browser table, "Your files stay on your computer"); "What's new" opens with a "Draft, not released yet: the Dols fork" section above Romy's history.

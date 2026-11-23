@@ -1,6 +1,10 @@
-# Vault Print Planner — fork with a 3D stack view
+# 3D Vault Configurator — fork of Vault Print Planner with a 3D stack view
 
 Fork of rmacasieb/vault-print-planner (upstream remote: `upstream`; ours: `origin` = doooools/vault-print-planner).
+**Name** (Dols, 2026-11-23): the page is "3D Vault Configurator" wherever a visitor reads it (title, header, About,
+What's new, README, issue forms, the STL / GLB exports' header); "Vault Print Planner" stays only as the original's
+name in its credit. Kept on purpose: the repository and the address (`vault-print-planner`), the design file's
+`app: 'vault-print-planner'`, the `vpp.*` / `vppPre.*` / `vault-planner` storage keys, `.vault.json`, code names.
 Upstream takes no feature requests ("fork it and change it"), so this fork is ours to maintain.
 **Talk to the user in French.**
 

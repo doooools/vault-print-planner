@@ -1,5 +1,5 @@
 name: Report a bug
-description: Something in the planner is wrong, broken or confusing.
+description: Something in the configurator is wrong, broken or confusing.
 title: "[Bug] "
 labels: ["bug"]
 body:
@@ -33,5 +33,5 @@ body:
     id: context
     attributes:
       label: Browser and setup
-      description: Filled in by the planner when you come from its "Report a bug" link. Otherwise, your browser and system.
+      description: Filled in by the configurator when you come from its "Report a bug" link. Otherwise, your browser and system.
       render: text

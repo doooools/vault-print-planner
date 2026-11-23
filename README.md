@@ -1,12 +1,12 @@
-# Vault Print Planner, Dols fork
+# 3D Vault Configurator, Dols fork
 
-An unofficial, fan-made planner for [Vault by USSA](https://www.ussadesign.com/products/vault), the 3D-printable modular storage system. This is a fork of [Romy Macasieb's Vault Print Planner](https://github.com/rmacasieb/vault-print-planner) ([vault.romy.io](https://vault.romy.io)) that adds a 3D view of your stacks, colours, several drawers per module and a redesigned page. Everything it changes is listed in **[Differences from the original planner](docs/differences-from-upstream.md)**.
+An unofficial, fan-made configurator for [Vault by USSA](https://www.ussadesign.com/products/vault), the 3D-printable modular storage system. This is a fork of [Romy Macasieb's Vault Print Planner](https://github.com/rmacasieb/vault-print-planner) ([vault.romy.io](https://vault.romy.io)), named 3D Vault Configurator since 2026-11-23, that adds a 3D view of your stacks, colours, several drawers per module and a redesigned page. Everything it changes is listed in **[Differences from the original planner](docs/differences-from-upstream.md)**.
 
 Open it at **https://doooools.github.io/vault-print-planner/** (nothing to install).
 
-**Video walkthrough, in French:** a tour of the whole planner, from Design to Assemble, [on YouTube](https://www.youtube.com/watch?v=bfZt8lSKntk).
+**Video walkthrough, in French:** a tour of the whole configurator (then named Vault Print Planner), from Design to Assemble, [on YouTube](https://www.youtube.com/watch?v=bfZt8lSKntk).
 
-<a href="https://www.youtube.com/watch?v=bfZt8lSKntk"><img src="https://img.youtube.com/vi/bfZt8lSKntk/hqdefault.jpg" width="480" alt="Video walkthrough of the Vault Print Planner, in French, on YouTube"></a>
+<a href="https://www.youtube.com/watch?v=bfZt8lSKntk"><img src="https://img.youtube.com/vi/bfZt8lSKntk/hqdefault.jpg" width="480" alt="Video walkthrough of the configurator, in French, on YouTube"></a>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/design-dark.png">
@@ -15,7 +15,7 @@ Open it at **https://doooools.github.io/vault-print-planner/** (nothing to insta
 
 <sub>A six-level L7 stack with coloured fronts, its blue drawer open, drawn by the page from a Vault download on the maintainer's computer. The repository holds these screenshots only, never the files.</sub>
 
-Design your stacks and the planner tells you exactly which STL files to print and how many. It checks every part against your printer's bed, packs the parts onto plates, and makes a Bambu Studio project with one plate per tab (or plate files for other slicers).
+Design your stacks and the configurator tells you exactly which STL files to print and how many. It checks every part against your printer's bed, packs the parts onto plates, and makes a Bambu Studio project with one plate per tab (or plate files for other slicers).
 
 > This project is not made, endorsed or supported by USSA. It contains no Vault files: it works only with your own copy of the Vault STL download, [bought from USSA](https://www.ussadesign.com/products/vault). Vault, its designs and its files belong to USSA.
 
@@ -45,7 +45,7 @@ The page runs entirely in your browser. It reads the part files from your Vault 
 
 ## Requirements
 
-- The Vault STL download, release **261021** (folder `261021_VAULT_USSA_S`). Other releases may rename files: the planner matches names loosely and tells you which parts it can't find.
+- The Vault STL download, release **261021** (folder `261021_VAULT_USSA_S`). Other releases may rename files: the configurator matches names loosely and tells you which parts it can't find.
 - A desktop browser:
 
   | | Chrome, Edge (and other Chromium browsers) | Firefox, Safari |
@@ -81,4 +81,4 @@ python3 src/build.py --public src/stl-measurements.tsv index.html previews/index
 
 ## Credits and license
 
-The planner is [Romy Macasieb's](https://github.com/rmacasieb/vault-print-planner); this fork is maintained by [Dols](https://github.com/doooools/vault-print-planner). The code is MIT licensed (see `LICENSE`). Vault, its designs and its STL files belong to USSA and are not covered by this license.
+The original planner, Vault Print Planner, is [Romy Macasieb's](https://github.com/rmacasieb/vault-print-planner); this fork, 3D Vault Configurator, is maintained by [Dols](https://github.com/doooools/vault-print-planner). The code is MIT licensed (see `LICENSE`). Vault, its designs and its STL files belong to USSA and are not covered by this license.
