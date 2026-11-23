@@ -6615,14 +6615,14 @@ window.VAULT_FILES=[["01. DRAWERS/01. S Families/Facades/S1F (Turn On Supports).
       { transform: 'none', opacity: 1, easing: 'ease-out' },
       { transform: 'scale(1.03) rotate(-1deg)', opacity: 1, offset: .12, easing: 'cubic-bezier(.5, 0, .25, 1)' },
       { transform: `translate(${dx * .6}px, ${dy * .6}px) scale(.45) rotate(-2deg)`, opacity: 1, offset: .6, easing: 'cubic-bezier(.4, 0, .6, 1)' },
-      { transform: `translate(${dx}px, ${dy}px) scale(${k})`, opacity: .5 }], { duration: 950 });
+      { transform: `translate(${dx}px, ${dy}px) scale(${k})`, opacity: .5 }], { duration: 650 });
     an.onfinish = an.oncancel = () => {
       simp.tucking = false; simpDraw();
       if (btn.animate && !btn.hidden) btn.animate([
         { transform: 'none', background: 'var(--gp-yellow)', color: 'var(--gp-on-yellow)', borderColor: 'var(--ink)' },
         { transform: 'scale(1.15) rotate(-3deg)', background: 'var(--gp-yellow)', color: 'var(--gp-on-yellow)', offset: .3 },
         { transform: 'none', background: 'var(--gp-yellow)', color: 'var(--gp-on-yellow)', offset: .7 },
-        { transform: 'none' }], { duration: 900 });
+        { transform: 'none' }], { duration: 700 });
     };
   }
   $('v3dSimpBtn').onclick = () => {
