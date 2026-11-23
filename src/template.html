@@ -889,7 +889,8 @@ pre.code { margin: 0; background: var(--sheet-2); border-radius: 0; padding: 12p
 /* Foldable sections of the selection panel (fold): name on the left, what is set on the right */
 .ibody.folds { gap: 0; padding-top: 6px; }
 .ibody.folds > .ialerts { margin: 8px 0 10px; }
-.ibody.folds > .actions { margin-top: 14px; }
+.ihead > .actions { margin-top: 10px; }
+.ihead > .actions .btn { flex: 1 1 auto; }
 /* A section: "▾ MODULE" in Anton, what is set on the right in one line; dotted rules between */
 .ifold { border-top: 2px dotted var(--edge); }
 .ifold:first-child, .ialerts + .ifold { border-top: 0; }
@@ -4446,7 +4447,8 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // "Stack settings" no longer toggles: the top level is a button away, for the keyboard too
     box.innerHTML = `<div class="ihead"><div class="ipos"><span class="v3-sec">Stack settings</span>
         ${L.length ? `<div class="iacts"><button type="button" class="iconbtn sq" data-ltop aria-label="Set up the top level, level ${L.length}" title="Set up the top level">${icon('down')}</button></div>` : ''}</div>
-        <h2>${esc(t.name)}</h2><div class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></div></div>
+        <h2>${esc(t.name)}</h2><div class="mono">${fpCode(fp)} · <span title="${DIMS_TIP}">${stackDims(t)}</span></div>
+        <div class="actions"><button type="button" class="btn" data-tdup>Duplicate stack</button><button type="button" class="btn" data-tdel>Remove stack</button></div></div>
       <div class="ibody folds">
         <div class="ialerts">${alerts.length ? alerts.map(x => `<div class="issue ${x.k}">${esc(x.m)}${x.l != null && L[x.l] ? ` <button type="button" class="linkbtn" data-showlv="${x.l}">Show level ${x.l + 1}</button>` : ''}</div>`).join('') : `<div class="issue ok">Everything in this stack fits together and fits the ${esc(printerName())}.</div>`}</div>
         ${fold('s-size', 'Size and roof', `${fpCode(fp)} \u00b7 ${roof === 'none' ? 'no roof' : esc(rname.toLowerCase()) + ' roof'}${roof === 'grid' && ru.topHandle ? ' \u00b7 carry handle' : ''}`, true,
@@ -4466,7 +4468,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           ${off(['stationaryHandle', 'Stationary handle'], { label: 'None' }, { label: 'Handle' }, s.stationaryHandle, '', 'adds the backbone column')}
           <div class="field">${lbl('Module connectors')}<div class="seg">${sbool('connectors', { label: 'None' }, { label: 'Connectors', sub: 'over the back joints' }, s.connectors)}</div>
             <p class="pnote" style="margin:0">Screwed over each joint between two drawer modules at the back corners, where no backbone, handle lock or wall plate is.</p></div>`)}
-        <div class="actions"><button type="button" class="btn" data-tdup>Duplicate stack</button><button type="button" class="btn" data-tdel>Remove stack</button></div>
       </div>`;
     bindFolds(box);
     { const b = box.querySelector('[data-ltop]'); if (b) b.onclick = () => {
