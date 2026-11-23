@@ -477,12 +477,15 @@ dialog#v3d::backdrop { background: rgba(7, 7, 7, .6); }
 .vmenu .mhead small { font-family: var(--f-label); font-size: 13px; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
 .vmenu .mhead b { font-family: var(--f-display); font-size: 19px; font-weight: 400; text-transform: uppercase; letter-spacing: .01em; }
 .vmenu .msep { margin: 6px 4px; border-top: 2px dotted var(--edge); }
-.vmenu [role=menuitem] { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 8px 10px; border: 0; border-radius: 0; background: transparent; color: inherit; font-family: var(--f-label); font-size: 15px; font-weight: 400; text-align: left; cursor: pointer; }
-.vmenu [role=menuitem] svg { flex: none; width: 16px; height: 16px; }
-.vmenu [role=menuitem]:focus, .vmenu [role=menuitem]:hover:not(:disabled) { outline: none; background: var(--accent); color: var(--accent-ink); }
-.vmenu [role=menuitem]:focus .mkey, .vmenu [role=menuitem]:hover:not(:disabled) .mkey { color: inherit; }
-.vmenu [role=menuitem]:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
-.vmenu [role=menuitem]:disabled { color: var(--gp-fg-disabled); cursor: default; }
+.vmenu [data-mi] { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 8px 10px; border: 0; border-radius: 0; background: transparent; color: inherit; font-family: var(--f-label); font-size: 15px; font-weight: 400; text-align: left; cursor: pointer; }
+.vmenu [data-mi] svg { flex: none; width: 16px; height: 16px; }
+.vmenu [data-mi]:focus, .vmenu [data-mi]:hover:not(:disabled) { outline: none; background: var(--accent); color: var(--accent-ink); }
+.vmenu [data-mi]:focus .mkey, .vmenu [data-mi]:hover:not(:disabled) .mkey { color: inherit; }
+.vmenu [data-mi]:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+.vmenu [data-mi]:disabled { color: var(--gp-fg-disabled); cursor: default; }
+/* A setting in a menu (on / off, or one of a few): a tick in the icon's place when it is the one in use */
+.vmenu .mcheck { flex: none; width: 16px; height: 16px; }
+.vmenu .mtext { overflow: hidden; text-overflow: ellipsis; }
 .vmenu .mkey { margin-left: auto; padding-left: 16px; font: 13px var(--f-mono); color: var(--muted); }
 .v3-morepop { position: absolute; left: 12px; z-index: 3; width: min(400px, calc(100% - 24px)); max-height: calc(100% - 200px); overflow-y: auto; box-sizing: border-box; padding: 16px; border: 2px solid var(--ink); border-radius: 0; background: var(--ground); box-shadow: var(--gp-shadow-toast); }
 /* The side column: the selected part, then the units */
@@ -3130,7 +3133,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // One menu at a time, a role="menu" list: at the pointer (a right-click in the 3D view) or under the button that
   // opened it (the level panel's "⋯"); keys: opened from the keyboard. Arrow keys, Home, End, Enter; Esc closes it and gives the focus back to the
   // button. A click outside, a scroll, the window resized, the camera moved or the view drawn again close it.
-  // Items: { label, icon, key (a shortcut shown on the right), fn, dis, tip, sep (a line before it) }.
+  // Items: { label, icon, key (a shortcut shown on the right), fn, dis, tip, sep (a line before it), on (a setting:
+  // true / false, a tick when it is the one in use), hold (a removal: pressed and held, like the page's own buttons),
+  // u (the word the visit count takes instead of the label, for labels that hold a name) }.
   let menuNow = null;
   const menuFrom = b => !!menuNow && menuNow.opener === b;
   function menuClose(refocus) {
@@ -3144,8 +3149,10 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const el = document.createElement('div'), id = 'menuHead' + (++menuOpen.n);
     el.className = 'vmenu'; el.tabIndex = -1; el.setAttribute('role', 'menu'); el.setAttribute('aria-labelledby', id);
     el.innerHTML = `<div class="mhead" id="${id}"><small>${esc(head)}</small><b>${esc(sub)}</b>${note ? `<span class="mnote${noteOk ? ' ok' : ''}">${esc(note)}</span>` : ''}</div>` + items.map((it, k) =>
-      `${it.sep ? '<div class="msep" role="separator"></div>' : ''}<button type="button" role="menuitem" tabindex="-1" data-mi="${k}"${it.dis ? ' disabled aria-disabled="true"' : ''}${it.tip ? ` title="${esc(it.tip)}"` : ''}>${it.icon ? icon(it.icon) : ''}<span>${esc(it.label)}</span>${it.key ? `<span class="mkey">${esc(it.key)}</span>` : ''}</button>`).join('');
-    document.body.append(el);
+      `${it.sep && k ? '<div class="msep" role="separator"></div>' : ''}<button type="button" role="${it.on != null ? 'menuitemcheckbox' : 'menuitem'}"${it.on != null ? ` aria-checked="${!!it.on}"` : ''} tabindex="-1" data-mi="${k}"${it.dis ? ' disabled aria-disabled="true"' : ''}${it.tip ? ` title="${esc(it.tip)}"` : ''}>${it.on != null ? (it.on ? icon('check') : '<span class="mcheck"></span>') : it.icon ? icon(it.icon) : ''}<span class="mtext">${esc(it.label)}</span>${it.key ? `<span class="mkey">${esc(it.key)}</span>` : ''}</button>`).join('');
+    // in a modal window (What's new, a template…), the menu goes in it: the page under it can't be clicked
+    const host = [...document.querySelectorAll('dialog[open]')].reverse().find(d => { try { return d.matches(':modal'); } catch (e) { return false; } });
+    (host || document.body).append(el);
     const off = new AbortController(), sig = { signal: off.signal, capture: true };
     menuNow = { el, opener, off };
     if (opener && opener.hasAttribute('aria-expanded')) opener.setAttribute('aria-expanded', 'true');
@@ -3155,15 +3162,20 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     else { if (x + r.width > W - 8) x -= r.width; if (y + r.height > H - 8) y -= r.height; }
     el.style.left = Math.round(Math.max(8, Math.min(W - 8 - r.width, x))) + 'px';
     el.style.top = Math.round(Math.max(8, Math.min(H - 8 - r.height, y))) + 'px';
-    const live = () => [...el.querySelectorAll('[role=menuitem]:not(:disabled)')];
+    const live = () => [...el.querySelectorAll('[data-mi]:not(:disabled)')];
     // a button's menu gives the focus back to it, or to the panel's new "⋯" when the action drew the panel again
     const btn = !!opener && opener.tagName === 'BUTTON';
-    el.querySelectorAll('[data-mi]').forEach(b => b.onclick = () => {
-      use('menu/' + useWord(items[+b.dataset.mi].label));
-      menuClose(btn); items[+b.dataset.mi].fn();
-      if (btn && !opener.isConnected) { const n = document.querySelector('#dInsp [data-lmenu]'); if (n) n.focus({ preventScroll: true }); }
+    el.querySelectorAll('[data-mi]').forEach(b => {
+      const it = items[+b.dataset.mi];
+      const act = () => {
+        use('menu/' + useWord(it.u || it.label));
+        menuClose(btn); it.fn();
+        if (btn && !opener.isConnected) { const n = document.querySelector('#dInsp [data-lmenu]'); if (n) n.focus({ preventScroll: true }); }
+      };
+      if (it.hold) holdButton(b, act, 'Hold it down to ' + it.label.charAt(0).toLowerCase() + it.label.slice(1).replace(/…$/, ''));
+      else b.onclick = act;
     });
-    el.addEventListener('pointerover', e => { const b = e.target.closest('[role=menuitem]:not(:disabled)'); if (b) b.focus({ preventScroll: true }); });
+    el.addEventListener('pointerover', e => { const b = e.target.closest('[data-mi]:not(:disabled)'); if (b) b.focus({ preventScroll: true }); });
     el.addEventListener('keydown', e => {
       const L = live(), k = L.indexOf(document.activeElement);
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); const n = L.length; if (n) L[(k + (e.key === 'ArrowDown' ? 1 : n - 1 + (k < 0 ? 1 : 0))) % n].focus(); }
@@ -3252,6 +3264,258 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       { sep: true, icon: 'del', label: `Remove ${n} levels`, key: 'Delete', fn: () => levelsOp(t, 'del', s) });
     return { head: `${n} levels of ${L.length} selected`, sub: levelsName(s), items };
   }
+  // ---------- right-click menus, everywhere ----------
+  // Dols, 2026-11-23: a right-click anywhere on the page opens this page's own menu, never the browser's, with what can
+  // be done with what is under the pointer. One listener on the document: a handler that already made its menu (the 3D
+  // view, a plate) has called preventDefault and is left alone. Otherwise the element under the pointer and each one
+  // holding it are matched against the rules of the step shown (CTXV, set by each step's render: they see its plates,
+  // rows and helpers) and then the page's (CTX), the first menu given wins; nothing matched: the step's own menu
+  // (pageMenu). Kept for the browser: text fields (paste, spelling), and a right-click with Shift held, the browser's
+  // menu for whoever needs it (inspect, save the page…). Text selected under the pointer adds "Copy" on top. The
+  // context menu key and Shift + F10 open the same menu under the focused element. Each menu counts once per visit as
+  // right-click/<rule> (no names); its items as menu/<label> like the other menus.
+  const CTX = [];            // [name, selector, (el, ev) => menu or null]
+  const CTXV = {};           // per step: the same, made by the step's render
+  const CTXP = {};           // per step: the items of its own menu
+  const ctxRule = (name, sel, fn) => CTX.push([name, sel, fn]);
+  // A menu's item lists, joined by a line
+  const ctxJoin = (...lists) => lists.filter(l => l && l.length).flatMap((l, k) => l.map((it, j) => (k && !j ? { ...it, sep: true } : it)));
+  // The buttons of a block as items (they keep their own label, state and press and hold)
+  const ctxMirror = (bs, iconOf) => [...bs].filter(b => b && !b.hidden && b.offsetParent !== null).map(b => {
+    const label = (b.getAttribute('aria-label') || (b.querySelector(':scope > b') || b).textContent || b.title || '').replace(/:?\s*press and hold$/i, '').replace(/\s+/g, ' ').trim();
+    return { icon: iconOf ? iconOf(b) : null, label, dis: b.disabled, hold: b.classList.contains('hold'), fn: () => (b.classList.contains('hold') && b._hold ? b._hold() : b.click()) };
+  }).filter(it => it.label);
+  // A foldable section under the pointer: fold or unfold it, or all of the panel's
+  function ctxFolds(el) {
+    const d = el.closest('details'); if (!d) return [];
+    const box = d.parentElement.closest('.dinsp, .pside, .popts, .panel, section, aside') || d.parentElement;
+    const all = [...box.querySelectorAll('details')].filter(x => !x.closest('.xresults'));
+    const sm = d.querySelector('summary'), name = ((sm && (sm.querySelector('.fname') || sm.firstElementChild || sm)) || {}).textContent.trim() || 'section';
+    return [
+      { icon: 'chev', label: d.open ? `Fold “${name}”` : `Unfold “${name}”`, u: d.open ? 'fold-section' : 'unfold-section', fn: () => { d.open = !d.open; } },
+      ...(all.length > 1 ? [
+        { icon: 'up', label: 'Fold every section', dis: all.every(x => !x.open), fn: () => all.forEach(x => { x.open = false; }) },
+        { icon: 'down', label: 'Unfold every section', dis: all.every(x => x.open), fn: () => all.forEach(x => { x.open = true; }) }] : [])];
+  }
+  // Undo and Redo, named after what they take back
+  function ctxUndo() {
+    const p = undo.past[undo.past.length - 1], n = undo.next[undo.next.length - 1];
+    return [
+      { icon: 'down', label: p ? (p.label ? `Undo: ${p.label}` : 'Undo') : 'Nothing to undo', u: 'undo', key: MOD + '+Z', dis: !p, fn: undoBack },
+      { icon: 'up', label: n ? (n.label ? `Redo: ${n.label}` : 'Redo') : 'Nothing to redo', u: 'redo', key: MOD + '+Y', dis: !n, fn: undoForth }];
+  }
+  // The four steps, the one shown ticked
+  const STEP_NAMES = { build: '1 · Design', print: '2 · Print', hardware: '3 · Hardware', assemble: '4 · Assemble' };
+  const ctxSteps = () => Object.entries(STEP_NAMES).map(([id, label], k) => ({ label, key: String(k + 1), on: view === id, dis: $('tab-' + id).disabled, tip: $('tab-' + id).disabled ? 'Add a stack or loose parts first' : '', fn: () => { view = id; renderAll(); window.scrollTo(0, 0); } }));
+  // The file: save, open
+  const ctxFile = () => { const empty = !towers.length && !extras.length;
+    return [{ icon: 'save', label: 'Save', key: MOD + '+S', dis: empty, fn: () => saveDesign(false) }, { icon: 'open', label: 'Open a design file…', key: MOD + '+O', fn: openDesign }]; };
+  // The step's own menu: undo, what the step does, the file, the shortcuts
+  function pageMenu() {
+    const t = curTower();
+    return { head: STEP_NAMES[view].replace(/^\d · /, ''), sub: view === 'build' && t ? t.name : '3D Vault Configurator', items: ctxJoin(ctxUndo(), CTXP[view] ? CTXP[view]() : [], ctxFile(),
+      [{ icon: 'help', label: 'Keyboard shortcuts', key: '?', fn: keysPop }]) };
+  }
+  // A link: open it, here or in a new tab, or copy its address
+  function linkMenu(a) {
+    const href = a.href, here = a.getAttribute('href').startsWith('#');
+    return { head: 'Link', sub: (a.textContent || a.getAttribute('aria-label') || href).replace(/\s+/g, ' ').trim().slice(0, 60) || 'Link', items: here
+      ? [{ icon: 'chev', label: 'Go there', fn: () => a.click() }]
+      : [{ icon: 'link', label: a.target === '_blank' ? 'Open it in a new tab' : 'Open it', fn: () => a.click() },
+        ...(a.target === '_blank' ? [] : [{ icon: 'link', label: 'Open it in a new tab', fn: () => window.open(href, '_blank', 'noopener') }]),
+        { icon: 'dup', label: 'Copy the link', fn: () => copy(href, 'Link copied') }] };
+  }
+  // A stack in Design's rail: show it, rename it, add a level, copy, duplicate, export, remove (held)
+  function dupStack(t) { const x = { ...JSON.parse(JSON.stringify(t)), id: newId(), name: t.name + ' copy' }; towers.push(x); dsel = { t: x.id, l: null }; leavePaint(); saveSel(); save(); renderAll(); }
+  function railStackMenu(t) {
+    const pick = () => { if (!(dsel && dsel.t === t.id)) dsel = { t: t.id, l: null, u: 0 }; leavePaint(); saveSel(); view = 'build'; };
+    const shown = view === 'build' && curTower() === t;
+    return { head: 'Stack', sub: t.name, items: [
+      { icon: 'chev', label: 'Stack settings', fn: () => { pick(); dsel.l = null; delete dsel.m; saveSel(); renderAll(); } },
+      { icon: 'pen', label: 'Rename…', fn: () => { pick(); renderAll(); const b = document.querySelector('#view-build [data-rename]'); if (b) b.click(); } },
+      { sep: true, icon: 'plus', label: 'Add a level on top', fn: () => { pick(); levelOp(t, 'top'); } },
+      { icon: 'dup', label: 'Duplicate stack', fn: () => dupStack(t) },
+      { icon: 'dup', label: 'Copy stack', key: shown ? MOD + '+C' : '', fn: () => copySel(t, null) },
+      { icon: 'paste', label: clip && clip.kind === 'level' ? 'Paste the level on top' : 'Paste the stack after this one', dis: !clip, tip: clip ? '' : 'Copy a level or a stack first', fn: () => pasteClip(t, null) },
+      ...(shown ? exportItemsMenu(true, false) : []),
+      { sep: true, icon: 'del', label: 'Remove stack', hold: true, fn: () => removeStack(t) }] };
+  }
+  // The rail's empty space, "New stack", "Start from a template…": what makes a stack
+  const stacksMenu = () => ({ head: 'Stacks', sub: plural(towers.length, 'stack'), items: [
+    { icon: 'plus', label: 'New stack', fn: () => { newStack(); view = 'build'; renderAll(); } },
+    { icon: 'file', label: 'Start from a template…', fn: () => { view = 'build'; renderAll(); const d = $('tplDlg'); if (d) d.showModal(); } },
+    { icon: 'paste', label: 'Paste the stack copied', dis: !clip || clip.kind !== 'stack', tip: clip && clip.kind === 'stack' ? '' : 'Copy a stack first', fn: () => pasteClip(towers[towers.length - 1] || null, null) },
+    { sep: true, icon: 'chev', label: 'Loose parts', fn: () => { dsel = { t: 'loose' }; leavePaint(); saveSel(); view = 'build'; renderAll(); } }] });
+  // Loose parts: show them, print only them, clear them (held)
+  const looseMenu = () => ({ head: 'Loose parts', sub: extras.length ? plural(extras.reduce((a, e) => a + e.qty, 0), 'part') : 'none yet', items: [
+    { icon: 'chev', label: 'Show loose parts', dis: view === 'build' && dsel && dsel.t === 'loose', fn: () => { dsel = { t: 'loose' }; leavePaint(); saveSel(); view = 'build'; renderAll(); } },
+    { icon: 'save', label: 'Print only these', dis: !extras.length, fn: () => { printSkip = towers.map(t => t.id); savePrintSkip(); view = 'print'; renderAll(); window.scrollTo(0, 0); } },
+    { sep: true, icon: 'del', label: 'Clear loose parts', dis: !extras.length, hold: true, fn: () => { undoAs('Loose parts cleared'); extras = []; saveExtras(); renderAll(); } }] });
+  // A loose part in the list (one more, one fewer, take it out) or in the search (add it)
+  function looseItemMenu(row) {
+    const st = row.querySelector('[data-xstep]'), add = row.querySelector('[data-addextra]'), name = ((row.querySelector('.lbl b') || {}).textContent || 'Part');
+    if (add) return { head: 'Part', sub: name, items: [{ icon: 'plus', label: 'Add it to your loose parts', fn: () => add.click() }, ...looseMenu().items.slice(0, 1)] };
+    if (!st) return null;
+    const path = st.dataset.xstep, e = extras.find(x => x.path === path); if (!e) return null;
+    const step = d => { e.qty += d; if (e.qty <= 0) extras = extras.filter(x => x !== e); saveExtras(); renderAll(); };
+    return { head: 'Loose part', sub: name, items: [
+      { icon: 'plus', label: 'One more', fn: () => step(1) },
+      { icon: 'down', label: 'One fewer', dis: e.qty < 2, fn: () => step(-1) },
+      { sep: true, icon: 'del', label: 'Take it out of the list', hold: true, fn: () => { undoAs(`${name} taken out of the loose parts`); step(-e.qty); } }] };
+  }
+  // The 3D view's toolbar: the tool, the view's settings (ticked when on), fit, help
+  function viewMenu() {
+    const T = $('v3dTools'), q = s => T && T.querySelector(s), on = s => !!q(s) && q(s).getAttribute('aria-pressed') === 'true';
+    const tog = (s, label, key) => q(s) ? [{ label, key, on: on(s), fn: () => { const b = q(s); if (b) b.click(); } }] : [];
+    const t = curTower();
+    return { head: '3D view', sub: t ? t.name : 'Stack', items: ctxJoin(
+      [...tog('[data-v3tool="turn"]', 'Select', 'Esc'), ...tog('[data-v3tool="paint"]', 'Paint', 'P')],
+      [...tog('[data-v3spin]', 'Rotate', 'R'), ...tog('[data-v3tog="explode"]', 'Spread levels', 'E'), ...tog('[data-v3tog="hideRoof"]', 'Hide roof', 'H')],
+      HW_FINISHES.flatMap(([id, , n]) => tog(`[data-v3fin="${id}"]`, `${n} bolts`)),
+      [{ icon: 'fit', label: 'Fit the stack in the view', key: 'F', dis: !v3, fn: () => { if (v3) v3.aim(null); } },
+        { icon: 'help', label: 'How to move the view', fn: () => { const b = q('[data-v3help]'); if (b && b.getAttribute('aria-expanded') !== 'true') b.click(); } }]) };
+  }
+  // Paint's brush bar: the brush (one per filament), "+" for the catalogue, what a click paints, back to Select
+  function brushMenu() {
+    const v = v3; if (!v) return null;
+    return { head: 'Paint', sub: 'Brush and where it paints', items: ctxJoin(
+      colorPrefs.palette.map(p => ({ label: p.name, u: 'brush', on: p.id === brushId(), fn: () => setBrush(p.id) })),
+      [{ icon: 'plus', label: 'Add a filament…', fn: () => { openCatalog(); v3tools(); } }],
+      [['project', 'A click paints the whole stack'], ['unit', 'A click paints this module only']].map(([id, label]) => ({ label, on: v.pscope === id, fn: () => { v.pscope = id; v3tools(); } })),
+      [{ icon: 'chev', label: 'Back to Select', key: 'Esc', fn: () => { const b = $('v3dTools').querySelector('[data-v3tool="turn"]'); if (b) b.click(); } }]) };
+  }
+  // The level a module (cfg) is in, in the stack shown
+  const levelOfCfg = (t, cfg) => t ? t.levels.findIndex(lv => lv.includes(cfg)) : -1;
+  // Pick a level (the inspector shows it) and give its menu
+  function pickLevelMenu(t, i, ui) {
+    if (!t || i < 0 || !t.levels[i]) return t ? stackMenu(t) : null;
+    if (dsel.l !== i || (dsel.u || 0) !== ui) { dsel.l = i; dsel.u = ui; delete dsel.m; saveSel(); renderInspector(); v3side(); v3mark(); markLevels(); }
+    return levelMenu(t, i, ui);
+  }
+  // Colors (Paint's panel): a part type painted with any filament, a filament as the brush or removed (held)
+  function roleMenu(role) {
+    const r = ROLE_BY_ID.get(role); if (!r) return null;
+    const cur = colorFor(role, null);
+    return { head: 'Paint ' + r.label.toLowerCase(), sub: colorName(cur), items: ctxJoin(
+      colorPrefs.palette.map(p => ({ label: `Paint them ${shortName(p.id)}`, u: 'paint-part-type', on: p.id === cur, fn: () => { undoAs(`${r.label} painted ${colorName(p.id)}`); paintRole(role, p.id); saveColors(); renderAll(); } })),
+      [{ icon: 'plus', label: 'Another filament…', fn: openCatalog }]) };
+  }
+  function filamentMenu(id) {
+    const p = paletteOf(id); if (!p) return null;
+    const P = colorPrefs.palette, del = document.querySelector(`#dInsp [data-pal-del="${CSS.escape(id)}"]`);
+    return { head: 'Filament', sub: p.name, items: [
+      { icon: 'pen', label: 'Paint with it', on: id === brushId(), fn: () => setBrush(id) },
+      { icon: 'plus', label: 'Add a filament…', fn: openCatalog },
+      { sep: true, icon: 'del', label: 'Remove it from your filaments', dis: P.length < 2 || !del, tip: P.length < 2 ? 'Your only filament stays' : '', hold: true, fn: () => { if (del && del._hold) del._hold(); } }] };
+  }
+  function colorsMenu() {
+    const t = curTower();
+    return { head: 'Colors', sub: t ? t.name : 'Loose parts', items: ctxJoin(
+      COLOR_PRESETS.map(([id, label, why]) => ({ label: `Start from: ${label}`, tip: why, fn: () => { const b = document.querySelector(`#dInsp [data-cpreset="${id}"]`); if (b) b.click(); } })),
+      [{ icon: 'plus', label: 'Add a filament…', fn: openCatalog }],
+      [{ icon: 'chev', label: 'Back to Select', key: 'Esc', fn: () => { const b = $('v3dTools') && $('v3dTools').querySelector('[data-v3tool="turn"]'); if (b) b.click(); } }]) };
+  }
+  // The page's own rules, most precise first where two could match the same element
+  ctxRule('menu', '.vmenu', () => ({ none: true }));
+  // header
+  ctxRule('tab', '[data-tab]', () => ({ head: 'Steps', sub: 'Go to', items: ctxSteps() }));
+  ctxRule('file', '#fileBtn', () => { setTimeout(() => $('fileBtn').click()); return { none: true }; });
+  ctxRule('theme', '.seg.theme', () => ({ head: 'Theme', sub: themeNow() === 'dark' ? 'Dark' : 'Light', items: [
+    { label: 'Light', on: themeNow() === 'light', fn: () => setTheme('light') }, { label: 'Dark', on: themeNow() === 'dark', fn: () => setTheme('dark') }] }));
+  ctxRule('printer', '#printerBtn', () => ({ head: 'Printer', sub: printerName(), items: [
+    { icon: 'gear', label: 'Choose another printer…', fn: () => printerPop(true) },
+    { icon: 'chev', label: 'See its plates in Print', dis: $('tab-print').disabled, fn: () => { view = 'print'; renderAll(); } }] }));
+  ctxRule('folder', '#folderBtn', () => ({ head: 'Vault folder', sub: vaultFolder ? vaultFolder.name : rememberedFolder || 'Not chosen yet', items: [
+    ...(rememberedFolder && !vaultFolder ? [{ icon: 'open', label: `Open ${rememberedFolder}`, u: 'open-remembered-folder', fn: () => openFolder(false) }] : []),
+    { icon: 'open', label: vaultFolder ? 'Choose another folder…' : 'Choose your Vault folder…', fn: () => openFolder(!!vaultFolder) }] }));
+  ctxRule('brand', '.appbar .logo, .preprod-bar', () => ({ head: '3D Vault Configurator', sub: 'This page', items: ctxJoin(
+    [['newsBtn', 'What’s new'], ['reportBtn', 'Report a bug or an idea'], ['keysBtn', 'Keyboard shortcuts'], ['aboutBtn', 'About']].filter(([id]) => $(id)).map(([id, label]) => ({ icon: id === 'keysBtn' ? 'help' : 'chev', label, fn: () => $(id).click() })),
+    ctxSteps()) }));
+  // windows: close it, what its buttons do
+  ctxRule('template', '[data-tpl]', b => ({ head: 'Template', sub: ((b.querySelector('b') || {}).textContent || 'Stack'), items: [
+    { icon: 'plus', label: 'Add this stack', fn: () => b.click() }] }));
+  ctxRule('window', 'dialog[open]', d => { const c = d.querySelector('.vclose'); return { head: 'Window', sub: ((d.querySelector('h2') || {}).textContent || d.getAttribute('aria-label') || 'Window').trim(), items: [
+    { icon: 'chev', label: c ? (c.getAttribute('aria-label') || 'Close') : 'Close', key: 'Esc', fn: () => (c ? c.click() : d.close()) }] }; });
+  // Design: the rail
+  ctxRule('rail-stack', '.dstackw', w => { const b = w.querySelector('[data-stack]'), t = b && towers.find(x => x.id === +b.dataset.stack); return t ? railStackMenu(t) : null; });
+  ctxRule('loose', '[data-loose]', looseMenu);
+  ctxRule('stacks', '#view-build .drail', stacksMenu);
+  ctxRule('start', '#view-build .start', () => ({ head: 'Start your build', sub: 'Design', items: ctxJoin(
+    [{ icon: 'plus', label: 'Empty stack', fn: () => { newStack(); renderAll(); } }],
+    ctxMirror([$('startFolder'), $('startPrinter')].filter(Boolean)), ctxFile()) }));
+  // Design: loose parts, the 3D view's bars and side, the stack's card
+  ctxRule('loose-part', '#view-build .xitem', looseItemMenu);
+  ctxRule('loose-parts', '#view-build .dcenter.loose', looseMenu);
+  ctxRule('3d-brush', '#v3dBrush.v3-brush', brushMenu);
+  ctxRule('3d-toolbar', '#v3dTools, #v3dBrush', viewMenu);
+  ctxRule('3d-unit', '#v3dList li[data-v3u]', li => {
+    const v = v3, u = v && v.units[+li.dataset.v3u], t = curTower(); if (!u || !t || v.t !== t) return null;
+    const i = levelOfCfg(t, u.cfg); return u.roof || u.column || u.stack || i < 0 ? stackMenu(t) : pickLevelMenu(t, i, t.levels[i].indexOf(u.cfg));
+  });
+  ctxRule('3d-selected', '#v3dSel', () => { const t = curTower(), ms = t && multiSel(t); return !t ? null : ms ? levelsMenu(t, ms) : dsel.l != null && t.levels[dsel.l] ? levelMenu(t, dsel.l, dsel.u || 0) : stackMenu(t); });
+  ctxRule('stack-card', '#view-build .dcenter', () => { const t = curTower(); if (!t) return null; const m = stackMenu(t);
+    return { ...m, items: [{ icon: 'pen', label: 'Rename…', fn: () => { const b = document.querySelector('#view-build [data-rename]'); if (b) b.click(); } }, ...m.items.map((it, k) => (k ? it : { ...it, sep: true }))] }; });
+  // Design: the panel on the right (Colors while painting, a level, several levels, the stack's settings)
+  ctxRule('paint-type', '#dInsp [data-prole]', b => roleMenu(b.dataset.prole));
+  ctxRule('paint-group', '#dInsp [data-pall]', b => ({ head: 'Paint these', sub: plural(b.dataset.pall.split(',').length, 'part type'), items: colorPrefs.palette.map(p => ({ label: `Paint them ${shortName(p.id)}`, u: 'paint-group', fn: () => { undoAs(`Part types painted ${colorName(p.id)}`); b.dataset.pall.split(',').forEach(r => paintRole(r, p.id)); saveColors(); renderAll(); } })) }));
+  ctxRule('filament', '#dInsp .pfil', f => { const b = f.querySelector('[data-brush]'); return b ? filamentMenu(b.dataset.brush) : null; });
+  ctxRule('own-color', '#dInsp .pown', r => ({ head: 'Its own color', sub: (r.querySelector('b') || {}).textContent || 'Module', items: ctxMirror(r.querySelectorAll('button')) }));
+  ctxRule('panel', '#dInsp', (box, ev) => {
+    const t = curTower(); if (!t) return null;
+    if (painting()) return fpAdding ? { head: 'Add a filament', sub: 'Catalogue', items: [{ icon: 'chev', label: 'Back to the colors', fn: closeCatalog }] } : colorsMenu();
+    const el = ev.target instanceof Element ? ev.target : box;
+    const ms = multiSel(t), i = dsel.l;
+    // a drawer's tab: set that one up; a divider plan: its own buttons
+    const tab = el.closest('[data-dpick]'), plan = el.closest('.field, .dvplan, .gplan'), planBtns = plan ? plan.querySelectorAll('.dvacts button') : [];
+    const m = ms ? levelsMenu(t, ms) : i != null && t.levels[i] ? levelMenu(t, i, dsel.u || 0) : stackMenu(t);
+    const head = [];
+    if (tab) head.push({ icon: 'drawer', label: 'Set up this drawer', dis: tab.getAttribute('aria-selected') === 'true', fn: () => tab.click() }, ...ctxMirror(box.querySelectorAll('[data-dcopy]')));
+    if (planBtns.length) head.push(...ctxMirror(planBtns));
+    if (!ms && i != null && t.levels[i]) head.push(...[['-1', 'Select the level below', '↓'], ['1', 'Select the level above', '↑']].map(([d, label, key]) => { const b = box.querySelector(`[data-lgo="${d}"]`); return { icon: d === '1' ? 'up' : 'down', label, key, dis: !b || b.disabled, fn: () => b && b.click() }; }));
+    return { ...m, items: ctxJoin(head, ctxFolds(el), m.items) };
+  });
+  // anywhere: links, then a field's own menu stays the browser's
+  ctxRule('link', 'a[href]', linkMenu);
+  // Design's own menu
+  CTXP.build = () => {
+    const t = curTower(), loose = dsel && dsel.t === 'loose';
+    return ctxJoin(stacksMenu().items.slice(0, 3), t && !loose ? [{ icon: 'gear', label: 'Stack settings', key: 'Esc', fn: () => { leavePaint(); dsel.l = null; delete dsel.m; saveSel(); renderAll(); } }, { icon: 'plus', label: 'Add a level on top', key: 'A', fn: () => levelOp(t, 'top') }] : []);
+  };
+  // Text fields keep the browser's menu (paste, spelling); a tick box or a button does not
+  const ctxField = el => !!el.closest('textarea, select, [contenteditable=""], [contenteditable=true], input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]):not([type=range]):not([type=color]):not([type=file])');
+  function ctxFind(el, ev) {
+    const rules = [...(CTXV[view] || []), ...CTX];
+    for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+      // the step's rules only inside the step shown
+      for (const [name, sel, fn] of n.closest('#view-' + view) || !CTXV[view] ? rules : CTX) {
+        if (!n.matches(sel)) continue;
+        const m = fn(n, ev); if (m && (m.none || (m.items && m.items.length))) return { name, m, at: n }; // an empty one: the next
+      }
+    }
+    return { name: 'page/' + view, m: pageMenu(), at: null };
+  }
+  let ctxRight = null, ctxPress = -1e9; // the last right press (was Shift held?), the last press of any kind (a long touch)
+  addEventListener('pointerdown', e => { ctxPress = performance.now(); if (e.button === 2) ctxRight = { shift: e.shiftKey, t: ctxPress }; }, true);
+  document.addEventListener('contextmenu', e => {
+    const r = ctxRight; ctxRight = null;
+    if (e.defaultPrevented) return; // the 3D view, a plate: their own menu
+    if ((r && r.shift && performance.now() - r.t < 3000) || (!r && e.shiftKey && e.button === 2)) return; // Shift: the browser's
+    const el = e.target instanceof Element ? e.target : e.target && e.target.parentElement; if (!el) return;
+    if (ctxField(el)) return;
+    e.preventDefault();
+    let found;
+    try { found = ctxFind(el, e); } catch (err) { console.error(err); found = { name: 'page/' + view, m: pageMenu() }; }
+    const { name, m, at } = found; if (!m || m.none) return;
+    // text selected where the pointer is: "Copy" first
+    const s = getSelection(), txt = s && !s.isCollapsed ? s.toString().trim() : '';
+    const sel = txt && s.rangeCount && s.getRangeAt(0).intersectsNode(el) ? [{ icon: 'dup', label: 'Copy', u: 'copy-selection', key: MOD + '+C', fn: () => copy(txt, 'Copied') }] : [];
+    const items = ctxJoin(sel, m.items || []); if (!items.length) return;
+    use('right-click/' + name.replace(/^page\//, 'page-'));
+    // from the pointer; from the keyboard (no right press before it), under the element that has the focus
+    const kb = !r && performance.now() - ctxPress > 2000;
+    const opener = kb ? (at || (document.activeElement !== document.body ? document.activeElement : null) || el) : (at || el);
+    menuOpen({ ...m, items, opener, keys: kb, ...(kb ? {} : { x: e.clientX, y: e.clientY }) });
+  });
   const segBtns = (items, cur, attr) => items.map(it => `<button type="button" ${attr}="${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}"${it.dis ? ' disabled' : ''}>${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   const useg = (key, items, cur) => items.map(it => `<button type="button" data-useg="${key}=${esc(String(it.v))}" aria-pressed="${String(it.v) === String(cur)}">${it.label}${it.sub ? `<small>${it.sub}</small>` : ''}</button>`).join('');
   // An on/off setting of the selected module as two segmented buttons (data-ubool="key=1" / "key=0")
@@ -3594,6 +3858,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (!b) return;
     let timer = null;
     b.classList.add('hold'); b.style.setProperty('--hold-ms', HOLD_MS + 'ms');
+    b._hold = act; // a right-click menu's item does the same, held there too (ctxMirror)
     if (!/hold/i.test(b.title)) b.title = b.title ? b.title + ' (press and hold)' : 'Press and hold';
     const al = b.getAttribute('aria-label'); if (al && !/hold/i.test(al)) b.setAttribute('aria-label', al + ': press and hold');
     const start = e => {
@@ -4494,7 +4759,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       save(); renderAll();
     });
     box.querySelectorAll('[data-hlock]').forEach(b => b.onclick = () => { t.stack = { ...s, handleLock: b.dataset.hlock }; save(); renderAll(); });
-    box.querySelector('[data-tdup]').onclick = () => { const x = { ...JSON.parse(JSON.stringify(t)), id: newId(), name: t.name + ' copy' }; towers.push(x); dsel = { t: x.id, l: null }; saveSel(); save(); renderAll(); };
+    box.querySelector('[data-tdup]').onclick = () => dupStack(t);
     holdButton(box.querySelector('[data-tdel]'), () => removeStack(t), 'Hold the button down to remove the stack');
   }
   // The 3D view tells the inspector which level was clicked; the inspector's level is outlined in the view
@@ -4903,6 +5168,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       </div></section>`;
   }
   function renderPrint() {
+    CTXV.print = CTXP.print = null; // made again below, with these plates
     const b = computeBuild(true);
     if (b.empty) return emptyStep('view-print', 'to print');
     const s = summary(b.lines);
@@ -4952,17 +5218,17 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           ${plateSvg(pl, true)}<span class="mono pm">${plural(pl.items.length, 'part')} · ${aboutG(pl.grams)}</span><span class="pflag ${pl.done ? 'ok' : isNext ? 'next' : 'flag'}">${esc(note)}</span></button>
         <label class="ptick" title="Tick it for the download"><input type="checkbox" data-tick="${pl.n}" ${tick ? 'checked' : ''} aria-label="Tick plate ${pl.n} for the download"></label></div>`;
     };
-    const head = (name, hex, meta) => `<div class="pgroup"><h2><span class="dot2" style="background:${hex}"></span>${esc(name)}</h2><span class="mono">${meta}</span></div>`;
+    const head = (name, hex, meta, key) => `<div class="pgroup" data-pgk="${esc(key)}"><h2><span class="dot2" style="background:${hex}"></span>${esc(name)}</h2><span class="mono">${meta}</span></div>`;
     let sheet = '';
-    if (plateFilter === 'missing') sheet = head('Plates with parts not found', 'var(--bad)', plural(missingPlates.length, 'plate')) + missingPlates.map(card).join('');
+    if (plateFilter === 'missing') sheet = head('Plates with parts not found', 'var(--bad)', plural(missingPlates.length, 'plate'), 'missing') + missingPlates.map(card).join('');
     else {
       colors.forEach(k => {
         if (plateFilter !== 'all' && plateFilter !== k) return;
         const ps = allPlates.filter(pl => pl.color === k), todo = ps.filter(pl => !pl.done);
-        sheet += head(colorName(k), colorHex(k), `${plMeta(ps)} · ${todo.length ? todo.length + ' left' : 'all printed'}`) + todo.map(card).join('');
+        sheet += head(colorName(k), colorHex(k), `${plMeta(ps)} · ${todo.length ? todo.length + ' left' : 'all printed'}`, k) + todo.map(card).join('');
       });
       if (plateFilter === 'all' || plateFilter === 'printed')
-        sheet += head('Printed', 'var(--ok)', printedPl.length ? `${plMeta(printedPl)} · tick one to print it again` : 'Nothing printed yet') + printedPl.map(card).join('');
+        sheet += head('Printed', 'var(--ok)', printedPl.length ? `${plMeta(printedPl)} · tick one to print it again` : 'Nothing printed yet', 'printed') + printedPl.map(card).join('');
     }
     // One line of pills: All, one per filament, Printed, each with its plate count. The weight and "N left" are in
     // each group's header below (UX audit D2).
@@ -5107,6 +5373,44 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       plateMenuAt(pl, e, b);
     });
     if (sel) { const ps = V.querySelector('.psel'); if (ps) ps.oncontextmenu = e => { if (e.target.closest('button:not([data-pick])')) return; e.preventDefault(); plateMenuAt(sel, e, ps.querySelector('[data-pmenu]')); }; }
+    // Right-click menus of the rest of Print (section "right-click menus, everywhere"): the selected plate's buttons, a
+    // filament's pill or heading (tick its plates, show only them), a stack in the rail, the downloads, the selection bar
+    const ticked = pl => plateSel.ns.has(pl.n);
+    const platesOf = k => k === 'printed' ? printedPl : k === 'missing' ? missingPlates : k === 'all' ? plates : allPlates.filter(pl => pl.color === k && !pl.done);
+    const groupMenu = k => {
+      const ps = platesOf(k), name = k === 'all' ? 'All plates' : k === 'printed' ? 'Printed' : k === 'missing' ? 'Parts not found' : colorName(k).split(' \u00b7 ')[0];
+      return { head: 'Plates', sub: name, items: [
+        { icon: 'chev', label: k === 'all' ? 'Show every plate' : `Show only these plates`, dis: plateFilter === k, fn: () => { plateFilter = k; renderPrint(); } },
+        ...(k !== 'all' ? [{ icon: 'chev', label: 'Show every plate', dis: plateFilter === 'all', fn: () => { plateFilter = 'all'; renderPrint(); } }] : []),
+        { sep: true, icon: 'check', label: ps.length === 1 ? 'Tick this plate' : `Tick these ${ps.length} plates`, dis: !ps.length || ps.every(ticked), fn: () => { ps.forEach(pl => plateSel.ns.add(pl.n)); renderPrint(); } },
+        { icon: 'check', label: ps.length === 1 ? 'Untick it' : 'Untick them', dis: !ps.some(ticked), fn: () => { ps.forEach(pl => plateSel.ns.delete(pl.n)); renderPrint(); } }] };
+    };
+    const skipIds = () => [...towers.map(t => t.id), ...(extras.length ? ['loose'] : [])];
+    const setSkip = ids => { printSkip = ids; savePrintSkip(); selPlate = null; plateFilter = 'all'; renderPrint(); renderTabs(); };
+    CTXV.print = [
+      ['print/plate', '.psel', () => sel ? plateMenu(sel) : null],
+      ['print/filament', '.fchip[data-filter]', b => groupMenu(b.dataset.filter)],
+      ['print/group', '.pgroup[data-pgk]', g => groupMenu(g.dataset.pgk)],
+      ['print/stack', '[data-pskip]', b => {
+        const id = b.dataset.pskip === 'loose' ? 'loose' : +b.dataset.pskip, on = b.getAttribute('aria-pressed') === 'true', t = towers.find(x => x.id === id), skip = printSkip || [];
+        return { head: t ? 'Stack' : 'Loose parts', sub: t ? t.name : plural(extras.reduce((a, e) => a + e.qty, 0), 'part'), items: [
+          { icon: 'check', label: on ? 'Leave it out of the plates' : 'Put it in the plates', fn: () => b.click() },
+          { icon: 'chev', label: 'Print only this one', dis: skipIds().every(x => x === id ? !skip.includes(x) : skip.includes(x)), fn: () => setSkip(skipIds().filter(x => x !== id)) },
+          { icon: 'chev', label: 'Print everything', dis: !skip.length, fn: () => setSkip([]) },
+          { sep: true, icon: 'pen', label: t ? 'Show it in Design' : 'Show them in Design', fn: () => { dsel = t ? { t: t.id, l: null, u: 0 } : { t: 'loose' }; saveSel(); view = 'build'; renderAll(); window.scrollTo(0, 0); } }] };
+      }],
+      ['print/already-printed', '[data-phave]', () => ({ head: 'Already printed', sub: 'Parts printed before', items: [{ icon: 'chev', label: printHave ? 'Back to the plates' : 'Show the list', fn: () => { printHave = !printHave; renderPrint(); } }] })],
+      ['print/part-row', '#view-print .xitem', r => { const bs = ctxMirror(r.querySelectorAll('button')); return bs.length ? { head: 'Part', sub: ((r.querySelector('.lbl b') || {}).textContent || 'Part'), items: bs } : null; }],
+      ['print/downloads', '.ptop', () => ({ head: 'Downloads', sub: picked.length ? plural(picked.length, 'plate') + ' ticked' : plural(plates.length, 'plate') + ' left', items: ctxJoin(ctxMirror([$('gMake'), $('gFolders')], () => 'save'), tickItems()) })],
+      ['print/selection', '.pselbar', bar => ({ head: 'Ticked plates', sub: plural(picked.length, 'plate'), items: ctxMirror(bar.querySelectorAll('button'), () => 'check') })],
+      ['print/part-settings', '#pParts', (box, e) => ({ head: 'Print settings by part', sub: 'Walls, infill, supports', items: ctxJoin(ctxMirror((e.target.closest('details') || box).querySelectorAll('[data-psreset]')), ctxFolds(e.target)) })],
+      ['print/options', '.popts', (box, e) => ({ head: 'Plate options', sub: plural(allPlates.length, 'plate'), items: ctxJoin(ctxFolds(e.target), ctxMirror([$('resetPrinted')], () => 'del')) })],
+    ];
+    const tickItems = () => [
+      { icon: 'check', label: 'Tick every plate shown', dis: !shown.length || shown.every(ticked), fn: () => { shown.forEach(pl => plateSel.ns.add(pl.n)); renderPrint(); } },
+      { icon: 'check', label: 'Untick all', dis: !picked.length, fn: () => { plateSel.ns.clear(); renderPrint(); } }];
+    CTXP.print = () => none ? [] : ctxJoin(ctxMirror([$('gMake'), $('gFolders')], () => 'save'), printHave ? [] : tickItems(),
+      [{ icon: 'chev', label: printHave ? 'Back to the plates' : 'Already printed…', fn: () => { printHave = !printHave; renderPrint(); } }], ctxMirror([$('resetPrinted')], () => 'del'));
     // Print settings by part: a button sets one setting of one kind of part ('' = its default), "Back to the defaults" all
     V.querySelectorAll('[data-psv]').forEach(btn => btn.onclick = () => {
       const [id, k] = btn.closest('[data-ps]').dataset.ps.split('|'), raw = btn.dataset.psv, v = raw === '' ? null : typeof PS_OPTS[k][0] === 'object' ? raw : +raw;
@@ -7012,7 +7316,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const sw = roles.map(r => { const k = cfgOf(r), cur = colorFor(r, k), own = k && k.colors && paletteOf(k.colors[r]);
         return `<button type="button" class="v3-rsw${own ? ' own' : ''}" style="background:${colorHex(cur)}" data-v3pick="${ui}|${r}" title="${esc(ROLE_BY_ID.get(r).label)}: ${esc(colorName(cur))}${own ? ' (this unit only)' : ''}" aria-label="${esc(ROLE_BY_ID.get(r).label)}: ${esc(colorName(cur))}${own ? ', this unit only' : ''}"></button>`; }).join('');
       const un = u.place && u.place.unplaced.length ? `<small class="v3-miss">Not placed yet: ${esc(u.place.unplaced.join(', '))}</small>` : '';
-      return `<li class="${v.sel && v.sel.u === u ? 'on' : ''}"><div class="v3-uhead"><b>${esc(u.name)}</b><span class="v3-st ${cls}">${esc(st)}</span></div>
+      return `<li class="${v.sel && v.sel.u === u ? 'on' : ''}" data-v3u="${ui}"><div class="v3-uhead"><b>${esc(u.name)}</b><span class="v3-st ${cls}">${esc(st)}</span></div>
         ${u.loading && n ? `<div class="v3-bar"><span style="width:${Math.round(100 * (u.loaded || 0) / n)}%"></span></div>` : ''}
         <div class="v3-roles">${sw}</div>${un}</li>`;
     }).join('');
@@ -7854,6 +8158,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const csvCell = v => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
   const hwCsv = rows => ['Bought,Quantity,Item,Used for,Stacks,Store link', ...rows.map(r => [r.bought ? 'yes' : '', r.qty, r.full, r.why, r.where, r.link || ''].map(csvCell).join(','))].join('\r\n');
   function renderHardware() {
+    CTXV.hardware = CTXP.hardware = null; // made again below, with these rows
     const { b, rows, per } = hardwareList();
     if (b.empty) return emptyStep('view-hardware', 'to buy');
     const V = $('view-hardware');
@@ -7931,6 +8236,40 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob(['\ufeff' + hwCsv(rows)], { type: 'text/csv' })), download: 'Vault hardware.csv' });
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     };
+    // Right-click menus (section "right-click menus, everywhere"): a line (bought, its store page, copy it), a group (all
+    // bought or none), a stack in the rail, the bolt finish; Hardware's own menu copies and exports the list
+    const setBought = (rs, on) => { rs.forEach(r => { if (on) hwBought[r.item] = 1; else delete hwBought[r.item]; }); store.set('hwBought', hwBought); renderHardware(); renderTabs(); };
+    const groupItems = g => { const gr = rows.filter(r => r.group === g); return [
+      { icon: 'check', label: gr.length === 1 ? 'Mark it bought' : `Mark the ${gr.length} ${g} bought`, u: 'mark-group-bought', dis: gr.every(r => r.bought), fn: () => setBought(gr, true) },
+      { icon: 'check', label: gr.length === 1 ? 'Not bought yet' : `None of the ${g} bought yet`, u: 'untick-group', dis: !gr.some(r => r.bought), fn: () => setBought(gr, false) }]; };
+    const finishItems = () => HW_FINISHES.map(([id, , n]) => ({ label: `${n} bolts`, on: hwFinish() === id, fn: () => { setHwFinish(id); renderHardware(); } }));
+    CTXV.hardware = [
+      ['hardware/line', '.hwrow, .hwrow a[data-buy]', el => {
+        const row = el.closest('.hwrow'), cb = row.querySelector('[data-hw-bought]'), r = cb && rows.find(x => x.item === cb.dataset.hwBought), a = row.querySelector('a[data-buy]'); if (!r) return null;
+        return { head: r.group, sub: `${r.qty}\u00d7 ${r.name}`, items: ctxJoin(
+          [{ icon: 'check', label: r.bought ? 'Not bought yet' : 'Mark it bought', fn: () => setBought([r], !r.bought) }],
+          [...(a ? [{ icon: 'link', label: r.page ? 'Open its product page' : `Search for it on ${r.store}`, u: r.page ? 'open-product-page' : 'search-store', fn: () => a.click() }] : []),
+            { icon: 'dup', label: 'Copy this line', fn: () => copy(hwText([r]).replace(/^Vault hardware\n/, ''), 'Line copied') }],
+          rows.filter(x => x.group === r.group).length > 1 ? groupItems(r.group) : []) };
+      }],
+      ['hardware/group', '.hwg', g => { const name = (g.querySelector('h2') || {}).textContent || ''; return rows.some(r => r.group === name) ? { head: 'Group', sub: name, items: groupItems(name) } : null; }],
+      ['hardware/jump', '[data-hwjump]', a => { const g = (HW_GROUPS[+a.dataset.hwjump.replace('hwg-', '')] || [])[0]; return g ? { head: 'Group', sub: g, items: [{ icon: 'chev', label: 'Go there', fn: () => a.click() }, ...groupItems(g)] } : null; }],
+      ['hardware/stack', '[data-hwskip]', b => {
+        const id = +b.dataset.hwskip, on = b.getAttribute('aria-pressed') === 'true', t = towers.find(x => x.id === id); if (!t) return null;
+        const set = ids => { hwSkip = ids; store.set('hwSkip', hwSkip); renderHardware(); renderTabs(); };
+        return { head: 'Stack', sub: t.name, items: [
+          { icon: 'check', label: on ? 'Leave it out of the list' : 'Put it in the list', fn: () => b.click() },
+          { icon: 'chev', label: 'List only this one', dis: towers.every(x => x.id === id ? !hwSkip.includes(x.id) : hwSkip.includes(x.id)), fn: () => set(towers.map(x => x.id).filter(x => x !== id)) },
+          { icon: 'chev', label: 'List every stack', dis: !hwSkip.length, fn: () => set([]) },
+          { sep: true, icon: 'pen', label: 'Show it in Design', fn: () => { dsel = { t: t.id, l: null, u: 0 }; saveSel(); view = 'build'; renderAll(); window.scrollTo(0, 0); } }] };
+      }],
+      ['hardware/finish', '[data-hwfin]', () => ({ head: 'Bolt finish', sub: hwFin()[2], items: finishItems() })],
+    ];
+    CTXP.hardware = () => none ? [] : ctxJoin(
+      rows.length ? [{ icon: 'dup', label: 'Copy the list', fn: () => $('hwCopy').click() }, { icon: 'save', label: 'Export as CSV', fn: () => $('hwCsv').click() }] : [],
+      rows.length ? [{ icon: 'check', label: 'Mark everything bought', dis: rows.every(r => r.bought), fn: () => setBought(rows, true) },
+        { icon: 'del', label: 'Untick everything', dis: !rows.some(r => r.bought), hold: true, fn: () => { setBought(rows, false); toast('Every line back to not bought'); } }] : [],
+      finishItems());
   }
 
   // ---------- 4 · assembly guide ----------
@@ -8020,6 +8359,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   }
   const ASM_UNIT = { drawer: ['Drawer', u => u.type !== 'drawer' ? 0 : R.drawersOf(u).length * (u.w === 'L2' || u.w === 'XL2' ? 2 : 1)], case: ['Case', u => u.type === 'case' ? 1 : 0] };
   function renderAssemble() {
+    CTXV.assemble = CTXP.assemble = null; // made again below, with these steps
     const b = computeBuild();
     if (b.empty) return emptyStep('view-assemble', 'to assemble');
     const sections = GUIDE.filter(g => g.when(b));
@@ -8075,6 +8415,35 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       toast(built + 1 >= rep ? `All ${rep} ${unit.toLowerCase()}s built` : `${unit} ${built + 1} done`); renderAssemble(); renderTabs();
     };
     holdButton($('asmReset'), () => { delete asmBuilt[g.id]; store.set('asmBuilt', asmBuilt); renderAssemble(); renderTabs(); }, 'Hold it down to start the count again');
+    // Right-click menus (section "right-click menus, everywhere"): a step (done or not, every step up to it), a section
+    // in the rail (show it, tick or untick its steps); Assemble's own menu moves between sections
+    const setSteps = (x, ss, on) => { ss.forEach(st => { const k = x.id + ':' + st.t; if (on) stepsDone[k] = 1; else delete stepsDone[k]; }); store.set('steps', stepsDone); renderAssemble(); renderTabs(); };
+    const show = id => { asmSec = id; store.set('asmSec', asmSec); renderAssemble(); window.scrollTo(0, 0); };
+    const at = sections.indexOf(g);
+    CTXV.assemble = [
+      ['assemble/step', '.astep', row => {
+        const cb = row.querySelector('[data-stepkey]'), k = steps.findIndex(st => g.id + ':' + st.t === (cb && cb.dataset.stepkey)); if (k < 0) return null;
+        const on = !!stepsDone[cb.dataset.stepkey], hw = row.querySelector('.achip.hw');
+        return { head: g.title, sub: `Step ${k + 1} of ${steps.length}`, items: ctxJoin(
+          [{ icon: 'check', label: on ? 'Not done yet' : 'Done', fn: () => setSteps(g, [steps[k]], !on) },
+            { icon: 'check', label: k ? `Done, with the ${k} before it` : 'Done, the first one', dis: steps.slice(0, k + 1).every(st => stepsDone[g.id + ':' + st.t]), fn: () => setSteps(g, steps.slice(0, k + 1), true) },
+            { icon: 'up', label: 'Not done, nor those after it', dis: !steps.slice(k).some(st => stepsDone[g.id + ':' + st.t]), fn: () => setSteps(g, steps.slice(k), false) }],
+          hw ? [{ icon: 'chev', label: 'Open the hardware list', fn: () => { view = 'hardware'; renderAll(); window.scrollTo(0, 0); } }] : []) };
+      }],
+      ['assemble/section', '[data-sec]', b => {
+        const x = sections.find(y => y.id === b.dataset.sec); if (!x) return null;
+        const ss = stepsOf(x);
+        return { head: 'Section', sub: x.title, items: [
+          { icon: 'chev', label: 'Show it', dis: x === g, fn: () => show(x.id) },
+          { sep: true, icon: 'check', label: 'Tick all its steps', dis: ss.every(st => stepsDone[x.id + ':' + st.t]), fn: () => setSteps(x, ss, true) },
+          { icon: 'del', label: 'Untick all its steps', dis: !ss.some(st => stepsDone[x.id + ':' + st.t]), hold: true, fn: () => setSteps(x, ss, false) }] };
+      }],
+    ];
+    CTXP.assemble = () => ctxJoin(
+      [{ icon: 'up', label: at > 0 ? `Previous section: ${sections[at - 1].title}` : 'Previous section', u: 'previous-section', dis: at < 1, fn: () => show(sections[at - 1].id) },
+        { icon: 'down', label: at < sections.length - 1 ? `Next section: ${sections[at + 1].title}` : 'Next section', u: 'next-section', dis: at >= sections.length - 1, fn: () => show(sections[at + 1].id) }],
+      ctxMirror([$('asmNext')], () => 'check'),
+      [{ icon: 'chev', label: 'Open the hardware list', fn: () => { view = 'hardware'; renderAll(); window.scrollTo(0, 0); } }]);
   }
 
   // ---------- tabs ----------
