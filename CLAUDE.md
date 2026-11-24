@@ -125,16 +125,23 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
     `R.exterior` uses 51.5 / 99.5 / 195.5 (USSA's figures): within 0.5 mm, pick one and say so.
 - 3D view (section "3D stack view" in `src/template.html`): three.js 0.186.1 and meshoptimizer 1.3.0 from jsDelivr,
   loaded when the view is first shown; boxes before the folder is picked, then real parts simplified in workers
-  (0.15 mm, cached in IndexedDB under `MESH_CACHE` `mesh3d.5:`; simplifying with the normals as attributes, PR #90,
+  (0.15 mm, cached in IndexedDB under `MESH_CACHE` `mesh3d.6:`; simplifying with the normals as attributes, PR #90,
   was undone by Dols on 2026-11-23: slower, and it didn't clear the modules' fronts and backs; so was a finer
   simplification near sharp edges, PR #102: too slow). The ink comes from the file's own triangles (Dols, 2026-11-23,
-  "fausses arêtes du shader"): `meshJob` returns `ink` (segments on every edge of the file sharper than 30°) and `nrm`
-  (each kept corner's normal from the file's faces within 30° of the simplified face; a facet over 1 mm across that
-  only touches faces of another slope keeps its own), cached with the mesh, carried by `meshPieces` / `meshPiece`,
-  read by `geom` (`g.userData.ink`) and `creaseLines`; `creaseMat` draws the lines 0.5 mm nearer the eye. Before that
-  `meshJob` sews the files' open seams (Dols, 2026-11-23, "On voit tjr les arrêtes": diagonal slits across the L4F'
-  facade, the ink behind showing through): corners within 5 µm become one, and a corner lying on another triangle's open
-  side (T-junction, within 2 µm) cuts that triangle into a fan round its centre. L4F' facade: 13,698 open edges → 0. While a file is really
+  "fausses arêtes du shader"): `meshJob` returns `ink` (segments on every edge of the file sharper than 30°), cached
+  with the mesh, carried by `meshPieces` / `meshPiece`, read by `geom` (`g.userData.ink`) and `creaseLines`; `creaseMat`
+  draws the lines 0.5 mm nearer the eye. No hole, closed stays closed (Dols, 2026-11-24, "même décimé, le maillage soit
+  au moins sans grand nouveau trous, et s'il était manifold avant le décimage il doit le rester"; README "Simplifying
+  for the 3D view"): corners are welded only where the file writes the same coordinates, and before simplifying
+  `tidy` drops only what has no surface (a corner twice, a triangle twice, a triangle and its reverse). The old
+  clean-up (5 µm merge, small faces dropped, seams sewn) opened holes up to 22 mm and made non-manifold edges on 7 of
+  14 closed parts. After simplifying, `tidy` again, then the faces round each edge of more than two are paired by
+  angle (`pair`, union-find on the corners: each group gets its own vertex) and an edge whose pairs still share both
+  ends is cut at its middle. `nrm`: each corner's normal from the simplified faces round it within 30° of its own,
+  by area; a sliver (under twice the tolerance across) takes the widest neighbour nearest its slope. Measure with
+  `tools/mesh_check.mjs` (`MESHOPT=…/meshopt_simplifier.js node tools/mesh_check.mjs [--old old.html] files…`). The
+  ink outline (`hullNormals`) pushes a face under 1 mm across in one piece: the fans the simplifier leaves round a
+  hole turned over and drew black wedges across fronts. While a file is really
   simplified (a cache miss in `partMesh`: `simpStart` / `simpEnd`, counts per batch in `simp`), the window `#v3dSimp`
   over the stage says why and that Print uses the original files, with a spinner (`.v3-spin`); done, `simpTuck` folds
   it (~0.65 s, always animated: Dols wants to see it go) into `#v3dSimpBtn` in the strip under the view ("Why simplified?"), which reopens it (Dols, 2026-11-23).

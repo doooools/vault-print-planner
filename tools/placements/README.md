@@ -539,6 +539,58 @@ the rest only moved (XL bases 1,997 mm, L grid roofs ~1,770 mm, runner slides 30
 New parts in that delivery (the "Box … Upd" boxes, the pull-out handles in parts, XL Box Connector, Box Cover for
 bolts, Top Handle Taller) aren't offered yet: they have no measurement nor placement.
 
+## Simplifying for the 3D view
+
+The 3D view draws the parts simplified (0.15 mm at the default "Super low" level) by `meshJob` in `src/template.html`,
+in workers, with meshoptimizer 1.3.0. Rule (Dols, 2026-11-24): simplifying opens no big hole, and a part that was
+closed (every edge shared by two faces) stays closed. meshoptimizer is fast but makes no such promise: it collapses
+edges without the "link condition" that CGAL, OpenMesh or MeshLab's quadric simplifiers check (and pay for in time),
+so where a feature is thinner than the tolerance it can press two walls together into an edge of four faces, or a
+wall onto itself. Simplifying again with the vertices that would break locked, or with the normals as attributes
+(PR #90), was 5 to 50 times slower. So the page lets it work and mends after, as mesh repair tools do:
+
+1. **Weld** corners with exactly the same coordinates in the file, nothing nearer. Merging within 0.5 to 10 µm was
+   tried: it gave *more* edges of more than two faces on S1F and the S5 grid roof (it joins walls that only nearly touch).
+2. **Tidy** without moving or opening the surface: a triangle with a corner twice goes (no area), a triangle twice
+   keeps one, a triangle and its own reverse both go (a wall of no thickness). Nothing else is dropped: the old
+   clean-up (5 µm merge, faces under 0.5 µm² dropped, seams sewn) is what opened the holes.
+3. **Simplify** (`ErrorAbsolute`, `Prune`), then tidy again.
+4. **Pair** the faces round each edge of more than two: by the angle between them, each face with its neighbour on the
+   way round, opposite directions first; the corners are then split (union-find over the paired edges): each group of
+   faces round a corner that holds together gets its own vertex. Where two pairs still share both ends of an edge, the
+   edge is cut at its middle (the faces on it become two, or a fan round their centre).
+5. **Normals**: each corner from the simplified faces round it within 30° of its own face, by area. A sliver (under
+   twice the tolerance across) takes the normal of the widest neighbour nearest its slope; a face of no area, that of
+   the faces round it. Before, they came from the file's faces round each kept corner, and a corner where a flat face
+   meets a fillet tilted every long facet it held: the fans of thin faces Dols saw on the fronts.
+
+The ink outline pushes each corner out along the normal averaged where the faces meet; a face under 1 mm across is
+pushed in one piece (`hullNormals`), else a long thin face reaching a hole's rim turned over into a black wedge.
+
+Measured with `tools/mesh_check.mjs` on 34 parts of the first download (and XL5 Module 1F alone), new against the
+preprod of 2026-11-24, "open / more than two faces" edges:
+
+| part | file | before | now |
+| --- | --- | --- | --- |
+| XL5 Module 1F (7.1M triangles) | 0 / 0 | 589 / 1,314, 27 holes over 1 mm, up to 22.5 mm, 13.1 s | 0 / 0, 10.4 s |
+| M4 Roof | 0 / 12 | 6 / 59, a hole of 16.95 mm | 0 / 0 |
+| S5 Box 1F | 0 / 0 | 10 / 2,895 | 0 / 0 |
+| M4 Module 1F / 2F / 4F | 0 / 2, 0 / 22, 6 / 4 | 8 / 35, 8 / 29, 4 / 25, holes up to 2.7 mm | 0 / 0 |
+| S1F (a broken file) | 484 / 5,252 | 94 / 13,463, a hole of 15.8 mm | 590 / 0, largest 2.9 mm |
+
+Of the 14 files that were closed, the old clean-up broke 7; now none. Edges of more than two faces: 0 on every part,
+including files that had some. A part with holes of its own keeps them, a little wider at most (S1F: 0.9 → 2.9 mm).
+Time: 20.9 s for the 34 parts instead of 24.4 s, one part slower (M4 Roof, 0.5 → 0.6 s); about as many triangles
+(206k against 207k). M4 Roof holds 18.7k triangles instead of 3k: slivers of the file's own that the simplifier
+can't remove without opening it, invisible. The cache key went to `mesh3d.6:`: parts are simplified again once, at the
+next visit.
+
+```
+npm install --prefix /tmp/mo meshoptimizer@1.3.0
+git show origin/preprod:src/template.html > /tmp/old.html
+MESHOPT=/tmp/mo/node_modules/meshoptimizer/meshopt_simplifier.js node tools/mesh_check.mjs --old /tmp/old.html <files.stl>
+```
+
 ## How it is measured
 
 The files are exported in print orientation (some at 45° to fit the bed) and scattered around one big CAD scene. Some parts are already in their assembled place relative to each other: the box, the baseplate, the stopper and the latch (X/Y). The rest is found by measurement in Blender:
