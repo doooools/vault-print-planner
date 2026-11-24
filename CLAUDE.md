@@ -512,6 +512,13 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   the STL folders download keeps USSA's bytes. A file of another size is read as it is, so both downloads work.
   New parts of that delivery ("Box … Upd", handles in parts…) aren't offered yet. README "Later deliveries".
 
+- Search engines and link previews (Dols, 2026-11-24, "référencement"): `docs/seo.md`. In `<head>`: a longer
+  `<title>` (the preprod's prefix still goes first), the description, `canonical` = the live address (preprod too),
+  Open Graph / Twitter card with `docs/images/social.png` read from `main` on raw.githubusercontent (the published site
+  holds only the page and `previews/`), JSON-LD `WebApplication`; a `<noscript>` text. No robots.txt (a project site's
+  is ignored) nor sitemap. The card is made by `node tools/social-card/make.js`: a drawing, no render of the parts.
+  Repo About, social preview and Search Console are Dols's (docs/seo.md "What only Dols can do").
+
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
   main checkout's root, which is not committed.
