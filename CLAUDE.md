@@ -33,7 +33,13 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   Anton / Special Elite / Courier Prime embedded (`src/fonts/`, inlined by `build.py` at `/*FONTS*/`), one taped card
   per screen (`.ihead`, `.psel`, `.asm-need`; key figure `kfig`), no radius, hard shadows. The 3D view is drawn in ink
   (`open3d`: `toon` (both sides: the simplified parts have hairline gaps), `hullMat` (offset behind the part), `inked`,
-  `creaseLines`, hard shadow, stencil selection ring `v3mark` → `ring`, `v.retheme`). From 1200 px Design fills the
+  `creaseLines`, hard shadow, stencil selection ring `v3mark` → `ring`, `v.retheme`). Three looks for the 3D view (Dols, 2026-11-24):
+  `V3_LOOKS` Ink (the above), Plain (the pre-redesign `MeshStandardMaterial`, its lights and soft shadow, no ink
+  outline or creases: `hulls.ink` and `creaseMat` hidden, the hover outline and the selection ring kept) and Halftone
+  (`halftone`: Lambert lit, flat colour, ink dots at 45° in the shade, paper dots on dark filaments, toner grain, dotted
+  shadow `dotShadow`); `v3look` in localStorage `look3d` (this browser's), `setLook`, `v.relook` (no rebuild),
+  buttons `#v3dLook` under the view (`v3lookDraw`), `lookItems` in `viewMenu` and `lookMenu` (`ctxRule` '3d-look'),
+  key L, counted `3d/look` and `3d/look-in-use`. Rules: `docs/ux-redesign.md` "Three looks for the 3D view". From 1200 px Design fills the
   window and doesn't scroll (`body:has(#view-build … .design)`): only the rail and the inspector scroll.
   Rules: `docs/ux-redesign.md` "The look", which wins over the older rules there.
 - What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file

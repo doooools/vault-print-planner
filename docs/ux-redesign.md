@@ -266,6 +266,24 @@ stays. Where this section and the rules below disagree, this section wins.
   an ink ring outside it in light. What a click would paint is tinted halfway to that yellow. Picking, the camera,
   the tools, the menus and the mesh pipeline are untouched. The theme switch re-reads the shadow and the rings
   (`v.retheme`).
+- **Three looks for the 3D view** (Dols, 2026-11-24: "choisir entre le shader actuel, le shader de base et un autre
+  dans la vibe fanzine"): segmented buttons "Look" in the strip under the view (`#v3dLook`, a small sample of each
+  beside its name), the same as ticked items in the toolbar's right-click menu and in the buttons' own, and the key L
+  (the next one). This browser's own setting (localStorage `look3d`, like the parts' level of detail), not the
+  project's; Ink at first. `open3d` reads `v3look`; `v.relook` swaps lights, shadow and outlines and makes every
+  material again, without rebuilding the model (the camera, the drawers and the selection stay).
+  - **Ink**: the look above.
+  - **Plain**: the view before the redesign: smooth lit shading (`MeshStandardMaterial`; bolts a little shiny), a sky
+    and ground light with a sun from the right and a fill from behind, a soft round shadow, no ink outlines nor creases.
+    The level under the pointer still gets its ink outline, the selection its yellow ring, and what a click would paint
+    glows a little yellow.
+  - **Halftone**: each part printed flat in its filament's colour, the shade as a screen of ink dots at 45° (6 px
+    apart, `MeshLambertMaterial` only to know how much each point faces the sun) that grow as the face turns away:
+    fronts stay clean, tops get small dots, right sides heavy ones. A dark filament (under ~8 % luminance), where ink
+    dots wouldn't show, gets paper dots on its lit faces instead (reversed out). Toner grain over everything (±4 %),
+    the hard shadow printed as dots, Ink's outlines and creases.
+  - The GLB export no longer reads its metal and roughness from the view's materials (Ink's had none, so glTF took
+    every part as metal): bolts 0.5 / 0.4, the rest 0 / 0.72, whatever the look.
 
 What the handoff changes in the rules below: orange actions became pink, the dark "selected" fill became the yellow
 block, step titles went from 28 px to 48 px, the mono font is now the text font too (Courier Prime). Kept against the
@@ -328,7 +346,7 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   footprint is made to it; a paste says what it did, with "Undo"; text selected on the page is copied as usual; the
   level menu has "Copy level" / "Paste a level above", the stack menu "Copy stack" / "Paste …"); in the 3D view O opens or closes
   the level's drawer or case, P Paint on or off, F fits the stack in the view (the one reframing, asked for), E Spread
-  levels, H Hide roof, R Rotate; Ctrl/Cmd + click and Shift + click select several levels (listed in the 3D view's group, "click" not drawn as a key), and with several selected Alt + ↑ ↓, D, Shift + D, Delete, O, Ctrl/Cmd + C and V act on all of them. Rules: never while typing in a field or with a menu, a dialog, the filament picker or the
+  levels, H Hide roof, R Rotate, L the next look (Ink, Plain, Halftone); Ctrl/Cmd + click and Shift + click select several levels (listed in the 3D view's group, "click" not drawn as a key), and with several selected Alt + ↑ ↓, D, Shift + D, Delete, O, Ctrl/Cmd + C and V act on all of them. Rules: never while typing in a field or with a menu, a dialog, the filament picker or the
   printer list open; bare keys take no Ctrl, Cmd or Alt, so the browser's own shortcuts stay theirs (only Ctrl/Cmd + S
   and O are taken, for the design file); a key held down acts once (but the arrows repeat); no shortcut removes
   anything that is pressed and held with the mouse. Discoverable where the action is: the menus show the key on the
@@ -366,8 +384,9 @@ menu first (the 3D view, a plate card) is left alone. What each menu holds:
   from a template…, Paste the stack copied, Loose parts. Loose parts: show them, Print only these, Clear (held); a part
   in their list: One more, One fewer, Take it out of the list (held); in the search: Add it. The stack's card (name,
   size, buttons, the strip under the view): Rename… then the 3D view's stack menu. The view's toolbar and hint bar: the
-  tool (Select, Paint), Rotate, Spread levels, Hide roof, the bolt finish (ticked when on), Fit the stack in the view,
-  How to move the view. Paint's brush bar: one brush per filament, Add a filament…, what a click paints, Back to Select.
+  tool (Select, Paint), Rotate, Spread levels, Hide roof, the bolt finish (ticked when on), the look (Ink, Plain,
+  Halftone, ticked when on), Fit the stack in the view, How to move the view. The Look buttons under the view: the
+  three looks. Paint's brush bar: one brush per filament, Add a filament…, what a click paints, Back to Select.
   The view's list of units: that level's menu (it gets selected). The panel: the level's menu (with Select the level
   below / above first), the levels' menu with several selected, the stack's menu on Stack settings; on a drawer tab:
   Set up this drawer, Same settings in every drawer; on a divider plan: its None / Every other / All / Clear; on a
@@ -427,14 +446,15 @@ In the dashboard, events are the paths without a leading "/"; type the prefix in
 - `3d/…`: tool (select, paint), rotate, spread levels, hide roof, help, bolts finish, right-click on a level or the
   background, a drawer or case opened, the real parts shown, parts not in the folder or not simplified, the viewer
   not loaded, `3d/simplifying` (the window opened by itself), `3d/why-simplified` (its button under the view),
-  `3d/simplifying-hide` (its ×), `3d/resolution=superlow` / `=low` / `=medium` / `=high` / `=native` (the window's setting).
+  `3d/simplifying-hide` (its ×), `3d/resolution=superlow` / `=low` / `=medium` / `=high` / `=native` (the window's setting), `3d/look=ink` / `=plain` / `=halftone` (the Look buttons under the
+  view), `3d/look-in-use/<look>` (the look of a visit's Design step, once per visit).
 - `paint/…`: a click in 3D, brush, "A click paints", add a filament, part type or group painted, module exception,
   the presets ("Start from"), the filament picker (opened, scope, Bambu colour, line filter, tray colour, "Use it"),
   the Selected card's buttons.
 - `menu/<item>`: any menu item used (level, levels, stack, File menus, the right-click menus), digits as N; an item
   whose label holds a name (a filament, a stack) counts under a fixed word (`menu/brush`, `menu/paint-part-type`…).
 - `right-click/<where>`: a right-click menu opened (Dols, 2026-11-23): `tab`, `file`, `theme`, `printer`, `folder`,
-  `brand`, `template`, `window`, `rail-stack`, `loose`, `stacks`, `start`, `loose-part`, `3d-brush`, `3d-toolbar`,
+  `brand`, `template`, `window`, `rail-stack`, `loose`, `stacks`, `start`, `loose-part`, `3d-brush`, `3d-toolbar`, `3d-look`,
   `3d-unit`, `3d-selected`, `stack-card`, `paint-type`, `paint-group`, `filament`, `own-color`, `panel`, `link`,
   `print/plate`, `print/filament`, `print/group`, `print/stack`, `print/already-printed`, `print/part-row`,
   `print/downloads`, `print/selection`, `print/part-settings`, `print/options`, `hardware/line`, `hardware/group`,
