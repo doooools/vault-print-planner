@@ -36,18 +36,24 @@ jobs:
         with:
           ref: main
           fetch-depth: 1
+      # Only what the page loads (SITE): index.html and its part pictures. docs/, src/, tools/, tests/ stay on GitHub;
+      # shipping them for both branches helped fill the account's Actions storage (0.5 GB a month) on 2026-11-24, and
+      # GitHub then dropped the site's archive ("No artifacts named github-pages").
       - name: Put main at the root and preprod under preprod/
+        env:
+          SITE: index.html previews .nojekyll LICENSE
         run: |
           mkdir -p "$RUNNER_TEMP/site"
-          git archive HEAD | tar -x -C "$RUNNER_TEMP/site"
+          git archive HEAD $SITE | tar -x -C "$RUNNER_TEMP/site"
           if git fetch --depth 1 origin preprod; then
             mkdir -p "$RUNNER_TEMP/site/preprod"
-            git archive FETCH_HEAD | tar -x -C "$RUNNER_TEMP/site/preprod"
+            git archive FETCH_HEAD $SITE | tar -x -C "$RUNNER_TEMP/site/preprod"
             echo "preprod: $(git rev-parse --short FETCH_HEAD)"
           else
             echo "No preprod branch: main only"
           fi
           echo "main: $(git rev-parse --short HEAD)"
+          du -sh "$RUNNER_TEMP/site"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
