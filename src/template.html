@@ -5877,7 +5877,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const CDN_THREE = 'https://cdn.jsdelivr.net/npm/three@0.186.1/';
   const CDN_SIMPLIFIER = 'https://cdn.jsdelivr.net/npm/meshoptimizer@1.3.0/meshopt_simplifier.js';
   const SIMPLIFY_MM = 0.15; // how far a simplified surface may stray from the part's, in mm
-  const MESH_CACHE = 'mesh3d.5:'; // IndexedDB key prefix; bump when meshJob changes (4: the ink and normals from the files; 5: seams sewn)
+  const MESH_CACHE = 'mesh3d.6:'; // IndexedDB key prefix; bump when meshJob changes (4: the ink and normals from the files; 5: seams sewn; 6: no clean-up that opens holes, closed parts kept closed, normals from the simplified faces)
   let threeLib = null;
   const loadThree = () => threeLib || (threeLib = Promise.all([import(CDN_THREE + '+esm'), import(CDN_THREE + 'examples/jsm/controls/OrbitControls.js/+esm')])
     .then(([T, oc]) => ({ T, OrbitControls: oc.OrbitControls })).catch(e => { threeLib = null; throw e; }));
@@ -6246,16 +6246,21 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     return { parts, unplaced, bolts, lay };
   }
 
-  // Read an STL, weld identical corners, drop triangles with no area (some exports carry 100k+ of them, which wreck a
-  // simplifier), then simplify within tol mm (the level's, MESH_LEVELS), loosening it until the part holds at most `most`
-  // triangles (0: no cap). Self-contained: it also runs in a worker, from its source text.
+  // Read an STL, weld identical corners, tidy it without opening it, simplify within tol mm (the level's, MESH_LEVELS),
+  // loosening it until the part holds at most `most` triangles (0: no cap), then mend what the simplifier pressed
+  // together so that a closed part stays closed. Self-contained: it also runs in a worker, from its source text.
+  // Dols, 2026-11-24 ("même décimé, le maillage soit au moins sans grand nouveau trous, et s'il était manifold avant le
+  // décimage il doit le rester"): nothing before the simplifier deletes or moves a face any more. Measured on 36 parts:
+  // the old clean-up (corners within 5 µm merged, faces under 0.5 µm² dropped, seams sewn back) opened holes up to
+  // 22 mm (XL5 Module 1F: 1,903 open edges) and made 1 to 2,900 edges of more than two faces; now 0 and 0 on every part
+  // that was closed, in a little less time (34 of them: 20.9 s instead of 24.4 s; M4 Roof 0.1 s longer).
+  // tools/placements/README.md "Simplifying for the 3D view".
   // The ink is worked out on the file's own triangles, before simplifying (Dols, 2026-11-23: "il faut juste trouver un
   // moyen de régler le problème des fausses arêtes du shader"): the simplifier leaves thin facets on flat faces, within
-  // its 0.15 mm yet turned by tens of degrees, which drew false crease lines and hatching across fronts and sides.
+  // its 0.15 mm yet turned by tens of degrees, which drew false crease lines across fronts and sides.
   // `ink`: the crease lines (segments, mm), every edge where the file's two faces turn more than 30° (none on a flat
-  // face, however it is simplified; engraved logos and text keep their true outline). `nrm`: each kept corner's normal
-  // (× 127), the file's faces around that corner within 30° of the simplified face, so a facet on a flat face is shaded
-  // as that face.
+  // face, however it is simplified; engraved logos and text keep their true outline). `nrm`: each corner's normal
+  // (× 127), from the simplified faces round it within 30° of its own face, by area.
   function meshJob(buf, MS, tol, most) {
     const dv = new DataView(buf), n = buf.byteLength >= 84 ? dv.getUint32(80, true) : 0, bin = 84 + n * 50 === buf.byteLength;
     let raw = null;
@@ -6291,109 +6296,42 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     keys = null;
     if (!count) throw new Error('no shape in it');
     let pts = new Float32Array(pb.buffer, 0, count * 3);
-    // Corners within 5 µm of each other are one (some exports write the same corner twice, a micrometre apart, which
-    // leaves the seam open: see the sewing below). Cells of 20 µm, so a corner mostly looks in one.
-    {
-      // a hash table of cells (their coordinates) → the first corner kept in each, the others chained by `next`
-      const E = 0.005, C = 0.02, size = 1 << Math.ceil(Math.log2(count * 2 + 2)), ci = new Int32Array(size * 3), head = new Int32Array(size).fill(-1);
-      const next = new Int32Array(count), rep = new Int32Array(count);
-      const slot = (i, j, k, add) => {
-        let h = ((i * 73856093) ^ (j * 19349663) ^ (k * 83492791)) & (size - 1);
-        while (head[h] >= 0 && (ci[h * 3] !== i || ci[h * 3 + 1] !== j || ci[h * 3 + 2] !== k)) h = (h + 1) & (size - 1);
-        if (head[h] < 0 && add) { ci[h * 3] = i; ci[h * 3 + 1] = j; ci[h * 3 + 2] = k; }
-        return h;
-      };
-      let merged = 0;
-      for (let v = 0; v < count; v++) {
-        const x = pts[v * 3], y = pts[v * 3 + 1], z = pts[v * 3 + 2];
-        let to = -1;
-        for (let i = Math.floor((x - E) / C); i <= Math.floor((x + E) / C) && to < 0; i++) for (let j = Math.floor((y - E) / C); j <= Math.floor((y + E) / C) && to < 0; j++) for (let k = Math.floor((z - E) / C); k <= Math.floor((z + E) / C) && to < 0; k++) {
-          for (let u = head[slot(i, j, k, false)]; u >= 0; u = next[u]) {
-            const dx = pts[u * 3] - x, dy = pts[u * 3 + 1] - y, dz = pts[u * 3 + 2] - z;
-            if (dx * dx + dy * dy + dz * dz < E * E) { to = u; break; }
-          }
+    // Tidy a triangle list in place without moving or opening any of its surface (Dols, 2026-11-24: no new hole, and a
+    // closed part stays closed); returns its new length. A triangle with a corner twice has no area and goes (its two
+    // sides cancel); the same triangle twice keeps one; a triangle and its own reverse (a wall with no thickness: some
+    // exports carry thousands, and the simplifier makes one where it folds a feature thinner than its tolerance) both go.
+    const tidy = (ix, len) => {
+      const size = 1 << Math.ceil(Math.log2(len / 3 * 2 + 2)), tab = new Int32Array(size).fill(-1), gone = new Uint8Array(len / 3);
+      let n3 = 0;
+      for (let t = 0; t < len; t += 3) {
+        let p = ix[t], q = ix[t + 1], r = ix[t + 2];
+        if (p === q || q === r || p === r) continue;
+        // turned so that its lowest corner comes first
+        if (q < p && q < r) { const s = p; p = q; q = r; r = s; } else if (r < p && r < q) { const s = r; r = q; q = p; p = s; }
+        const lo = q < r ? q : r, hi = q < r ? r : q;
+        let h = (Math.imul(p, 73856093) ^ Math.imul(lo, 19349663) ^ Math.imul(hi, 83492791)) & (size - 1), dup = -1;
+        for (;;) {
+          const f = tab[h]; if (f < 0) break;
+          if (ix[f] === p && (ix[f + 1] === q || ix[f + 1] === r) && (ix[f + 2] === q || ix[f + 2] === r)) { dup = f; break; }
+          h = (h + 1) & (size - 1);
         }
-        if (to >= 0) { rep[v] = to; merged++; continue; }
-        rep[v] = v;
-        const h = slot(Math.floor(x / C), Math.floor(y / C), Math.floor(z / C), true); next[v] = head[h]; head[h] = v;
+        if (dup >= 0) { if (ix[dup + 1] !== q) gone[dup / 3] = 1; continue; } // its reverse: that one goes too
+        tab[h] = n3; ix[n3] = p; ix[n3 + 1] = q; ix[n3 + 2] = r; n3 += 3;
       }
-      if (merged) for (let i = 0; i < nv; i++) idx[i] = rep[idx[i]];
-    }
-    // Keep triangles with three different corners and some area (some exports carry 100k+ with none, which wreck a
-    // simplifier), written back into idx, which only gets shorter
-    let nt = 0;
-    for (let t = 0; t < nv; t += 3) {
-      const p = idx[t], q = idx[t + 1], r = idx[t + 2];
-      if (p === q || q === r || p === r) continue;
-      const ux = pts[q * 3] - pts[p * 3], uy = pts[q * 3 + 1] - pts[p * 3 + 1], uz = pts[q * 3 + 2] - pts[p * 3 + 2];
-      const vx = pts[r * 3] - pts[p * 3], vy = pts[r * 3 + 1] - pts[p * 3 + 1], vz = pts[r * 3 + 2] - pts[p * 3 + 2];
-      const cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx;
-      if (cx * cx + cy * cy + cz * cz < 1e-12) continue; // under 0.5 µm² of area
-      idx[nt * 3] = p; idx[nt * 3 + 1] = q; idx[nt * 3 + 2] = r; nt++;
-    }
+      let m = 0;
+      for (let f = 0; f < n3; f += 3) if (!gone[f / 3]) { ix[m] = ix[f]; ix[m + 1] = ix[f + 1]; ix[m + 2] = ix[f + 2]; m += 3; }
+      return m;
+    };
+    // The file as it is: corners are only welded where it writes the same coordinates
+    let nt = tidy(idx, nv) / 3;
     let kept = idx.subarray(0, nt * 3);
-    // Sew the file's open seams (Dols, 2026-11-23: "On voit tjr les arrêtes"). Some exports leave a corner of one
-    // triangle on the side of another instead of sharing it (a T-junction): 13,700 open edges on the L4F' facade alone.
-    // The simplifier keeps such a seam as a border and each side of it shrinks on its own, which opened hairline slits
-    // across fronts, through which the ink of the part's back showed as long diagonal lines. Each corner lying on an
-    // open side (within 2 µm) is put on it: the triangle is cut into a fan round its centre, with no gap left.
-    // the faces around each corner (start, list), made again once the seams are sewn
     let start, list;
-    const around = () => {
+    {
       start = new Uint32Array(count + 1); list = new Uint32Array(nt * 3);
       for (let i = 0; i < nt * 3; i++) start[kept[i] + 1]++;
       for (let v = 0; v < count; v++) start[v + 1] += start[v];
       const fill = start.slice(0, count);
       for (let i = 0; i < nt * 3; i++) list[fill[kept[i]]++] = (i / 3) | 0;
-    };
-    around();
-    {
-      const st = start, ls = list, open = [], onB = new Uint8Array(count);
-      for (let f = 0; f < nt; f++) for (let k = 0; k < 3; k++) {
-        const p = kept[f * 3 + k], q = kept[f * 3 + (k + 1) % 3];
-        let shared = false;
-        for (let j = st[p]; j < st[p + 1] && !shared; j++) { const h = ls[j]; if (h !== f && (kept[h * 3] === q || kept[h * 3 + 1] === q || kept[h * 3 + 2] === q)) shared = true; }
-        if (!shared) { open.push(f * 3 + k); onB[p] = onB[q] = 1; }
-      }
-      if (open.length) {
-        // the open corners by 1 mm cell
-        const cell = new Map(), ck = (x, y, z) => (Math.floor(x) * 73856093) ^ (Math.floor(y) * 19349663) ^ (Math.floor(z) * 83492791);
-        for (let v = 0; v < count; v++) if (onB[v]) { const k = ck(pts[v * 3], pts[v * 3 + 1], pts[v * 3 + 2]); let c = cell.get(k); if (!c) cell.set(k, c = []); c.push(v); }
-        const cuts = new Map(); // face → [corners on side 0, side 1, side 2], each [t, v] along it
-        for (const e of open) {
-          const f = (e / 3) | 0, k = e % 3, a = kept[e], b = kept[f * 3 + (k + 1) % 3];
-          const ax = pts[a * 3], ay = pts[a * 3 + 1], az = pts[a * 3 + 2], dx = pts[b * 3] - ax, dy = pts[b * 3 + 1] - ay, dz = pts[b * 3 + 2] - az;
-          const L2 = dx * dx + dy * dy + dz * dz, steps = Math.ceil(Math.sqrt(L2)) + 1, seen = new Set(), on = [];
-          for (let i = 0; i <= steps; i++) {
-            const x = ax + dx * i / steps, y = ay + dy * i / steps, z = az + dz * i / steps;
-            for (let ox = -1; ox <= 1; ox++) for (let oy = -1; oy <= 1; oy++) for (let oz = -1; oz <= 1; oz++) {
-              const c = cell.get(ck(x + ox, y + oy, z + oz)); if (!c) continue;
-              for (const v of c) {
-                if (v === a || v === b || seen.has(v)) continue; seen.add(v);
-                const wx = pts[v * 3] - ax, wy = pts[v * 3 + 1] - ay, wz = pts[v * 3 + 2] - az, t = (wx * dx + wy * dy + wz * dz) / L2;
-                if (t <= 1e-6 || t >= 1 - 1e-6) continue;
-                const ex = wx - t * dx, ey = wy - t * dy, ez = wz - t * dz;
-                if (ex * ex + ey * ey + ez * ez < 4e-6) on.push([t, v]);
-              }
-            }
-          }
-          if (on.length) { let c = cuts.get(f); if (!c) cuts.set(f, c = [[], [], []]); c[k] = on.sort((u, w) => u[0] - w[0]); }
-        }
-        if (cuts.size) {
-          let extra = 0; for (const c of cuts.values()) extra += c[0].length + c[1].length + c[2].length + 3;
-          const np = new Float32Array((count + cuts.size) * 3), ni = new Uint32Array((nt + extra) * 3);
-          np.set(pts.subarray(0, count * 3));
-          let m = 0, nc = count;
-          for (let f = 0; f < nt; f++) {
-            const c = cuts.get(f), p = kept[f * 3], q = kept[f * 3 + 1], r = kept[f * 3 + 2];
-            if (!c) { ni[m++] = p; ni[m++] = q; ni[m++] = r; continue; }
-            const ring = [p, ...c[0].map(x => x[1]), q, ...c[1].map(x => x[1]), r, ...c[2].map(x => x[1])], o = nc++;
-            for (let d = 0; d < 3; d++) np[o * 3 + d] = (pts[p * 3 + d] + pts[q * 3 + d] + pts[r * 3 + d]) / 3;
-            for (let i = 0; i < ring.length; i++) { ni[m++] = ring[i]; ni[m++] = ring[(i + 1) % ring.length]; ni[m++] = o; }
-          }
-          pts = np; count = nc; kept = ni.subarray(0, m); nt = m / 3; around();
-        }
-      }
     }
     // a face's unit normal into fn[0..2] and its area as the result; 0 when the face is too thin for its normal to hold
     // (under 2 µm across, the file's own rounding could turn it)
@@ -6406,7 +6344,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       fn[0] = x / l; fn[1] = y / l; fn[2] = z / l;
       return l / Math.sqrt(long) < 0.002 ? 0 : l / 2;
     };
-    const cos = Math.cos(30 * Math.PI / 180), cos20 = Math.cos(20 * Math.PI / 180);
+    const cos = Math.cos(30 * Math.PI / 180);
     let ink = new Float32Array(1 << 12), ni = 0;
     for (let f = 0; f < nt; f++) for (let k = 0; k < 3; k++) {
       const p = kept[f * 3 + k], q = kept[f * 3 + (k + 1) % 3];
@@ -6425,45 +6363,150 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       ink[ni++] = pts[q * 3]; ink[ni++] = pts[q * 3 + 1]; ink[ni++] = pts[q * 3 + 2];
     }
     let e = tol, out = kept;
-    // tol 0: native (the "Native" level): every triangle of the file, only welded and cleaned
+    // tol 0: native (the "Native" level): every triangle of the file, only welded and tidied
     if (tol > 0) for (let pass = 0; pass < 4; pass++, e *= 3) { // a tower can top 20M triangles: keep each part under `most`
       out = MS.simplify(kept, pts, 3, Math.min(kept.length, 3 * 500), e, ['ErrorAbsolute', 'Prune'])[0];
       if (!most || out.length <= 3 * most) break;
     }
-    const remap = new Int32Array(count).fill(-1), oidx = new Uint32Array(out.length);
-    let m = 0;
-    for (let i = 0; i < out.length; i++) { const v = out[i]; if (remap[v] < 0) remap[v] = m++; oidx[i] = remap[v]; }
-    const opos = new Float32Array(m * 3);
-    for (let v = 0; v < count; v++) if (remap[v] >= 0) opos.set(pts.subarray(v * 3, v * 3 + 3), remap[v] * 3);
-    // each kept corner's normal from the file's faces around it (the simplifier keeps the file's corners)
-    const nrm = new Int8Array(out.length * 3), sn = new Float64Array(3);
-    for (let t = 0; t < out.length; t += 3) {
-      const p = out[t] * 3, q = out[t + 1] * 3, r = out[t + 2] * 3;
-      const ux = pts[q] - pts[p], uy = pts[q + 1] - pts[p + 1], uz = pts[q + 2] - pts[p + 2], vx = pts[r] - pts[p], vy = pts[r + 1] - pts[p + 1], vz = pts[r + 2] - pts[p + 2];
-      let x = uy * vz - uz * vy, y = uz * vx - ux * vz, z = ux * vy - uy * vx;
-      const l = Math.sqrt(x * x + y * y + z * z) || 1; x /= l; y /= l; z /= l;
-      // a thin facet (under 1 mm across) may be turned by the simplifier; a wider one is where its face is
-      const wx = vx - ux, wy = vy - uy, wz = vz - uz, thin = l / Math.sqrt(Math.max(ux * ux + uy * uy + uz * uz, vx * vx + vy * vy + vz * vz, wx * wx + wy * wy + wz * wz)) < 1;
-      for (let k = 0; k < 3; k++) {
-        const v = out[t + k];
-        // the file's faces within 30° of this one; if none (a facet turned further), those within 30° of the closest
-        let rx = x, ry = y, rz = z, best = -2;
-        for (let j = start[v]; j < start[v + 1]; j++) { face(list[j]); const d = fn[0] * x + fn[1] * y + fn[2] * z; if (d > best) { best = d; sn[0] = fn[0]; sn[1] = fn[1]; sn[2] = fn[2]; } }
-        if (best < cos && best > -2) { rx = sn[0]; ry = sn[1]; rz = sn[2]; }
-        let sx = 0, sy = 0, sz = 0;
-        for (let j = start[v]; j < start[v + 1]; j++) {
-          const a = face(list[j]) || 1e-9;
-          if (fn[0] * rx + fn[1] * ry + fn[2] * rz >= cos) { sx += fn[0] * a; sy += fn[1] * a; sz += fn[2] * a; }
+    if (tol > 0) out = out.subarray(0, tidy(out, out.length));
+    // Corners grouped by the edge they start (corner c's edge runs to the next corner of its face), `at(c)` giving a
+    // corner's vertex: `nx` chains a group's corners from its first one, `first` lists the groups
+    const nc = out.length, nxt = c => c - c % 3 + (c + 1) % 3;
+    const byEdge = at => {
+      const size = 1 << Math.ceil(Math.log2(nc + 2)), tab = new Int32Array(size).fill(-1), nx = new Int32Array(nc).fill(-1), last = new Int32Array(nc), first = [];
+      for (let c = 0; c < nc; c++) {
+        const p = at(c), q = at(nxt(c)), lo = p < q ? p : q, hi = p < q ? q : p;
+        let h = (Math.imul(lo, 73856093) ^ Math.imul(hi, 19349663)) & (size - 1);
+        for (;;) {
+          const g = tab[h];
+          if (g < 0) { tab[h] = c; last[c] = c; first.push(c); break; }
+          const a = at(g), b = at(nxt(g));
+          if ((a === lo && b === hi) || (a === hi && b === lo)) { nx[last[g]] = c; last[g] = c; break; }
+          h = (h + 1) & (size - 1);
         }
-        let sl = Math.sqrt(sx * sx + sy * sy + sz * sz);
-        // none, or a wide facet whose corner only touches the file's faces of another slope (the far edge of a small
-        // chamfer, within the 0.15 mm): its own normal, as it lies
-        if (!sl || (!thin && (sx * x + sy * y + sz * z) / sl < cos20)) { sx = x; sy = y; sz = z; sl = 1; }
-        const o = (t + k) * 3;
-        nrm[o] = Math.round(sx / sl * 127); nrm[o + 1] = Math.round(sy / sl * 127); nrm[o + 2] = Math.round(sz / sl * 127);
+      }
+      return { nx, first };
+    };
+    // Keep a closed part closed (Dols, 2026-11-24). The simplifier doesn't check that a collapse leaves the surface a
+    // manifold: where a part is thinner than its tolerance it may press two sheets onto one edge (4 faces on it). Such
+    // an edge is parted, as mesh repair tools do: going round it, a face whose solid side faces the next face is paired
+    // with it (then what is left, in turn), and the faces' corners at each end join only through paired edges, so each
+    // group of them gets its own corner (in the same place). Nothing moves.
+    const up = new Int32Array(nc), mate = new Int32Array(nc).fill(-1);
+    for (let i = 0; i < nc; i++) up[i] = i;
+    const root = i => { while (up[i] !== i) i = up[i] = up[up[i]]; return i; };
+    const join = (a, b) => { a = root(a); b = root(b); if (a !== b) { if (a < b) up[b] = a; else up[a] = b; } };
+    const pair = (c, d) => {
+      mate[c] = d; mate[d] = c;
+      if (out[c] === out[nxt(d)]) { join(c, nxt(d)); join(nxt(c), d); } else { join(c, d); join(nxt(c), nxt(d)); }
+    };
+    if (tol > 0) {
+      const { nx, first } = byEdge(c => out[c]);
+      for (const f0 of first) {
+        const d = nx[f0];
+        if (d < 0) continue;
+        if (nx[d] < 0) { pair(f0, d); continue; }
+        // round the edge a→b, each face's angle; a face running b→a has its solid side ahead, a→b behind
+        const a = out[f0] * 3, b = out[nxt(f0)] * 3, dx = pts[b] - pts[a], dy = pts[b + 1] - pts[a + 1], dz = pts[b + 2] - pts[a + 2], d2 = dx * dx + dy * dy + dz * dz || 1;
+        let ux = 0, uy = 0, uz = 0, vx = 0, vy = 0, vz = 0;
+        const ang = [];
+        for (let c = f0; c >= 0; c = nx[c]) {
+          const o = out[c - c % 3 + (c + 2) % 3] * 3;
+          let wx = pts[o] - pts[a], wy = pts[o + 1] - pts[a + 1], wz = pts[o + 2] - pts[a + 2];
+          const s = (wx * dx + wy * dy + wz * dz) / d2; wx -= s * dx; wy -= s * dy; wz -= s * dz;
+          if (c === f0) { const l = Math.hypot(wx, wy, wz) || 1, dl = Math.sqrt(d2); ux = wx / l; uy = wy / l; uz = wz / l; vx = (dy * uz - dz * uy) / dl; vy = (dz * ux - dx * uz) / dl; vz = (dx * uy - dy * ux) / dl; }
+          ang.push({ c, t: Math.atan2(wx * vx + wy * vy + wz * vz, wx * ux + wy * uy + wz * uz), fwd: out[c] * 3 === a });
+        }
+        ang.sort((p, q) => p.t - q.t);
+        const n = ang.length, used = new Uint8Array(n);
+        for (let i = 0; i < n; i++) { const j = (i + 1) % n; if (!ang[i].fwd && ang[j].fwd && !used[i] && !used[j]) { used[i] = used[j] = 1; pair(ang[i].c, ang[j].c); } }
+        // a fold (two faces the same way side by side): what is left pairs in turn, opposite ways first
+        for (let pass = 0; pass < 2; pass++) for (let i = 0; i < n; i++) if (!used[i]) for (let j = 1; j < n; j++) {
+          const q = (i + j) % n;
+          if (!used[q] && (pass || ang[q].fwd !== ang[i].fwd)) { used[i] = used[q] = 1; pair(ang[i].c, ang[q].c); break; }
+        }
       }
     }
-    return { pos: opos, idx: oidx, nrm, ink: ink.slice(0, ni), src: nv / 3, kept: nt, tris: out.length / 3, err: e };
+    // a corner per group of joined face corners; `ov` the file's corner it stands on, -1 for one made here
+    const vid = new Int32Array(nc).fill(-1), ov = [], xp = [];
+    if (tol > 0) for (let c = 0; c < nc; c++) { const r = root(c); if (vid[r] < 0) { vid[r] = ov.length; ov.push(out[r]); } vid[c] = vid[r]; }
+    else { const seen = new Int32Array(count).fill(-1); for (let c = 0; c < nc; c++) { const v = out[c]; if (seen[v] < 0) { seen[v] = ov.length; ov.push(v); } vid[c] = seen[v]; } }
+    // An edge whose pairs of faces still meet at both its ends (a sheet pressed onto itself along it) is cut at its
+    // middle: a middle corner for each pair but the first, all in the same place
+    const cut = new Int32Array(nc).fill(-1);
+    if (tol > 0) {
+      const { nx, first } = byEdge(c => vid[c]);
+      for (const f0 of first) if (nx[f0] >= 0 && nx[nx[f0]] >= 0) for (let c = f0; c >= 0; c = nx[c]) {
+        if (c === f0 || c === mate[f0] || cut[c] >= 0) continue;
+        const a = out[c] * 3, b = out[nxt(c)] * 3, mid = ov.length;
+        ov.push(-1); xp.push((pts[a] + pts[b]) / 2, (pts[a + 1] + pts[b + 1]) / 2, (pts[a + 2] + pts[b + 2]) / 2);
+        cut[c] = mid; if (mate[c] >= 0) cut[mate[c]] = mid;
+      }
+    }
+    const tri = [];
+    for (let f = 0; f < nc; f += 3) {
+      if (cut[f] < 0 && cut[f + 1] < 0 && cut[f + 2] < 0) { tri.push(vid[f], vid[f + 1], vid[f + 2]); continue; }
+      const ring = [];
+      for (let k = 0; k < 3; k++) { ring.push(vid[f + k]); if (cut[f + k] >= 0) ring.push(cut[f + k]); }
+      if (ring.length === 4) { // one cut: two faces from the middle corner
+        let i = 0; while (ov[ring[i]] >= 0) i++;
+        tri.push(ring[(i + 3) % 4], ring[i], ring[(i + 2) % 4], ring[i], ring[(i + 1) % 4], ring[(i + 2) % 4]);
+        continue;
+      }
+      const o = ov.length; ov.push(-1); // more: a fan round the face's centre
+      for (let d = 0; d < 3; d++) xp.push((pts[out[f] * 3 + d] + pts[out[f + 1] * 3 + d] + pts[out[f + 2] * 3 + d]) / 3);
+      for (let i = 0; i < ring.length; i++) tri.push(ring[i], ring[(i + 1) % ring.length], o);
+    }
+    const m = ov.length, oidx = new Uint32Array(tri), opos = new Float32Array(m * 3);
+    for (let i = 0, x = 0; i < m; i++) {
+      if (ov[i] >= 0) opos.set(pts.subarray(ov[i] * 3, ov[i] * 3 + 3), i * 3);
+      else { opos[i * 3] = xp[x++]; opos[i * 3 + 1] = xp[x++]; opos[i * 3 + 2] = xp[x++]; }
+    }
+    // Each corner's normal from the simplified faces round it that turn less than 30° from its own face, by area
+    // (Dols, 2026-11-24: the fans of thin faces on the fronts): a flat face's facets all get its normal, a sliver the
+    // simplifier tilted takes the normal of the wide faces beside it, a rounded edge is shaded smooth and a sharp one
+    // stays sharp. (Before, the normals came from the file's faces round each kept corner, and a corner where a flat
+    // face meets a fillet tilted every long facet it held: the fans.)
+    // A sliver (under twice the tolerance across) may lie tilted far more than 30° within the tolerance: its corners
+    // take the normal of the wide faces beside them whose slope is nearest its own.
+    const T = oidx.length / 3, fa = new Float32Array(T * 4), thin = new Uint8Array(T), wide = 2 * e;
+    for (let t = 0; t < T; t++) {
+      const p = oidx[t * 3] * 3, q = oidx[t * 3 + 1] * 3, r = oidx[t * 3 + 2] * 3;
+      const ux = opos[q] - opos[p], uy = opos[q + 1] - opos[p + 1], uz = opos[q + 2] - opos[p + 2], vx = opos[r] - opos[p], vy = opos[r + 1] - opos[p + 1], vz = opos[r + 2] - opos[p + 2];
+      const x = uy * vz - uz * vy, y = uz * vx - ux * vz, z = ux * vy - uy * vx, l = Math.sqrt(x * x + y * y + z * z);
+      const wx = vx - ux, wy = vy - uy, wz = vz - uz;
+      if (!l) { thin[t] = 2; continue; } // no area: shaded as the faces round it
+      fa[t * 4] = x / l; fa[t * 4 + 1] = y / l; fa[t * 4 + 2] = z / l; fa[t * 4 + 3] = l / 2;
+      thin[t] = tol > 0 && l * l < wide * wide * Math.max(ux * ux + uy * uy + uz * uz, vx * vx + vy * vy + vz * vz, wx * wx + wy * wy + wz * wz) ? 1 : 0;
+    }
+    const ost = new Uint32Array(m + 1), ols = new Uint32Array(T * 3);
+    for (let i = 0; i < T * 3; i++) ost[oidx[i] + 1]++;
+    for (let v = 0; v < m; v++) ost[v + 1] += ost[v];
+    { const fill = ost.slice(0, m); for (let i = 0; i < T * 3; i++) ols[fill[oidx[i]]++] = (i / 3) | 0; }
+    const nrm = new Int8Array(T * 9);
+    for (let t = 0; t < T; t++) for (let k = 0; k < 3; k++) {
+      const v = oidx[t * 3 + k];
+      let x = fa[t * 4], y = fa[t * 4 + 1], z = fa[t * 4 + 2], sx = 0, sy = 0, sz = 0;
+      if (thin[t]) {
+        // (either way round: some files hold faces turned the wrong way, drawn from both sides like the rest)
+        let best = -1, g0 = -1, sg = 1;
+        for (let j = ost[v]; j < ost[v + 1]; j++) {
+          const g = ols[j]; if (thin[g]) continue;
+          const d = thin[t] === 2 ? fa[g * 4 + 3] : fa[g * 4] * x + fa[g * 4 + 1] * y + fa[g * 4 + 2] * z; // no area: the widest
+          if (Math.abs(d) > best) { best = Math.abs(d); g0 = g; sg = d < 0 ? -1 : 1; }
+        }
+        if (g0 >= 0) { x = sg * fa[g0 * 4]; y = sg * fa[g0 * 4 + 1]; z = sg * fa[g0 * 4 + 2]; }
+      }
+      for (let j = ost[v]; j < ost[v + 1]; j++) {
+        const g = ols[j] * 4;
+        if (fa[g] * x + fa[g + 1] * y + fa[g + 2] * z >= cos) { sx += fa[g] * fa[g + 3]; sy += fa[g + 1] * fa[g + 3]; sz += fa[g + 2] * fa[g + 3]; }
+      }
+      let sl = Math.sqrt(sx * sx + sy * sy + sz * sz);
+      if (!sl) { sx = x; sy = y; sz = z; sl = 1; }
+      const o = (t * 3 + k) * 3;
+      nrm[o] = Math.round(sx / sl * 127); nrm[o + 1] = Math.round(sy / sl * 127); nrm[o + 2] = Math.round(sz / sl * 127);
+    }
+    return { pos: opos, idx: oidx, nrm, ink: ink.slice(0, ni), src: nv / 3, kept: nt, tris: T, err: e };
   }
   // A file's connected pieces (some files hold several parts printed side by side: a drawer's two racks, a case's two
   // hinge leaves, two rods). Corners closer than 0.001 mm count as one, then triangles sharing a corner join a piece.
@@ -7001,6 +7044,17 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         a[0] += N.getX(i); a[1] += N.getY(i); a[2] += N.getZ(i);
       }
       for (let i = 0; i < n; i++) { const a = sum.get(key[i]), l = Math.hypot(a[0], a[1], a[2]) || 1; out[i * 3] = a[0] / l; out[i * 3 + 1] = a[1] / l; out[i * 3 + 2] = a[2] / l; }
+      // A face under 1 mm across goes out in one piece, along its corners' mean: pushed different ways, a long thin
+      // face with a corner on a sharp edge (the fans the simplifier leaves round a hole) turned over and drew a black
+      // wedge across the face it lies on (Dols, 2026-11-24). Its own corners are its own (the parts are not indexed).
+      if (!geo.index) for (let t = 0; t + 2 < n; t += 3) {
+        const p = P.array, a = t * 3, b = a + 3, c = a + 6;
+        const ux = p[b] - p[a], uy = p[b + 1] - p[a + 1], uz = p[b + 2] - p[a + 2], vx = p[c] - p[a], vy = p[c + 1] - p[a + 1], vz = p[c + 2] - p[a + 2];
+        const x = uy * vz - uz * vy, y = uz * vx - ux * vz, z = ux * vy - uy * vx, wx = vx - ux, wy = vy - uy, wz = vz - uz;
+        if (x * x + y * y + z * z >= Math.max(ux * ux + uy * uy + uz * uz, vx * vx + vy * vy + vz * vz, wx * wx + wy * wy + wz * wz)) continue; // (twice the area over the longest side)² ≥ 1 mm²
+        const mx = out[a] + out[b] + out[c], my = out[a + 1] + out[b + 1] + out[c + 1], mz = out[a + 2] + out[b + 2] + out[c + 2], l = Math.hypot(mx, my, mz);
+        if (l) for (const i of [a, b, c]) { out[i] = mx / l; out[i + 1] = my / l; out[i + 2] = mz / l; }
+      }
       geo.setAttribute('hullNormal', new T.BufferAttribute(out, 3));
     };
     const noPick = () => {};
