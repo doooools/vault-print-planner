@@ -517,7 +517,8 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   Open Graph / Twitter card with `docs/images/social.png` read from `main` on raw.githubusercontent (the published site
   holds only the page and `previews/`), JSON-LD `WebApplication`; a `<noscript>` text. No robots.txt (a project site's
   is ignored) nor sitemap. The card is made by `node tools/social-card/make.js`: a drawing, no render of the parts.
-  Repo About, social preview and Search Console are Dols's (docs/seo.md "What only Dols can do").
+  Repo About, social preview and Search Console are Dols's (docs/seo.md "What only Dols can do"); the Search Console
+  tag (`google-site-verification`, Dols's property) is in `<head>`: keep it.
 
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
