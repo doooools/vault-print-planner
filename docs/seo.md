@@ -20,6 +20,8 @@ apps that show a preview of a shared link (Discord, Reddit, WhatsApp, X, Faceboo
 - `<noscript>`: what the configurator does, for a browser without JavaScript and for the crawlers that don't run it.
   Invisible otherwise: no notice on screen (Dols removed the footer on purpose).
 - The preprod keeps its robots `noindex` (head script, `VPP_PRE`).
+- `google-site-verification` (Dols, 2026-11-24): the Search Console tag of the URL-prefix property. Keep it, or the
+  property is no longer verified. Google reads it on the live site only, so it verifies once on `main`.
 
 ## What there is not, and why
 - **No robots.txt.** Crawlers read it only at the root of the host (`doooools.github.io/robots.txt`), which belongs
