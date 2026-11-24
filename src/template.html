@@ -458,6 +458,15 @@ dialog#v3d::backdrop { background: rgba(7, 7, 7, .6); }
 .v3-bolts .dot2 { width: 16px; height: 16px; border: 1.5px solid var(--ink); }
 .v3-bolts button[aria-pressed=true] { background: var(--accent); }
 .v3-bolts button[aria-pressed=true] .dot2 { border-color: var(--accent-ink); }
+/* The view's look (Ink, Plain, Halftone), in the strip under the view: a small sample of each beside its name */
+.v3-look { align-items: center; }
+.v3-look .v3-seglbl { padding: 0 6px 0 10px; font-family: var(--f-label); font-size: 14px; color: var(--ink); }
+.v3-look button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 10px; font-size: 14px; }
+.v3-look button[aria-pressed=true] { background: var(--accent); color: var(--accent-ink); }
+.v3-lsw { width: 14px; height: 14px; flex: none; border: 1.5px solid currentColor; box-sizing: border-box; background: #d4d6d3; }
+.v3-lsw.ink { background: linear-gradient(90deg, #d4d6d3 50%, transparent 50%), repeating-linear-gradient(-45deg, #8c8e8b 0 1.5px, #b9bbb8 1.5px 4px); }
+.v3-lsw.plain { border-color: transparent; background: radial-gradient(circle at 35% 30%, #fbfbf9, #c2c4c1 55%, #7d7f7c); }
+.v3-lsw.halftone { background: radial-gradient(circle, #111 38%, transparent 42%) 0 0 / 4px 4px, #d4d6d3; }
 .v3-helpbtn { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; padding: 6px 8px; }
 .v3-helpbtn[aria-expanded=true] { background: var(--ink); border-color: var(--ink); color: var(--ground); }
 .v3-helppop { position: absolute; top: calc(100% + 8px); right: 0; width: min(330px, calc(100vw - 48px)); display: grid; gap: 8px; padding: 14px 16px; border: 2px solid var(--ink); border-radius: 0; background: var(--ground); color: var(--muted); font-size: 14px; box-shadow: var(--gp-shadow-toast); }
@@ -782,7 +791,7 @@ pre.code { margin: 0; background: var(--sheet-2); border-radius: 0; padding: 12p
   .dinsp { align-self: stretch; contain: size; min-height: min(520px, calc(100vh - 24px)); }
 }
 .design .v3-side { max-height: none; overflow: visible; border-left: 0; border-top: 2px dotted var(--edge); padding: 8px 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
-.design .v3-side > :not(#v3dStatus):not(#v3dPick):not(#v3dSimpBtn) { display: none; }
+.design .v3-side > :not(#v3dStatus):not(#v3dPick):not(#v3dSimpBtn):not(#v3dLook) { display: none; }
 .design .v3-side .v3-status { flex: 1 1 300px; font-size: 13px; }
 /* Design fills the window on wide screens (Dols, 2026-11-22): the page itself never scrolls, the 3D view takes all the
    height left under the stack's title, and only the rail and the inspector scroll, each in itself */
@@ -1313,7 +1322,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
 <dialog id="viewer" aria-label="Part preview"><button type="button" class="vclose" id="viewerClose" aria-label="Close preview">&times;</button><div id="viewerBody" class="vbody"></div></dialog>
 <div id="v3home" hidden><div class="v3-view" id="v3view">
   <div class="v3-stage"><div class="v3-canvas" id="v3dCanvas"></div><div class="v3-tools" id="v3dTools"></div><div id="v3dBrush" hidden></div><div class="v3-simp" id="v3dSimp" hidden aria-labelledby="v3dSimpTitle"></div></div>
-  <div class="v3-side"><h2 id="v3dTitle">3D</h2><p class="v3-status" id="v3dStatus" role="status"></p><button type="button" class="v3-simpbtn" id="v3dSimpBtn" hidden aria-controls="v3dSimp" aria-expanded="false"></button>
+  <div class="v3-side"><h2 id="v3dTitle">3D</h2><p class="v3-status" id="v3dStatus" role="status"></p><div class="v3-seg v3-look" id="v3dLook" role="group" aria-label="Look of the 3D view" hidden></div><button type="button" class="v3-simpbtn" id="v3dSimpBtn" hidden aria-controls="v3dSimp" aria-expanded="false"></button>
     <button type="button" class="btn" id="v3dPick" hidden>Show the real parts…</button>
     <div id="v3dSel"></div>
     <div class="v3-sec">Units, top to bottom</div>
@@ -2567,7 +2576,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     ['[data-v3tool]', useVal('3d/tool', 'data-v3tool')], ['[data-v3tog="explode"]', '3d/spread-levels'], ['[data-v3tog="hideRoof"]', '3d/hide-roof'],
     ['[data-v3spin]', '3d/rotate'], ['[data-v3help]', '3d/help'], ['[data-v3fin]', useVal('3d/bolts', 'data-v3fin')], ['[data-v3hwc]', useVal('3d/selected-bolts', 'data-v3hwc')],
     ['[data-v3pick]', '3d/units-list'], ['[data-v3tipok]', '3d/tip-ok'],
-    ['#v3dSimpBtn', '3d/why-simplified'], ['[data-v3simpx]', '3d/simplifying-hide'], ['[data-v3res]', useVal('3d/resolution', 'data-v3res')],
+    ['#v3dSimpBtn', '3d/why-simplified'], ['[data-v3simpx]', '3d/simplifying-hide'], ['[data-v3res]', useVal('3d/resolution', 'data-v3res')], ['[data-v3look]', useVal('3d/look', 'data-v3look')],
     // Paint and the filament picker
     ['[data-v3scope]', useVal('paint/a-click-paints', 'data-v3scope')], ['[data-v3brush], [data-brush]', 'paint/brush'], ['[data-v3add], [data-padd]', 'paint/add-a-filament'],
     ['[data-v3change]', 'paint/selected-change-color'], ['[data-v3back]', 'paint/selected-back-to-stack-color'], ['[data-cpreset]', useVal('paint/start-from', 'data-cpreset')],
@@ -2605,6 +2614,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (vaultFolder) use('folder/open');
     if (view === 'print') use('printer/' + useWord(printer.id, true));
     if (view === 'hardware') use('store/' + useWord(shopStore, true));
+    if (view === 'build') use('3d/look-in-use/' + v3look);
   }
   // Errors in the page: where (line in index.html) and the message's kind, quoted names taken out
   let useErrs = 0;
@@ -3372,9 +3382,13 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       [...tog('[data-v3tool="turn"]', 'Select', 'Esc'), ...tog('[data-v3tool="paint"]', 'Paint', 'P')],
       [...tog('[data-v3spin]', 'Rotate', 'R'), ...tog('[data-v3tog="explode"]', 'Spread levels', 'E'), ...tog('[data-v3tog="hideRoof"]', 'Hide roof', 'H')],
       HW_FINISHES.flatMap(([id, , n]) => tog(`[data-v3fin="${id}"]`, `${n} bolts`)),
+      v3 ? lookItems() : [],
       [{ icon: 'fit', label: 'Fit the stack in the view', key: 'F', dis: !v3, fn: () => { if (v3) v3.aim(null); } },
         { icon: 'help', label: 'How to move the view', fn: () => { const b = q('[data-v3help]'); if (b && b.getAttribute('aria-expanded') !== 'true') b.click(); } }]) };
   }
+  // The view's look, as ticked items (the key L goes to the next one)
+  const lookItems = () => V3_LOOKS.map(([id, n], k) => ({ label: `${n} look`, key: k === (V3_LOOKS.findIndex(l => l[0] === v3look) + 1) % V3_LOOKS.length ? 'L' : '', on: v3look === id, fn: () => setLook(id) }));
+  const lookMenu = () => v3 && { head: 'Look of the 3D view', sub: 'This browser only', items: lookItems() };
   // Paint's brush bar: the brush (one per filament), "+" for the catalogue, what a click paints, back to Select
   function brushMenu() {
     const v = v3; if (!v) return null;
@@ -3448,6 +3462,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   ctxRule('loose-parts', '#view-build .dcenter.loose', looseMenu);
   ctxRule('3d-brush', '#v3dBrush.v3-brush', brushMenu);
   ctxRule('3d-toolbar', '#v3dTools, #v3dBrush', viewMenu);
+  ctxRule('3d-look', '#v3dLook', lookMenu);
   ctxRule('3d-unit', '#v3dList li[data-v3u]', li => {
     const v = v3, u = v && v.units[+li.dataset.v3u], t = curTower(); if (!u || !t || v.t !== t) return null;
     const i = levelOfCfg(t, u.cfg); return u.roof || u.column || u.stack || i < 0 ? stackMenu(t) : pickLevelMenu(t, i, t.levels[i].indexOf(u.cfg));
@@ -6784,6 +6799,31 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // direction carry over from one to the next (v3ui).
   let v3gl = null, v3want = null;
   const v3ui = { tool: null, pscope: 'project', brush: null, explode: false, hideRoof: false, dir: null, spin: false };
+  // The view's look (Dols, 2026-11-24: "choisir entre le shader actuel, le shader de base et un autre dans la vibe
+  // fanzine"): Ink (the redesign's), Plain (the shading from before it) or Halftone. This browser's own setting, like the
+  // parts' resolution (localStorage look3d), not the project's. Set in the strip under the view (#v3dLook), the toolbar's
+  // right-click menu and the key L; open3d reads it, v.relook redraws the model in it.
+  const V3_LOOKS = [
+    ['ink', 'Ink', 'Ink: two flat tones, the shade hatched, every part outlined in ink'],
+    ['plain', 'Plain', 'Plain: smooth shading and no outlines, as the 3D view was before its ink look'],
+    ['halftone', 'Halftone', 'Halftone: flat colors, the shade printed as ink dots, like a photocopied zine'],
+  ];
+  let v3look = V3_LOOKS.some(l => l[0] === store.get('look3d', '')) ? store.get('look3d', '') : 'ink';
+  function setLook(id) {
+    if (!V3_LOOKS.some(l => l[0] === id) || id === v3look) return;
+    v3look = id; store.set('look3d', id);
+    if (v3) v3.relook();
+    v3lookDraw();
+  }
+  // The look's segmented buttons, in the strip under the view (shown once the view is)
+  function v3lookDraw() {
+    const box = $('v3dLook'); if (!box) return;
+    const focus = box.contains(document.activeElement);
+    box.hidden = !v3;
+    box.innerHTML = `<span class="v3-seglbl" aria-hidden="true">Look</span>${V3_LOOKS.map(([id, n, tip]) => `<button type="button" data-v3look="${id}" aria-pressed="${v3look === id}" title="${tip}"><span class="v3-lsw ${id}" aria-hidden="true"></span>${n}</button>`).join('')}`;
+    box.querySelectorAll('[data-v3look]').forEach(b => b.onclick = () => setLook(b.dataset.v3look));
+    if (focus) { const b = box.querySelector('[aria-pressed=true]'); if (b) b.focus({ preventScroll: true }); }
+  }
   async function open3d(t, mode = {}) {
     const want = v3want = {};
     if (!v3gl) v3status('Loading the 3D viewer…');
@@ -6802,9 +6842,14 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // The look ("encre", docs/ux-redesign.md "The look"): flat colours in two tones, lit or in shade, the shade hatched
     // at 45° in screen space, every part outlined in ink, a hard shadow on the ground, the selection ringed in yellow.
     // One light from the front, the left and above (fronts and tops lit, right sides in shade) and an even ambient.
+    // Plain (v3look, Dols 2026-11-24) keeps its own lights, the view's before the redesign: a sky and ground light, a sun
+    // from the right and a fill from behind. Each look shows its own (v.relook).
     const SUN = 1.7;
-    scene.add(new T.AmbientLight(0xffffff, 1.45));
-    const sun = new T.DirectionalLight(0xffffff, SUN); sun.position.set(-0.55, 0.85, 1); scene.add(sun);
+    const inkLights = [new T.AmbientLight(0xffffff, 1.45), new T.DirectionalLight(0xffffff, SUN)];
+    inkLights[1].position.set(-0.55, 0.85, 1);
+    const plainLights = [new T.HemisphereLight(0xffffff, 0x6d6f6c, 1.6), new T.DirectionalLight(0xffffff, 2.2), new T.DirectionalLight(0xffffff, 0.6)];
+    plainLights[1].position.set(0.6, 1, 0.9); plainLights[2].position.set(-1, 0.4, -0.6);
+    scene.add(...inkLights, ...plainLights);
     const lay = stackLayout(t);
     const size = Math.max(lay.width, lay.depth, lay.height);
     // No floor grid (Dols, 2026-11-14: a cleaner view): the stack's footprint as a hard shadow, pushed back and to the
@@ -6812,6 +6857,22 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const shOff = size * 0.06;
     const shadow = new T.Mesh(new T.PlaneGeometry(lay.width, lay.depth), new T.MeshBasicMaterial({ color: 0, transparent: true, depthWrite: false }));
     shadow.rotation.x = -Math.PI / 2; shadow.position.set(shOff, 0, -lay.depth / 2 - shOff); shadow.renderOrder = -1; shadow.userData.own = true; scene.add(shadow);
+    // Halftone: the same hard shadow printed as a screen of dots; Plain: a soft contact shadow, a radial fade on a plane a
+    // little wider than the footprint (the view's before the redesign)
+    const hardShadow = shadow.material, dotShadow = hardShadow.clone();
+    dotShadow.onBeforeCompile = sh => {
+      sh.uniforms.uPx = px;
+      sh.fragmentShader = 'uniform float uPx;\n' + sh.fragmentShader.replace('#include <opaque_fragment>',
+        `{ vec2 q = mat2(0.7071, 0.7071, -0.7071, 0.7071) * gl_FragCoord.xy / (5.0 * uPx); if (length(fract(q) - 0.5) > 0.36) discard; }
+        #include <opaque_fragment>`);
+    };
+    dotShadow.customProgramCacheKey = () => 'dotshadow';
+    const shc = document.createElement('canvas'); shc.width = shc.height = 128;
+    const shx = shc.getContext('2d'), shg = shx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    shg.addColorStop(0, 'rgba(0,0,0,.3)'); shg.addColorStop(0.6, 'rgba(0,0,0,.18)'); shg.addColorStop(1, 'rgba(0,0,0,0)');
+    shx.fillStyle = shg; shx.fillRect(0, 0, 128, 128);
+    const softShadow = new T.Mesh(new T.PlaneGeometry(lay.width * 1.35 + 40, lay.depth * 1.35 + 40), new T.MeshBasicMaterial({ map: new T.CanvasTexture(shc), transparent: true, depthWrite: false }));
+    softShadow.rotation.x = -Math.PI / 2; softShadow.position.set(0, 0, -lay.depth / 2); softShadow.renderOrder = -1; softShadow.userData.own = true; scene.add(softShadow);
     // The colours that differ between the themes, read from the tokens (an rgba() too: three.js takes no alpha)
     const tokCol = (c, name, dflt) => {
       const s = c.getPropertyValue(name).trim() || dflt, m = s.match(/^rgba?\(([^)]+)\)$/);
@@ -6838,6 +6899,37 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       m.customProgramCacheKey = () => 'encre';
       return m;
     };
+    // Halftone (Dols, 2026-11-24: a third look "dans la vibe fanzine"): each part printed flat in its filament's colour,
+    // the shade as a screen of ink dots at 45° (6 px apart) that grow as the face turns from the sun, like a photocopied
+    // zine. A dark filament, where ink dots wouldn't show, gets paper dots on its lit faces instead (reversed out). A
+    // little toner grain over everything. Lit through Lambert (same lights as Ink) only to know how much each point faces
+    // the sun; outlines and creases are Ink's.
+    const halftone = color => {
+      const m = new T.MeshLambertMaterial({ color, side: T.DoubleSide });
+      m.onBeforeCompile = sh => {
+        sh.uniforms.uPx = px;
+        sh.fragmentShader = 'uniform float uPx;\n' + sh.fragmentShader.replace('#include <opaque_fragment>',
+          `{
+            float nl = clamp(dot(reflectedLight.directDiffuse, vec3(1.0)) / (${(SUN / Math.PI).toFixed(4)} * max(dot(diffuseColor.rgb, vec3(1.0)), 1e-4)), 0.0, 1.0);
+            float cell = 6.0 * uPx, aa = 0.75 / cell;
+            float d = length(fract(mat2(0.7071, 0.7071, -0.7071, 0.7071) * gl_FragCoord.xy / cell) - 0.5);
+            float grain = fract(sin(dot(floor(gl_FragCoord.xy / (2.0 * uPx)), vec2(12.9898, 78.233))) * 43758.5453) - 0.5;
+            vec3 fill = diffuseColor.rgb * (1.0 + 0.08 * grain);
+            if (dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722)) > 0.08) {
+              float r = 0.56 * sqrt(clamp((1.0 - nl - 0.3) / 0.7, 0.0, 1.0));
+              outgoingLight = mix(fill, vec3(0.0056), 0.85 * (1.0 - smoothstep(r - aa, r + aa, d)));
+            } else {
+              float r = 0.42 * sqrt(clamp((nl - 0.2) / 0.8, 0.0, 1.0));
+              outgoingLight = mix(fill, vec3(0.62, 0.6, 0.55), 0.6 * (1.0 - smoothstep(r - aa, r + aa, d)));
+            }
+          }
+          #include <opaque_fragment>`);
+      };
+      m.customProgramCacheKey = () => 'halftone';
+      return m;
+    };
+    // Plain: the view's shading before the redesign, smooth and lit, bolts a little shiny
+    const plain = (color, hw) => new T.MeshStandardMaterial({ color, roughness: hw ? 0.4 : 0.72, metalness: hw ? 0.5 : 0, side: T.DoubleSide });
     // The ink outline: each part's back faces drawn again, pushed out along its normals by a width in screen pixels
     // (the same at any zoom). Normals averaged where the part's faces meet, so its corners close.
     const res = { value: new T.Vector2(1, 1) };
@@ -6927,8 +7019,12 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const hiCol = tokCol(css, '--gp-vp-select', '#f2d935').c;
     const mats = new Map(), mat = (role, cfg, hi) => {
       const hw = role === 'hardware', hex = hw ? hwColor() : role === 'caster' ? '#2a2c2e' : colorHex(colorFor(role, cfg)), k = (hw ? 'hw' : '') + hex + (hi ? '*' : '');
-      // Highlighted (what a click would paint): tinted halfway to the selection's yellow, flat like the rest
-      if (!mats.has(k)) mats.set(k, toon(hi ? new T.Color(hex).lerp(hiCol, 0.5) : hex));
+      // Highlighted (what a click would paint): tinted halfway to the selection's yellow (lit from within a little in Plain)
+      if (!mats.has(k)) {
+        const c = hi ? new T.Color(hex).lerp(hiCol, 0.5) : hex, m = v3look === 'plain' ? plain(c, hw) : v3look === 'halftone' ? halftone(c) : toon(c);
+        if (hi && v3look === 'plain') { m.emissive = hiCol; m.emissiveIntensity = 0.18; }
+        mats.set(k, m);
+      }
       return mats.get(k);
     };
     const painted = (geo, role, cfg) => Object.assign(new T.Mesh(geo, mat(role, cfg)), { userData: { role, cfg } });
@@ -6981,7 +7077,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     // The selection: in dark, yellow 4 px outside the ink; in light, yellow 5 px inside an ink ring of 7 px, to read on paper.
     const theme = () => {
       const c = getComputedStyle(document.documentElement), sh = tokCol(c, '--gp-vp-shadow', '#000000'), sel = tokCol(c, '--gp-vp-select', '#f2d935').c;
-      shadow.material.color.copy(sh.c); shadow.material.opacity = sh.a;
+      for (const m of [hardShadow, dotShadow]) { m.color.copy(sh.c); m.opacity = sh.a; }
       hiCol.copy(sel);
       const light = c.colorScheme.trim() === 'light';
       hulls.ring.uniforms.uCol.value.copy(sel); hulls.ring.uniforms.uW.value = light ? 5 : 4.5;
@@ -6989,6 +7085,17 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     };
     const ink = new T.Color('#111111');
     theme();
+    // The look (v3look): its lights, its shadow, the ink outlines and creases shown or not (Plain has none: the outline
+    // stays only under the pointer and as the selection's ring), and every material made again
+    const looks = () => {
+      const ink = v3look !== 'plain';
+      inkLights.forEach(l => { l.visible = ink; }); plainLights.forEach(l => { l.visible = !ink; });
+      shadow.visible = ink; softShadow.visible = !ink; shadow.material = v3look === 'halftone' ? dotShadow : hardShadow;
+      hulls.ink.visible = creaseMat.visible = ink;
+    };
+    looks();
+    v.relook = () => { looks(); for (const m of mats.values()) m.dispose(); mats.clear(); v.recolor(); };
+    v.lookMats = [hardShadow, dotShadow];
     v.retheme = () => {
       theme();
       for (const [k, m] of [...mats]) if (k.endsWith('*')) { mats.delete(k); m.dispose(); }
@@ -7385,6 +7492,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     on('[data-v3brush]', b => { setBrush(b.dataset.v3brush); const n = $('v3dBrush').querySelector(`[data-v3brush="${CSS.escape(b.dataset.v3brush)}"]`); if (n) n.focus({ preventScroll: true }); });
     on('[data-v3add]', () => { if (fpAdding) closeCatalog(); else openCatalog(); v3tools(); });
     on('[data-v3fin]', b => { setHwFinish(b.dataset.v3fin); v.recolor(); v3tools(); v3side(); });
+    v3lookDraw();
   }
   // The side column: what is selected, then the units top to bottom, then the project's colours
   function v3side() { v3sel(); v3list(); v3colors(); v3picked(); }
@@ -7723,7 +7831,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       const m = v.mat(role, cfg, false), k = m.uuid;
       if (!matIx.has(k)) {
         const c = m.color, name = hw ? `Bolts, ${fin[hwFinish()]}` : role === 'caster' ? 'Caster wheels (rubber)' : `${colorName(colorFor(role, cfg))} ${colorHex(colorFor(role, cfg))}`;
-        mats.push({ name, pbrMetallicRoughness: { baseColorFactor: [c.r, c.g, c.b, 1], metallicFactor: m.metalness, roughnessFactor: m.roughness } });
+        mats.push({ name, pbrMetallicRoughness: { baseColorFactor: [c.r, c.g, c.b, 1], metallicFactor: hw ? 0.5 : 0, roughnessFactor: hw ? 0.4 : 0.72 } });
         matIx.set(k, mats.length - 1);
       }
       return matIx.get(k);
@@ -7871,8 +7979,9 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     v3 = null; v.token = null; v.ac.abort();
     v.ro.disconnect(); v.controls.dispose();
     v.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.userData.own) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
-    v.mats.forEach(m => m.dispose()); Object.values(v.hulls).forEach(m => m.dispose()); v.ramp.dispose(); v.creaseMat.dispose();
+    v.mats.forEach(m => m.dispose()); v.lookMats.forEach(m => m.dispose()); Object.values(v.hulls).forEach(m => m.dispose()); v.ramp.dispose(); v.creaseMat.dispose();
     document.querySelectorAll('.v3-morepop').forEach(x => x.remove());
+    v3lookDraw();
   }
   // What a change of the stack keeps (v3ui.keep, read by open3d when it builds the same stack again): the camera, and
   // each unit's drawers and lid, open or closed, with the selection. A model never framed (its view hidden all along)
@@ -8652,7 +8761,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       [['Shift + click'], 'Select the levels from the last one clicked to this one'],
       [['O'], 'Open or close the level’s drawer or case'], [['P'], 'Paint on or off'],
       [['F'], 'Fit the stack in the view'], [['E'], 'Spread levels'], [['H'], 'Hide roof'],
-      [['R'], 'Rotate: the stack turns slowly, on or off']]],
+      [['R'], 'Rotate: the stack turns slowly, on or off'], [['L'], 'Next look: Ink, Plain, Halftone']]],
   ];
   // 'Shift + ↑ ↓': Shift with ↑ or ↓; several combinations in a row are alternatives (or)
   const kbd = k => `<span class="kc">${k.split(' + ').map(x => x.split(' ').map(y => y === 'click' ? 'click' : `<kbd>${esc(y)}</kbd>`).join(' ')).join(' + ')}</span>`; // a click is no key
@@ -8700,6 +8809,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       case 'e': return press('[data-v3tog="explode"]');
       case 'h': return press('[data-v3tog="hideRoof"]');
       case 'r': return press('[data-v3spin]');
+      case 'l': { if (!v) return false; const k = V3_LOOKS.findIndex(l => l[0] === v3look), n = V3_LOOKS[(k + 1) % V3_LOOKS.length]; setLook(n[0]); toast(`Look: ${n[1]}`); return true; }
     }
     return false;
   }
