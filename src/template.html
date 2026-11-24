@@ -5671,7 +5671,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   const loose = s => s.normalize('NFC').toLowerCase().replace(/[^a-z0-9/]+/g, '');
   const sameName = s => fileName(s).normalize('NFC').toLowerCase().replace(/\s+/g, ' ').replace(/ ?\.stl$/, ''); // keeps "²", unlike loose
   const looseIdx = new WeakMap();
-  function findFile(map, path) {
+  function findFile(map, path, again = false) {
     if (map.has(path)) return map.get(path);
     for (const [k, v] of map) if (k.endsWith('/' + path) && !JUNK.test(k)) return v;
     const tail = path.split('/').slice(1).join('/'); // picked a folder inside the download
@@ -5687,8 +5687,53 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const hit = ix.paths.find(([k]) => k.endsWith('/' + lp)) || (lt && ix.paths.find(([k]) => k.endsWith('/' + lt)));
     if (hit) return hit[1];
     // Same file name in another folder (a newer download that moved it), if only one file has that name
-    return ix.names.get(sameName(path)) || null;
+    const same = ix.names.get(sameName(path));
+    if (same || again) return same || null;
+    // Renamed by a later delivery of USSA's (REVS): its new name
+    for (const r of REVS[path] || []) if (r.file) { const h = findFile(map, r.file, true); if (h) return h; }
+    return null;
   }
+  // ---------- USSA's later deliveries (src/stl-revisions.json, from tools/placements/revisions.py) ----------
+  // USSA re-exports some files in a new delivery from elsewhere in their CAD scene, often turned (2026-11-18: the L 1F
+  // and 2F modules lie flat instead of at 45 degrees, the XL bases are 2 m higher, XL6/XL7 Box 1F Part 1 and 2 swapped
+  // names): the same part, in other coordinates. The placements, pieces and measurements were all taken on the first
+  // delivery (2026-10-21), so such a file is brought back into that one's coordinates as it is read, for the 3D view and
+  // for Print's plates alike. REVS: first delivery's path -> [{ file?: its path in the later delivery, when not the same,
+  // size?: that file's bytes, fix?: 3x4 row-major matrix from it to the first delivery's coordinates, mm }]. A revision
+  // only applies to a file of its size, so the first delivery's files are read as they are.
+  const REVS = window.VAULT_REVISIONS || {};
+  // A binary STL's triangles moved by fix (corners turned and moved, normals turned): a new buffer
+  function reviseStl(buf, f) {
+    const n = buf.byteLength >= 84 ? new DataView(buf).getUint32(80, true) : 0;
+    if (84 + 50 * n !== buf.byteLength) return buf; // ASCII: never one measured
+    const out = buf.slice(0), dv = new DataView(out);
+    for (let i = 0, o = 84; i < n; i++, o += 50) for (let k = 0, q = o; k < 4; k++, q += 12) {
+      const x = dv.getFloat32(q, true), y = dv.getFloat32(q + 4, true), z = dv.getFloat32(q + 8, true), m = k ? 1 : 0;
+      dv.setFloat32(q, f[0] * x + f[1] * y + f[2] * z + m * f[3], true);
+      dv.setFloat32(q + 4, f[4] * x + f[5] * y + f[6] * z + m * f[7], true);
+      dv.setFloat32(q + 8, f[8] * x + f[9] * y + f[10] * z + m * f[11], true);
+    }
+    return out;
+  }
+  // A part's file in the folder as the placements and measurements expect it: { file (the user's own, for the cache
+  // key), rev (the revision applied, or null), read() (its bytes, moved back when it is a later delivery's) }, or null.
+  // A revision naming another file wins when that file has its size (a swapped name: the file at the old path is
+  // another part); else the file found by the old path, moved back when a revision has its size; else as it is.
+  async function partFile(map, path) {
+    const get = async h => h && (h.getFile ? await h.getFile() : h), revs = REVS[path] || [];
+    let file = null, rev = null;
+    for (const r of revs) if (r.file && r.fix) {
+      const f = await get(findFile(map, r.file, true));
+      if (f && f.size === r.size) { file = f; rev = r; break; }
+    }
+    if (!file) {
+      file = await get(findFile(map, path));
+      if (!file) return null;
+      rev = revs.find(r => r.fix && !r.file && r.size === file.size) || null;
+    }
+    return { file, rev, read: async () => rev ? reviseStl(await file.arrayBuffer(), rev.fix) : file.arrayBuffer() };
+  }
+  const partBytes = async (map, path) => (await partFile(map, path)).read();
   // The missing files, by name, for the messages below
   const missingList = paths => { const n = paths.map(p => '\u201c' + fileName(p) + '\u201d'); return n.length <= 4 ? n.join(', ') : n.slice(0, 3).join(', ') + ` and ${n.length - 3} more`; };
   const idb = (mode, fn) => new Promise((res, rej) => {
@@ -5726,7 +5771,6 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
       inp.click();
     });
   }
-  const fileBytes = async f => (f.getFile ? await f.getFile() : f).arrayBuffer();
   // ---------- losing the folder ----------
   // Chrome and Edge keep the chosen folder (IndexedDB) but, unless "Allow on every visit" was ticked, drop the right to
   // read it when the page closes: asking again needs a click. Firefox and Safari keep nothing, only its name here. The
@@ -6598,14 +6642,15 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     const lv = meshNow(), tol = lv.tol, mk = path + '|' + tol;
     if (meshMemo.has(mk)) return meshMemo.get(mk);
     const p = (async () => {
-      const h = findFile(vaultFolder.files, path);
-      if (!h) throw new Error('not in the folder');
-      const file = h.getFile ? await h.getFile() : h, key = `${MESH_CACHE}${path}|${file.size}|${file.lastModified}|${tol}`;
+      // a later delivery's file brought back into the first one's coordinates (partFile): its fix goes in the key
+      const pf = await partFile(vaultFolder.files, path);
+      if (!pf) throw new Error('not in the folder');
+      const { file, rev, read } = pf, key = `${MESH_CACHE}${path}|${file.size}|${file.lastModified}|${tol}${rev ? '|' + rev.fix.join(',') : ''}`;
       let m = null;
       if (lv.keep) try { m = await idb('readonly', s => s.get(key)); } catch (e) { /* no cache */ }
       if (!m) {
         simpStart(); // really read or simplified this time, not from the cache: the window says why (simp)
-        try { m = await meshRunner()(file, tol, lv.cap); } finally { simpEnd(); }
+        try { m = await meshRunner()(rev ? { size: file.size, arrayBuffer: read } : file, tol, lv.cap); } finally { simpEnd(); }
         if (lv.keep) try { await idb('readwrite', s => s.put({ pos: m.pos, idx: m.idx, nrm: m.nrm, ink: m.ink, src: m.src, tris: m.tris }, key)); } catch (e) { /* keeping it is only a convenience */ }
       }
       return m;
@@ -7964,7 +8009,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
         progress(done / total, `Plate ${pi + 1} of ${count}: ${p.name}`);
         await new Promise(r => setTimeout(r));
         const key = [p.path, p.spin, p.diag, p.corner].join('|');
-        if (!cache.has(key)) cache.set(key, await placedMesh(p, await fileBytes(findFile(folder.files, p.path))));
+        if (!cache.has(key)) cache.set(key, await placedMesh(p, await partBytes(folder.files, p.path)));
         const m = cache.get(key), meshId = id++, objId = id++, file = `3D/Objects/object_${meshId}.model`;
         await z.add(file, async put => {
           await put(`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" ${NS}>\n <metadata name="BambuStudio:3mfVersion">1</metadata>\n <resources>\n  <object id="${meshId}" p:UUID="${uuid(meshId, '-81cb-4c03-9d28-80fed5dfa1dc')}" type="model">\n   <mesh>\n    <vertices>\n`);
@@ -8072,7 +8117,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
     if (missing.length) throw new Error(`${plural(missing.length, 'part')} not found in \u201c${folder.name}\u201d: ${missingList(missing.map(([, x]) => x.l.file.path))}. Pick the Vault download folder.`);
     for (const [i, [pl, x]] of all.entries()) {
       progress(i / all.length, `${plateFolder(pl)}: ${x.l.label}`);
-      const b = new Uint8Array(await fileBytes(findFile(folder.files, x.l.file.path)));
+      const b = new Uint8Array(await (await partFile(folder.files, x.l.file.path)).file.arrayBuffer()); // USSA's file as it is (the right one when a later delivery swapped names)
       const t = notes.get(pl.n + '|' + x.l.file.path) || [], base = fileName(x.l.file.path).replace(/\.stl$/i, '');
       await z.add(`Vault prints/${plateFolder(pl)}/${x.count}x ${x.l.label.replace(/[\/:"\\]/g, '-')} - ${base}${t.length ? ` [${t.join(', ')}]` : ''}.stl`, put => put(b));
     }
@@ -8096,7 +8141,7 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
           progress(done / total, `Plate ${pi + 1} of ${plan.plates.length}: ${p.name}`);
           await new Promise(r => setTimeout(r));
           const key = [p.path, p.spin, p.diag, p.corner].join('|');
-          if (!cache.has(key)) cache.set(key, await placedMesh(p, await fileBytes(findFile(folder.files, p.path))));
+          if (!cache.has(key)) cache.set(key, await placedMesh(p, await partBytes(folder.files, p.path)));
           const m = cache.get(key), id = k + 1;
           // A named label's text goes in the same object, after the label's triangles: a volume of its own (PrusaSlicer)
           const tx = kit && p.text ? labelSolid(kit, m, p.text.s, p.spin, plan.label.letter, plan.label.relief) : null, nv = m.pts.length / 3;

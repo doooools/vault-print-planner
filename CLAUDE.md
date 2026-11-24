@@ -495,6 +495,17 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   first render and in `loadDesign`. A new handler that saves through those four functions is undoable as it is; give it
   `undoAs` when it overwrites or removes. The "USSA render" preset's `confirm()` went (the audit's C6).
 
+- Later Vault deliveries (Dols, 2026-11-24, "Corriger, garder les deux livraisons"): USSA's download of 2026-11-18
+  re-exported 41 of the files the page reads elsewhere in their scene (often turned) and renamed a few (M 1F modules and
+  fronts `_Sustainer`, XL heavyweight roofs "Heawyweight Roof (Cut to fit on a plate)", XL6/XL7 Box 1F Part 1 ↔ Part 2
+  swapped). Every measurement stays on the first download (2026-10-21): `src/stl-revisions.json` (made by
+  `tools/placements/revisions.py`, embedded by `build.py` as `window.VAULT_REVISIONS`) gives per first-delivery path the
+  later file (`file` when `findFile` wouldn't find it, its `size`) and `fix` (3x4, that file → first delivery). The
+  page's `partFile(map, path)` picks the file (a revision's own file of its size first, else the one `findFile` finds)
+  and `reviseStl` moves its triangles as it is read, for `partMesh` (fix in the cache key) and Print's `placedMesh`;
+  the STL folders download keeps USSA's bytes. A file of another size is read as it is, so both downloads work.
+  New parts of that delivery ("Box … Upd", handles in parts…) aren't offered yet. README "Later deliveries".
+
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the
   main checkout's root, which is not committed.

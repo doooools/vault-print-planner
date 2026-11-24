@@ -495,6 +495,50 @@ lowest of the base, tyres, foot or casters. Measured on the files (2026-11-13), 
 
 `measure_envelope.py` writes `envelope` and the column pieces' `box`; the rest is the units' `bbox` from the export.
 
+## Later deliveries
+
+Every number here was measured on the first Vault download (2026-10-21). USSA's update of 2026-11-18 (`Vault
+Archive_18.11.2026`, plus a 4 GB Rhino model that the page can't use: the configurator's project memory has the
+comparison) re-exported 41 of the files the page reads from elsewhere in their CAD scene, often turned, and renamed or
+moved a few: the matrices above no longer fit those files as they are. Rather than measure everything again (and lose
+the first download), `src/stl-revisions.json` says, per first-delivery path, which file replaced it and how to bring
+that file back into the first delivery's coordinates:
+
+```
+files["01. DRAWERS/03. L Families/L4/Modules/L4 Module 1F.stl"] = [{ delivery: "2026-11-18", size: 86676984,
+  ratio: 0.71, fix: [r00, r01, r02, tx, r10, …, tz] }]          // 3x4 row-major, that file -> first delivery, mm
+files["02. SUSTAINERS/02. M Families/M3/Modules/M3 1F Module .stl"] = [{ …, file: "…/M3 1F Module_Sustainer.stl", size, fix }]
+files["01. DRAWERS/05. XL Families/XL5/Roofs/XL5 Heavyweight Roof Cut.stl"] = [{ …, file: "…/XL5 Heawyweight Roof (Cut to fit on a plate).stl" }]
+```
+
+- **file**: the new path, only when the page's own lookup (`findFile`: exact path, end of path, letters and digits,
+  the same name in another folder) wouldn't find it by the old one: the M 1F modules and fronts (`_Sustainer`), the XL
+  heavyweight roofs cut to fit a plate (renamed, same triangles), and XL6 / XL7 Box 1F Part 1 and Part 2, whose names
+  USSA swapped (the new Part 1 is the old Part 2).
+- **size**: the new file's bytes. A revision only applies to a file of that size, so the first download's files are read
+  as they are, and a third delivery that changes a file again is simply not matched (it is read as it is, wrong, until
+  this is run for it).
+- **fix**: p_first = R · p_new + t. The page's `partFile` applies it to the file's triangles as it reads them
+  (`reviseStl`), before anything else: the 3D view's simplifier and cache (`partMesh`, the fix in the cache key), the
+  pieces and matrices, and Print's plate files and Bambu project (`placedMesh`), which then turn and lay the part out
+  from the same measurements as before. The STL folders download gives USSA's file as it is (the right one, for the
+  swapped names). Files moved by less than 0.15 mm, the fit's own scatter, get no fix (S4 Box 4F, x3 Runner Slide).
+- **ratio**: how well the new file lies on the old one: median distance from the new file's surface samples to the old
+  ones, over the same between two halves of the old sample. Two samples of the same surface give about 0.71 (1/√2);
+  0.74 to 0.76 is a part USSA retouched (S3 / S4 Box 4F, x6 / x7 XL runner slides); clearly above, it isn't the same part.
+
+`revisions.py <first download> <new download> <date> --write` (numpy and scipy) does it: for each file `src/` names that
+differs, area-weighted surface samples of both, every axis turn and 45-degree turn plus the principal axes as starts,
+then trimmed point-to-plane ICP; a fit worse than 0.8 tries the other files of the same folder (that is how the XL box
+parts showed up swapped). On a synthetic test (turned 33° and 45°, moved 2 m) it found the turn within 0.005° and the
+move within 0.06 mm. The 2026-11-18 entries were made the same way, from the PC's two downloads, with the files
+staged one batch at a time. It writes numbers only. Turns found: 45° for the L 1F / 2F / L² 2F modules (now flat),
+the M 1F modules (now at 45°) and the S3 grid roof; 42.8° for the XL6 / XL7 Box 1F parts; 2.2° for the L case roofs;
+the rest only moved (XL bases 1,997 mm, L grid roofs ~1,770 mm, runner slides 30 to 52 mm and 1.4 m for XL).
+
+New parts in that delivery (the "Box … Upd" boxes, the pull-out handles in parts, XL Box Connector, Box Cover for
+bolts, Top Handle Taller) aren't offered yet: they have no measurement nor placement.
+
 ## How it is measured
 
 The files are exported in print orientation (some at 45° to fit the bed) and scattered around one big CAD scene. Some parts are already in their assembled place relative to each other: the box, the baseplate, the stopper and the latch (X/Y). The rest is found by measurement in Blender:

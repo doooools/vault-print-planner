@@ -111,6 +111,13 @@ if pf.exists():
         for l in u.get("layouts", {}).values(): pack(l)
     place["paths"] = list(paths); place["mats"] = [json.loads(k) for k in mats]
     catalog += "window.VAULT_PLACEMENTS=" + json.dumps(place, ensure_ascii=False, separators=(",", ":")) + ";"
+# USSA's later deliveries (src/stl-revisions.json, from tools/placements/revisions.py): per first-delivery path, the
+# files that replaced it (new name, size) and the matrix that brings each back into the first delivery's coordinates
+rf = here / "stl-revisions.json"
+if rf.exists():
+    rv = json.loads(rf.read_text(encoding="utf-8"))
+    keep = lambda r: {k: r[k] for k in ("file", "size", "fix") if k in r}
+    catalog += "window.VAULT_REVISIONS=" + json.dumps({p: [keep(r) for r in rs] for p, rs in rv["files"].items()}, ensure_ascii=False, separators=(",", ":")) + ";"
 # Bambu Lab's PLA and PETG colours (src/bambu-colors.tsv, from tools/bambu_colors.py): line, code, name, hex
 bc = here / "bambu-colors.tsv"
 if bc.exists():
