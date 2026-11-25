@@ -6820,13 +6820,21 @@ html.nopics .xitem { grid-template-columns: 0 minmax(0, 1fr) auto; }
   // the last file is done it tucks itself into the strip under the view (#v3dSimpBtn), which opens it again. It doesn't
   // take the focus nor stop anything: the view can be turned meanwhile. A batch = files simplified one after the other.
   const simp = { total: 0, done: 0, open: false, hid: false, ran: false, tucking: false, timer: 0, shown: null };
+  // It opens by itself once per browser session (Dols, 2026-11-25: "qu'elle pop qu'une seule fois par session"): the
+  // tab's sessionStorage remembers it, across reloads, until the tab is closed. Later batches only show their count in
+  // the strip under the view, whose button still opens it. Where sessionStorage can't be read, it never opens by itself
+  // (Dols: "si ce n'est pas possible ne pas la faire pop du tout").
+  const simpSeen = mark => {
+    try { if (mark) sessionStorage.setItem(VPP_KEY + 'simpShown', '1'); return sessionStorage.getItem(VPP_KEY + 'simpShown') === '1'; }
+    catch (e) { return true; }
+  };
   function simpStart() {
     if (simp.done >= simp.total) { simp.total = simp.done = 0; simp.hid = false; } // a new batch
     simp.total++; simp.ran = true;
     // after a moment: a file that takes no time doesn't flash the window
     if (!simp.open && !simp.hid && !simp.timer) simp.timer = setTimeout(() => {
       simp.timer = 0;
-      if (simp.done < simp.total && !simp.hid) { simp.open = true; use('3d/simplifying'); }
+      if (simp.done < simp.total && !simp.hid && !simpSeen()) { simp.open = true; simpSeen(true); use('3d/simplifying'); }
       simpDraw();
     }, 400);
     simpDraw();

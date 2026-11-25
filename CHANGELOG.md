@@ -10,6 +10,9 @@ This page, 3D Vault Configurator, is a fork of [Romy's Vault Print Planner](http
 - **A new layout** in four steps, Design, Print, Hardware and Assemble, with Undo, design files, a dark theme and store links for where you live.
 Every difference is listed on [GitHub](https://github.com/doooools/vault-print-planner/blob/main/docs/differences-from-upstream.md). Amazon.com links in Hardware are still Romy's affiliate links, so US purchases keep supporting the original project. Romy's own changes are the ones marked "Romy's planner", from 2026-11-10 back.
 
+## 2026-11-25
+- **The simplification window opens by itself only once:** the window that says why the 3D view simplifies your parts now shows itself once per browser session, not again on a reload or for the next parts. "Why simplified?" under the view still opens it, and its count shows there while parts are being simplified.
+
 ## 2026-11-24
 - **Cleaner parts in 3D:** simplifying your parts for the 3D view no longer opens holes in them (up to 2 cm on the biggest modules) nor presses walls into one, and a part that was closed stays closed. The fans of thin triangles on the drawer fronts and the black wedges round their holes are gone too. The parts are simplified again once, at your next visit, and a little faster than before.
 - **Better found, better shared:** a link to the configurator now shows a card in chats and on social networks, with its name, a stack in 3D and what it does, and search engines get a proper title and description. Nothing changes on the page.
