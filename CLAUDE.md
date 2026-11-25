@@ -143,7 +143,9 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   ink outline (`hullNormals`) pushes a face under 1 mm across in one piece: the fans the simplifier leaves round a
   hole turned over and drew black wedges across fronts. While a file is really
   simplified (a cache miss in `partMesh`: `simpStart` / `simpEnd`, counts per batch in `simp`), the window `#v3dSimp`
-  over the stage says why and that Print uses the original files, with a spinner (`.v3-spin`); done, `simpTuck` folds
+  over the stage says why and that Print uses the original files, with a spinner (`.v3-spin`), by itself only once per
+  browser session (Dols, 2026-11-25: `simpSeen`, sessionStorage `<VPP_KEY>simpShown`; never by itself where
+  sessionStorage fails; later batches show their count on `#v3dSimpBtn` only); done, `simpTuck` folds
   it (~0.65 s, always animated: Dols wants to see it go) into `#v3dSimpBtn` in the strip under the view ("Why simplified?"), which reopens it (Dols, 2026-11-23).
   Its "Parts in the 3D view" setting (`data-v3res`, `setMeshLevel`): five levels in `MESH_LEVELS` (Super low 0.15 mm,
   the default and the old cache key; Low; Medium; High; Native = tol 0, which skips the simplifier), `meshLevel` in
