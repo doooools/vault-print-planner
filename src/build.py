@@ -111,6 +111,13 @@ if pf.exists():
         for l in u.get("layouts", {}).values(): pack(l)
     place["paths"] = list(paths); place["mats"] = [json.loads(k) for k in mats]
     catalog += "window.VAULT_PLACEMENTS=" + json.dumps(place, ensure_ascii=False, separators=(",", ":")) + ";"
+# USSA's later deliveries (src/stl-revisions.json, from tools/placements/revisions.py): per first-delivery path, the
+# files that replaced it (new name, size) and the matrix that brings each back into the first delivery's coordinates
+rf = here / "stl-revisions.json"
+if rf.exists():
+    rv = json.loads(rf.read_text(encoding="utf-8"))
+    keep = lambda r: {k: r[k] for k in ("file", "size", "fix") if k in r}
+    catalog += "window.VAULT_REVISIONS=" + json.dumps({p: [keep(r) for r in rs] for p, rs in rv["files"].items()}, ensure_ascii=False, separators=(",", ":")) + ";"
 # Bambu Lab's PLA and PETG colours (src/bambu-colors.tsv, from tools/bambu_colors.py): line, code, name, hex
 bc = here / "bambu-colors.tsv"
 if bc.exists():
@@ -151,6 +158,16 @@ def changelog_html():
         about = ' class="about"' if d[0].lower().startswith("about") else ""
         return f'<section{about}><h3>{h.escape(d[0], quote=False)}</h3>{"".join(d[1])}</section>'
     return "".join(intro) + "".join(day(d) for d in days)
+# The page's three typefaces (src/fonts/, latin subsets from Fontsource, licences beside them), inlined so the page
+# fetches no font: Anton (titles), Special Elite (labels, buttons), Courier Prime 400/700 (numbers, running text)
+def fonts_css():
+    import base64
+    faces = [("Anton", "anton-400", 400), ("Special Elite", "special-elite-400", 400),
+             ("Courier Prime", "courier-prime-400", 400), ("Courier Prime", "courier-prime-700", 700)]
+    return "\n".join(f'@font-face {{ font-family: "{fam}"; font-style: normal; font-weight: {w}; font-display: swap; '
+                     f'src: url(data:font/woff2;base64,{base64.b64encode((here / "fonts" / (f + ".woff2")).read_bytes()).decode()}) format("woff2"); }}'
+                     for fam, f, w in faces)
+html = html.replace("/*FONTS*/", fonts_css())
 html = html.replace("<!--CHANGELOG-->", changelog_html())
 html = html.replace("/*CATALOG*/", catalog).replace("/*RULES*/", (here / "rules.js").read_text(encoding="utf-8"))
 pathlib.Path(out).write_text(html, encoding="utf-8", newline="\n")

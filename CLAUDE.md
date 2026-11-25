@@ -1,6 +1,10 @@
-# Vault Print Planner — fork with a 3D stack view
+# 3D Vault Configurator — fork of Vault Print Planner with a 3D stack view
 
 Fork of rmacasieb/vault-print-planner (upstream remote: `upstream`; ours: `origin` = doooools/vault-print-planner).
+**Name** (Dols, 2026-11-23): the page is "3D Vault Configurator" wherever a visitor reads it (title, header, About,
+What's new, README, issue forms, the STL / GLB exports' header); "Vault Print Planner" stays only as the original's
+name in its credit. Kept on purpose: the repository and the address (`vault-print-planner`), the design file's
+`app: 'vault-print-planner'`, the `vpp.*` / `vppPre.*` / `vault-planner` storage keys, `.vault.json`, code names.
 Upstream takes no feature requests ("fork it and change it"), so this fork is ours to maintain.
 **Talk to the user in French.**
 
@@ -24,6 +28,20 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   view: hover, right-click menus, "⋯", one-line hint, "Bolts" swatches, "?"; A1, A2, A3, A4, A5, A6) is done on its branch.
   Session 4 (Design's panels: A7, A8, B2, B3, B4, X3, X4) is done on its branch. Session 8 (header, File menu,
   tabs: A9, A10) is done on its branch. Session 5 (Paint: C1, C3, C4, C5, C6, C7) is done on its branch.
+- The look (Dols, 2026-11-22, preprod first): Giscard Punk "encre" from Claude Design's handoff zip (not committed):
+  paper and ink swapped by theme, yellow = selected, pink = the one main action, red = a problem, blue = the whole stack,
+  Anton / Special Elite / Courier Prime embedded (`src/fonts/`, inlined by `build.py` at `/*FONTS*/`), one taped card
+  per screen (`.ihead`, `.psel`, `.asm-need`; key figure `kfig`), no radius, hard shadows. The 3D view is drawn in ink
+  (`open3d`: `toon` (both sides: the simplified parts have hairline gaps), `hullMat` (offset behind the part), `inked`,
+  `creaseLines`, hard shadow, stencil selection ring `v3mark` → `ring`, `v.retheme`). Three looks for the 3D view (Dols, 2026-11-24):
+  `V3_LOOKS` Ink (the above), Plain (the pre-redesign `MeshStandardMaterial`, its lights and soft shadow, no ink
+  outline or creases: `hulls.ink` and `creaseMat` hidden, the hover outline and the selection ring kept) and Halftone
+  (`halftone`: Lambert lit, flat colour, ink dots at 45° in the shade, paper dots on dark filaments, toner grain, dotted
+  shadow `dotShadow`); `v3look` in localStorage `look3d` (this browser's), `setLook`, `v.relook` (no rebuild),
+  buttons `#v3dLook` under the view (`v3lookDraw`), `lookItems` in `viewMenu` and `lookMenu` (`ctxRule` '3d-look'),
+  key L, counted `3d/look` and `3d/look-in-use`. Rules: `docs/ux-redesign.md` "Three looks for the 3D view". From 1200 px Design fills the
+  window and doesn't scroll (`body:has(#view-build … .design)`): only the rail and the inspector scroll.
+  Rules: `docs/ux-redesign.md` "The look", which wins over the older rules there.
 - What the 3D view doesn't place yet: `tools/placements/COVERAGE.md` and the project's Library file
   `3d/stl-absents-de-la-3d.md`.
 
@@ -32,7 +50,8 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   `index.html` is the build of `src/`, `validate.js` finds no problem (it exits 1 on any; unused files are only
   listed), the page's scripts parse, no mesh file is committed. Run it before pushing.
 - Once that check passes on a push to `main` or `preprod`, `.github/workflows/pages.yml` ("Publish the site")
-  publishes both branches within a couple of minutes (see "Preprod"). `index.html` is generated: on a merge conflict
+  publishes both branches within a couple of minutes (see "Preprod"), as it does when `merge-preprod.yml` merged a
+  pull request into `preprod` and started it. `index.html` is generated: on a merge conflict
   in it, merge `src/` and rebuild, never edit it by hand.
 - Review subagents (Dols kept them, 2026-11-14, PR #45): `.claude/agents/voltagent/` holds three of VoltAgent's
   (`surgeon-reviewer` for a diff's real bugs, `security-auditor`, `ux-microcopy-reviewer` for page text against
@@ -54,7 +73,8 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   writing UTF-8: the user's checkout is on Windows.
 - Work on a branch off `preprod` (`claude/<name>` for Claude's threads), one pull request per piece of work, **into
   `preprod`** (see "Preprod"). Claude commits, pushes and opens the pull request without asking first (the user's rule
-  since 2026-11-12, confirmed in this file's update); **merging stays with the user**, into `preprod` and into `main`.
+  since 2026-11-12, confirmed in this file's update). **GitHub merges it into `preprod`** once its
+  checks pass (Dols, 2026-11-22; `merge-preprod.yml`); **merging into `main` stays with the user** (see "Preprod").
 
 ## Preprod (Dols, 2026-11-22)
 - Two sites from one repository: `main` at https://doooools.github.io/vault-print-planner/ (live) and the `preprod`
@@ -67,6 +87,20 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
 - The flow: pull requests go into `preprod`; Dols tries them on the preprod site; to go live, a pull request from
   `preprod` into `main`, merged by Dols with **a merge commit** (a squash would part the two histories). A fix made
   straight on `main` is merged back into `preprod` (`git merge origin/main`) in the same thread.
+- Merging into `preprod` (Dols, 2026-11-22: "auto merge", now that the preprod is there to test; GitHub does it since
+  2026-11-23, PR #97, because the session's permission check refused threads' merges): `.github/workflows/merge-preprod.yml`
+  ("Merge into preprod") starts when "Check the page" passed on a pull request and merges it, with a merge commit, if it
+  goes into `preprod`, comes from a branch of this repository (never a fork), was opened by an account in `TRUSTED`
+  (`doooools`: Claude's threads open theirs with it), isn't a draft, its last commit is the one checked, it changes no
+  file in `.github/workflows/` (`GITHUB_TOKEN` may not merge those: Dols does), and its merge with `preprod` as it is
+  now passes `tools/check.py` again. Then it starts "Publish the site" itself (a merge made with `GITHUB_TOKEN` starts
+  no other workflow). What it leaves alone says why in its run's log. It never touches a pull request into `main`.
+  A thread opens its pull request into `preprod` and doesn't merge it: open it as a draft to keep it out until it is
+  ready. A conflict (another pull request merged first): merge `origin/preprod` into the branch, rebuild `index.html`
+  from `src/`, run `tools/check.py`, push; the new check starts the merge again. The thread then tells Dols the change
+  is on the preprod URL, with what to try there. `workflow_run` reads the workflow from `main` only: a change to
+  `merge-preprod.yml` works once it is on `main`. The pull request from `preprod` into `main` (going live) is opened
+  when Dols asks, and **only Dols merges it**.
 - The page knows it is the preprod from its address (`VPP_PRE`: a `preprod` folder in the path, script in `<head>`):
   a striped strip above the header ("Preprod", "Copy the live project again", "Open the live site"), "Preprod · " in
   the tab's title, a robots `noindex`, and **no GoatCounter request at all** (`counting()`). Its saved state is under
@@ -91,7 +125,32 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
     `R.exterior` uses 51.5 / 99.5 / 195.5 (USSA's figures): within 0.5 mm, pick one and say so.
 - 3D view (section "3D stack view" in `src/template.html`): three.js 0.186.1 and meshoptimizer 1.3.0 from jsDelivr,
   loaded when the view is first shown; boxes before the folder is picked, then real parts simplified in workers
-  (0.15 mm, cached in IndexedDB). Shown in step 1 (Design) in the middle of the stack's card (`designCenter`'s
+  (0.15 mm, cached in IndexedDB under `MESH_CACHE` `mesh3d.6:`; simplifying with the normals as attributes, PR #90,
+  was undone by Dols on 2026-11-23: slower, and it didn't clear the modules' fronts and backs; so was a finer
+  simplification near sharp edges, PR #102: too slow). The ink comes from the file's own triangles (Dols, 2026-11-23,
+  "fausses arêtes du shader"): `meshJob` returns `ink` (segments on every edge of the file sharper than 30°), cached
+  with the mesh, carried by `meshPieces` / `meshPiece`, read by `geom` (`g.userData.ink`) and `creaseLines`; `creaseMat`
+  draws the lines 0.5 mm nearer the eye. No hole, closed stays closed (Dols, 2026-11-24, "même décimé, le maillage soit
+  au moins sans grand nouveau trous, et s'il était manifold avant le décimage il doit le rester"; README "Simplifying
+  for the 3D view"): corners are welded only where the file writes the same coordinates, and before simplifying
+  `tidy` drops only what has no surface (a corner twice, a triangle twice, a triangle and its reverse). The old
+  clean-up (5 µm merge, small faces dropped, seams sewn) opened holes up to 22 mm and made non-manifold edges on 7 of
+  14 closed parts. After simplifying, `tidy` again, then the faces round each edge of more than two are paired by
+  angle (`pair`, union-find on the corners: each group gets its own vertex) and an edge whose pairs still share both
+  ends is cut at its middle. `nrm`: each corner's normal from the simplified faces round it within 30° of its own,
+  by area; a sliver (under twice the tolerance across) takes the widest neighbour nearest its slope. Measure with
+  `tools/mesh_check.mjs` (`MESHOPT=…/meshopt_simplifier.js node tools/mesh_check.mjs [--old old.html] files…`). The
+  ink outline (`hullNormals`) pushes a face under 1 mm across in one piece: the fans the simplifier leaves round a
+  hole turned over and drew black wedges across fronts. While a file is really
+  simplified (a cache miss in `partMesh`: `simpStart` / `simpEnd`, counts per batch in `simp`), the window `#v3dSimp`
+  over the stage says why and that Print uses the original files, with a spinner (`.v3-spin`), by itself only once per
+  browser session (Dols, 2026-11-25: `simpSeen`, sessionStorage `<VPP_KEY>simpShown`; never by itself where
+  sessionStorage fails; later batches show their count on `#v3dSimpBtn` only); done, `simpTuck` folds
+  it (~0.65 s, always animated: Dols wants to see it go) into `#v3dSimpBtn` in the strip under the view ("Why simplified?"), which reopens it (Dols, 2026-11-23).
+  Its "Parts in the 3D view" setting (`data-v3res`, `setMeshLevel`): five levels in `MESH_LEVELS` (Super low 0.15 mm,
+  the default and the old cache key; Low; Medium; High; Native = tol 0, which skips the simplifier), `meshLevel` in
+  localStorage per browser (the old `meshFull` = Native); `meshJob(buf, MS, tol, most)` loosens tol until a part holds
+  `most` triangles; `partMesh` memo key `path|tol`, IndexedDB key ends `|tol`, only `keep` levels are stored. Shown in step 1 (Design) in the middle of the stack's card (`designCenter`'s
   `.v3-slot`): `v3sync()` (after every render) moves the one persistent `#v3view` into the shown step's `.v3-slot`, or
   parks it in `#v3home`, and shows the selected stack (`curTower()`) as it is. The model is rebuilt only when
   the stack changes (`v.key`, colours left out, or the same levels as new objects: an undo), and just repainted otherwise. A rebuild of the same stack (any change: an option, a divider,
@@ -344,6 +403,35 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   counts; keys no line has (stack left out) stay, shown "Not on these plates". "Reset all progress" and the list's
   "Clear" empty it (undoable: `progSnap` holds it).
 
+- Share links and codes (Dols, 2026-11-23, issue #84): section "share links and codes" before `renderStart`.
+  `shareState` (the design file's JSON, `kind: 'share'`, no printer, no progress) → `shareCode` ("V1" + base64url of
+  deflate-raw, "V0" plain without CompressionStream) → `#d=<code>`; `shareFrom` finds a code in a pasted link or code;
+  `openShareCode` → `loadDesign(text, name, share = true)` (own confirm text, no `markFile`). `shareFromAddress` runs
+  after the first render and on `hashchange`, and drops the hash. File menu: "Copy a share link", "Copy the share code",
+  "Open a share link or code…" (`copyShare`, `openShare`).
+- Right-click menus everywhere (Dols, 2026-11-23, section "right-click menus, everywhere" in `src/template.html`, before
+  `segBtns`): one `contextmenu` listener on the document (it leaves alone a handler that called preventDefault: the
+  3D view's canvas, a plate card). `ctxFind` walks from the element under the pointer up, matching the step's rules
+  (`CTXV[view]`, rebuilt by `renderPrint` / `renderHardware` / `renderAssemble` with their closures, cleared at their
+  start) then the page's (`ctxRule(name, selector, (el, ev) => menu)`); a menu with no item goes on to the next; none:
+  `pageMenu()` (`ctxUndo`, `CTXP[view]()`, `ctxFile`, shortcuts). Helpers: `ctxJoin` (lists with a line between),
+  `ctxMirror` (a block's buttons as items, `b._hold` set by `holdButton` for held ones), `ctxFolds`, `ctxSteps`,
+  `linkMenu`, `railStackMenu`, `viewMenu`, `brushMenu`, `roleMenu`, `filamentMenu`, `dupStack` (also Stack settings'
+  "Duplicate stack": the copy goes last). `menuOpen` items take `on` (a tick,
+  `menuitemcheckbox`), `hold` (`holdButton` on the item) and `u` (the visit count's word for a label holding a name);
+  the menu goes into the open modal `<dialog>` when there is one. Browser's menu kept on text fields (`ctxField`) and
+  with Shift held at the right press (`ctxRight`); `ctxPress` tells a key (context menu key, Shift + F10: under the
+  focus, first item focused) from a press. Counted `right-click/<rule name>`. Full list: `docs/ux-redesign.md`,
+  "Right-click menus, everywhere".
+- A plate's menu (Dols, 2026-11-23, issue #93): in `renderPrint`, `plateMenu(pl)` / `plateMenuAt` on a `.pcard[data-pn]`'s
+  `contextmenu`, the `.psel` panel's and its "⋯" (`data-pmenu`, in `.ptags`); `menuOpen` as in Design. "Download this
+  plate alone" is `makeDownload([pl], …)`, whatever is ticked.
+- Print settings by part (Dols, 2026-11-23, issue #83): `PS_OPTS` / `PS_ROLES` / `partSet` (localStorage
+  `partSettings`, design file `print.parts`, `plainPartSet`), next to `printAids`. `computeBuild` runs `partSetApply` on
+  merge's copied lines: walls, infill, `pattern`, `shells`, supports ('off' also `noSupports`, written as supports off);
+  the configurator's own values stay in `l.base`. `planFor` passes them; `buildProject` writes `sparse_infill_pattern`,
+  `top_shell_layers` / `bottom_shell_layers`, `enable_support` 0; the plate files `fill_pattern`, `top_solid_layers`…
+  The panel: `partsPanel` (Print's right column, `#pParts`, folds `ps-<role>` in `openInfo`).
 - Module shells' supports (Dols, 2026-11-13): rules.js gives them `supports: 'shell'`, a named set in the page's
   `SUPPORT_SETS` (tree(auto), default style, threshold 80°, on build plate only, critical regions only, remove small
   overhangs), written per object into the Bambu project and the plate files (`supportKeys`; PrusaSlicer: organic, 80°,
@@ -421,6 +509,25 @@ https://doooools.github.io/vault-print-planner/preprod/ (from `preprod`, see "Pr
   don't make entries). Ctrl/Cmd + Z / Y / Shift + Z, not in `input`, `select`, `textarea`. `undoReset()` after the
   first render and in `loadDesign`. A new handler that saves through those four functions is undoable as it is; give it
   `undoAs` when it overwrites or removes. The "USSA render" preset's `confirm()` went (the audit's C6).
+
+- Later Vault deliveries (Dols, 2026-11-24, "Corriger, garder les deux livraisons"): USSA's download of 2026-11-18
+  re-exported 41 of the files the page reads elsewhere in their scene (often turned) and renamed a few (M 1F modules and
+  fronts `_Sustainer`, XL heavyweight roofs "Heawyweight Roof (Cut to fit on a plate)", XL6/XL7 Box 1F Part 1 ↔ Part 2
+  swapped). Every measurement stays on the first download (2026-10-21): `src/stl-revisions.json` (made by
+  `tools/placements/revisions.py`, embedded by `build.py` as `window.VAULT_REVISIONS`) gives per first-delivery path the
+  later file (`file` when `findFile` wouldn't find it, its `size`) and `fix` (3x4, that file → first delivery). The
+  page's `partFile(map, path)` picks the file (a revision's own file of its size first, else the one `findFile` finds)
+  and `reviseStl` moves its triangles as it is read, for `partMesh` (fix in the cache key) and Print's `placedMesh`;
+  the STL folders download keeps USSA's bytes. A file of another size is read as it is, so both downloads work.
+  New parts of that delivery ("Box … Upd", handles in parts…) aren't offered yet. README "Later deliveries".
+
+- Search engines and link previews (Dols, 2026-11-24, "référencement"): `docs/seo.md`. In `<head>`: a longer
+  `<title>` (the preprod's prefix still goes first), the description, `canonical` = the live address (preprod too),
+  Open Graph / Twitter card with `docs/images/social.png` read from `main` on raw.githubusercontent (the published site
+  holds only the page and `previews/`), JSON-LD `WebApplication`; a `<noscript>` text. No robots.txt (a project site's
+  is ignored) nor sitemap. The card is made by `node tools/social-card/make.js`: a drawing, no render of the parts.
+  Repo About, social preview and Search Console are Dols's (docs/seo.md "What only Dols can do"); the Search Console
+  tag (`google-site-verification`, Dols's property) is in `<head>`: keep it.
 
 ## Where things are on this machine
 - Local paths (Vault download, decimated copy, pilot, Blender) and the mockup links are in `CLAUDE.local.md` at the

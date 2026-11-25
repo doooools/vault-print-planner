@@ -40,6 +40,7 @@ The original has no 3D view (only small pictures of each part). The fork shows t
 - Pegboards, wall mounts and their cleats, the Gridfinity baseplates of XL drawers and cases, the latches' lock pins.
 - Case dividers in their slots and the drawers' grid dividers.
 - Bolts, drawn from their ISO size, always shown, in raw steel (black) or zinc-plated / stainless (grey): the toolbar button switches the finish, which also names the bolts and rods in the Hardware list and its store searches.
+- Both Vault downloads: the first one (2026-10-21) and USSA's update of 2026-11-18, whose re-exported, turned or renamed files are put back in place as they are read (in Print's plates too): `src/stl-revisions.json`, [`tools/placements/README.md`](../tools/placements/README.md#later-deliveries).
 
 **What you can do in it**
 
@@ -133,6 +134,7 @@ The fork counts exactly what the build needs, where the original added 10% and s
 
 **The site**
 
+- Name: **3D Vault Configurator** (Dols, 2026-11-23) instead of Vault Print Planner, in the page's title and header, the README and the issue forms. The repository and the address keep `vault-print-planner`.
 - Address: [doooools.github.io/vault-print-planner](https://doooools.github.io/vault-print-planner/) (GitHub Pages, republished on every merge) instead of vault.romy.io. Romy's `CNAME` file was removed.
 - Removed: the Ko-fi button, Romy's byline in the header, the YouTube link, the README's "No support" paragraph. Romy's planner is credited in the page, the README and "What's new".
 - README rewritten for the fork (browser table, "Your files stay on your computer"); "What's new" opens with a "Draft, not released yet: the Dols fork" section above Romy's history.

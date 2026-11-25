@@ -64,6 +64,9 @@ There is no draft unit any more. Remove `currentDest`, the Add destination menu,
 - **Theme**: follows the system setting (`prefers-color-scheme`) until the header's Light / Dark buttons are used;
   then the theme picked stays, saved in the browser (changed 2026-11-14 at the user's request; it was "No switch").
 - **Phones**: not a target. Do not spend time on touch layouts.
+- **Name** (Dols, 2026-11-23): **3D Vault Configurator**, in title case, in the tab's title and the header (the
+  preprod keeps its "Preprod · " prefix). Page text says "the configurator" for this page; "planner" only for Romy's
+  original ("Romy's planner", "the original planner").
 - **Branding**: one credit line "A fork of Romy's Vault Print Planner" linking to the original. Remove the Ko-fi and YouTube buttons. The store links must stop being upstream's affiliate links (see "Open points"); the "As an Amazon Associate…" line goes with them. (Changed 2026-11-13 at the user's request: Amazon.com links are upstream's affiliate links again, other stores take the fork's own tags; see CLAUDE.md.)
 - **Opening drawers and cases**: no "Drawers" tool. A double-click on a drawer or a case opens or closes it, in both tools, and so do O and the level's menu. A plain click selects (Select tool) or paints (Paint tool). (Ctrl / Shift / Cmd + click opened them until 2026-11-14; they now select several levels, see "Several levels selected".)
 - **Several levels selected** (Dols, 2026-11-14): with Select, Ctrl + click (Cmd on a Mac) on a level in the 3D view adds it to the selection or takes it out, Shift + click selects the levels from the anchor (the last one clicked alone or with Ctrl) to it, Ctrl + Shift + click adds that range. Levels of the stack shown only (the view shows one stack). In Paint a click with Ctrl or Shift paints as a plain one. Each selected level is outlined in the view. The panel (`multiInspector`) says "3 levels of 5 selected", "Levels 1, 3 and 4", the modules, parts and grams together, the levels as small buttons (top first; one picks that level alone) and one line on what it does; then only the settings every module of every selected level has (Module: across the width, type, height; Inside or Drawers: the layout, inside, cut-outs, divider height, at a wall, lock, geared rails for drawers, every drawer of a module holding several; body style and floor for cases; Back: wall mount, pegboard, backbone), each offering only the options every one of them can take. Drawers mixed with cases share the Module and Back sections only. A setting set differently on them has no button pressed and a grey "Mixed" pill beside its name (the fold's summary says "mixed heights", "mixed locks"…). A change goes to every module of every selected level at once and says so with "Undo" ("Lock: Key lock, levels 1, 3 and 4 · Undo"): one Undo takes it all back. Labels (Dols, 2026-11-15): a folded "Labels" section, after Inside, with one "Text" field "on all N fronts" (every front of the levels selected: each drawer of a module holding several, each module of a pair). It shows the text when they all read the same; else it is empty, says "Mixed" and its placeholder reads "Mixed: type to give them all one text" (the fold's line: "1 of 4 named, mixed"). Typing draws it on every front in the view; leaving the field (or Enter) saves it with "Label “M6 bolts” on 4 fronts, levels 1, 2, 3 and 4 · Undo"; typed then wiped out, it clears them all ("Labels cleared…"); Esc puts each front's own text back. A module holding several drawers gets the text on each, and a line says to set them up one level at a time to name them apart. The font, letter height and relief (`labelLook`, for the whole project) sit under it as in the one-level panel. What is set per drawer box or per module (divider plans, the drawer tabs, one side of a pair) stays in the one-level panel, as the panel's line says; copies made with D, Shift + D or Ctrl/Cmd + V keep their labels, as one level's do. The "⋯" and a right-click on one of the selected levels open their menu: Open / Close their drawers and cases (O), Add copies of the N above (D) / below (Shift + D: the copies are then selected), Copy N levels, Paste above the top one, Move up / down (each one step, Alt + ↑ ↓), Remove N levels (one click, Delete, "Levels 1, 3 and 4 removed · Undo"). Ctrl/Cmd + C copies them all and Ctrl/Cmd + V pastes them all, the pasted levels then selected. A plain click, ↑ ↓, Esc, the level panel's buttons or another stack go back to one level (or none). Not kept over a reload.
@@ -100,14 +103,40 @@ Shown when there is no stack. Three rows: printer, Vault folder (same text and "
 - Left rail: one card per stack (width letter, name, footprint, level count), "New stack", "Start from a template…", then "Loose parts", an entry like the stacks (solid border, "spares, single parts", its part count or "none yet" on the right; UX audit A9). Print's "Already printed" has the same look.
 - Centre: the 3D view of the selected stack, always shown. Toolbar: tools "Select" and "Paint", then "Rotate" (a toggle, dark while on: the stack turns slowly, one turn in 24 s, until pressed again; Dols, 2026-11-15), "Spread levels", "Hide roof", "Bolts" (two swatches, raw steel or zinc / stainless, the same setting as Hardware's "Bolt finish") and "?" (how to move the view: drag, scroll, right-drag). Over the view's header: the stack's name as the big title, with a pencil button that turns it into the name field (Enter or leaving the field keeps it, Esc puts it back; UX audit B3); "Add a level on top" (`title` "Adds a level like the top one"); a "Stack settings" button, which opens them and does not toggle (A8). No "Footprint" button nor strip (UX audit A8, B2, 2026-11-14): width and depth are in Stack settings.
 - In the view (UX audit 2026-11, session 3): with Select, the level under the pointer is outlined and named beside it ("Level 3 · M5 · 1F drawer", "Click to set it up · right-click for actions"). A right-click on a level (let go less than 5 px from where it was pressed; a right-drag still pans) selects it and opens its menu: Open or Close drawer / case (the drawer under the pointer in a module holding several), Add a level above, Add a level below (copies of the level), Move up, Move down, Remove level (a plain click, then "Level 3 removed · Undo"). A right-click on the background, the roof or the base opens the stack's: Fit the stack in the view, Add a level on top, Stack settings. Under a line: Export as STL, Export as GLB, with colors. Both are `role="menu"` lists (arrow keys, Home, End, Enter, Esc) that close on a click outside, a scroll or the camera moving. The hint under the view is one line: "Click a level to set it up · right-click for its actions · double-click opens a drawer"; the first-visit tip about opening a drawer stays. Double-click keeps opening drawers and cases (Ctrl / Shift + click did too until 2026-11-14: they now select several levels). The hint reads "Click a level to set it up · Ctrl+click for several · right-click for actions · double-click opens a drawer", the label beside a level "Click to set it up · Ctrl+click to select several · right-click for actions".
-- **The stack in 3D, to a file** (Dols, 2026-11-15: renders in Blender): "Export as STL" and "Export as GLB, with colors", at the end of the stack's right-click menu and of the File menu (there "Export the stack as …"). What the view shows, as it stands: drawers and cases open or closed, levels spread or not, the roof hidden or not, the bolts and casters; never the shadow or the outlines. The parts are the simplified ones the view draws (0.15 mm). STL: one solid, in mm, Z up, the floor at 0 and the footprint centred, no colour nor label. GLB: one object per part named after its file, grouped by level (and roof, base, column), one material per colour named after the filament ("Orange #e8742f", "Bolts, grey (zinc-plated or stainless)"), the labels as textured planes, in metres. Both greyed until the parts are in, with the reason as the tooltip ("Choose your Vault folder first: until then the view shows boxes, not the parts", "Wait until every part is in the view"): boxes are never exported. Made in the browser and downloaded; the toast: "Saved Test stack.glb to your downloads (4.1 MB). USSA's parts: for your own renders, not to share." The GLB's `asset.copyright` and the STL's header say the same.
+- **While parts are simplified** (Dols, 2026-11-23): a window over the view, "Making the 3D view lighter", opens as
+  soon as a part file is really simplified (after 0.4 s, so a quick one doesn't flash it; never for parts this browser
+  already keeps). It opens by itself only once per browser session (Dols, 2026-11-25: sessionStorage, so a reload
+  doesn't bring it back; where that storage fails, never by itself): later batches only count in the strip's button,
+  which still opens it. An ink ring turns beside the title, then "Simplifying part files: 3 of 13 done. The big ones take a
+  while." and a striped bar. It says why ("too many triangles for a browser to turn smoothly… a lighter copy of each
+  part, within 0.15 mm of the original") and, framed, that what is printed doesn't change: "Print's plates and downloads
+  always use your original STL files, as they are. Only Export from the 3D view takes the lighter copies." Then "This
+  browser keeps the copies: next time, these parts show at once." It takes no focus and blocks nothing: the view turns
+  meanwhile. Done, it says "Done. The view shows 24k triangles, from 1.8M in your files." for a moment, then flies
+  into its button in the strip under the view, beside the triangle count ("Simplifying 3 of 13…" with a small ring
+  while it works, "Why simplified?" after), which opens it again; × or Esc tucks it away too. The fold is one stroke of
+  about two thirds of a second, gathering speed, with no pause nor slowing down (Dols), and stays visible all the way into the button, which then flashes yellow, even with less motion asked (Dols,
+  2026-11-23: "c'est important qu'on voit la page se replier dans son encart").
+  In the window, "Parts in the 3D view" (Dols, 2026-11-23: "l'actuel sera super low, ajoute low medium et high (+
+  natif)"): five segmented buttons, each with its tolerance under the name: Super low (0.15 mm, at most 150k triangles
+  a part: the default, "Super low is recommended" beside the label), Low (0.05 mm, 400k), Medium (0.02 mm, 1M), High
+  (0.005 mm, no cap) and Native ("original": every triangle, welded and cleaned, not simplified). This browser's own
+  setting (localStorage `meshLevel`; the old `meshFull` = Native), not the project's. Super low, Low and Medium are kept
+  in this browser; High and Native are made again at each visit ("At this level the copies are too big to keep").
+  Above Super low the text adds that a finer level is closer to the files, turns slower and takes more memory. Native's
+  window says "Parts at native resolution", what it costs (a stack can pass 15 million triangles: slower, several GB of
+  memory, read again at each visit) and "Reading part files at native resolution: 3 of 13 done.". The strip's button
+  reads "Why simplified?" at Super low, "Detail: Medium" at the others, "Native resolution" at Native. Export from the
+  3D view takes the parts at the level shown.
+- **Share links and codes** (Dols, 2026-11-23, issue #84): the File menu's "Copy a share link", "Copy the share code" (greyed with nothing to share) and "Open a share link or code…" (asks for it with `prompt()`). The link is the page's address with `#d=<code>`; the code holds the stacks, loose parts, colors, Print's plate options and stacks left out, the print settings by part and the label look, compressed (one stack ≈ 800 characters). Never the printer (whoever opens it keeps theirs), nor what is printed, bought or assembled. Copied: a long toast with its length and what it holds. Opened (the link loaded, pasted in the address bar, or the code pasted): it replaces the project, asked first when there is one ("To keep yours, cancel and save it first"), then "Opened the shared design"; the address loses its `#d=…`; the File menu says "Not saved to a file yet". A code cut short: "This share link or code is cut short or damaged: ask for it again, or copy all of it".
+- **The stack in 3D, to a file** (Dols, 2026-11-15: renders in Blender): "Export as STL" and "Export as GLB, with colors", at the end of the stack's right-click menu and of the File menu (there "Export the stack as …"). What the view shows, as it stands: drawers and cases open or closed, levels spread or not, the roof hidden or not, the bolts and casters; never the shadow or the outlines. The parts are the ones the view draws, at the level of detail it shows (Super low: 0.15 mm). STL: one solid, in mm, Z up, the floor at 0 and the footprint centred, no colour nor label. GLB: one object per part named after its file, grouped by level (and roof, base, column), one material per colour named after the filament ("Orange #e8742f", "Bolts, grey (zinc-plated or stainless)"), the labels as textured planes, in metres. Both greyed until the parts are in, with the reason as the tooltip ("Choose your Vault folder first: until then the view shows boxes, not the parts", "Wait until every part is in the view"): boxes are never exported. Made in the browser and downloaded; the toast: "Saved Test stack.glb to your downloads (4.1 MB). USSA's parts: for your own renders, not to share." The GLB's `asset.copyright` and the STL's header say the same.
 - The "Paint" tool button carries the stack's filaments as small swatches (up to four, then "+N"; the names in its `title`), so the toolbar says where colours are set (UX audit C7, 2026-11-14).
 - Right: the inspector.
   - Both panels are cut into foldable sections (UX audit A7, 2026-11-14): each header gives the section's name and, on the right, what is set in a few words ("Drawer · 1F", "Empty · key lock · geared rails", "nothing on the back", "18 parts · ≈ 570 g"). A section stays open or folded as the user left it, for the page's life.
   - A level selected: position ("Level 3 of 4"), then "Level below" and "Level above" (they move the selection) and "⋯", which opens the level's menu under itself, the same as the right-click (level actions are in that menu, not in the panel's header; "Duplicate" went, "Add a level above" does it). Sections: **Module** (open: "Across the width" on L and XL stacks, type, module height), **Inside** (open; named **Drawers** when the module can hold several: "Drawers in this module" as small diagrams, inside, lock, geared rails, or a case's body and floor), **Back of this module** (folded: wall mount, pegboard, backbone), **Parts and bolts** (folded: the part list and hardware). A new case starts with its floor "Empty" (UX audit X3, decided 2026-11-14).
   - Labels (Dols, 2026-11-14): a section of its own after **Inside** / **Drawers**, folded at first so it doesn't weigh on the panel (Dols, 2026-11-15): "Label", or "Labels" in a module holding several drawers, with one text field per front ("Text, on the drawer front" / "on the case front", or the drawer's name; placeholder "e.g. M6 bolts", 24 characters). Its summary gives the text in quotes ("“M6 bolts”"), "2 of 3 named", or "None". The text shows on the Label part in the 3D view as it is typed (dark letters on a light label, light on a dark one), replaces a drawer tab's second line, and is named under the level in the view's hover tip. It is saved, as one Undo step, when the field is left or Enter pressed; Esc puts the text back. Under the fields, "For every label in the project" (Dols, 2026-11-15): Font (Sans · Inter, Narrow · Roboto Condensed, Rounded · Nunito, Mono · Roboto Mono, Slab · Roboto Slab, Stencil · Stardos Stencil, in 3 columns), "Letter height, mm" (4 to 8, 6 "recommended"), "Raised text, mm" (None "blank", 0.4, 0.6 "recommended", 0.8, 1), and a note that the text's colour is the Label text filament, painted with a click on a text in the view like any part. Copies of a level (Add a level above / below, copy and paste) keep their labels; "Add a level on top" starts without. A new piece of free text: escaped wherever it is shown.
   - Several drawers in one module (UX audit X4): one tab per drawer ("Top", "2F · dividers", or its label in quotes) over a frame holding what is the drawer's own (label, inside, baseplate and divider settings, lock, geared rails) and, at its foot, "Same settings in every drawer". Under it: "In the frame: this drawer only. Outside it: the whole module." A click on a drawer in the view picks its tab too.
-  - The stack selected: name as plain text (it is renamed at the centre) and a button to the top level, the stack's alerts (`stackAlerts`) or "Everything in this stack fits together" at the top, each alert that names a level with a "Show level N" link (UX audit B1). Sections: **Size and roof** (open: width and depth as segmented buttons, "For every level. Sizes too big for the <printer> aren't offered.", roof — None, Grid, Table, Bowl, Under-table, Heavyweight where it exists — and the grid roof's carry handle), **Under the stack** (folded: base, wheels, casters, foot bar), **Back of the stack** (folded: the two handles, the handle lock, module connectors). An option that needs another stays in place, greyed, its reason on the right of its name: Wheels and Casters "needs a base" (Casters "not with wheels"), Foot bar "needs wheels", Handle lock "needs the trolley handle", Carry handle "needs the grid roof" (UX audit B4); sizes the printer can't make stay hidden. A new empty stack opens on its settings, like a template (B6).
+  - The stack selected: name as plain text (it is renamed at the centre) and a button to the top level, then "Duplicate stack" and "Remove stack" (press and hold) under its size, at the top of the panel (Dols, 2026-11-23; they were at its bottom), the stack's alerts (`stackAlerts`) or "Everything in this stack fits together" at the top, each alert that names a level with a "Show level N" link (UX audit B1). Sections: **Size and roof** (open: width and depth as segmented buttons, "For every level. Sizes too big for the <printer> aren't offered.", roof — None, Grid, Table, Bowl, Under-table, Heavyweight where it exists — and the grid roof's carry handle), **Under the stack** (folded: base, wheels, casters, foot bar), **Back of the stack** (folded: the two handles, the handle lock, module connectors). An option that needs another stays in place, greyed, its reason on the right of its name: Wheels and Casters "needs a base" (Casters "not with wheels"), Foot bar "needs wheels", Handle lock "needs the trolley handle", Carry handle "needs the grid roof" (UX audit B4); sizes the printer can't make stay hidden. A new empty stack opens on its settings, like a template (B6).
   - A stack that needs attention shows a dot on its letter badge in the rail.
 - With two modules side by side (S + S, S + M) each module is selected and set up on its own; with L² or XL² both drawers share the module's settings.
 
@@ -137,6 +166,21 @@ Today's "Extra parts" (`extrasPanel`), as an entry of the rail: search among the
   right under it (then selects the next unprinted plate), its tags, the large nesting with numbered parts, the numbered
   part list with file name and settings (walls, supports).
 - Plate options, under the selected plate in the right column (Dols, 2026-11-14, "double bandeau" like Design: a rail on the left, a column of settings on the right), always shown: one folded line per setting with its value (`popt`: "Parts with supports · plates of their own"), which opens on its segmented buttons: "Parts with supports" (`mixSupports`), "Manual supports" (`printAids`), "Labels" (`labelsApart`; its hint sends the text's settings to Design's Label section, where they moved on 2026-11-15); then the folded "How plates are laid out" text and "Reset all progress" on one row (no clear button since UX audit D7). It was a "Plate options…" popover before.
+- A plate's menu (Dols, 2026-11-23, issue #93): a right-click on a plate card (or the context menu key), or the
+  selected plate's "⋯" (beside its filament tag), opens the menu the 3D view's levels have: "Plate 03 · Light grey · 2
+  parts · ≈ 400 g", then Show this plate, Tick it for the download (Untick it), Tick the N <filament> plates left,
+  Untick all (while some are ticked); Download this plate alone (the Bambu Studio project or the plate file, whatever is
+  ticked), Download its STL folder (.zip), both greyed with the reason when a part is missing; Mark as printed (Put it
+  back on the list); Print settings of its parts… (opens its kinds of part below and scrolls there), Plate options….
+- Print settings by part (Dols, 2026-11-23, issue #83), a panel under Plate options: one folded line per kind of part
+  on these plates (the colour roles of Paint, and "Tires (TPU)"), its value on the right ("default", or "4 walls ·
+  gyroid · supports off"). Open, it says how many parts it holds and what the configurator gives them ("Default: 2 or 3
+  walls · 15% infill · supports on some"), then five rows of segmented buttons, each starting with "Default": Walls
+  (2 to 6), Infill (10 to 60 %), Infill pattern (grid, gyroid, cubic, lightning), Top and bottom layers (3 to 8),
+  Supports (off, on), and "Back to the defaults" once one is set. A kind with parts that bend (latches, springs) warns
+  that more than 2 walls can make them crack. Written per object into the Bambu Studio project, the plate files
+  (PrusaSlicer and OrcaSlicer keys) and the STL folders' notes; supports also move the part to or off the plates with
+  supports. Saved in this browser (`partSettings`) and in the design file.
 - Already printed (Dols, 2026-11-14): under the rail's stacks, a dashed button "Already printed" (like Design's
   "Loose parts") shows, in place of the filters and the sheet, a list of parts printed before: search among the parts
   on these plates only (the picked stacks' lines that fit the printer), "Add" or "All N" on each, then "Your parts
@@ -172,19 +216,90 @@ A step of its own, fed by the same data as `hwTable` for the whole build.
 - Step texts can use the build: "Cut the M16 rod to 338 mm, the length for an M base" instead of listing the four lengths.
 - Cases keep the "Inferred order" badge and its note.
 
-## Colours and theme
+## The look: Giscard Punk "encre" (Dols, 2026-11-22, preprod first)
 
-Keep the page's tokens and its dark theme. Two additions:
-- buttons with white text use `#c2511c` in the light theme: white on the current `--accent` (`#d9622b`) is under 4.5:1. `--accent` stays for outlines and marks;
-- a raised surface for selected cards: `#ffffff` light, `#2b3031` dark.
+The page took the look of Claude Design's handoff `vault-giscard-punk-handoff.zip` (brief, design guide, shader notes
+and mockups; not committed). It changes how things are drawn, not what they do: every control, setting and gesture
+stays. Where this section and the rules below disagree, this section wins.
+- **Paper and ink**: the ground is paper (`#f1eee7`) with ink (`#111111`) in light, and the two swap in dark
+  (`#070707` / `#f1eee7`). Tokens `--gp-*` at the top of the `<style>`, light by default, dark under
+  `prefers-color-scheme` and `[data-theme="dark"]`; the planner's names (`--ground`, `--ink`, `--accent`…) point at
+  them. Hex only: three.js can't read `oklch`. The Light / Dark switch, its storage and the system default are as
+  before. A faint scanline overlay covers the page (`body::after`, not clickable).
+- **Colours and their one meaning each**: yellow (`--accent`, `#f2d935`) = selected or done, a block with ink text
+  stuck on a little crooked (tabs, segmented buttons, toggles, filter chips, "Bought", the folder once picked);
+  pink (`--accent-btn`, `#fc65b6`) = the screen's one main action, with a hard 4 px black shadow (`--gp-shadow`); red
+  block with white text = a problem (`.issue.bad`, `.pflag`); blue = the whole stack (as before: "Stack settings"
+  and its inspector). The old orange is gone, and so is the dark "selected" fill.
+- **Type**: three fonts, embedded in the page (Dols, 2026-11-22: no request to Google Fonts): Anton for titles, in
+  capitals (step titles 48 px, panel titles 36 px, section heads 24 px); Special Elite for labels, buttons and tabs;
+  Courier Prime 400/700 for text and figures (tabular). `src/fonts/` holds the woff2 files (Fontsource 5.3.0, latin)
+  and their licences (OFL 1.1, Apache 2.0); `build.py` inlines them as `data:` URLs (`/*FONTS*/`). About says so.
+- **Shapes**: no rounded corners; borders 2 px in ink; shadows only hard (4, 6, 10 px black), never blurred. Dashed =
+  left out, new or disabled ("New stack", disabled buttons and tabs, a plate printed); dotted = separators between
+  rows; 45° hatching = progress (Print's and Assemble's bars).
+- **The taped card**: one per screen, the key thing on it, on `--raised` (ink in light, paper in dark), turned 1° with
+  a strip of tape (`::before`): the inspector's head (`.ihead`, blue for the stack), Print's selected plate (`.psel`),
+  Assemble's "Have ready" (`.asm-need`), Hardware's list options. The screen's key figure sits on it big (`kfig`: a
+  level's parts, the selected levels' parts, the hardware lines; Assemble's first item; Print's title says "22%
+  printed"). In the rail, the stack shown is a taped card too.
+- **Design fills the window** from 1200 px (Dols, 2026-11-22): the page doesn't scroll; the 3D view takes all the
+  height under the stack's title, and only the rail and the inspector scroll, each in itself. Narrower, the page
+  scrolls as before.
+- **Header**: one row from 1440 px (the printer's bed is hidden from 1240 to 1599 px, it is in the printer's window),
+  the name as a taped label, the four steps two by two on a phone.
+- **The 3D view ("encre", `open3d`)**: the canvas is transparent over the stage's plain paper
+  (`--gp-vp-bg`; the dot grid went, Dols 2026-11-22). Flat colours in two tones (`MeshToonMaterial`, a 2 × 1 ramp): one light from the
+  front, left and above, so fronts and tops are lit and right sides in shade, at about 70 %; the shade hatched at 45°
+  in screen space (7 px, ink at 28 %). Every part is outlined in ink, 2.5 px at any zoom (an inverted hull: back faces
+  pushed out along normals averaged at the corners, `hullMat`, `inked`; parts are drawn on both sides and the hull is
+  pushed behind them, so the hairline gaps of the simplified parts show the part's colour, not ink), plus 1 px ink creases on edges sharper than
+  30° between two faces. Since Dols's "fausses arêtes" (2026-11-23) the creases and the shading normals of a part read
+  from the folder come from the file's own triangles, worked out before simplifying (`meshJob`: `ink`, `nrm`): a
+  simplified flat face draws no line and no hatching however its thin facets turn, and engraved logos, text and round
+  holes keep their true outline. Simplifying opens no hole and keeps a closed part closed (Dols, 2026-11-24): nothing
+  of the file is moved or dropped before, and what the simplifier presses together is mended after; the shading
+  normals come from the simplified faces round each corner, within 30° (no more fans of thin faces on fronts). The
+  outline pushes a face under 1 mm across in one piece, so a thin face reaching a hole's rim can't turn over into a
+  black wedge. The lines are drawn 0.5 mm nearer the eye along the line of sight (`creaseMat`), since
+  the file's edge can lie under the simplified surface. `creaseLines` (30°, each face 0.2 mm off the other's plane)
+  only serves the shapes made in the page (bolts). Simplifying more finely to keep the edges (PR #102) was undone the
+  same day: too slow. Keeping the normals while simplifying (`simplifyWithAttributes`, PR #90) was tried and
+  undone (Dols, 2026-11-23): slower, and the fronts and backs of the modules kept their lines. A hard shadow of the footprint, back and to the right (`--gp-vp-shadow`). The
+  level under the pointer: its ink outline thickens to 4 px (no box any more). The selected level(s): a yellow ring
+  (`--gp-vp-select`) around the whole module, drawn over the stack outside the module's own shape (stencil mask), with
+  an ink ring outside it in light. What a click would paint is tinted halfway to that yellow. Picking, the camera,
+  the tools, the menus and the mesh pipeline are untouched. The theme switch re-reads the shadow and the rings
+  (`v.retheme`).
+- **Three looks for the 3D view** (Dols, 2026-11-24: "choisir entre le shader actuel, le shader de base et un autre
+  dans la vibe fanzine"): segmented buttons "Look" in the strip under the view (`#v3dLook`, a small sample of each
+  beside its name), the same as ticked items in the toolbar's right-click menu and in the buttons' own, and the key L
+  (the next one). This browser's own setting (localStorage `look3d`, like the parts' level of detail), not the
+  project's; Ink at first. `open3d` reads `v3look`; `v.relook` swaps lights, shadow and outlines and makes every
+  material again, without rebuilding the model (the camera, the drawers and the selection stay).
+  - **Ink**: the look above.
+  - **Plain**: the view before the redesign: smooth lit shading (`MeshStandardMaterial`; bolts a little shiny), a sky
+    and ground light with a sun from the right and a fill from behind, a soft round shadow, no ink outlines nor creases.
+    The level under the pointer still gets its ink outline, the selection its yellow ring, and what a click would paint
+    glows a little yellow.
+  - **Halftone**: each part printed flat in its filament's colour, the shade as a screen of ink dots at 45° (6 px
+    apart, `MeshLambertMaterial` only to know how much each point faces the sun) that grow as the face turns away:
+    fronts stay clean, tops get small dots, right sides heavy ones. A dark filament (under ~8 % luminance), where ink
+    dots wouldn't show, gets paper dots on its lit faces instead (reversed out). Toner grain over everything (±4 %),
+    the hard shadow printed as dots, Ink's outlines and creases.
+  - The GLB export no longer reads its metal and roughness from the view's materials (Ink's had none, so glTF took
+    every part as metal): bolts 0.5 / 0.4, the rest 0 / 0.72, whatever the look.
 
-Parts and filament swatches keep their real colour in both themes.
+What the handoff changes in the rules below: orange actions became pink, the dark "selected" fill became the yellow
+block, step titles went from 28 px to 48 px, the mono font is now the text font too (Courier Prime). Kept against the
+handoff: sentence case in the page's words (capitals come from CSS on titles and labels only), the Bolts swatches, no
+footer.
 
 ## One look for each kind of thing (Dols, 2026-11-13)
 
 The pass of thread "Unifier l'interface de tout le planner" set these rules for every step, popup and panel:
-- **Buttons**: a filled orange button (`.btn.primary`, `--accent-btn`) does the screen's main action (Add a level on
-  top, Empty stack, Download, Mark as printed, Copy the list, Drawer done). Dark fill (`--ink`) only ever means
+- **Buttons** (orange then, pink since the look of 2026-11-22): a filled button (`.btn.primary`, `--accent-btn`) does the screen's main action (Add a level on
+  top, Empty stack, Download, Mark as printed, Copy the list, Drawer done). Dark fill (`--ink`; the yellow block since 2026-11-22) only ever means
   *selected*: tabs, segmented buttons, toggles of the 3D toolbar. There is no dark action button (`.btn.ink` is gone).
 - **The stack colour**: blue (`--stack`, `--stack-soft`, light and dark) means *the whole stack* in Design (Dols,
   2026-11-14): the stack picked in the rail (card and badge), the "Stack settings" button while it is on, and the
@@ -236,7 +351,7 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   footprint is made to it; a paste says what it did, with "Undo"; text selected on the page is copied as usual; the
   level menu has "Copy level" / "Paste a level above", the stack menu "Copy stack" / "Paste …"); in the 3D view O opens or closes
   the level's drawer or case, P Paint on or off, F fits the stack in the view (the one reframing, asked for), E Spread
-  levels, H Hide roof, R Rotate; Ctrl/Cmd + click and Shift + click select several levels (listed in the 3D view's group, "click" not drawn as a key), and with several selected Alt + ↑ ↓, D, Shift + D, Delete, O, Ctrl/Cmd + C and V act on all of them. Rules: never while typing in a field or with a menu, a dialog, the filament picker or the
+  levels, H Hide roof, R Rotate, L the next look (Ink, Plain, Halftone); Ctrl/Cmd + click and Shift + click select several levels (listed in the 3D view's group, "click" not drawn as a key), and with several selected Alt + ↑ ↓, D, Shift + D, Delete, O, Ctrl/Cmd + C and V act on all of them. Rules: never while typing in a field or with a menu, a dialog, the filament picker or the
   printer list open; bare keys take no Ctrl, Cmd or Alt, so the browser's own shortcuts stay theirs (only Ctrl/Cmd + S
   and O are taken, for the design file); a key held down acts once (but the arrows repeat); no shortcut removes
   anything that is pressed and held with the mouse. Discoverable where the action is: the menus show the key on the
@@ -254,6 +369,64 @@ The pass of thread "Unifier l'interface de tout le planner" set these rules for 
   itself, and only once asked: the camera goes round the vertical axis (never closer, never another point looked at),
   a drag holds it and it goes on from where it was let go; off at every page load, kept while the stack changes and
   onto another stack.
+
+## Right-click menus, everywhere (Dols, 2026-11-23)
+
+"On doit avoir un clic droit custom de partout, et il doit être pertinent." A right-click anywhere on the page opens
+the page's own menu (`.vmenu`, the one the 3D view's levels and the plates had), never the browser's, with what can be
+done with what is under the pointer; nothing more precise under it: the step's own menu. Section "right-click menus,
+everywhere" in `src/template.html`: one `contextmenu` listener on the document; the element under the pointer and each
+one holding it are matched against the step's rules (`CTXV[view]`, made by `renderPrint`, `renderHardware`,
+`renderAssemble` with their plates, rows and steps), then the page's (`CTX`, `ctxRule`); a handler that made its own
+menu first (the 3D view, a plate card) is left alone. What each menu holds:
+
+- **Header**: a step tab: the four steps (the one shown ticked, keys 1 to 4). File: the File menu. Light / Dark: the
+  two themes. The printer: Choose another printer…, See its plates in Print. The Vault folder: Open <folder>, Choose
+  another folder…. The page's name and its links: What's new, Report a bug or an idea, Keyboard shortcuts, About, the
+  steps.
+- **Design**: a stack in the rail: Stack settings, Rename…, Add a level on top, Duplicate stack, Copy stack, Paste,
+  Export (the stack shown), Remove stack (held). The rail's space, New stack, Start from a template…: New stack, Start
+  from a template…, Paste the stack copied, Loose parts. Loose parts: show them, Print only these, Clear (held); a part
+  in their list: One more, One fewer, Take it out of the list (held); in the search: Add it. The stack's card (name,
+  size, buttons, the strip under the view): Rename… then the 3D view's stack menu. The view's toolbar and hint bar: the
+  tool (Select, Paint), Rotate, Spread levels, Hide roof, the bolt finish (ticked when on), the look (Ink, Plain,
+  Halftone, ticked when on), Fit the stack in the view, How to move the view. The Look buttons under the view: the
+  three looks. Paint's brush bar: one brush per filament, Add a filament…, what a click paints, Back to Select.
+  The view's list of units: that level's menu (it gets selected). The panel: the level's menu (with Select the level
+  below / above first), the levels' menu with several selected, the stack's menu on Stack settings; on a drawer tab:
+  Set up this drawer, Same settings in every drawer; on a divider plan: its None / Every other / All / Clear; on a
+  section: Fold or Unfold it, Fold every section, Unfold every section. While painting: a part type: Paint them
+  <filament> for each filament (the one in use ticked), Another filament…; a group's "Paint these": the same for the
+  group; a filament: Paint with it, Add a filament…, Remove it from your filaments (held); a module's own colour: Back
+  to the stack color; elsewhere: Start from (the three presets), Add a filament…, Back to Select.
+- **Print**: a plate: its menu (issue #93), also on the selected plate's buttons. A filament's pill or heading: Show
+  only these plates, Show every plate, Tick these N plates, Untick them. A stack in the rail: Leave it out of the plates
+  / Put it in the plates, Print only this one, Print everything, Show it in Design. Already printed: Show the list /
+  Back to the plates; a part in its list: its own buttons. The downloads: the two downloads, Tick every plate shown,
+  Untick all. The selection bar: its buttons. Print settings by part: Back to the defaults, the folds. Plate options:
+  the folds, Reset all progress (held).
+- **Hardware**: a line (its store link too): Mark it bought / Not bought yet, Open its product page (or Search for it on
+  <store>), Copy this line, then its group's. A group's heading or its "Jump to" link: Mark the N <group> bought, None
+  of the <group> bought yet. A stack in the rail: Leave it out of the list / Put it in the list, List only this one,
+  List every stack, Show it in Design. The bolt finish: the two finishes.
+- **Assemble**: a step: Done / Not done yet, Done, with the N before it, Not done, nor those after it, Open the hardware
+  list (a step with bolts). A section in the rail: Show it, Tick all its steps, Untick all its steps (held).
+- **Windows** (What's new, About, a template…): Close (Esc); a template card: Add this stack. **A link**: Open it (in a
+  new tab when it opens one), Copy the link; a link within the page ("Jump to"): Go there.
+- **The step's own menu**, anywhere else: Undo: <what> and Redo: <what> (greyed when there is none), what the step
+  does (Design: New stack, Start from a template…, Paste the stack copied, Stack settings, Add a level on top; Print:
+  the downloads, tick all / untick all, Already printed…, Reset all progress (held); Hardware: Copy the list, Export as
+  CSV, Mark everything bought, Untick everything (held), the bolt finish; Assemble: Previous section, Next section,
+  "<Unit> done, next one", Open the hardware list), Save, Open a design file…, Keyboard shortcuts.
+
+Rules: a menu acts on what was right-clicked (a stack in the rail, a plate, a line), whether or not it is the one
+selected; acting on a level selects it. A removal in a menu is pressed and held like its button (the item fills in red,
+"Hold it down to remove stack" when let go sooner); "Remove level" stays a plain click with Undo. The menu's settings
+show a tick on the one in use (`menuitemcheckbox`). Kept for the browser: text fields (search, names, labels: paste,
+spelling) and a right-click with **Shift** held, the browser's own menu for whoever needs it. Text selected under the
+pointer adds "Copy" first. The context menu key and Shift + F10 open the same menu under the element that has the focus,
+on its first item. Inside a window the menu opens in the window (the page under it can't be clicked). A new element
+with things to do gets its rule (`ctxRule`, or the step's `CTXV`), a removal `hold: true`, a label holding a name `u`.
 
 ## What is counted (Dols, 2026-11-16)
 
@@ -277,17 +450,29 @@ In the dashboard, events are the paths without a leading "/"; type the prefix in
   `label/…` (text typed, relief, letter, font), `dividers/…` (case slot, all, grid click, grid clear).
 - `3d/…`: tool (select, paint), rotate, spread levels, hide roof, help, bolts finish, right-click on a level or the
   background, a drawer or case opened, the real parts shown, parts not in the folder or not simplified, the viewer
-  not loaded.
+  not loaded, `3d/simplifying` (the window opened by itself), `3d/why-simplified` (its button under the view),
+  `3d/simplifying-hide` (its ×), `3d/resolution=superlow` / `=low` / `=medium` / `=high` / `=native` (the window's setting), `3d/look=ink` / `=plain` / `=halftone` (the Look buttons under the
+  view), `3d/look-in-use/<look>` (the look of a visit's Design step, once per visit).
 - `paint/…`: a click in 3D, brush, "A click paints", add a filament, part type or group painted, module exception,
   the presets ("Start from"), the filament picker (opened, scope, Bambu colour, line filter, tray colour, "Use it"),
   the Selected card's buttons.
-- `menu/<item>`: any menu item used (level, levels, stack, File menus), digits as N.
+- `menu/<item>`: any menu item used (level, levels, stack, File menus, the right-click menus), digits as N; an item
+  whose label holds a name (a filament, a stack) counts under a fixed word (`menu/brush`, `menu/paint-part-type`…).
+- `right-click/<where>`: a right-click menu opened (Dols, 2026-11-23): `tab`, `file`, `theme`, `printer`, `folder`,
+  `brand`, `template`, `window`, `rail-stack`, `loose`, `stacks`, `start`, `loose-part`, `3d-brush`, `3d-toolbar`, `3d-look`,
+  `3d-unit`, `3d-selected`, `stack-card`, `paint-type`, `paint-group`, `filament`, `own-color`, `panel`, `link`,
+  `print/plate`, `print/filament`, `print/group`, `print/stack`, `print/already-printed`, `print/part-row`,
+  `print/downloads`, `print/selection`, `print/part-settings`, `print/options`, `hardware/line`, `hardware/group`,
+  `hardware/jump`, `hardware/stack`, `hardware/finish`, `assemble/step`, `assemble/section`, and the step's own menu
+  `page-build`, `page-print`, `page-hardware`, `page-assemble`. The 3D view's and the plates' keep theirs.
 - `key/<key>`: a shortcut that did something (`key/mod+z`, `key/step-number`, `key/r`…).
-- `file/…`: menu, save, save as, open, opened (or opened an older file), export STL / GLB.
+- `file/…`: menu, save, save as, open, opened (or opened an older file), export STL / GLB, share link or code copied,
+  "Open a share link or code…", a shared design opened (`file/opened-share`). The code itself is never sent: it is
+  after the `#`, which the visit count leaves out.
 - `folder/…`: the Vault folder open during the visit, "later" on the start screen, the header button.
 - `print/…`: stacks to print, filter, plate select / tick / previous-next, tick all, mark (un)printed, the downloads
   (Bambu project, plate files, STL folders), choose a folder, already printed (opened, add, stepper), plate options
-  (`print/<option>=<value>`), copy the part list, reset all progress; `printer/<id>` once Print is shown.
+  (`print/<option>=<value>`), print settings by part (`print/part-settings/<setting>`), a plate's menu opened (`print/plate-menu`, its items as `menu/…`), copy the part list, reset all progress; `printer/<id>` once Print is shown.
 - `hardware/…`: stacks in the list, jump to, bolt finish, ticked bought, copy, CSV; `store/<id>` once Hardware is
   shown or a store is picked; `buy/<store>` (each store link opened, as before).
 - `assemble/…`: a step ticked, a unit done.

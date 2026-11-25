@@ -495,6 +495,102 @@ lowest of the base, tyres, foot or casters. Measured on the files (2026-11-13), 
 
 `measure_envelope.py` writes `envelope` and the column pieces' `box`; the rest is the units' `bbox` from the export.
 
+## Later deliveries
+
+Every number here was measured on the first Vault download (2026-10-21). USSA's update of 2026-11-18 (`Vault
+Archive_18.11.2026`, plus a 4 GB Rhino model that the page can't use: the configurator's project memory has the
+comparison) re-exported 41 of the files the page reads from elsewhere in their CAD scene, often turned, and renamed or
+moved a few: the matrices above no longer fit those files as they are. Rather than measure everything again (and lose
+the first download), `src/stl-revisions.json` says, per first-delivery path, which file replaced it and how to bring
+that file back into the first delivery's coordinates:
+
+```
+files["01. DRAWERS/03. L Families/L4/Modules/L4 Module 1F.stl"] = [{ delivery: "2026-11-18", size: 86676984,
+  ratio: 0.71, fix: [r00, r01, r02, tx, r10, …, tz] }]          // 3x4 row-major, that file -> first delivery, mm
+files["02. SUSTAINERS/02. M Families/M3/Modules/M3 1F Module .stl"] = [{ …, file: "…/M3 1F Module_Sustainer.stl", size, fix }]
+files["01. DRAWERS/05. XL Families/XL5/Roofs/XL5 Heavyweight Roof Cut.stl"] = [{ …, file: "…/XL5 Heawyweight Roof (Cut to fit on a plate).stl" }]
+```
+
+- **file**: the new path, only when the page's own lookup (`findFile`: exact path, end of path, letters and digits,
+  the same name in another folder) wouldn't find it by the old one: the M 1F modules and fronts (`_Sustainer`), the XL
+  heavyweight roofs cut to fit a plate (renamed, same triangles), and XL6 / XL7 Box 1F Part 1 and Part 2, whose names
+  USSA swapped (the new Part 1 is the old Part 2).
+- **size**: the new file's bytes. A revision only applies to a file of that size, so the first download's files are read
+  as they are, and a third delivery that changes a file again is simply not matched (it is read as it is, wrong, until
+  this is run for it).
+- **fix**: p_first = R · p_new + t. The page's `partFile` applies it to the file's triangles as it reads them
+  (`reviseStl`), before anything else: the 3D view's simplifier and cache (`partMesh`, the fix in the cache key), the
+  pieces and matrices, and Print's plate files and Bambu project (`placedMesh`), which then turn and lay the part out
+  from the same measurements as before. The STL folders download gives USSA's file as it is (the right one, for the
+  swapped names). Files moved by less than 0.15 mm, the fit's own scatter, get no fix (S4 Box 4F, x3 Runner Slide).
+- **ratio**: how well the new file lies on the old one: median distance from the new file's surface samples to the old
+  ones, over the same between two halves of the old sample. Two samples of the same surface give about 0.71 (1/√2);
+  0.74 to 0.76 is a part USSA retouched (S3 / S4 Box 4F, x6 / x7 XL runner slides); clearly above, it isn't the same part.
+
+`revisions.py <first download> <new download> <date> --write` (numpy and scipy) does it: for each file `src/` names that
+differs, area-weighted surface samples of both, every axis turn and 45-degree turn plus the principal axes as starts,
+then trimmed point-to-plane ICP; a fit worse than 0.8 tries the other files of the same folder (that is how the XL box
+parts showed up swapped). On a synthetic test (turned 33° and 45°, moved 2 m) it found the turn within 0.005° and the
+move within 0.06 mm. The 2026-11-18 entries were made the same way, from the PC's two downloads, with the files
+staged one batch at a time. It writes numbers only. Turns found: 45° for the L 1F / 2F / L² 2F modules (now flat),
+the M 1F modules (now at 45°) and the S3 grid roof; 42.8° for the XL6 / XL7 Box 1F parts; 2.2° for the L case roofs;
+the rest only moved (XL bases 1,997 mm, L grid roofs ~1,770 mm, runner slides 30 to 52 mm and 1.4 m for XL).
+
+New parts in that delivery (the "Box … Upd" boxes, the pull-out handles in parts, XL Box Connector, Box Cover for
+bolts, Top Handle Taller) aren't offered yet: they have no measurement nor placement.
+
+## Simplifying for the 3D view
+
+The 3D view draws the parts simplified (0.15 mm at the default "Super low" level) by `meshJob` in `src/template.html`,
+in workers, with meshoptimizer 1.3.0. Rule (Dols, 2026-11-24): simplifying opens no big hole, and a part that was
+closed (every edge shared by two faces) stays closed. meshoptimizer is fast but makes no such promise: it collapses
+edges without the "link condition" that CGAL, OpenMesh or MeshLab's quadric simplifiers check (and pay for in time),
+so where a feature is thinner than the tolerance it can press two walls together into an edge of four faces, or a
+wall onto itself. Simplifying again with the vertices that would break locked, or with the normals as attributes
+(PR #90), was 5 to 50 times slower. So the page lets it work and mends after, as mesh repair tools do:
+
+1. **Weld** corners with exactly the same coordinates in the file, nothing nearer. Merging within 0.5 to 10 µm was
+   tried: it gave *more* edges of more than two faces on S1F and the S5 grid roof (it joins walls that only nearly touch).
+2. **Tidy** without moving or opening the surface: a triangle with a corner twice goes (no area), a triangle twice
+   keeps one, a triangle and its own reverse both go (a wall of no thickness). Nothing else is dropped: the old
+   clean-up (5 µm merge, faces under 0.5 µm² dropped, seams sewn) is what opened the holes.
+3. **Simplify** (`ErrorAbsolute`, `Prune`), then tidy again.
+4. **Pair** the faces round each edge of more than two: by the angle between them, each face with its neighbour on the
+   way round, opposite directions first; the corners are then split (union-find over the paired edges): each group of
+   faces round a corner that holds together gets its own vertex. Where two pairs still share both ends of an edge, the
+   edge is cut at its middle (the faces on it become two, or a fan round their centre).
+5. **Normals**: each corner from the simplified faces round it within 30° of its own face, by area. A sliver (under
+   twice the tolerance across) takes the normal of the widest neighbour nearest its slope; a face of no area, that of
+   the faces round it. Before, they came from the file's faces round each kept corner, and a corner where a flat face
+   meets a fillet tilted every long facet it held: the fans of thin faces Dols saw on the fronts.
+
+The ink outline pushes each corner out along the normal averaged where the faces meet; a face under 1 mm across is
+pushed in one piece (`hullNormals`), else a long thin face reaching a hole's rim turned over into a black wedge.
+
+Measured with `tools/mesh_check.mjs` on 34 parts of the first download (and XL5 Module 1F alone), new against the
+preprod of 2026-11-24, "open / more than two faces" edges:
+
+| part | file | before | now |
+| --- | --- | --- | --- |
+| XL5 Module 1F (7.1M triangles) | 0 / 0 | 589 / 1,314, 27 holes over 1 mm, up to 22.5 mm, 13.1 s | 0 / 0, 10.4 s |
+| M4 Roof | 0 / 12 | 6 / 59, a hole of 16.95 mm | 0 / 0 |
+| S5 Box 1F | 0 / 0 | 10 / 2,895 | 0 / 0 |
+| M4 Module 1F / 2F / 4F | 0 / 2, 0 / 22, 6 / 4 | 8 / 35, 8 / 29, 4 / 25, holes up to 2.7 mm | 0 / 0 |
+| S1F (a broken file) | 484 / 5,252 | 94 / 13,463, a hole of 15.8 mm | 590 / 0, largest 2.9 mm |
+
+Of the 14 files that were closed, the old clean-up broke 7; now none. Edges of more than two faces: 0 on every part,
+including files that had some. A part with holes of its own keeps them, a little wider at most (S1F: 0.9 → 2.9 mm).
+Time: 20.9 s for the 34 parts instead of 24.4 s, one part slower (M4 Roof, 0.5 → 0.6 s); about as many triangles
+(206k against 207k). M4 Roof holds 18.7k triangles instead of 3k: slivers of the file's own that the simplifier
+can't remove without opening it, invisible. The cache key went to `mesh3d.6:`: parts are simplified again once, at the
+next visit.
+
+```
+npm install --prefix /tmp/mo meshoptimizer@1.3.0
+git show origin/preprod:src/template.html > /tmp/old.html
+MESHOPT=/tmp/mo/node_modules/meshoptimizer/meshopt_simplifier.js node tools/mesh_check.mjs --old /tmp/old.html <files.stl>
+```
+
 ## How it is measured
 
 The files are exported in print orientation (some at 45° to fit the bed) and scattered around one big CAD scene. Some parts are already in their assembled place relative to each other: the box, the baseplate, the stopper and the latch (X/Y). The rest is found by measurement in Blender:
